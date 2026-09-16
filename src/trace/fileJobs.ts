@@ -1,4 +1,5 @@
 import { spawn } from 'node:child_process'
+import {retryHashWorker} from './readOnlyWorkerRetry'
 import { join, sep,dirname,basename,isAbsolute } from 'node:path'
 import { readdir, realpath, rm,writeFile } from 'node:fs/promises'
 import { randomUUID } from 'node:crypto'
@@ -57,7 +58,7 @@ export function quantizeFiles(nativePath:string,sources:string[],base:string,enc
   return runJob({kind:"quantize",nativePath,sources,base,encoding},options)
 }
 
-export function hashFiles(sources:string[],options:JobOptions={}):Promise<string[]>{return runJob({kind:"hash",sources},options)}
+export function hashFiles(sources:string[],options:JobOptions={}):Promise<string[]>{return retryHashWorker(()=>runJob({kind:"hash",sources},options),options.signal)}
 
 export async function copyExportFile(nativePath:string,source:string,target:string,expectedSha256:string,options:JobOptions={}):Promise<{target:string}>{
  if(!isAbsolute(target)||target.includes('\0')||!/^[a-f0-9]{64}$/.test(expectedSha256))throw Error('INVALID_EXPORT_COPY')
