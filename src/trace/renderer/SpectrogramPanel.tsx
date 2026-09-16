@@ -34,6 +34,7 @@ export function SpectrogramPanel({settings,change,isVisible,...timeline}:Timelin
  useEffect(()=>window.trace.onSpectrogram(next=>{
   const c=current.current,ref=sourceRef(c.timeline.snapshot)
   if(!c.isVisible()||next.requestId!==active.current||!spectrogramPacketMatches(next,ref,c.settings))return
+  if(next.phase==='cancelled'){signature.current='';return}
   if(next.phase==='error'){setFailure({context:spectrogramContextKey(ref,c.settings),text:next.error||'声谱图暂不可用'});return}
   setPacket(next);setFailure(null)
  }),[])

@@ -1,6 +1,6 @@
 # 49 · M10 3D 接入 / preview.19
 
-2026-09-17。M9 已完成工程交付；M10 已接入同一声谱图仪器，preview.19 的 24 阶段短门禁通过，1800 秒真实 GPU 资源门禁运行中。尚未关闭 M10，也未开始最终产品复评。
+2026-09-17。M9 已完成工程交付；M10 已接入同一声谱图仪器。preview.19 长测在来源切换时发现绑定前的过期请求，已由 preview.20 修复；25 阶段短门禁通过，新的 1800 秒 GPU 门禁运行中。尚未关闭 M10，也未开始最终产品复评。
 
 ## 已接入的能力
 
@@ -51,6 +51,19 @@ PreferencesWriter 现使用串行、可合并的异步写入，唯一临时文�
 - Native SHA256：7f1606b31bdf1664b7563b418ba0d43e3c025198e874c387851338eb9c0a7dbe。
 - ZIP：Trace-0.1.0-preview.19-Windows-x64.zip，207,170,283 bytes，SHA256 95a176fa744d410a633bde3b2e3d10a3ad2322b6d0e812b4f7b34ffc87c11d0c。
 
-新 GPU 资源任务：artifacts/m10/resources-1789589444537/report.json，1800 秒，最高 FFT/高细节表面、周期显隐并强制一次上下文丢失/恢复，保留原内存/丢帧阈值。当前仍 running；运行 handle 见 13，不能用短门禁代替最终结果。运行包保持不变，后续修改使用新的候选身份。
+新 GPU 资源任务：artifacts/m10/resources-1789589444537/report.json，1800 秒，最高 FFT/高细节表面、周期显隐并强制一次上下文丢失/恢复，保留原内存/丢帧阈值。该任务后来以 fail 结束，详情及新候选的复测见下方；原包与失败证据保留。
+
+### preview.20 来源切换修复与复验
+
+上述 preview.19 资源任务实际在约 300 秒 REC → LIVE 后终止 fail：错误为 STALE_SPECTROGRAM_SOURCE。解析请求时引用已过期、尚未建立绑定，原先的“绑定无效则丢弃异常”检查覆盖不到这一阶段；原报告和录音保留。
+
+应用解析器现在仅在确证来源/epoch/可见性不匹配时抛出 SpectrogramContextChanged，发布 cancelled 控制状态；前端重新查询当前来源。原生失败、文件读取失败和当前来源故障仍是 error，未按字符串一概忽略。加入确定性停止后旧引用请求测试，取消路径通过；60.402 秒 GPU 复测（含强制丢失/恢复和录音转 LIVE）通过。
+
+preview.20 完整短门禁 **25 阶段 / 151 JS pass**：artifacts/m10/final-1789591500935/report.json。
+
+- ASAR：0bfc600d6121cd601f3c8600564b33d1c796bc79d4c70fa79029905a32e3b231。
+- Native：7f1606b31bdf1664b7563b418ba0d43e3c025198e874c387851338eb9c0a7dbe。
+- ZIP：Trace-0.1.0-preview.20-Windows-x64.zip，207,170,574 bytes；SHA256 96ab0f5d166da55cd6d049cfc00e6a8152f22bc313b41c63c38b87e7e5b2dfd2。
+- 新长测：artifacts/m10/resources-1789591713041/report.json，1800 秒，原阈值不变，取消计数与真实错误计数分别记录；最终结果仍待收取。
 
 下一步：收取完整短门禁，执行 1800 秒 GPU 资源流程与录音完整性检查。完成后关闭 M10 工程关口，推进 M11 的目标、事件和报告，再完成 M12 导入/参考比较及原八维复评。

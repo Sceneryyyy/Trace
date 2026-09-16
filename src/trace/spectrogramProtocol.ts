@@ -17,7 +17,7 @@ export function restoreSpectrogramSettings(v:unknown):SpectrogramSettings {
 export function spectrogramConfigKey(s:SpectrogramSettings):string{return JSON.stringify([s.fftSize,s.channel,s.minFrequency,s.maxFrequency])}
 export type SpectrogramSourceRef={analysisId?:string;kind:'live'|'take'|'file';sourceId:string;epochId:string;measurementEpoch:string}
 export type SpectrogramQuery={source:SpectrogramSourceRef;range:{startFrame:string;endFrame:string;width:number;height:number}}
-export type SpectrogramPacket={configKey:string;requestId:string;phase:'partial'|'ready'|'error';source:SpectrogramSourceRef;axisStartFrame?:string;axisEndFrame?:string;view?:SpectrogramView;error?:string}
+export type SpectrogramPacket={configKey:string;requestId:string;phase:'partial'|'ready'|'error'|'cancelled';source:SpectrogramSourceRef;axisStartFrame?:string;axisEndFrame?:string;view?:SpectrogramView;error?:string}
 export function validateSpectrogramQuery(v:unknown):SpectrogramQuery {
   if(!plain(v)||Object.keys(v).sort().join(',')!=='range,source'||!plain(v.source)||!plain(v.range))throw Error('INVALID_SPECTROGRAM_QUERY')
   const s=v.source,r=v.range

@@ -17,6 +17,7 @@ try{
  for(const scale of [1,1.5,2]){run('surface-ui-'+scale,'tools/m10/workspace-ui.cjs',{TRACE_PACKAGE_EXE:path.join(dir,'Trace.exe'),TRACE_UI_SCALE:String(scale)});copy('artifacts/m10/ui-latest.json','surface-ui-'+scale)}
  run('surface-unavailable','tools/m10/no-webgl.cjs',{TRACE_PACKAGE_EXE:path.join(dir,'Trace.exe')});copy('artifacts/m10/no-webgl-latest.json','surface-unavailable')
  run('preferences-lock','tools/m10/preferences-lock.cjs',{TRACE_PACKAGE_EXE:path.join(dir,'Trace.exe')});copy('artifacts/m10/preferences-lock-latest.json','preferences-lock')
+ run('source-transition','tools/m10/source-transition.cjs',{TRACE_PACKAGE_EXE:path.join(dir,'Trace.exe')});copy('artifacts/m10/transition-latest.json','source-transition')
  run('package-audit','tools/m6/package-audit.cjs');const audit=copy('artifacts/m6/package-audit-latest.json','package-audit')
  for(const scale of [1,1.5,2]){run('ui-'+scale,'tools/m8/workspace-ui.cjs',{TRACE_PACKAGE_EXE:path.join(dir,'Trace.exe'),TRACE_UI_SCALE:String(scale)});const ui=copy('artifacts/m8/ui-latest.json','ui-'+scale);assert(ui.seekP95<=100,'seek p95 exceeds 100ms');assert.equal(ui.seekMs.length,100)}
  run('window-visibility','tools/m8/visibility-check.cjs',{TRACE_PACKAGE_EXE:path.join(dir,'Trace.exe')});copy('artifacts/m8/visibility-latest.json','window-visibility')

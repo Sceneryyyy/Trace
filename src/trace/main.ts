@@ -1,5 +1,5 @@
 import {PreferencesWriter} from './preferencesWriter'
-import {SpectrogramPresenter,type SpectrogramBinding} from './spectrogramPresenter'
+import {SpectrogramPresenter,SpectrogramContextChanged,type SpectrogramBinding} from './spectrogramPresenter'
 import {fileSpectrogramSource,replaySpectrogramSource,liveSpectrogramSource,takeSpectrogramSource} from './spectrogramSource'
 import {defaultSpectrogramSettings,restoreSpectrogramSettings,validateSpectrogramSettings,validateSpectrogramQuery,type SpectrogramQuery,type SpectrogramSettings} from './spectrogramProtocol'
 import type {SpectrogramNative} from './spectrogramService'
@@ -184,30 +184,31 @@ function resumeInput():void{
 }
 async function resolveSpectrogram(q:SpectrogramQuery,settings:SpectrogramSettings):Promise<SpectrogramBinding>{
  const visible=()=>!exiting&&!managingLibrary&&state.windowVisible!==false&&!state.workspace?.layout.hidden.includes('spectrogram')
- if(!visible())throw Error('SPECTROGRAM_NOT_VISIBLE')
+ if(!visible())throw new SpectrogramContextChanged()
  const configKey=(s:SpectrogramSettings)=>JSON.stringify([s.fftSize,s.channel,s.minFrequency,s.maxFrequency])
  const config=configKey(settings),stillConfigured=()=>visible()&&config===configKey(state.spectrogramSettings||defaultSpectrogramSettings)
  let source:import('./spectrogramSource').SpectrogramSource,toNative=(v:string)=>v,toAxis=(v:string)=>v,valid:()=>boolean
  if(q.source.kind==='file'){
   const view=playback.view()
-  if(!view||view.id!==q.source.sourceId||q.source.analysisId!==undefined&&q.source.analysisId!==view.analysisId||q.source.epochId!=='0'||q.source.measurementEpoch!=='0')throw Error('STALE_SPECTROGRAM_SOURCE')
+  if(!view||view.id!==q.source.sourceId||q.source.analysisId!==undefined&&q.source.analysisId!==view.analysisId||q.source.epochId!=='0'||q.source.measurementEpoch!=='0')throw new SpectrogramContextChanged()
   const bound=playback.spectralSource(view.id)
   source=bound.replay?replaySpectrogramSource(bound.replay):fileSpectrogramSource(bound.source,bound.analysisKey||'pending:'+view.id)
   if(!bound.replay&&!bound.analysisKey)delete source.cacheRoot
   valid=()=>stillConfigured()&&playback.view()?.id===view.id&&playback.view()?.analysisId===view.analysisId
  }else{
-  if(playback.active())throw Error('STALE_SPECTROGRAM_SOURCE')
+  if(playback.active())throw new SpectrogramContextChanged()
   const snap=engine.snapshot(5,1)
-  if(q.source.epochId!==snap.epochId||q.source.measurementEpoch!==snap.measurementEpoch||snap.error)throw Error('STALE_SPECTROGRAM_SOURCE')
+  if(q.source.epochId!==snap.epochId||q.source.measurementEpoch!==snap.measurementEpoch)throw new SpectrogramContextChanged()
+  if(snap.error)throw Error('SPECTROGRAM_SOURCE_UNAVAILABLE: '+snap.error)
   if(q.source.kind==='live'){
-   if(state.currentRecord||snap.sourceId!==q.source.sourceId)throw Error('STALE_SPECTROGRAM_SOURCE')
+   if(state.currentRecord||snap.sourceId!==q.source.sourceId)throw new SpectrogramContextChanged()
    source=liveSpectrogramSource(snap)
    valid=()=>{if(!stillConfigured()||playback.active()||state.currentRecord)return false;const n=engine.snapshot(5,1);return n.sourceId===snap.sourceId&&n.epochId===snap.epochId&&n.measurementEpoch===snap.measurementEpoch}
   }else{
-   if(state.currentRecord?.id!==q.source.sourceId)throw Error('STALE_SPECTROGRAM_SOURCE')
+   if(state.currentRecord?.id!==q.source.sourceId)throw new SpectrogramContextChanged()
    const record=engine.recordStatus(),regions=recordings.session(q.source.sourceId).document.regions
    const region=regions.find(r=>r.nativeId===record.id)
-   if(!region)throw Error('STALE_SPECTROGRAM_SOURCE')
+   if(!region)throw new SpectrogramContextChanged()
    const data=regions.map(r=>r===region?{...r,frames:record.writtenFrames,startFrame:record.startFrame,endFrameExclusive:record.startFrame===null?null:String(BigInt(record.startFrame)+BigInt(record.writtenFrames))}:r)
    const timeline=new SessionTimeline(data),position=timeline.positions.find(p=>p.regionId===region.id)!
    toNative=value=>{const n=BigInt(value);if(n<=BigInt(position.mediaStartNs))return '0';if(n>=BigInt(position.mediaEndNs))return record.writtenFrames;return timeline.mediaNsToRegion(value)!.relativeFrame}

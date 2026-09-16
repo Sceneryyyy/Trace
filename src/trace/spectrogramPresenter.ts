@@ -3,6 +3,8 @@ import type {SpectrogramSource} from './spectrogramSource'
 import type {SpectrogramRange} from './spectrogramView'
 import {spectrogramConfigKey,type SpectrogramQuery,type SpectrogramSettings,type SpectrogramPacket} from './spectrogramProtocol'
 export type SpectrogramBinding={source:SpectrogramSource;range:SpectrogramRange;toNative:(frame:string)=>string;toAxis:(frame:string)=>string;valid:()=>boolean}
+/** Raised only by the application resolver after a concrete source/visibility identity mismatch. */
+export class SpectrogramContextChanged extends Error {constructor(){super('SPECTROGRAM_CONTEXT_CHANGED')}}
 /** Owns presentation requests, separate from the meter snapshot stream and command reply cache. */
 export class SpectrogramPresenter {
   private service:SpectrogramService
@@ -25,7 +27,7 @@ export class SpectrogramPresenter {
           this.publish({configKey:spectrogramConfigKey(s),requestId:id,source:q.source,phase,view,axisStartFrame:binding.toAxis(view.startFrame),axisEndFrame:binding.toAxis(view.endFrame)})
         }
         const view=await this.service.query(binding.source,s,binding.range,v=>send(v,'partial'));send(view,'ready')
-      }catch(error){if(this.active===active&&(!active.binding||active.binding.valid()))this.publish({configKey:spectrogramConfigKey(s),requestId:id,source:q.source,phase:'error',error:String(error)})}
+      }catch(error){if(this.active===active&&(!active.binding||active.binding.valid()))this.publish({configKey:spectrogramConfigKey(s),requestId:id,source:q.source,phase:error instanceof SpectrogramContextChanged?'cancelled':'error',error:String(error)})}
     })()
   }
   async point(id:string,frame:string,frequency:number){

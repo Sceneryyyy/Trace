@@ -1,5 +1,21 @@
 # 13 · 当前状态与下一会话
 
+## 当前焦点：M10 绑定前过期请求修复；M11 报告核心独立验证通过
+
+2026-09-17：preview.19 长测在约 300 秒 REC → LIVE 后失败于 STALE_SPECTROGRAM_SOURCE。报告 artifacts/m10/resources-1789589444537/report.json 已终止 fail，原 exec 16703 已结束，不再轮询。此前只过滤绑定完成后的旧异常；本次请求在到达解析器时就已过期，尚未建立绑定。
+
+preview.20 增加 SpectrogramContextChanged 类型，仅由应用解析器在来源/epoch/可见性确实不匹配时抛出。协议增加 cancelled 状态，前端按当前来源重试；真实原生/文件故障仍为 error，不按错误字符串一概忽略。确定性旧引用、60.402 秒 GPU 切换复测和 **25 阶段 / 151 JS 完整短门禁通过**，报告 artifacts/m10/final-1789591500935/report.json。
+
+M11 独立核心已提交 **7a2eab9**：TargetSettings、按页原缓存遍历、连续事件合并和 HTML/摘要/历史/事件 CSV。目标规则 5 项及真实原生缓存报告 6 项通过，范围/单位/原始值/选区独立累计/完整性/转义/取消/源 hash/坏页均有证据，见 [50-M11-TARGET-REPORT-DESIGN](50-M11-TARGET-REPORT-DESIGN.md)。产品报告界面、任务服务和目标线接入仍未做，不据此宣称 M11 完成。
+
+**唯一当前长测：** exec **10121**，runner **42400**，app **79284**；**artifacts/m10/resources-1789591713041/report.json**。不可变 preview.20，1800 秒真实 GPU、最高 FFT/高细节、强制丢失恢复及录音转 LIVE；已经启动并有真实采样。先 poll 同一 handle 并核对 PID，不重复启动。短复测 31726 已结束通过；旧长测 16703 已结束失败。
+
+当前包 ASAR 0bfc600d6121cd601f3c8600564b33d1c796bc79d4c70fa79029905a32e3b231，Native 7f1606b31bdf1664b7563b418ba0d43e3c025198e874c387851338eb9c0a7dbe；入口 dist-trace/preview.20/win-unpacked/Trace.exe。M11 独立核心尚无产品入口，不能将其说成已交付报告功能。
+
+下一步收取长测并复核录音，满足后关闭 M10。继续 M11 后台任务、范围/来源租约、目标线/事件和报告界面；然后 M12 和原八维复评。M10 尚未关闭，整体目标 active；旧包/录音/失败证据保留，无外部阻塞。
+
+## 以下为阶段历史
+
 ## 当前焦点：M10 3D 与降级已接入，preview.19 GPU 长测运行中
 
 2026-09-17：M9 工程关闭记录已提交 **8499f92**。M10 已接入 2D/3D、相机预设/旋转/复位、显示高度/细节、共用时间刻度和原始点查；GPU 丢失/恢复、无 WebGL 的 2D 降级、REC 中图形故障均已实际验证。spectrogramSettings v2 向后迁移，显示选择不改变分析键。已修正零高度刻度命中、矮宽窗口投影/标签，以及 Windows 短暂文件锁造成设置保存打断业务的问题。设计见 48，当前验收与包身份见 [49-M10-3D-INTEGRATION](49-M10-3D-INTEGRATION.md)。

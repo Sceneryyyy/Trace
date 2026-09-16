@@ -20,7 +20,7 @@ export function installSnapshotTransport():void{
   window.addEventListener('message',event=>{
    if(event.source!==window||event.data?.type!=='trace-spectrogram-stream-v1')return
    const packet=event.data.packet as SpectrogramPacket
-   if(typeof packet?.requestId!=='string'||!['partial','ready','error'].includes(packet.phase))return
+   if(typeof packet?.requestId!=='string'||!['partial','ready','error','cancelled'].includes(packet.phase))return
    callback(packet)
   })
  })

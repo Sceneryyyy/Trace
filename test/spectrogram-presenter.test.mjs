@@ -7,7 +7,7 @@ import {pathToFileURL} from 'node:url'
 await mkdir('artifacts/m9',{recursive:true})
 for(const name of ['spectrogramPresenter','contracts','spectrogramProtocol'])await build({entryPoints:['src/trace/'+name+'.ts'],outfile:'artifacts/m9/'+name+'.cjs',platform:'node',format:'cjs',bundle:true})
 const load=async name=>(await import(pathToFileURL(resolve('artifacts/m9/'+name+'.cjs')))).default
-const {SpectrogramPresenter}=await load('spectrogramPresenter'),{validateRequest,isMutation}=await load('contracts'),{defaultSpectrogramSettings:settings}=await load('spectrogramProtocol')
+const {SpectrogramPresenter,SpectrogramContextChanged}=await load('spectrogramPresenter'),{validateRequest,isMutation}=await load('contracts'),{defaultSpectrogramSettings:settings}=await load('spectrogramProtocol')
 const payload={source:{kind:'file',sourceId:'file-one',epochId:'0',measurementEpoch:'0'},range:{startFrame:'0',endFrame:'4000',width:100,height:40}}
 const source={identity:'one',request:{kind:'replay',sampleRate:8000,positionFrame:'0'},channelCount:2,gridOrigin:'0',availableStart:'0',availableEnd:'4000'}
 const binding={source,range:{...payload.range,minFrequency:20,maxFrequency:4000},toNative:s=>String(BigInt(s)-100000n),toAxis:s=>String(BigInt(s)+100000n),valid:()=>true}
@@ -52,4 +52,11 @@ test('late native failure after source invalidation is discarded like a late suc
 test('native failure for the still-current source remains an explicit error',async()=>{
  const packets=[],p=new SpectrogramPresenter({spectrogramTile:async()=>{throw Error('CURRENT_NATIVE_FAILURE')}},async()=>binding,v=>packets.push(v))
  p.request('current',payload,settings);await wait();assert.equal(packets.length,1);assert.equal(packets[0].phase,'error');assert.match(packets[0].error,/CURRENT_NATIVE_FAILURE/);await p.close()
+})
+
+test('a resolver-confirmed source transition is cancelled, while actual resolver faults remain errors',async()=>{
+ const packets=[],p=new SpectrogramPresenter({spectrogramTile:async r=>tile(r)},async()=>{throw new SpectrogramContextChanged()},v=>packets.push(v))
+ p.request('old-ref',payload,settings);await wait();assert.equal(packets[0].phase,'cancelled');await p.close()
+ const current=[],q=new SpectrogramPresenter({spectrogramTile:async r=>tile(r)},async()=>{throw Error('SOURCE_FILE_READ_FAILED')},v=>current.push(v))
+ q.request('broken-file',payload,settings);await wait();assert.equal(current[0].phase,'error');await q.close()
 })

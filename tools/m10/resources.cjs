@@ -11,7 +11,7 @@ async function main(){
  session=await launch(executable,folder,{userData,args:[],bounds:{x:20,y:20,width:1280,height:800}});report.applicationPid=session.child.pid;persist();const c=session.cdp
  await wait(async()=>Boolean((await c.state()).deviceId),'device')
  await c.evaluate('window.__resourceFrame=null;window.__resourceCount=0;window.__resourceErrors=0;window.trace.onSnapshot(s=>{window.__resourceFrame=s;++window.__resourceCount;if(s.instruments?.phase==="error")++window.__resourceErrors});true')
- await c.evaluate('window.__spectralStats={count:0,ready:0,errors:[]};window.trace.onSpectrogram(p=>{const s=window.__spectralStats;s.count++;if(p.phase==="ready"&&p.view.coverage.some(v=>v>0))s.ready++;if(p.phase==="error"){s.errors.push(p.error);if(s.errors.length>32)s.errors.shift()}});true')
+ await c.evaluate('window.__spectralStats={count:0,ready:0,cancelled:0,errors:[]};window.trace.onSpectrogram(p=>{const s=window.__spectralStats;s.count++;if(p.phase==="cancelled")s.cancelled++;if(p.phase==="ready"&&p.view.coverage.some(v=>v>0))s.ready++;if(p.phase==="error"){s.errors.push(p.error);if(s.errors.length>32)s.errors.shift()}});true')
  const state=await c.state(),workspace={...state.workspace,layout:{...state.workspace.layout,hidden:state.workspace.layout.hidden.filter(x=>x!=='spectrum'&&x!=='soundfield'&&x!=='spectrogram')}}
  await c.request('workspace.configure',{workspace})
  await c.request('instrument.configure',{settings:{...state.instrumentSettings,fftSize:16384,averageMs:2000,holdMs:2000,fieldMs:1000}})
