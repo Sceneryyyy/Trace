@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "version": "9.0.1",
+  "platform": "win32-x64",
+  "build": "Gyan essentials",
+  "archiveUrl": "https://www.gyan.dev/ffmpeg/builds/packages/ffmpeg-9.0.1-essentials_build.zip",
+  "archiveBytes": 111253802,
+  "archiveSha256": "fec81ae03971d9dd4be3ebe02e263bd2ec1d789483f931bdba5f5715e65da2e9",
+  "upstreamSource": "https://github.com/FFmpeg/FFmpeg/commit/bf1b838f2a",
+  "publisher": "https://www.gyan.dev/ffmpeg/builds/",
+  "checksumSource": "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip.sha256",
+  "status": "Pinned binaries verified; WAV/MP3/AAC encoding, decoding, export and frame mapping validated in M5",
+  "ffmpegSha256": "72a489eccd008c2ec2c0a5856c5c75bc3d8bbfa90166c4566865c246445e6aa3",
+  "ffprobeSha256": "19202b23c0043f15ad1b7bce2344f406fd52bd6efd8f995ce02e7392a1cec52f",
+  "requiredEncoders": [
+    "aac",
+    "libmp3lame",
+    "pcm_s16le",
+    "pcm_s24le",
+    "pcm_f32le"
+  ],
+  "configuration": "configuration: --enable-gpl --enable-version3 --enable-static --disable-w32threads --disable-autodetect --enable-cairo --enable-fontconfig --enable-iconv --enable-gnutls --enable-libxml2 --enable-gmp --enable-bzlib --enable-lzma --enable-zlib --enable-libsrt --enable-libssh --enable-libzmq --enable-avisynth --enable-sdl2 --enable-libwebp --enable-libx264 --enable-libx265 --enable-libxvid --enable-libaom --enable-libopenjpeg --enable-libvpx --enable-mediafoundation --enable-libass --enable-libfreetype --enable-libfribidi --enable-libharfbuzz --enable-libvidstab --enable-libvmaf --enable-libzimg --enable-amf --enable-cuda-llvm --enable-cuvid --enable-dxva2 --enable-d3d11va --enable-d3d12va --enable-ffnvcodec --enable-libvpl --enable-nvdec --enable-nvenc --enable-vaapi --enable-openal --enable-libgme --enable-libopenmpt --enable-libopencore-amrwb --enable-libmp3lame --enable-libtheora --enable-libvo-amrwbenc --enable-libgsm --enable-libopencore-amrnb --enable-libopus --enable-libspeex --enable-libvorbis --enable-librubberband"
+}

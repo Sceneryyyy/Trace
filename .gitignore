@@ -5,6 +5,9 @@ node_modules/
 out/
 dist/
 native/build/
+build/
+artifacts/
+.tools/
 tui/build/
 tui/dist-installer/prism-tui
 tui/dist-installer/prism-tui.exe
@@ -36,3 +39,11 @@ yarn-error.log*
 
 # notes
 untitled-1
+
+# Trace desktop build
+out-trace/
+
+# Generated Trace package and redistributed runtime staging
+dist-trace/
+resources/trace/runtime/
+resources/trace/licenses/

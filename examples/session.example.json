@@ -1,0 +1,112 @@
+{
+  "schemaVersion": 1,
+  "exampleOnly": true,
+  "sessionId": "example-session-001",
+  "createdAt": "2026-09-14T00:00:00Z",
+  "state": "finalizing",
+  "measurementConfig": {
+    "id": "example-measurement-001",
+    "engine": "libebur128",
+    "engineRevision": null,
+    "rmsWindowMs": 300,
+    "levelIndexStepMs": 10,
+    "loudnessIndexStepMs": 100,
+    "channelMapping": ["L", "R"],
+    "historyOrigin": "asset-start",
+    "boundaryPolicyVersion": 1
+  },
+  "takes": [
+    {
+      "takeId": "example-take-001",
+      "sourceDeviceId": "example-device-id",
+      "captureEpochId": "example-epoch-001",
+      "startFrame": "0",
+      "endFrameExclusive": "960000",
+      "sourceFormat": {
+        "sampleRate": 96000,
+        "channelCount": 2,
+        "encoding": "ieee-float",
+        "containerBits": 32,
+        "validBits": null,
+        "channelLabels": ["L", "R"]
+      },
+      "outputPreset": {
+        "id": "wav-follow-24",
+        "container": "wav",
+        "codec": "pcm_s24le",
+        "sampleRateMode": "source",
+        "resolvedSampleRate": 96000,
+        "channelCount": 2,
+        "dither": false
+      },
+      "measurementConfigId": "example-measurement-001",
+      "continuity": "complete"
+    }
+  ],
+  "assets": [
+    {
+      "assetId": "example-source-001",
+      "role": "source",
+      "relativePath": "audio/source-001.wav",
+      "container": "wav",
+      "codec": "pcm_f32le",
+      "sampleRate": 96000,
+      "channelCount": 2,
+      "sampleFormat": "float32",
+      "decodedFrameCount": "960000",
+      "state": "verifying",
+      "sha256": null,
+      "retainAfterExport": false
+    },
+    {
+      "assetId": "example-deliverable-001",
+      "role": "deliverable",
+      "relativePath": "audio/recording-001.wav",
+      "container": "wav",
+      "codec": "pcm_s24le",
+      "sampleRate": 96000,
+      "channelCount": 2,
+      "sampleFormat": "pcm24",
+      "decodedFrameCount": null,
+      "state": "pending",
+      "sha256": null,
+      "sourceAssetId": "example-source-001"
+    }
+  ],
+  "segments": [
+    {
+      "segmentId": "example-segment-001",
+      "takeId": "example-take-001",
+      "assetId": "example-source-001",
+      "captureEpochId": "example-epoch-001",
+      "captureStartFrame": "0",
+      "assetStartFrame": "0",
+      "frameCount": "960000",
+      "timelineStartNs": "0",
+      "sampleRate": 96000,
+      "gapBeforeNs": "0"
+    }
+  ],
+  "analysis": [
+    {
+      "assetId": "example-source-001",
+      "analysisVersion": 1,
+      "measurementConfigId": "example-measurement-001",
+      "state": "pending",
+      "availableUntilFrame": "0",
+      "summary": null
+    }
+  ],
+  "events": [
+    {
+      "sequence": 1,
+      "type": "record.stop",
+      "severity": "info",
+      "takeId": "example-take-001",
+      "captureEpochId": "example-epoch-001",
+      "positionFrame": "960000",
+      "timelinePositionNs": "10000000000",
+      "recoverable": true
+    }
+  ]
+}

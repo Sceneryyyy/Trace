@@ -1,0 +1,42 @@
+{
+  "name": "libebur128",
+  "version": "1.2.6",
+  "repository": "https://github.com/jiixyj/libebur128",
+  "commit": "67b33abe1558160ed76ada1322329b0e9e058b02",
+  "license": "MIT (COPYING); queue/sys/queue.h retains its own BSD notice",
+  "modifications": [
+    {
+      "id": "trace-lra10hz-histogram-v1",
+      "file": "ebur128.c",
+      "upstreamSha256": "bf0fca3cca7abe0f4bbd200d744c5ddee147a234e0ba4dbc85623dee14b04065",
+      "patchedSha256": "62e6a339bb3a14eca97817d6ab6f851159ad35e5fba6e7cfddd84a63d50ec008",
+      "reason": "100 ms LRA hop in Trace histogram mode; EBU Tech 3342 section 3.1",
+      "notes": "TRACE-PATCHES.md"
+    },
+    {
+      "id": "trace-tp-observer-v1",
+      "files": [
+        {
+          "file": "ebur128.c",
+          "beforeSha256": "62e6a339bb3a14eca97817d6ab6f851159ad35e5fba6e7cfddd84a63d50ec008",
+          "patchedSha256": "00adb54f15f6b788fd7423560c3861c974b704df276e18542907c9593749e897"
+        },
+        {
+          "file": "ebur128.h",
+          "beforeSha256": "fd2749b1e9f1a9e7611240fcb677e753d8a636e1f75645a363255cf93238f21d",
+          "patchedSha256": "666c1edd9a229f2f8cab24876d659e53df7642b28f4782ab3e63b7b63ef3f5ce"
+        }
+      ],
+      "reason": "Expose existing FIR output positions for delayed, source-aligned history; existing scalar API unchanged",
+      "notes": "TRACE-PATCHES.md"
+    },
+    {
+      "id": "trace-constants-once-v1",
+      "file": "ebur128.c",
+      "beforeSha256": "00adb54f15f6b788fd7423560c3861c974b704df276e18542907c9593749e897",
+      "patchedSha256": "9d3d75d880e7f514b0669341501ce55b159d86c25012b6d8c9340ad7ed8e7d5f",
+      "support": "native/src/recorder/EburConstants.cpp",
+      "reason": "Initialize shared tables once before any instance processing; avoid writes concurrent with live/take histogram readers"
+    }
+  ]
+}

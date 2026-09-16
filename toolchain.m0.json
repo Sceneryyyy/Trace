@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "validatedOn": "2026-09-15",
+  "platform": "win32-x64",
+  "upstream": {
+    "url": "https://github.com/Boof2015/prism",
+    "commit": "df0755b8caaaab85157ac51aefffca0526974fc1",
+    "license": "GPL-3.0-only"
+  },
+  "toolchain": {
+    "node": "24.19.0",
+    "npm": "10.9.2",
+    "python": "3.12.14",
+    "git": "2.55.0.windows.3",
+    "cmake": "4.4.0",
+    "visualStudio": "17.14.37516.0",
+    "msvc": "19.44.35228",
+    "msvcToolset": "14.44.35207",
+    "windowsSdk": "10.0.26100.0",
+    "windowsBuild": "26200.9168"
+  },
+  "dependencies": {
+    "electron": "40.8.3",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "typescript": "5.9.3",
+    "vite": "7.3.1",
+    "electron-vite": "5.0.0",
+    "node-gyp": "10.3.1",
+    "node-addon-api": "8.6.0"
+  },
+  "electronRuntime": {
+    "node": "24.14.0",
+    "modulesAbi": 143,
+    "napi": 10
+  },
+  "packageLockSha256": "9d733fd2cca5320b8052b48d752ce9b2d1afc91591293542b18a856b76bcd9de",
+  "pending": {
+    "libebur128": "Not introduced; M1",
+    "ffmpeg": "Not selected; M5"
+  }
+}

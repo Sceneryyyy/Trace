@@ -1,0 +1,26 @@
+module.exports={
+ extends:null,
+ appId:'local.trace.audio',
+ productName:'Trace',
+ electronVersion:'40.8.3',
+ electronDist:'node_modules/electron/dist',
+ directories:{output:'dist-trace/preview.8',app:'.tools/trace-package-app'},
+ extraMetadata:{name:'trace',version:'0.1.0-preview.8',description:'Trace 声迹 · Audio Recorder & Analyzer',main:'out-trace/main/index.js',author:'Trace contributors',dependencies:{},devDependencies:{}},
+ npmRebuild:false,nodeGypRebuild:false,buildDependenciesFromSource:false,asar:true,
+ files:['out-trace/**/*','package.json','!node_modules/**'],
+ extraFiles:[{from:'docs/28-USER-GUIDE.md',to:'README-Trace.md'}],
+ extraResources:[
+  {from:'build/trace-engine/Release/trace_engine.node',to:'native/trace_engine.node'},
+  {from:'resources/trace/runtime',to:'native',filter:['*.dll']},
+  {from:'.tools/ffmpeg/bin/ffmpeg.exe',to:'ffmpeg/ffmpeg.exe'},
+  {from:'.tools/ffmpeg/bin/ffprobe.exe',to:'ffmpeg/ffprobe.exe'},
+  {from:'ffmpeg.lock.json',to:'ffmpeg.lock.json'},
+  {from:'resources/trace/icon.png',to:'icon.png'},
+  {from:'resources/trace/licenses',to:'licenses'},
+  {from:'THIRD_PARTY_NOTICES.md',to:'THIRD_PARTY_NOTICES.md'}
+ ],
+ win:{target:[{target:'zip',arch:['x64']}],icon:'resources/trace/icon.ico',signAndEditExecutable:false},
+ artifactName:'Trace-${version}-Windows-x64.${ext}',
+ afterPack:require('./tools/m6/after-pack.cjs'),
+ publish:null
+}
