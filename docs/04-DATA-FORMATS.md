@@ -1,5 +1,7 @@
 # 04 · 会话、音频、缓存与恢复
 
+M8：workspace 升为 v2，保留 v1 原布局及预设，新增 spectrum/soundfield 叶子默认隐藏；instrumentSettings v1 独立保存分析和显示设置。仪器查询至多两个异步任务、两个结果缓存，实时仅复制最多 5 秒上下文；未录音不产生新音频文件。格式/时序详见 41/42。
+
 M7：trace-settings.json 新增独立 workspace 字段，version 1 包含 layout、presets（最多 20 个自定义预设）、activePreset 和 locked。实际类型见 workspace.ts；树节点 row/column/ratio/first/second，四个唯一仪器叶子。纯显示选项包括响度视图、电平读数、历史曲线可见性；最大化不持久化。缺失/坏配置只回退布局，不丢弃录音目录/监测意图/目标。原会话与音频分析缓存版本不变，见 39。
 
 preview.4：内存历史元数据 v2 增加原子来源/epoch/起点映射；磁盘 schema 不变。未录音不写临时音频；历史查看采用独立有界快照，后台继续缓存，见 31。

@@ -21,6 +21,10 @@ int main(){try{
    reader.seek(pos);check(reader.read(actual.data(),257)==257,"memory decoder read");
    for(uint32_t f=0;f<257;++f)for(uint32_t c=0;c<channels;++c)check(actual[f*channels+c]==sample(clip->originFrame+pos+f,c),"wrapped PCM mismatch");
   }
+  for(const auto end:{total,uint64_t(rate)*60+16}){const auto roi=buffer.window(end,257);check(roi.samples.size()==257*channels&&roi.firstFrame==end-257,"ROI bounds");for(uint32_t f=0;f<257;++f)for(uint32_t c=0;c<channels;++c)check(roi.samples[f*channels+c]==sample(end-257+f,c),"ROI wrap samples");}
+  const auto memory=clip->window(clip->frames(),257);check(memory.samples.size()==257*channels,"fixed ROI bounds");for(uint32_t f=0;f<257;++f)check(memory.samples[f*channels]==sample(total-257+f,0),"fixed ROI samples");
+  bool invalid=false;try{buffer.window(range.start-1,10);}catch(...){invalid=true;}check(invalid,"expired ROI accepted");
+  invalid=false;try{buffer.window(total,rate*5+1);}catch(...){invalid=true;}check(invalid,"unbounded ROI accepted");
   input.assign(input.size(),0);buffer.push(input.data(),128);reader.seek(0);reader.read(actual.data(),1);
   check(actual[0]==sample(clip->originFrame,0),"frozen audio changed");
   buffer.reset();check(buffer.retainedFrames()==0,"reset retained old audio");bool rejected=false;try{buffer.freeze();}catch(...){rejected=true;}check(rejected,"empty replay accepted");++cases;

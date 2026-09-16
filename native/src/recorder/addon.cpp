@@ -2,6 +2,7 @@
 #include <windows.h>
 #include "Engine.h"
 #include "ReplaySave.h"
+#include "InstrumentAddon.h"
 #include "PlaybackAddon.h"
 #include "FileAnalysis.h"
 #include "MeasurementConfig.h"
@@ -410,6 +411,7 @@ Napi::Value replaySave(const Napi::CallbackInfo& info){return guard(info,[&]()->
 
 Napi::Object init(Napi::Env env,Napi::Object exports) {
     Trace::registerPlayback(env,exports);
+    Trace::registerInstruments(env,exports,engine());
     exports.Set("replaySave",Napi::Function::New(env,replaySave));
     exports.Set("replayRelease",Napi::Function::New(env,replayRelease));
     exports.Set("replayFreeze",Napi::Function::New(env,replayFreeze));exports.Set("playbackReplayOpen",Napi::Function::New(env,replayOpen));exports.Set("replayView",Napi::Function::New(env,replayView));exports.Set("replayAnalyze",Napi::Function::New(env,replayAnalyze));

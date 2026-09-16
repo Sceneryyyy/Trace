@@ -1,0 +1,21 @@
+.spectrum-instrument,.soundfield-instrument{position:relative;display:flex;flex-direction:column;flex:1;min-height:0;min-width:0}
+.spectrum-instrument canvas,.soundfield-instrument canvas{flex:1;min-height:55px;touch-action:none}
+.analysis-legend{display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:5px 10px;font-size:11px;flex:0 0 28px}
+.analysis-legend button{font-size:11px;min-height:22px;height:22px;padding:0 7px;background:transparent}
+.curve-current{color:#91e65c}.curve-average{color:#58d4da}.curve-hold{color:#e5b463}
+.analysis-readout{flex:0 0 25px;padding:4px 10px;color:var(--secondary);font:10px 'JetBrains Mono',monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.instrument-empty{position:absolute;left:10px;right:10px;top:42%;text-align:center;font-size:12px;color:var(--secondary);pointer-events:none;background:#191f26d9;padding:9px}
+.field-readings{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:5px 12px;color:var(--secondary);font-size:11px}
+.field-readings>div{display:grid;grid-template-columns:1fr auto;gap:6px;align-items:center}
+.field-readings strong{font:17px 'JetBrains Mono',monospace;color:var(--text)}
+.field-readings small{grid-column:1/-1;font-size:10px}
+.correlation-scale{height:5px;position:relative;grid-column:1/-1;background:linear-gradient(to right,#795038 0 50%,#3d6c4e 50% 100%)}
+.correlation-scale i{position:absolute;top:-2px;height:9px;width:2px;background:#e6eff4;transform:translateX(-1px)}
+.field-modes{display:flex;padding:6px 12px;gap:4px;justify-content:center}
+.field-modes button{font-size:11px;min-height:25px;height:25px;background:transparent;padding:0 9px}
+.field-modes button[aria-pressed=true]{color:var(--green);border-color:#638e52}
+.instrument-analysis-settings{display:flex;flex-direction:column;gap:10px}
+.instrument-analysis-settings label{display:grid;grid-template-columns:1fr 130px;align-items:center;gap:12px;font-size:12px}
+.instrument-analysis-settings input[type=number]{width:100%;padding:5px;color:var(--text);background:var(--bg);border:1px solid var(--border);border-radius:3px;font:inherit}
+.instrument-analysis-settings input[type=checkbox]{justify-self:start;accent-color:var(--cyan)}
+.instrument-analysis-settings>span{font-size:12px;color:var(--secondary)}

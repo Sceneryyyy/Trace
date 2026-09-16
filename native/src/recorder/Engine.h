@@ -62,6 +62,7 @@ public:
     void recordStop();
     RecordSnapshot recordSnapshot() const;
     void reset();
+    PcmWindow instrumentWindow(const std::string& source,uint64_t epoch,uint64_t measurement,uint64_t position,uint32_t before,bool recording);
     Snapshot snapshot(unsigned seconds = 30, size_t columns = 800);
 };
 }

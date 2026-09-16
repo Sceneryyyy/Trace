@@ -21,10 +21,15 @@ FieldAnalysis field(const float* pcm,uint32_t channels,uint32_t rate,uint64_t or
  for(uint64_t n=0;n<count;++n){
   const auto at=size_t(out.firstFrame-origin+n)*channels;const double l=pcm[at],r=pcm[at+1];
   ll+=l*l;rr+=r*r;lr+=l*r;
+  const double x=(r-l)*.5,y=(l+r)*.5,radius=std::hypot(x,y);
+  const auto angle=std::clamp(int(std::llround(std::atan2(y<0?-x:x,std::abs(y))*180/3.14159265358979323846))+90,0,180);
+  out.polarRms[angle]+=radius*radius;out.polarPeak[angle]=std::max(out.polarPeak[angle],radius);
+  const double decay=std::exp(-3.0*double(count-1-n)/double(std::max<uint64_t>(1,desired)));out.polarEnvelope[angle]=std::max(out.polarEnvelope[angle],radius*decay);
   const double energy=l*l+r*r;
   if(energy>best){best=energy;point={out.firstFrame+n,float((r-l)/2),float((l+r)/2),std::abs(l)>=1||std::abs(r)>=1};}
   if((n+1)%bucket==0||n+1==count){out.points.push_back(point);best=-1;}
  }
+ for(auto& v:out.polarRms)v=std::sqrt(v/double(count));
  if(ll+rr==0){out.balance.status=out.correlation.status=MetricStatus::Silence;return out;}
  out.balance={std::clamp((rr-ll)/(rr+ll),-1.0,1.0),MetricStatus::Ready};
  if(ll>0&&rr>0)out.correlation={std::clamp(lr/std::sqrt(ll*rr),-1.0,1.0),MetricStatus::Ready};

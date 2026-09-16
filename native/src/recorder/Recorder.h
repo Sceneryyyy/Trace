@@ -66,6 +66,7 @@ public:
     // Call only after capture has joined (or in a producer-free test).
     void finishAfterProducerStopped();
     RecordSnapshot snapshot() const;
+    PcmWindow instrumentWindow(const std::string& id,uint64_t position,uint32_t before)const;
     std::shared_ptr<const ReplayClip> freezeReplay() const;
 };
 const char* recordPhaseName(RecordPhase phase);

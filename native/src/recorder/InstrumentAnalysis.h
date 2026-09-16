@@ -13,6 +13,7 @@ struct FieldAnalysis {
  uint64_t firstFrame=0,endFrame=0;
  bool partial=false;
  std::vector<FieldPoint> points;
+ std::array<double,181> polarRms{},polarPeak{},polarEnvelope{};
 };
 struct InstrumentAnalysis {
  MetricStatus status=MetricStatus::Insufficient;

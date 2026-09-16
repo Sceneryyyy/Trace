@@ -64,7 +64,7 @@ export function WorkspaceToolbar({value,change,error,retry}:{error:string;retry:
  </div>
 }
 type Side='left'|'right'|'top'|'bottom'
-function minimum(node:LayoutNode):{w:number;h:number}{if(typeof node==='string')return node==='levels'?{w:130,h:160}:node==='loudness'?{w:190,h:220}:node==='waveform'?{w:280,h:180}:{w:280,h:140};const a=minimum(node.first),b=minimum(node.second);return node.axis==='row'?{w:a.w+b.w+7,h:Math.max(a.h,b.h)}:{w:Math.max(a.w,b.w),h:a.h+b.h+7}}
+function minimum(node:LayoutNode):{w:number;h:number}{if(typeof node==='string')return node==='spectrum'?{w:300,h:200}:node==='soundfield'?{w:230,h:200}:node==='levels'?{w:130,h:160}:node==='loudness'?{w:190,h:220}:node==='waveform'?{w:280,h:180}:{w:280,h:140};const a=minimum(node.first),b=minimum(node.second);return node.axis==='row'?{w:a.w+b.w+7,h:Math.max(a.h,b.h)}:{w:Math.max(a.w,b.w),h:a.h+b.h+7}}
 function dropSide(e:React.DragEvent):Side{const r=e.currentTarget.getBoundingClientRect(),x=(e.clientX-r.left)/r.width,y=(e.clientY-r.top)/r.height;return Math.min(x,1-x)<Math.min(y,1-y)?x<.5?'left':'right':y<.5?'top':'bottom'}
 function Splitter({node,path,value,change}:{node:Exclude<LayoutNode,string>;path:number[]}&Controls){
  const drag=useRef<{rect:DOMRect;pointer:number;ratio:number}|null>(null)
@@ -75,7 +75,7 @@ function Splitter({node,path,value,change}:{node:Exclude<LayoutNode,string>;path
   onPointerMove={move} onPointerUp={e=>{if(drag.current){move(e);change(resizeSplit(value,path,drag.current.ratio));drag.current=null;e.currentTarget.releasePointerCapture(e.pointerId)}}} onPointerCancel={e=>{display(e,node.ratio);drag.current=null}}
   onKeyDown={e=>{if(value.locked)return;const minus=node.axis==='row'?'ArrowLeft':'ArrowUp',plus=node.axis==='row'?'ArrowRight':'ArrowDown';if(![minus,plus,'Home','End'].includes(e.key))return;e.preventDefault();e.stopPropagation();change(resizeSplit(value,path,e.key==='Home'?.15:e.key==='End'?.85:node.ratio+(e.key===minus?-1:1)*(e.shiftKey?.05:.02)))}}/>
 }
-export function InstrumentWorkspace({value,change,contents}:{contents:Record<InstrumentId,ReactNode>}&Controls){
+export function InstrumentWorkspace({value,change,contents,settingsContent}:{contents:Record<InstrumentId,ReactNode>;settingsContent?:Partial<Record<InstrumentId,ReactNode>>}&Controls){
  const focusOrigin=useRef<HTMLElement|null>(null)
  const [maximized,setMaximized]=useState<InstrumentId|null>(null),[settings,setSettings]=useState<InstrumentId|null>(null),[drop,setDrop]=useState<{id:InstrumentId;side:Side}|null>(null),[target,setTarget]=useState<InstrumentId>('waveform')
  useEffect(()=>{if(settings)return()=>{if(focusOrigin.current?.isConnected)focusOrigin.current.focus()}},[settings])
@@ -117,7 +117,7 @@ export function InstrumentWorkspace({value,change,contents}:{contents:Record<Ins
   {selected&&createPortal(<div className="modal-backdrop instrument-modal-backdrop" onMouseDown={e=>{if(e.currentTarget===e.target)setSettings(null)}} onKeyDown={e=>{e.stopPropagation();if(e.key==='Escape')setSettings(null);if(e.key==='Tab'){const items=[...e.currentTarget.querySelectorAll<HTMLElement>('button:not(:disabled),input:not(:disabled),select:not(:disabled)')],first=items[0],last=items.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus()}}}}>
    <section className="trace-modal instrument-settings" role="dialog" aria-modal="true" aria-label={selected.title+'设置'}>
     <header><h2>{selected.title}设置</h2><button autoFocus aria-label="关闭仪器设置" onClick={()=>setSettings(null)}>×</button></header>
-    <div className="settings-content"><p>{selected.help}</p>
+    <div className="settings-content"><p>{selected.help}</p>{settingsContent?.[selected.id]}
      {settings==='loudness'&&<label>显示方式<select aria-label="响度显示方式" value={value.layout.options.loudness} onChange={e=>option('loudness',e.target.value as PanelOptions['loudness'])}><option value="auto">随面板尺寸</option><option value="compact">紧凑数字</option><option value="meters">数字与柱表</option></select></label>}
      {settings==='levels'&&<label>电平读数<select aria-label="电平读数" value={value.layout.options.levelReadout} onChange={e=>option('levelReadout',e.target.value as PanelOptions['levelReadout'])}><option value="both">Peak / RMS</option><option value="peak">Peak</option><option value="rms">RMS</option></select></label>}
      {settings==='history'&&(['m','s','i'] as const).map(k=><label key={k}>{k.toUpperCase()} 曲线<input type="checkbox" checked={value.layout.options.historyTraces.includes(k)} onChange={()=>option('historyTraces',value.layout.options.historyTraces.includes(k)?value.layout.options.historyTraces.filter(v=>v!==k):[...value.layout.options.historyTraces,k])}/></label>)}

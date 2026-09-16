@@ -40,6 +40,7 @@ int main(){try{
  for(int polarity:{1,-1}){for(size_t n=0;n<data.size()/2;++n)data[n*2+1]=data[n*2]*polarity;
   const auto r=analyzeInstruments(data.data(),24000,48000,2,0,24000,c);
   near(r.field.correlation.value,polarity,1e-9,"correlation +/-1");near(r.field.balance.value,0,1e-7,"centered energy");require(r.field.points.size()<=2048,"bounded scope points");
+  double energy=0;for(size_t k=0;k<181;++k){energy+=r.field.polarRms[k]*r.field.polarRms[k];require(r.field.polarEnvelope[k]<=r.field.polarPeak[k]+1e-12,"envelope bounded by peak");}near(energy,.125,1e-7,"polar energy uses all samples");if(polarity==1)near(r.field.polarRms[90],std::sqrt(.125),1e-7,"mono angle is centered");else require(r.field.polarRms[0]>0&&r.field.polarRms[180]>0,"antiphase polar edges");
   for(const auto& p:r.field.points)near(polarity==1?p.x:p.y,0,1e-8,"scope mono/antiphase geometry");
  }
  for(size_t n=0;n<data.size()/2;++n)data[n*2+1]=float(.5*std::cos(2*3.14159265358979323846*n*1000/48000));

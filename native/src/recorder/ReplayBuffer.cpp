@@ -40,6 +40,23 @@ std::shared_ptr<ReplayClip> ReplayBuffer::freeze(bool publishedOnly)const{
  for(auto i=first;i<rows_;++i){const auto& p=history_[i%history_.size()];if(p.wave.frame>=out->originFrame&&p.wave.frame<=end)out->history.push_back(p);}
  return out;
 }
+PcmWindow ReplayBuffer::window(uint64_t position,uint32_t before)const{
+ if(before>uint64_t(format_.sampleRate)*5)throw std::runtime_error("INVALID_INSTRUMENT_RANGE");
+ const auto bounds=range(false);if(position<bounds.start||position>bounds.end)throw std::runtime_error("INSTRUMENT_RANGE_UNAVAILABLE");
+ PcmWindow out;out.format=format_;out.positionFrame=position;out.firstFrame=std::max(bounds.start,position>before?position-before:0);
+ const auto count=position-out.firstFrame,at=out.firstFrame%capacity_,head=std::min(count,capacity_-at);out.samples.resize(size_t(count)*format_.channels);
+ std::copy_n(samples_.data()+size_t(at)*format_.channels,size_t(head)*format_.channels,out.samples.data());
+ if(head<count)std::copy_n(samples_.data(),size_t(count-head)*format_.channels,out.samples.data()+size_t(head)*format_.channels);
+ const auto first=rows_>history_.size()?rows_-history_.size():0;for(auto i=first;i<rows_;++i){const auto& p=history_[i%history_.size()];if(p.wave.frame>=out.firstFrame&&p.wave.frame<=position&&(p.wave.flags&(Gap|Missing)))out.gap=true;}
+ return out;
+}
+PcmWindow ReplayClip::window(uint64_t position,uint32_t before)const{
+ if(before>uint64_t(format.sampleRate)*5||position>frames())throw std::runtime_error("INVALID_INSTRUMENT_RANGE");
+ PcmWindow out;out.format=format;out.positionFrame=position;out.firstFrame=position>before?position-before:0;const auto count=position-out.firstFrame;
+ out.samples.resize(size_t(count)*format.channels);if(count)read(out.firstFrame,out.samples.data(),static_cast<uint32_t>(count));
+ for(const auto& p:history)if(p.wave.frame>=originFrame+out.firstFrame&&p.wave.frame<=originFrame+position&&(p.wave.flags&(Gap|Missing)))out.gap=true;
+ return out;
+}
 uint32_t ReplayClip::read(uint64_t position,float* output,uint32_t maximum)const{
  if(position>frames())throw std::runtime_error("REPLAY_POSITION_OUT_OF_RANGE");
  const auto count=static_cast<uint32_t>(std::min<uint64_t>(maximum,frames()-position));

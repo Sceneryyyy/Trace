@@ -3,6 +3,7 @@
 #include <memory>
 #include <vector>
 namespace Trace {
+struct PcmWindow {SourceFormat format;uint64_t firstFrame=0,positionFrame=0;bool gap=false;std::vector<float> samples;};
 struct ReplayRange {uint64_t start=0,end=0;};
 struct ReplayPoint {MeterValues meters;WavePoint wave;bool loud=false;};
 struct ReplayView {MeterValues meters;std::vector<WavePoint> waveform;std::vector<LoudnessPoint> loudness;};
@@ -13,6 +14,7 @@ struct ReplayClip {
  std::vector<float> samples;
  std::vector<ReplayPoint> history;
  uint64_t frames()const{return format.channels?samples.size()/format.channels:0;}
+ PcmWindow window(uint64_t position,uint32_t beforeFrames)const;
  uint32_t read(uint64_t position,float* output,uint32_t maximum)const;
  ReplayView view(uint64_t position,uint64_t start,uint64_t end,size_t columns)const;
  MeterValues analyze(uint64_t start,uint64_t end)const;
@@ -31,6 +33,7 @@ public:
  uint64_t retainedFrames()const{return frames_<capacity_?frames_:capacity_;}
  uint64_t capacityFrames()const{return capacity_;}
  ReplayRange range(bool publishedOnly=false)const;
+ PcmWindow window(uint64_t position,uint32_t beforeFrames)const;
  std::shared_ptr<ReplayClip> freeze(bool publishedOnly=false)const;
 };
 }

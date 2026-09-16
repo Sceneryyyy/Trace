@@ -118,6 +118,9 @@ RecordSnapshot Recorder::snapshot() const {
     if(replay_){const auto range=replay_->range(true);result.replayStartFrame=range.start;result.replayEndFrame=range.end;}
     return result;
 }
+PcmWindow Recorder::instrumentWindow(const std::string& id,uint64_t position,uint32_t before)const{
+ std::lock_guard<std::mutex> lock(mutex_);if(!replay_||published_.id!=id)throw std::runtime_error("STALE_INSTRUMENT_SOURCE");return replay_->window(position,before);
+}
 std::shared_ptr<const ReplayClip> Recorder::freezeReplay() const {
     std::lock_guard<std::mutex> lock(mutex_);
     if(!replay_)throw std::runtime_error("REPLAY_EMPTY");

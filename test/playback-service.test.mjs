@@ -146,3 +146,24 @@ test('retry and clear selection commands reject paths and wrong payload fields',
   assert.throws(()=>validateRequest({...valid,payload:{}}))
  }
 })
+
+test('slow instrument analysis cannot publish over a newer seek or a replaced source',async()=>{
+ const {service,id}=await setup();let finish,entered
+ const started=new Promise(resolve=>entered=resolve)
+ service.instrumentQuery=()=>new Promise(resolve=>{finish=resolve;entered()})
+ const previous=service.sample();await started;service.seek(id,'192000',false);finish({configKey:'fixture',phase:'ready'})
+ assert.equal(await previous,undefined)
+ service.instrumentQuery=async()=>({configKey:'fixture',phase:'ready'})
+ assert.equal((await service.sample()).positionFrame,'192000')
+ let release,ready;const queried=new Promise(resolve=>ready=resolve)
+ service.instrumentQuery=()=>new Promise(resolve=>{release=resolve;ready()})
+ const old=service.sample();await queried;await service.open({...source,takeId:'different'},'device');release({configKey:'fixture',phase:'ready'})
+ assert.equal(await old,undefined);assert.equal(service.view().takeId,'different')
+})
+test('file instrument requests retain decoded-range identity and do not use output gain',async()=>{
+ const {service,native}=await setup();await service.open({...source,decodeRange:{startFrame:'576',endFrame:'480576'}},'device')
+ let request;service.instrumentQuery=async r=>{request=r;return {configKey:'fixture',phase:'ready'}}
+ service.seek(service.view().id,'96000',false);service.volume(service.view().id,0);await service.sample()
+ assert.equal(request.positionFrame,'96000');assert.equal(request.startFrame,'576');assert.equal(request.endFrame,'480576');assert.equal(request.sampleRate,48000)
+ assert(!('gain' in request));assert.equal(native.s.phase,'idle')
+})

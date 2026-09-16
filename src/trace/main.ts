@@ -1,3 +1,5 @@
+import {InstrumentService} from './instrumentService'
+import {defaultInstrumentSettings,restoreInstrumentSettings,validateInstrumentSettings,instrumentConfigKey,type InstrumentNative} from './instrumentTypes'
 import {DeliveryService} from './deliveryService'
 import {safeDiagnostics} from './diagnostics'
 import {exportPreferencesVersion} from './exportPreferences'
@@ -27,13 +29,16 @@ import type { Device, NativeMeterSnapshot, MeterSnapshot, NativeRecordSnapshot, 
 const requireNative=createRequire(__filename)
 const root=resolve(__dirname,'../..')
 const captureInstance=randomUUID()
-type NativeEngine=PlaybackNative&{
+type NativeEngine=PlaybackNative&InstrumentNative&{
   runtimeModules():Record<string,string|null>;devices():Device[];start(id:string):SourceFormat;stop():void;reset():void;shutdown():NativeRecordSnapshot
   snapshot(seconds:number,columns:number):NativeMeterSnapshot
   recordStart(id:string,path:string,encoding:string,segmentBytes?:number,journalPath?:string):NativeRecordSnapshot
   recordStop():NativeRecordSnapshot;recordStatus():NativeRecordSnapshot
 }
 let engine:NativeEngine
+let instruments:InstrumentService
+let instrumentLiveBusy=false
+let lastLivePublication:{key:string;frame:bigint}|undefined
 let recordings:RecordingService
 let analyses:AnalysisService
 let playback:PlaybackService
@@ -51,7 +56,7 @@ let latestRecordingFrame:Pick<MeterSnapshot,'recording'|'recordingView'>={}
 let recordingCaptureHeld=false
 let preferencesTimer:ReturnType<typeof setTimeout>|undefined
 let displayTick=0,snapshotSequence=0,pollFailurePending=false,lastPollError=''
-let state:TraceState={revision:0,active:false,monitoringRequested:true,deviceId:'',windowSeconds:30,error:null,displaySettings:{...defaultDisplaySettings},workspace:defaultWorkspace()}
+let state:TraceState={revision:0,active:false,monitoringRequested:true,deviceId:'',windowSeconds:30,error:null,displaySettings:{...defaultDisplaySettings},workspace:defaultWorkspace(),instrumentSettings:{...defaultInstrumentSettings}}
 const completed=new Map<string,{signature:string;reply:Reply}>()
 const pending=new Map<string,{signature:string;promise:Promise<Reply>}>()
 let mutations:Promise<unknown>=Promise.resolve()
@@ -108,6 +113,23 @@ function syncRecordingState():void{
 function syncExportState(control=true):void{if(!exporter||!recordings)return;const patch={exportJobs:exporter.views().map(e=>library?library.exportView(e):e),recordings:library?library.summaries():recordings.summaries()};if(control)update(patch);else{state={...state,...patch};emitState()}retention?.schedule();deliveries?.observe();void prepareMemoryAnalyses()}
 function syncPlaybackState():void{if(playback)update({playback:playback.view()});retention?.schedule()}
 function syncRetentionState():void{if(recordings)update({recordings:library?library.summaries():recordings.summaries()})}
+function instrumentsVisible():boolean{return Boolean(state.workspace&&['spectrum','soundfield'].some(id=>!state.workspace!.layout.hidden.includes(id as never)))}
+function publishLiveSample(snapshot:MeterSnapshot):void{
+ const send=()=>{if(!window||window.isDestroyed()||exiting||playback.active())return;const key=[snapshot.sourceId,snapshot.epochId,snapshot.measurementEpoch,state.currentRecord?snapshot.recording?.id:''].join(':');const frame=BigInt(state.currentRecord?snapshot.recording?.writtenFrames||'0':snapshot.positionFrame);if(lastLivePublication?.key===key&&frame<lastLivePublication.frame)return;lastLivePublication={key,frame};snapshot.eventSequence=++snapshotSequence;snapshot.stateRevision=state.revision;window.webContents.send('trace:snapshot',snapshot)}
+ if(!instrumentsVisible()||snapshot.error){send();return}
+ if(instrumentLiveBusy)return
+ const settings=state.instrumentSettings||defaultInstrumentSettings,configKey=instrumentConfigKey(settings),record=snapshot.recording
+ const recording=Boolean(state.currentRecord&&record?.id&&record.sourceFormat.sampleRate>0)
+ const request=recording?{kind:'take' as const,sourceId:record!.id,epochId:'0',measurementEpoch:'0',sampleRate:record!.sourceFormat.sampleRate,positionFrame:record!.writtenFrames}:
+  {kind:'live' as const,sourceId:snapshot.sourceId,epochId:snapshot.epochId,measurementEpoch:snapshot.measurementEpoch,sampleRate:snapshot.format.sampleRate,positionFrame:snapshot.positionFrame}
+ instrumentLiveBusy=true
+ void instruments.query(request,settings).then(packet=>{
+  if(exiting||playback.active()||!instrumentsVisible()||configKey!==instrumentConfigKey(state.instrumentSettings||defaultInstrumentSettings)||state.deviceId!==snapshot.sourceId)return
+  const now=engine.snapshot(5,1)
+  if(now.epochId!==snapshot.epochId||now.measurementEpoch!==snapshot.measurementEpoch||Boolean(state.currentRecord)!==recording||(recording&&latestRecordingFrame.recording?.id!==record!.id))return
+  snapshot.instruments=packet;send()
+ }).catch(error=>console.error('TRACE_INSTRUMENT_DISPLAY',error)).finally(()=>{instrumentLiveBusy=false})
+}
 function publishInspectionSample():void{
   if(!window||window.isDestroyed()||!playback.active()||inspectionFailurePending)return
   const owner=playback.view()!
@@ -116,6 +138,7 @@ function publishInspectionSample():void{
     if(!snapshot||!window||window.isDestroyed()||current?.id!==snapshot.sourceId||
       current.generation!==snapshot.playback.generation||current.startFrame!==snapshot.fileView.startFrame||
       current.endFrame!==snapshot.fileView.endFrame)return
+    if(snapshot.instruments&&snapshot.instruments.configKey!==instrumentConfigKey(state.instrumentSettings||defaultInstrumentSettings))return
     window.webContents.send('trace:snapshot',{...snapshot,...latestRecordingFrame,eventSequence:++snapshotSequence,stateRevision:state.revision})
     if(playback.outputActive()&&['ended','failed'].includes(current.phase)&&!finishingOutput){
       finishingOutput=true
@@ -141,7 +164,7 @@ function preferencesPath():string{return join(app.getPath('userData'),'trace-set
 function savePreferences():void{
   mkdirSync(app.getPath('userData'),{recursive:true})
   const target=preferencesPath(),temp=target+'.tmp'
-  writeFileSync(temp,JSON.stringify({windowBounds:window&&!window.isDestroyed()?window.getNormalBounds():undefined,maximized:window?.isMaximized(),workspace:state.workspace,displaySettingsVersion,monitoringRequested:state.monitoringRequested,displaySettings:state.displaySettings,settingsVersion:recordSettingsVersion,deviceId:state.deviceId,windowSeconds:state.windowSeconds,recordSettings:recordings.settings,recordDirectory:recordings.directory,exportPreferencesVersion,lastExportPreset:state.lastExportPreset,confirmExitWhileRecording:state.confirmExitWhileRecording!==false,lastExportSaveCopy:state.lastExportSaveCopy===true}))
+  writeFileSync(temp,JSON.stringify({windowBounds:window&&!window.isDestroyed()?window.getNormalBounds():undefined,maximized:window?.isMaximized(),instrumentSettings:state.instrumentSettings,workspace:state.workspace,displaySettingsVersion,monitoringRequested:state.monitoringRequested,displaySettings:state.displaySettings,settingsVersion:recordSettingsVersion,deviceId:state.deviceId,windowSeconds:state.windowSeconds,recordSettings:recordings.settings,recordDirectory:recordings.directory,exportPreferencesVersion,lastExportPreset:state.lastExportPreset,confirmExitWhileRecording:state.confirmExitWhileRecording!==false,lastExportSaveCopy:state.lastExportSaveCopy===true}))
   renameSync(temp,target)
 }
 function schedulePreferences():void{if(preferencesTimer)clearTimeout(preferencesTimer);preferencesTimer=setTimeout(()=>{try{savePreferences()}catch(error){console.error("Trace preferences:",error)}},150)}
@@ -207,7 +230,7 @@ async function dispatch(request:Request):Promise<Reply>{
       case 'app.configure':update({confirmExitWhileRecording:request.payload.confirmExitWhileRecording as boolean});savePreferences();break
       case 'app.diagnostics':data=safeDiagnostics(product.version,state,engine.snapshot(5,1),engine.recordStatus());break
       case 'app.copyDiagnostics':clipboard.writeText(JSON.stringify(safeDiagnostics(product.version,state,engine.snapshot(5,1),engine.recordStatus()),null,2));data={copied:true};break
-      case 'app.info':data={...product,packaged:app.isPackaged,appVersion:app.getVersion(),electron:process.versions.electron,nativeModules:engine.runtimeModules(),resourcesPath:process.resourcesPath,userData:app.getPath('userData'),windowBounds:window?.getBounds(),displays:screen.getAllDisplays().map(d=>({id:d.id,scaleFactor:d.scaleFactor,bounds:d.bounds,workArea:d.workArea}))};break
+      case 'app.info':data={...product,processMetrics:testMode?app.getAppMetrics().map(({pid,type,cpu,memory})=>({pid,type,cpu,memory})):undefined,packaged:app.isPackaged,appVersion:app.getVersion(),electron:process.versions.electron,nativeModules:engine.runtimeModules(),resourcesPath:process.resourcesPath,userData:app.getPath('userData'),windowBounds:window?.getBounds(),displays:screen.getAllDisplays().map(d=>({id:d.id,scaleFactor:d.scaleFactor,bounds:d.bounds,workArea:d.workArea}))};break
       case 'record.capacity':{
         const snapshot=engine.snapshot(5,1),format=snapshot.active&&snapshot.sourceId===state.deviceId?snapshot.format:engine.devices().find(d=>d.id===state.deviceId)?.format||snapshot.format
         update({recordingCapacity:{...recordingCapacity(await freeSpace(recordings.directory),recordings.settings,format.sampleRate,format.channelCount),directory:recordings.directory}});break
@@ -307,6 +330,7 @@ async function dispatch(request:Request):Promise<Reply>{
         if(!state.active)throw Error('INVALID_STATE')
         engine.reset();update({error:null});break
       case 'retention.retry':await retention.retry(request.payload.takeId as string);break
+      case 'instrument.configure':update({instrumentSettings:validateInstrumentSettings(request.payload.settings)});savePreferences();break
       case 'workspace.configure':update({workspace:validateWorkspace(request.payload.workspace)});savePreferences();break
       case 'view.settings':update({displaySettings:validateDisplaySettings(request.payload)});savePreferences();break
       case 'view.gain':update({displaySettings:{...(state.displaySettings||defaultDisplaySettings),waveGain:request.payload.gain as number}});schedulePreferences();break
@@ -437,9 +461,10 @@ function handle(event:Electron.IpcMainInvokeEvent,raw:unknown):Promise<Reply>|Re
   }
 }
 async function initialize():Promise<void>{
-  let preferred:{workspace?:unknown;monitoringRequested?:boolean;deviceId?:string;windowSeconds?:number;recordSettings?:unknown;recordDirectory?:string;displaySettings?:unknown;lastExportPreset?:unknown;confirmExitWhileRecording?:boolean;lastExportSaveCopy?:boolean}={}
+  let preferred:{instrumentSettings?:unknown;workspace?:unknown;monitoringRequested?:boolean;deviceId?:string;windowSeconds?:number;recordSettings?:unknown;recordDirectory?:string;displaySettings?:unknown;lastExportPreset?:unknown;confirmExitWhileRecording?:boolean;lastExportSaveCopy?:boolean}={}
   try{preferred=JSON.parse(readFileSync(preferencesPath(),'utf8'))}catch{}
   if(validWindowSeconds(preferred.windowSeconds))state.windowSeconds=preferred.windowSeconds
+  state.instrumentSettings=restoreInstrumentSettings(preferred.instrumentSettings)
   state.workspace=restoreWorkspace(preferred.workspace)
   state.monitoringRequested=preferred.monitoringRequested!==false
   state.confirmExitWhileRecording=preferred.confirmExitWhileRecording!==false
@@ -463,7 +488,9 @@ app.whenReady().then(()=>{
   const segment=testMode&&process.env.TRACE_TEST_SEGMENT_BYTES?Number(process.env.TRACE_TEST_SEGMENT_BYTES):2147483648
   recordings=new RecordingService(engine,join(ffroot,'ffmpeg.exe'),join(ffroot,'ffprobe.exe'),app.isPackaged?join(process.resourcesPath,'native/trace_engine.node'):join(root,'build/trace-engine/Release/trace_engine.node'),syncRecordingState,segment)
   analyses=new AnalysisService(app.isPackaged?join(process.resourcesPath,'native/trace_engine.node'):join(root,'build/trace-engine/Release/trace_engine.node'),syncAnalysisState)
+  instruments=new InstrumentService(engine)
   playback=new PlaybackService(engine,analyses,syncPlaybackState)
+  playback.instrumentQuery=request=>instrumentsVisible()?instruments.query(request,state.instrumentSettings||defaultInstrumentSettings):Promise.resolve(undefined)
   const encoderLock=JSON.parse(readFileSync(app.isPackaged?join(process.resourcesPath,'ffmpeg.lock.json'):join(root,'ffmpeg.lock.json'),'utf8'))
   exporter=new ExportService(recordings,{ffmpeg:join(ffroot,'ffmpeg.exe'),ffprobe:join(ffroot,'ffprobe.exe'),nativePath:app.isPackaged?join(process.resourcesPath,'native/trace_engine.node'):join(root,'build/trace-engine/Release/trace_engine.node'),ffmpegSha256:encoderLock.ffmpegSha256,ffprobeSha256:encoderLock.ffprobeSha256},syncExportState)
   deliveries=new DeliveryService(recordings,exporter,()=>syncExportState(),()=>!recordings.busy()&&!exiting&&!managingLibrary)
@@ -522,7 +549,7 @@ app.whenReady().then(()=>{
       console.error('TRACE_SOURCE_ERROR',JSON.stringify({error:snapshot.error,diagnostics:snapshot.diagnostics,epochId:snapshot.epochId,positionFrame:snapshot.positionFrame}))
       update({active:false,error:snapshot.error})
     }
-    snapshot.stateRevision=state.revision;window.webContents.send('trace:snapshot',snapshot)
+    snapshot.stateRevision=state.revision;publishLiveSample(snapshot)
     }catch(error){
       const message='RECORD_SNAPSHOT_FAILED: '+(error instanceof Error?error.message:String(error))
       if(lastPollError!==message){lastPollError=message;console.error('TRACE_SNAPSHOT_ERROR',error);update({error:message})}
@@ -541,7 +568,7 @@ app.on('before-quit',event=>{
   let final:NativeRecordSnapshot|undefined
   try{final=engine?.shutdown()}catch(error){console.error('Trace shutdown:',error)}
   const finish=(async()=>{
-    await Promise.all([deliveries?.shutdown(),retention?.shutdown(),exporter?.pauseForRecording(),analyses?.shutdown(),playback?.close()])
+    await Promise.all([instruments?.shutdown(),deliveries?.shutdown(),retention?.shutdown(),exporter?.pauseForRecording(),analyses?.shutdown(),playback?.close()])
     if(final&&recordings)await recordings.finish(final)
     await exporter?.shutdown()
   })()

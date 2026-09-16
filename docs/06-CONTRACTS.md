@@ -1,5 +1,7 @@
 # 06 · 模块接口与消息契约
 
+M8：新增 instrument.configure，payload 仅为 {settings}，数值/枚举范围见 instrumentTypes.ts；前端不发送文件路径。MeterSnapshot 可携带 instruments（configKey、phase、经校验的 NativeInstrumentResult），文件与实时均按同一呈现上下文发布。旧代次/来源/设置回复不覆盖新状态。native instrumentAnalyze 为内部四来源异步接口，最多两个任务；见 41/42。
+
 M7：协议 v1 白名单新增 workspace.configure，payload 仅允许 {workspace: WorkspaceState}。严格验证树深≤8、仪器叶子唯一/完整、分割比例 0.15–0.85、显示选项、预设 ID/名称/数量与序列化上限；不接收路径、设备、REC 或计算参数。TraceState 增加 workspace；该命令更新/保存布局，避免触发全局 busy 和历史重置。实际接口见 workspace.ts/shared.ts/contracts.ts，迁移规则见 39。
 
 preview.4 实际契约见 shared.ts/contracts.ts 和文末补充。view.inspect/view.live 为协议 v1 白名单扩展；replayFreeze 元数据为 v2。历史来源不等于页面，见 31。

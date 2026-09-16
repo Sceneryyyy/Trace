@@ -1,3 +1,4 @@
+import type {InstrumentPacket,InstrumentRequest} from './instrumentTypes'
 import type {ReplaySaveRequest,ReplaySaveResult} from './replaySaveTypes'
 import {nativeFilePath} from './nativeFilePath'
 import {randomUUID} from 'node:crypto'
@@ -41,6 +42,7 @@ export class PlaybackService {
  private replaySelectionNext:Context|undefined
  private release(c:Context|null):void{if(!c)return;if(c.analysisId)this.analyses.release(c.analysisId);if(c.selectionAnalysisId){this.analyses.cancel(c.selectionAnalysisId);this.analyses.release(c.selectionAnalysisId)}}
  constructor(private native:PlaybackNative,private analyses:AnalysisService,private changed:()=>void){}
+ instrumentQuery?: (request:InstrumentRequest)=>Promise<InstrumentPacket|undefined>
  active():boolean{return this.current!==null}
  outputActive():boolean{return Boolean(this.current?.outputReady)}
  renameTake(takeId:string,oldName:string,name:string):void{const c=this.current;if(c?.source.takeId===takeId&&c.source.label.startsWith(oldName)){c.source={...c.source,label:name+c.source.label.slice(oldName.length)};this.changed()}}
@@ -192,7 +194,7 @@ seek(id:string,positionFrame:string,resume:boolean):void{
   c.startFrame=startFrame;c.endFrame=endFrame;c.width=width;c.follow=false;c.viewGeneration++;c.timeline=undefined;this.changed()
  }
  follow(id:string,enabled:boolean):void{const c=this.context(id);c.follow=enabled;if(enabled){const position=BigInt(c.positionFrame),span=BigInt(c.endFrame)-BigInt(c.startFrame),total=BigInt(c.source.frames);let start=position-span/4n;if(start<0n)start=0n;if(start+span>total)start=total-span;c.startFrame=start.toString();c.endFrame=(start+span).toString();c.viewGeneration++;c.timeline=undefined}this.changed()}
- async sample():Promise<(NativeMeterSnapshot&{playback:NativePlaybackSnapshot;fileView:FileView})|undefined>{
+ async sample():Promise<(NativeMeterSnapshot&{instruments?:InstrumentPacket;playback:NativePlaybackSnapshot;fileView:FileView})|undefined>{
   const c=this.current
   if(!c||!c.ready||c.readError||this.sampling)return
   this.sampling=true
@@ -237,9 +239,11 @@ if(c.follow&&native.playing&&(BigInt(native.positionFrame)<BigInt(c.startFrame)|
     }
    }
    if(this.current!==c||c.generation!==generation||c.viewGeneration!==viewGeneration)return
+   const instruments=await this.instrumentQuery?.(c.temporary?{kind:'replay',...c.replayInfo!,sampleRate:c.source.sampleRate,positionFrame:native.positionFrame}:{kind:'file',identity:c.analysisId,sources:c.source.sources.map(nativeFilePath),sampleRate:c.source.sampleRate,positionFrame:native.positionFrame,...c.source.decodeRange})
+   if(this.current!==c||c.generation!==generation||c.viewGeneration!==viewGeneration)return
    const fileView:FileView={timeOffsetSeconds:c.timeOffsetSeconds,temporary:c.temporary,totalFrames:c.source.frames,startFrame:c.startFrame,endFrame:c.endFrame,selection:c.selection,
      playingIntent:c.desiredPlaying,analysisId:c.analysisId,analysisError:job?.error||null,analysisPhase:c.temporary?'ready':job?.phase||'queued',selectionAnalysis:c.selectionAnalysis||this.analyses.snapshots().find(job=>job.id===c.selectionAnalysisId),wholeFileIntegrated:metrics.wholeFileIntegrated}
-   return {protocolVersion:1,sourceKind:'file',sourceId:c.id,epochId:'0',measurementEpoch:'0',measurementConfigId,active:native.playing,error:native.error,
+   return {instruments,protocolVersion:1,sourceKind:'file',sourceId:c.id,epochId:'0',measurementEpoch:'0',measurementConfigId,active:native.playing,error:native.error,
     format:native.format,positionFrame:native.positionFrame,measurementFrames:native.positionFrame,levelIndexFrame:metrics.levelIndexFrame,loudnessIndexFrame:metrics.loudnessIndexFrame,
     continuity:native.error?'unknown':'complete',channels:metrics.channels,momentary:metrics.momentary,shortTerm:metrics.shortTerm,integratedToCursor:metrics.integratedToCursor,
     loudnessRange:c.temporary?metrics.loudnessRange:metrics.wholeFileLoudnessRange,maxTruePeak:c.temporary?metrics.maxTruePeak:metrics.wholeFileMaxTruePeak,lraProvisional:(c.temporary?BigInt(c.replayInfo?.originFrame||0)+BigInt(native.positionFrame):BigInt(c.source.frames))<BigInt(c.source.sampleRate)*60n,
