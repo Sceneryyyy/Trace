@@ -19,6 +19,12 @@ export class SpectrogramStore{
   this.root=root?resolve(root):undefined
  }
  get usage(){return {bytes:this.bytes,tiles:this.memory.size,pending:this.pending.size}}
+ retainRange(key:string,startFrame:string,endFrame:string):void{
+  const start=BigInt(startFrame),end=BigInt(endFrame)
+  for(const [id,item] of this.memory){const first=BigInt(item.tile.firstFrame),last=first+BigInt((item.tile.columns-1)*item.tile.hop)
+   if(!id.startsWith(key+':')||last<start||first>end){this.memory.delete(id);this.bytes-=item.bytes}
+  }
+ }
  private id(r:TileRequest){if(!/^[a-f0-9]{64}$/.test(r.key)||!/^[0-9]{1,20}$/.test(r.firstFrame)||BigInt(r.firstFrame)>0xffffffffffffffffn||!Number.isInteger(r.columns)||r.columns<1||r.columns>64)throw Error('INVALID_TILE_REQUEST');return r.key+':'+r.firstFrame}
  private keep(id:string,tile:SpectrogramTile){
   const previous=this.memory.get(id);if(previous)this.bytes-=previous.bytes
