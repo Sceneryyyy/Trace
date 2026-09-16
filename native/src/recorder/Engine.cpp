@@ -180,7 +180,7 @@ PcmWindow Engine::instrumentWindow(const std::string& source,uint64_t epoch,uint
  if(recording)return recorder_.instrumentWindow(source,position,before);
  std::lock_guard<std::mutex> lock(meterMutex_);
  if(!replay_||source!=deviceId_||epoch!=captureEpoch_||measurement!=measurementEpoch_||position<analysisBase_)throw std::runtime_error("STALE_INSTRUMENT_SOURCE");
- auto result=replay_->window(position-analysisBase_,before);result.firstFrame+=analysisBase_;result.positionFrame+=analysisBase_;return result;
+ auto result=replay_->window(position-analysisBase_,before);result.firstFrame+=analysisBase_;result.positionFrame+=analysisBase_;for(auto& point:result.gapFrames)point+=analysisBase_;return result;
 }
 std::shared_ptr<const ReplayClip> Engine::frozenReplay()const{if(!frozenReplay_)throw std::runtime_error("REPLAY_NOT_READY");return frozenReplay_;}
 void Engine::reset() {

@@ -3,7 +3,7 @@
 #include <memory>
 #include <vector>
 namespace Trace {
-struct PcmWindow {SourceFormat format;uint64_t firstFrame=0,positionFrame=0;bool gap=false;std::vector<float> samples;};
+struct PcmWindow {SourceFormat format;uint64_t firstFrame=0,positionFrame=0;bool gap=false;std::vector<uint64_t> gapFrames;std::vector<float> samples;};
 struct ReplayRange {uint64_t start=0,end=0;};
 struct ReplayPoint {MeterValues meters;WavePoint wave;bool loud=false;};
 struct ReplayView {MeterValues meters;std::vector<WavePoint> waveform;std::vector<LoudnessPoint> loudness;};
