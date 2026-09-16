@@ -45,7 +45,7 @@ async function waves(tools:MediaTools,directory:string,rate:number,channels:numb
  const hashes=await hashFiles(result.map(f=>f.path),{signal:options.signal})
  return result.map((f,i)=>({...f,sha256:hashes[i]}))
 }
-async function floatWave(tools:MediaTools,inputArgs:string[],filter:string|undefined,directory:string,rate:number,channels:number,duration:number,options:MediaOptions,phase:'normalizing'|'decoding'):Promise<MediaFile[]>{
+export async function floatWave(tools:MediaTools,inputArgs:string[],filter:string|undefined,directory:string,rate:number,channels:number,duration:number,options:MediaOptions,phase:'normalizing'|'decoding'):Promise<MediaFile[]>{
  await mkdir(directory)
  const segmentBytes=options.segmentBytes??2146435072
  if(!Number.isSafeInteger(segmentBytes)||segmentBytes<8192||segmentBytes>2146435072)throw Error('INVALID_MEDIA_SEGMENT_LIMIT')
