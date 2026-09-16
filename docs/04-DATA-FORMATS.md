@@ -1,5 +1,7 @@
 # 04 · 会话、音频、缓存与恢复
 
+M7：trace-settings.json 新增独立 workspace 字段，version 1 包含 layout、presets（最多 20 个自定义预设）、activePreset 和 locked。实际类型见 workspace.ts；树节点 row/column/ratio/first/second，四个唯一仪器叶子。纯显示选项包括响度视图、电平读数、历史曲线可见性；最大化不持久化。缺失/坏配置只回退布局，不丢弃录音目录/监测意图/目标。原会话与音频分析缓存版本不变，见 39。
+
 preview.4：内存历史元数据 v2 增加原子来源/epoch/起点映射；磁盘 schema 不变。未录音不写临时音频；历史查看采用独立有界快照，后台继续缓存，见 31。
 
 状态：当前会话 schema v2，支持加载 v1。多区域写入、会话视图和恢复见 23；二进制分析缓存仍为独立的 schema v1。示例保留早期规格参考，压缩资产尚待 M5。

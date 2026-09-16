@@ -1,9 +1,10 @@
+import {validateWorkspace} from './workspace'
 import {validateTakeName} from './naming'
 import { validateRecordSettings } from './recording'
 import {validateExportPreset} from './mediaTypes'
 import {validateDisplaySettings,validWindowSeconds,validWaveGain} from './displaySettings'
 import type { Command, Request } from './shared'
-const commands = new Set<Command>(['cache.save','export.openDeliveryFolder','app.configure','app.diagnostics','app.copyDiagnostics','library.storage','library.clearCache','library.pruneMissing','library.rename','export.configure','export.describe','record.capacity','playback.clearSelection','playback.retryAnalysis','view.inspect','view.live','devices.select','view.gain','live.replay','library.refresh','library.remove','app.info','app.quit','retention.retry','view.settings','export.start','export.retry','export.openFolder','export.saveCopy','file.open','file.close','playback.play','playback.pause','playback.seek','playback.volume','playback.selection','playback.window','playback.follow','state.get', 'devices.list', 'live.start', 'live.stop', 'live.reset', 'view.window', 'record.configure', 'record.chooseDirectory', 'record.start', 'record.stop', 'record.openFolder', 'record.recover', 'analysis.start', 'job.cancel', 'metrics.query', 'timeline.query'])
+const commands = new Set<Command>(['workspace.configure','cache.save','export.openDeliveryFolder','app.configure','app.diagnostics','app.copyDiagnostics','library.storage','library.clearCache','library.pruneMissing','library.rename','export.configure','export.describe','record.capacity','playback.clearSelection','playback.retryAnalysis','view.inspect','view.live','devices.select','view.gain','live.replay','library.refresh','library.remove','app.info','app.quit','retention.retry','view.settings','export.start','export.retry','export.openFolder','export.saveCopy','file.open','file.close','playback.play','playback.pause','playback.seek','playback.volume','playback.selection','playback.window','playback.follow','state.get', 'devices.list', 'live.start', 'live.stop', 'live.reset', 'view.window', 'record.configure', 'record.chooseDirectory', 'record.start', 'record.stop', 'record.openFolder', 'record.recover', 'analysis.start', 'job.cancel', 'metrics.query', 'timeline.query'])
 function plain(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && (Object.getPrototypeOf(value) === Object.prototype || Object.getPrototypeOf(value) === null)
 }
@@ -16,7 +17,10 @@ export function validateRequest(value: unknown): Request {
   const keys = Object.keys(r.payload)
   const textId=(v:unknown)=>typeof v==='string'&&v.length>0&&v.length<=128&&!v.includes('\0')
   const frameId=(v:unknown)=>typeof v==='string'&&/^[0-9]{1,20}$/.test(v)&&BigInt(v)<=0xffffffffffffffffn
-  if(r.command==='cache.save'){
+  if(r.command==='workspace.configure'){
+    if(keys.join(',')!=='workspace')throw Error('INVALID_WORKSPACE')
+    validateWorkspace(r.payload.workspace)
+  }else if(r.command==='cache.save'){
     if(keys.sort().join(',')!=='playbackId,useSelection'||!textId(r.payload.playbackId)||typeof r.payload.useSelection!=='boolean')throw Error('INVALID_REPLAY_SAVE')
   }else if(r.command==='app.configure'){
     if(keys.join(',')!=='confirmExitWhileRecording'||typeof r.payload.confirmExitWhileRecording!=='boolean')throw Error('INVALID_APP_SETTINGS')

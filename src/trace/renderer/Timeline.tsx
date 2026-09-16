@@ -1,10 +1,11 @@
 import {wheelPixels,wheelValue,zoomRange,zoomLabel,panRange} from './zoom'
-import {useEffect,useLayoutEffect,useRef,useState} from 'react'
+import {createContext,useContext,useEffect,useLayoutEffect,useRef,useState} from 'react'
 import type {DisplaySettings} from '../displaySettings'
 import type {MeterSnapshot} from '../shared'
 import {relativeFrame} from './time'
 import {SelectionStats} from './FileControls'
 type Props={
+ kind?:'both'|'waveform'|'history';traces?:('m'|'s'|'i')[];
  feedback?:React.ReactNode;selectionMode?:boolean;controls?:React.ReactNode;snapshot:MeterSnapshot|null;seconds:number;gain:number;target?:DisplaySettings
  onSeek?:(position:string,resume:boolean,source:MeterSnapshot|null)=>void
  onSelection?:(start:string,end:string,source:MeterSnapshot|null)=>void
@@ -13,9 +14,12 @@ type Props={
  onSeconds?:(value:number)=>void
 }
 type Drag={source:MeterSnapshot|null;start:bigint;end:bigint;mode:'seek'|'selection'|'start'|'end';anchor:bigint;position:bigint;resume:boolean;fixed:bigint}
-export function Timeline({feedback,selectionMode=false,controls,snapshot,seconds,gain,target,onSeek,onSelection,onWindow,onGain,onSeconds}:Props):React.JSX.Element{
+const TimelinePreview=createContext<{preview:Drag|null;setPreview:React.Dispatch<React.SetStateAction<Drag|null>>}|null>(null)
+export function TimelinePreviewProvider({children}:{children:React.ReactNode}){const [preview,setPreview]=useState<Drag|null>(null);return <TimelinePreview.Provider value={{preview,setPreview}}>{children}</TimelinePreview.Provider>}
+export function Timeline({kind='both',traces=['m','s','i'],feedback,selectionMode=false,controls,snapshot,seconds,gain,target,onSeek,onSelection,onWindow,onGain,onSeconds}:Props):React.JSX.Element{
  const wave=useRef<HTMLCanvasElement>(null),loud=useRef<HTMLCanvasElement>(null),box=useRef<HTMLDivElement>(null)
- const drag=useRef<Drag|null>(null),[preview,setPreview]=useState<Drag|null>(null)
+ const shared=useContext(TimelinePreview),[ownPreview,ownSetPreview]=useState<Drag|null>(null)
+ const drag=useRef<Drag|null>(null),preview=shared?.preview??ownPreview,setPreview=shared?.setPreview??ownSetPreview
  const file=snapshot?.sourceKind==='file',take=snapshot?.sourceKind==='take',interactive=Boolean(snapshot)
  const axis=snapshot?.fileView||snapshot?.timelineWindow
  const start=BigInt(axis?.startFrame||'0'),end=BigInt(axis?.endFrame||'0')
@@ -60,9 +64,10 @@ export function Timeline({feedback,selectionMode=false,controls,snapshot,seconds
     }
    }else{
     const y=(v:number)=>bottom-(Math.max(-60,Math.min(0,v))+60)/60*(bottom-top)
-    for(const db of [-60,-48,-36,-24,-12,0]){ctx.strokeStyle='#303a34';ctx.beginPath();ctx.moveTo(left,y(db));ctx.lineTo(right,y(db));ctx.stroke();ctx.fillStyle='#a8b5ac';ctx.fillText(String(db),5,y(db)+4)}
+    for(const db of (bottom-top<80?[-60,-30,0]:[-60,-48,-36,-24,-12,0])){ctx.strokeStyle='#303a34';ctx.beginPath();ctx.moveTo(left,y(db));ctx.lineTo(right,y(db));ctx.stroke();ctx.fillStyle='#a8b5ac';ctx.fillText(String(db),5,y(db)+4)}
     if(target?.targetEnabled){const py=y(target.targetLufs);ctx.strokeStyle='#efb65b';ctx.setLineDash([7,5]);ctx.beginPath();ctx.moveTo(left,py);ctx.lineTo(right,py);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#efb65b';ctx.textAlign='right';ctx.fillText('目标 '+target.targetLufs.toFixed(1)+' LUFS',right-3,Math.max(top+9,py-5));ctx.textAlign='left'}
     for(const [key,color,dash] of [['m','#91e65c',[]],['s','#58d4da',[5,3]],['i','#efb65b',[2,3]]] as const){
+     if(!traces.includes(key))continue
      ctx.strokeStyle=color;ctx.lineWidth=1.5;ctx.setLineDash([...dash]);ctx.beginPath();let connected=false
      for(const point of snapshot?.loudnessHistory||[]){
       const metric=point[key],px=x(point.frame)
@@ -91,7 +96,7 @@ export function Timeline({feedback,selectionMode=false,controls,snapshot,seconds
   }
   function draw(){if(wave.current)paint(wave.current,'wave');if(loud.current)paint(loud.current,'loud')}
   draw();const observer=new ResizeObserver(draw);if(box.current)observer.observe(box.current);return()=>observer.disconnect()
- },[snapshot,seconds,gain,target,preview,selected?.startFrame,selected?.endFrame])
+ },[snapshot,seconds,gain,target,preview,selected?.startFrame,selected?.endFrame,traces,kind])
  useEffect(()=>{if(!drag.current)setPreview(null)},[snapshot?.sourceId])
  useEffect(()=>{
   const target=wave.current,prevent=(event:WheelEvent)=>event.preventDefault()
@@ -178,17 +183,19 @@ export function Timeline({feedback,selectionMode=false,controls,snapshot,seconds
  })
  return <div className={'timeline '+(interactive?'file-timeline':'')} ref={box} data-inspectable-start={snapshot?.timelineAvailableRange?.startFrame} data-inspectable-end={snapshot?.timelineAvailableRange?.endFrame}>
    {controls}
-  <section className="wave-panel">
+  {kind!=='history'&&<section className="wave-panel">
    <div className="panel-heading"><h2>波形</h2><span className="small-note" title="滚轮调整波形倍率；Ctrl + 滚轮调整时间窗">×{zoomLabel(gain,2)}</span></div>
    <canvas ref={wave} onWheel={wheel} title="滚轮：波形倍率 · Ctrl + 滚轮：时间窗 · Shift + 滚轮：平移 · 右键：选区操作" aria-label={file?'文件波形定位':'系统音频滚动波形，左右声道分开显示'} {...handlers}/>
    {feedback}
     {!feedback&&!snapshot?.waveform.length&&<div className="empty-wave">{file?'准备波形…':'等待音频'}</div>}
-  </section>
-  <div className="time-ruler" data-select-range="true" aria-label={file?'时间刻度，拖动选择范围':'时间刻度'} title="点击定位；拖动刻度轴选择范围；图内 Shift + 拖动也可选择" {...handlers}>{ruler.map((label,i)=><span key={i}>{label}</span>)}</div>
-  <section className="loudness-panel">
+  </section>}
+  {kind!=='history'&&<div className="time-ruler" data-select-range="true" aria-label={file?'时间刻度，拖动选择范围':'时间刻度'} title="点击定位；拖动刻度轴选择范围；图内 Shift + 拖动也可选择" {...handlers}>{ruler.map((label,i)=><span key={i}>{label}</span>)}</div>}
+  {kind!=='waveform'&&<section className="loudness-panel">
    <div className="panel-heading"><h2>响度历史 <small>LUFS</small></h2><div className="legend"><span className="legend-m">M</span><span className="legend-s">S</span><span className="legend-i">I</span></div></div>
    <canvas ref={loud} aria-label={file?'文件响度历史定位':'与波形共用时间轴的 M、S、I 响度历史'} {...handlers}/>
-  </section>
-  {file&&snapshot?.fileView&&<SelectionStats view={snapshot.fileView} rate={snapshot.format.sampleRate}/>}
+  {kind==='history'&&feedback}
+  </section>}
+  {kind==='history'&&<div className="time-ruler" data-select-range="true" aria-label="响度历史时间刻度" {...handlers}>{ruler.map((label,i)=><span key={i}>{label}</span>)}</div>}
+  {kind==='both'&&file&&snapshot?.fileView&&<SelectionStats view={snapshot.fileView} rate={snapshot.format.sampleRate}/>}
  </div>
 }

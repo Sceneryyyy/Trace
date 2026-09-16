@@ -22,9 +22,9 @@ try{
  for(const [file,hash]of Object.entries(provenance.dlls))assert.equal(sha(path.join(dir,'resources/native',file)),hash)
  report.checks.push('Native addon, VC runtime and codecs match locked/staged hashes')
  const executable=PE.NtExecutable.from(fs.readFileSync(path.join(dir,'Trace.exe'))),resource=PE.NtExecutableResource.from(executable),versions=ResEdit.Resource.VersionInfo.fromEntries(resource.entries)
- assert(versions.length);assert(versions.some(v=>v.getAllLanguagesForStringValues().some(l=>v.getStringValues(l).ProductName==='Trace')))
+ assert(versions.length);assert(versions.some(v=>v.getAllLanguagesForStringValues().some(l=>v.getStringValues(l).ProductName==='Trace'&&v.getStringValues(l).ProductVersion===packageVersion)))
  assert(ResEdit.Resource.IconGroupEntry.fromEntries(resource.entries).length)
- report.checks.push('Trace executable carries its own product metadata and icon')
+ report.checks.push('Trace executable carries its own icon and the current product version')
  report.files=Object.fromEntries(files.map(p=>[path.relative(dir,p).replaceAll('\\','/'),{bytes:fs.statSync(p).size,sha256:sha(p)}]));report.bytes=files.reduce((n,p)=>n+fs.statSync(p).size,0);report.status='pass'
 }catch(e){report.status='fail';report.error=String(e);report.stack=e.stack;console.error(e);process.exitCode=1}
 fs.writeFileSync(path.join(root,'artifacts/m6/package-audit-latest.json'),JSON.stringify(report,null,2));console.log('M6_AUDIT',report.status,report.checks.length)

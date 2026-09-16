@@ -7,10 +7,13 @@ module.exports=async context=>{
  if(!icon.icons.length)throw Error('Trace icon missing')
  const groups=ResEdit.Resource.IconGroupEntry.fromEntries(resources.entries)
  for(const group of groups)ResEdit.Resource.IconGroupEntry.replaceIconsForResource(resources.entries,group.id,group.lang,icon.icons.map(i=>i.data))
+ const productVersion=context.packager.appInfo.version,parts=/^([0-9]+)[.]([0-9]+)[.]([0-9]+)(?:-preview[.]([0-9]+))?$/.exec(productVersion)
+ if(!parts)throw Error('Unsupported Trace product version')
+ const numbers=parts.slice(1).map(v=>Number(v||0)),fileVersion=numbers.join('.')
  const versions=ResEdit.Resource.VersionInfo.fromEntries(resources.entries)
  for(const version of versions){
-  version.setFileVersion(0,1,0,8);version.setProductVersion(0,1,0,8)
-  for(const lang of version.getAllLanguagesForStringValues())version.setStringValues(lang,{CompanyName:'Trace contributors',FileDescription:'Trace 声迹 · Audio Recorder & Analyzer',InternalName:'Trace',OriginalFilename:'Trace.exe',ProductName:'Trace',ProductVersion:'0.1.0-preview.8',LegalCopyright:'Trace contributors. Includes Prism and Electron; see bundled licenses.'})
+  version.setFileVersion(...numbers);version.setProductVersion(...numbers)
+  for(const lang of version.getAllLanguagesForStringValues())version.setStringValues(lang,{CompanyName:'Trace contributors',FileDescription:'Trace 声迹 · Audio Recorder & Analyzer',InternalName:'Trace',OriginalFilename:'Trace.exe',ProductName:'Trace',ProductVersion:productVersion,FileVersion:fileVersion,LegalCopyright:'Trace contributors. Includes Prism and Electron; see bundled licenses.'})
   version.outputToResourceEntries(resources.entries)
  }
  resources.outputResource(exe);const temp=target+'.resource-tmp';fs.writeFileSync(temp,Buffer.from(exe.generate()));await renameWithRetry(temp,target)

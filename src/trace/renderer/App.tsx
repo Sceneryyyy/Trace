@@ -6,8 +6,9 @@ import {HistoryPresentation} from './historyPresentation'
 import {zoomLabel} from './zoom'
 import { useEffect, useRef, useState } from 'react'
 import { timecode, timecodeNs } from './time'
-import {Timeline} from './Timeline'
-import {FileSourceBar,TransportIcon} from './FileControls'
+import {Timeline,TimelinePreviewProvider} from './Timeline'
+import {InstrumentWorkspace,WorkspaceToolbar,useWorkspace} from './InstrumentWorkspace'
+import {FileSourceBar,TransportIcon,SelectionStats} from './FileControls'
 import {ExportDialog} from './ExportPanel'
 import {RecordSettingsForm} from './RecordSettingsForm'
 import {recordingLabel} from '../recordSettings'
@@ -37,7 +38,10 @@ function MetricNumber({ metric, large = false }: { metric?: Metric; large?: bool
   return <span className={'metric-number ' + (large ? 'large ' : '') + (current.status === 'ready' ? 'ready' : 'muted')} title={current.status === 'insufficient' ? '测量中，尚未形成完整时间窗' : current.status === 'error' ? '音频数据不可用' : undefined}>{value(current)}</span>
 }
 
-function LevelPanel({ snapshot }: { snapshot: MeterSnapshot | null }): React.JSX.Element {
+function LoudnessBar({metric,label}:{metric?:Metric;label:string}):React.JSX.Element{
+ return <div className="loudness-column"><div className="loudness-bar-track" role="meter" aria-label={label+' 响度柱表'} aria-valuemin={-60} aria-valuemax={0} aria-valuenow={metric?.status==='ready'?Math.max(-60,Math.min(0,metric.value??-60)):undefined} aria-valuetext={value(metric)+' LUFS'}><i style={{height:(metric?.status==='ready'?Math.max(0,Math.min(100,((metric.value??-60)+60)/60*100)):0)+'%'}}/></div><div className="loudness-bar-scale"><span>0</span><span>−20</span><span>−40</span><span>−60</span></div></div>
+}
+function LevelPanel({ snapshot,readout='both' }: { snapshot: MeterSnapshot | null;readout?:'both'|'peak'|'rms' }): React.JSX.Element {
   const channels = snapshot?.channels.length || 2
   const scale = (metric?: Metric): number => metric?.status === 'ready' && metric.value !== null ? Math.max(0, Math.min(1, (metric.value + 60) / 60)) : 0
   return <section className="level-panel panel">
@@ -45,11 +49,11 @@ function LevelPanel({ snapshot }: { snapshot: MeterSnapshot | null }): React.JSX
     <div className="level-plot">
       <div className="db-scale">{[0, -6, -12, -18, -24, -30, -36, -42, -48, -54, -60].map(n => <span key={n}>{n}</span>)}</div>
       <div className="channel-bars">{Array.from({ length: channels }, (_, c) => {
-        const levels = snapshot?.channels[c]
+        const levels = snapshot?.channels[c],meter=readout==='rms'?levels?.rms:levels?.samplePeak
         const clip = levels?.samplePeak.status === 'ready' && (levels.samplePeak.value ?? -Infinity) >= 0
         return <div className="channel" key={c}>
           <div className={'clip-indicator ' + (clip ? 'clipped' : '')} title={clip ? '样本峰值达到或超过 0 dBFS' : '未检测到样本削波'} />
-          <div className="meter-track" role="meter" aria-label={(channels === 1 ? '单声道' : c === 0 ? '左声道' : '右声道') + '样本峰值'} aria-valuemin={-60} aria-valuemax={0} aria-valuenow={levels?.samplePeak.status === 'ready' ? Math.max(-60, Math.min(0, levels.samplePeak.value!)) : undefined}>
+          <div className="meter-track" role="meter" aria-label={(channels === 1 ? '单声道' : c === 0 ? '左声道' : '右声道') + (readout==='rms'?' RMS':'样本峰值')} aria-valuemin={-60} aria-valuemax={0} aria-valuenow={meter?.status === 'ready' ? Math.max(-60, Math.min(0, meter.value!)) : undefined} aria-valuetext={value(meter)+' dBFS'}>
             <div className="peak-fill" style={{ clipPath: 'inset(' + ((1-scale(levels?.samplePeak))*100) + '% 0 0)' }} />
             <div className="rms-fill" style={{ transform: 'scaleY(' + scale(levels?.rms) + ')' }} />
           </div>
@@ -95,7 +99,7 @@ export default function App(): React.JSX.Element {
   function command(name: Command, payload: Record<string, unknown> = {}): Promise<unknown> {
     const independent=['library.storage','export.describe','app.diagnostics'].includes(name)
     const execute=async()=>{
-      const foreground=!independent&&!['playback.seek','view.inspect','library.refresh'].includes(name)
+      const foreground=!independent&&!['playback.seek','view.inspect','library.refresh','workspace.configure'].includes(name)
       if(foreground){busyRef.current=true;setBusy(true)}
       try {
         for (let attempt = 0; attempt < 2; attempt++) {
@@ -115,6 +119,7 @@ export default function App(): React.JSX.Element {
     if(!independent)queue.current = task
     return task
   }
+  const workspace=useWorkspace(state.workspace,next=>command('workspace.configure',{workspace:next}))
   useEffect(() => {
     const unstate = window.trace.onState(accept)
     const unsnapshot = window.trace.onSnapshot(next => {if(presentation.accept(next,current.current))setSnapshot(next)})
@@ -258,6 +263,28 @@ export default function App(): React.JSX.Element {
        else if(displaySnapshot)inspectAt({...displaySnapshot,timelineWindow:{startFrame:payload.startFrame as string,endFrame:payload.endFrame as string}},payload.endFrame as string)
      }
    }
+   const timelineInstrument=(kind:'waveform'|'history')=><TimelineMenu hasSelection={Boolean(file?.selection)} clear={()=>file&&run('playback.clearSelection',{playbackId:file.id})}>
+       <Timeline kind={kind} traces={workspace.value.layout.options.historyTraces} feedback={file?<AnalysisFeedback file={file} job={state.analysisJobs?.find(j=>j.id===file.analysisId)} busy={busy||isRecording} retry={()=>run('playback.retryAnalysis',{playbackId:file.id})}/>:undefined} onGain={value=>changeDisplay('gain',value)} onSeconds={setTimeSpan} selectionMode={selectionMode}
+        controls={kind==='waveform'?<div className="timeline-controls"><div className="timeline-modes" role="group" aria-label="时间轴定位方式" title="拖动图形定位；拖动刻度轴或 Shift 拖动选择范围"><button aria-pressed={!selectionMode} onClick={()=>setSelectionMode(false)}>定位</button><button aria-pressed={selectionMode} onClick={()=>setSelectionMode(true)}>选区</button></div>{isRecording&&!file&&view?.inspectableRange&&BigInt(view.inspectableRange.startFrame)-BigInt(recBounds.startFrame)>1000000000n&&<span className="record-overview-note" title="亮色范围可精确回看；暗色部分在结束录音后打开文件查看。">暗色区域为概览</span>}<div className="timeline-zoom-controls" role="group" aria-label="波形显示设置">
+      <label className="zoom-control" title="Ctrl + 滚轮">时间窗<input aria-label="波形时间窗" type="range" min="5" max="60" step=".1" value={file?Math.max(5,Math.min(60,Number(BigInt(file.endFrame)-BigInt(file.startFrame))/file.sampleRate)):seconds} onChange={e=>setTimeSpan(Number(e.target.value))}/><output>{zoomLabel(file?Number(BigInt(file.endFrame)-BigInt(file.startFrame))/file.sampleRate:seconds)} s</output></label>
+      <label className="zoom-control" title="波形区域滚轮">波形<input aria-label="波形显示倍率" type="range" min="1" max="4" step=".01" value={gain} onChange={e=>changeDisplay('gain',Number(e.target.value))}/><output>×{zoomLabel(gain,2)}</output></label>
+        </div></div>:undefined}
+        snapshot={displaySnapshot} seconds={seconds} gain={gain} target={state.displaySettings||defaultDisplaySettings}
+        onSeek={(position,_resume,source)=>inspectAt(source,position)}
+        onSelection={(startFrame,endFrame,source)=>inspectAt(source,startFrame,endFrame)}
+        onWindow={(startFrame,endFrame)=>{if(file)changeWindow({playbackId:file.id,startFrame,endFrame,pixelWidth:900});else if(isRecording)setTimeSpan(Math.max(5,Math.min(60,Number(BigInt(endFrame)-BigInt(startFrame))/1e9)))}}/>
+      </TimelineMenu>
+   const loudnessInstrument=<aside className="loudness-values panel">
+        <div className="panel-heading"><h2>响度</h2><span className="small-note">LUFS</span></div>
+        <div className="loudness-readings">
+        <section className="integrated-card" title={history?'监测起点至当前历史位置的累计响度':file?'文件起点至当前游标的累计响度':isRecording?'本次录音的累计响度':'本轮监测的累计响度'}><div className="metric-label">INTEGRATED <span>{file?'截至游标 I':isRecording?(multiRegion?'当前段 I':'本次录音 I'):'本轮 I'}</span></div><LoudnessBar label="I" metric={numberMetrics?.integratedToCursor}/><MetricNumber metric={numberMetrics?.integratedToCursor} large /></section>
+        <div className="instant-metrics"><section><div className="metric-label">M <span>400 ms</span></div><LoudnessBar label="M" metric={numberMetrics?.momentary}/><MetricNumber metric={numberMetrics?.momentary} /></section><section><div className="metric-label">S <span>3 s</span></div><LoudnessBar label="S" metric={numberMetrics?.shortTerm}/><MetricNumber metric={numberMetrics?.shortTerm} /></section></div>
+        </div><div className="loudness-summary">
+        <div className="summary-metric" title={file&&!history?'文件整段响度范围':'截至当前位置的响度范围'}><div><b>LRA {displaySnapshot?.lraProvisional&&numberMetrics?.loudnessRange.status==='ready'&&<small className="provisional-tag" title="时长不足 60 秒，LRA 暂估">暂估</small>}</b></div><strong>{value(numberMetrics?.loudnessRange)} <small>LU</small></strong></div>
+        <div className="summary-metric" title={history?'监测起点至当前历史位置的最大真峰值':file?'文件整段最大真峰值':isRecording?'本次录音最大真峰值':'本轮最大真峰值'}><div><b>MAX TP</b></div><strong>{value(numberMetrics?.maxTruePeak)} <small>dBTP</small></strong></div>
+        {file&&!history&&<div className="summary-metric"><div><b>整段 I</b></div><strong>{value(displaySnapshot?.fileView?.wholeFileIntegrated)} <small>LUFS</small></strong></div>}
+        </div>
+      </aside>
    return <main className="trace-app">
     <header className="topbar">
       <div className="brand"><svg viewBox="0 0 32 32" width="31" height="31" fill="none" aria-hidden="true"><path d="M2 16H7L11 5L16 27L21 10L24 16H30" stroke="currentColor" strokeWidth="2.1" strokeLinejoin="round" /></svg><span>TRACE</span><small>Audio Recorder &amp; Analyzer</small></div>
@@ -274,30 +301,11 @@ export default function App(): React.JSX.Element {
       <div className="sourcebar-spacer" />
     </section>}
 
-    <FileSourceBar file={workbenchFile} busy={busy} run={workbenchRun} live={!file}/>
-    <div className="workspace" data-history-position={file?displaySnapshot?.positionFrame:undefined} data-history-generation={file?displaySnapshot?.playback?.generation:undefined}>
-      <LevelPanel snapshot={numberMetrics} />
-      <TimelineMenu hasSelection={Boolean(file?.selection)} clear={()=>file&&run('playback.clearSelection',{playbackId:file.id})}>
-       <Timeline feedback={file?<AnalysisFeedback file={file} job={state.analysisJobs?.find(j=>j.id===file.analysisId)} busy={busy||isRecording} retry={()=>run('playback.retryAnalysis',{playbackId:file.id})}/>:undefined} onGain={value=>changeDisplay('gain',value)} onSeconds={setTimeSpan} selectionMode={selectionMode}
-        controls={<div className="timeline-controls"><div className="timeline-modes" role="group" aria-label="时间轴定位方式" title="拖动图形定位；拖动刻度轴或 Shift 拖动选择范围"><button aria-pressed={!selectionMode} onClick={()=>setSelectionMode(false)}>定位</button><button aria-pressed={selectionMode} onClick={()=>setSelectionMode(true)}>选区</button></div>{isRecording&&!file&&view?.inspectableRange&&BigInt(view.inspectableRange.startFrame)-BigInt(recBounds.startFrame)>1000000000n&&<span className="record-overview-note" title="亮色范围可精确回看；暗色部分在结束录音后打开文件查看。">暗色区域为概览</span>}<div className="timeline-zoom-controls" role="group" aria-label="波形显示设置">
-      <label className="zoom-control" title="Ctrl + 滚轮">时间窗<input aria-label="波形时间窗" type="range" min="5" max="60" step=".1" value={file?Math.max(5,Math.min(60,Number(BigInt(file.endFrame)-BigInt(file.startFrame))/file.sampleRate)):seconds} onChange={e=>setTimeSpan(Number(e.target.value))}/><output>{zoomLabel(file?Number(BigInt(file.endFrame)-BigInt(file.startFrame))/file.sampleRate:seconds)} s</output></label>
-      <label className="zoom-control" title="波形区域滚轮">波形<input aria-label="波形显示倍率" type="range" min="1" max="4" step=".01" value={gain} onChange={e=>changeDisplay('gain',Number(e.target.value))}/><output>×{zoomLabel(gain,2)}</output></label>
-        </div></div>}
-        snapshot={displaySnapshot} seconds={seconds} gain={gain} target={state.displaySettings||defaultDisplaySettings}
-        onSeek={(position,_resume,source)=>inspectAt(source,position)}
-        onSelection={(startFrame,endFrame,source)=>inspectAt(source,startFrame,endFrame)}
-        onWindow={(startFrame,endFrame)=>{if(file)changeWindow({playbackId:file.id,startFrame,endFrame,pixelWidth:900});else if(isRecording)setTimeSpan(Math.max(5,Math.min(60,Number(BigInt(endFrame)-BigInt(startFrame))/1e9)))}}/>
-
-      </TimelineMenu>
-      <aside className="loudness-values panel">
-        <div className="panel-heading"><h2>响度</h2><span className="small-note">LUFS</span></div>
-        <section className="integrated-card" title={history?'监测起点至当前历史位置的累计响度':file?'文件起点至当前游标的累计响度':isRecording?'本次录音的累计响度':'本轮监测的累计响度'}><div className="metric-label">INTEGRATED <span>{file?'截至游标 I':isRecording?(multiRegion?'当前段 I':'本次录音 I'):'本轮 I'}</span></div><MetricNumber metric={numberMetrics?.integratedToCursor} large /></section>
-        <div className="instant-metrics"><section><div className="metric-label">M <span>400 ms</span></div><MetricNumber metric={numberMetrics?.momentary} /></section><section><div className="metric-label">S <span>3 s</span></div><MetricNumber metric={numberMetrics?.shortTerm} /></section></div>
-        <div className="summary-metric" title={file&&!history?'文件整段响度范围':'截至当前位置的响度范围'}><div><b>LRA {displaySnapshot?.lraProvisional&&numberMetrics?.loudnessRange.status==='ready'&&<small className="provisional-tag" title="时长不足 60 秒，LRA 暂估">暂估</small>}</b></div><strong>{value(numberMetrics?.loudnessRange)} <small>LU</small></strong></div>
-        <div className="summary-metric" title={history?'监测起点至当前历史位置的最大真峰值':file?'文件整段最大真峰值':isRecording?'本次录音最大真峰值':'本轮最大真峰值'}><div><b>MAX TP</b></div><strong>{value(numberMetrics?.maxTruePeak)} <small>dBTP</small></strong></div>
-        {file&&!history&&<div className="summary-metric"><div><b>整段 I</b></div><strong>{value(displaySnapshot?.fileView?.wholeFileIntegrated)} <small>LUFS</small></strong></div>}
-      </aside>
+    <div className="workbench-heading"><FileSourceBar file={workbenchFile} busy={busy} run={workbenchRun} live={!file}/><WorkspaceToolbar value={workspace.value} change={workspace.change} error={workspace.error} retry={workspace.retry}/></div>
+    <div className="workspace modular-workspace" data-history-position={file?displaySnapshot?.positionFrame:undefined} data-history-generation={file?displaySnapshot?.playback?.generation:undefined}>
+      <TimelinePreviewProvider><InstrumentWorkspace value={workspace.value} change={workspace.change} contents={{levels:<LevelPanel snapshot={numberMetrics} readout={workspace.value.layout.options.levelReadout}/>,waveform:timelineInstrument('waveform'),history:timelineInstrument('history'),loudness:loudnessInstrument}}/></TimelinePreviewProvider>
     </div>
+    {file&&displaySnapshot?.fileView&&<div className="workspace-selection"><SelectionStats view={displaySnapshot.fileView} rate={displaySnapshot.format.sampleRate}/></div>}
     {(sourceError || file?.error || message) && <div className="error-banner" role="alert"><strong>需要处理</strong><span>{file?.error?(file.error.startsWith('FILE_SNAPSHOT_FAILED:')?userError(file.error):'回听输出不可用；历史数据仍可查看。'):snapshotFailure ? '录音数据更新失败，已停止本次录音并保留已写入的文件。请重新连接后重试。' : sourceError ? '声音来源暂不可用，请重试或选择其他设备。' : userError(message)}</span>{file&&!file.temporary&&(file.error?.startsWith('FILE_SNAPSHOT_FAILED:')||['failed','cancelled'].includes(file.analysisPhase))&&<button disabled={busy||isRecording} onClick={()=>run('playback.retryAnalysis',{playbackId:file.id})}>重新分析</button>}<button disabled={busy} onClick={()=>{setLibraryAttention(true);setModal('files')}}>查看文件</button><button disabled={busy} onClick={()=>command('app.copyDiagnostics').then(()=>setCopied(true)).catch(()=>{})}>{copied?'已复制诊断':'复制诊断'}</button>{file?.error&&!file.error.startsWith('FILE_SNAPSHOT_FAILED:')&&<button disabled={busy||isRecording} onClick={()=>run('playback.play',{playbackId:file.id})}>重试回听</button>}{sourceError && state.deviceId && !isRecording && !file?.outputReady && <button onClick={() => run('live.start', { deviceId: state.deviceId })} disabled={busy}>重新连接</button>}</div>}
     <footer className="transport">
       <div className="transport-buttons" role="group" aria-label="走带控制">

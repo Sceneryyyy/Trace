@@ -1,5 +1,7 @@
 # 06 · 模块接口与消息契约
 
+M7：协议 v1 白名单新增 workspace.configure，payload 仅允许 {workspace: WorkspaceState}。严格验证树深≤8、仪器叶子唯一/完整、分割比例 0.15–0.85、显示选项、预设 ID/名称/数量与序列化上限；不接收路径、设备、REC 或计算参数。TraceState 增加 workspace；该命令更新/保存布局，避免触发全局 busy 和历史重置。实际接口见 workspace.ts/shared.ts/contracts.ts，迁移规则见 39。
+
 preview.4 实际契约见 shared.ts/contracts.ts 和文末补充。view.inspect/view.live 为协议 v1 白名单扩展；replayFreeze 元数据为 v2。历史来源不等于页面，见 31。
 
 协议 v1 产品目标。实际唯一类型定义为 src/trace/shared.ts，白名单校验为 contracts.ts，状态控制器为 main.ts。M1/M2 已实现部分见文末；FILE/回放/选区/导出表项仍是后续实施契约。

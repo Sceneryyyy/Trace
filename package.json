@@ -56,7 +56,9 @@
     "dist:linux:appimage": "npm run build && electron-builder --config electron-builder.appimage.cjs --linux AppImage --publish never",
     "dist:linux:packages": "npm run stage:tui && electron-builder --linux deb rpm tar.gz --publish never",
     "test:trace-recording": "node --test test/recording-service.test.mjs test/recovery-inventory.test.mjs",
-    "test:trace-timeline": "node --test test/session-timeline.test.mjs"
+    "test:trace-timeline": "node --test test/session-timeline.test.mjs",
+    "test:trace-workspace": "node --test test/workspace-layout.test.mjs",
+    "test:trace-m7": "node tools/m7/verify.cjs"
   },
   "repository": {
     "type": "git",

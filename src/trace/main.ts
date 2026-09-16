@@ -18,6 +18,7 @@ import {SourceRetention} from './sourceRetention'
 import type {ExportSource} from './exportTypes'
 import {validateExportPreset} from './mediaTypes'
 import {recordSettingsVersion} from './recordSettings'
+import {defaultWorkspace,restoreWorkspace,validateWorkspace} from './workspace'
 import {defaultDisplaySettings,validateDisplaySettings,restoreDisplaySettings,displaySettingsVersion,validWindowSeconds} from './displaySettings'
 import {restoreWindowBounds} from './windowGeometry'
 import {product} from './product'
@@ -50,7 +51,7 @@ let latestRecordingFrame:Pick<MeterSnapshot,'recording'|'recordingView'>={}
 let recordingCaptureHeld=false
 let preferencesTimer:ReturnType<typeof setTimeout>|undefined
 let displayTick=0,snapshotSequence=0,pollFailurePending=false,lastPollError=''
-let state:TraceState={revision:0,active:false,monitoringRequested:true,deviceId:'',windowSeconds:30,error:null,displaySettings:{...defaultDisplaySettings}}
+let state:TraceState={revision:0,active:false,monitoringRequested:true,deviceId:'',windowSeconds:30,error:null,displaySettings:{...defaultDisplaySettings},workspace:defaultWorkspace()}
 const completed=new Map<string,{signature:string;reply:Reply}>()
 const pending=new Map<string,{signature:string;promise:Promise<Reply>}>()
 let mutations:Promise<unknown>=Promise.resolve()
@@ -140,7 +141,7 @@ function preferencesPath():string{return join(app.getPath('userData'),'trace-set
 function savePreferences():void{
   mkdirSync(app.getPath('userData'),{recursive:true})
   const target=preferencesPath(),temp=target+'.tmp'
-  writeFileSync(temp,JSON.stringify({windowBounds:window&&!window.isDestroyed()?window.getNormalBounds():undefined,maximized:window?.isMaximized(),displaySettingsVersion,monitoringRequested:state.monitoringRequested,displaySettings:state.displaySettings,settingsVersion:recordSettingsVersion,deviceId:state.deviceId,windowSeconds:state.windowSeconds,recordSettings:recordings.settings,recordDirectory:recordings.directory,exportPreferencesVersion,lastExportPreset:state.lastExportPreset,confirmExitWhileRecording:state.confirmExitWhileRecording!==false,lastExportSaveCopy:state.lastExportSaveCopy===true}))
+  writeFileSync(temp,JSON.stringify({windowBounds:window&&!window.isDestroyed()?window.getNormalBounds():undefined,maximized:window?.isMaximized(),workspace:state.workspace,displaySettingsVersion,monitoringRequested:state.monitoringRequested,displaySettings:state.displaySettings,settingsVersion:recordSettingsVersion,deviceId:state.deviceId,windowSeconds:state.windowSeconds,recordSettings:recordings.settings,recordDirectory:recordings.directory,exportPreferencesVersion,lastExportPreset:state.lastExportPreset,confirmExitWhileRecording:state.confirmExitWhileRecording!==false,lastExportSaveCopy:state.lastExportSaveCopy===true}))
   renameSync(temp,target)
 }
 function schedulePreferences():void{if(preferencesTimer)clearTimeout(preferencesTimer);preferencesTimer=setTimeout(()=>{try{savePreferences()}catch(error){console.error("Trace preferences:",error)}},150)}
@@ -306,6 +307,7 @@ async function dispatch(request:Request):Promise<Reply>{
         if(!state.active)throw Error('INVALID_STATE')
         engine.reset();update({error:null});break
       case 'retention.retry':await retention.retry(request.payload.takeId as string);break
+      case 'workspace.configure':update({workspace:validateWorkspace(request.payload.workspace)});savePreferences();break
       case 'view.settings':update({displaySettings:validateDisplaySettings(request.payload)});savePreferences();break
       case 'view.gain':update({displaySettings:{...(state.displaySettings||defaultDisplaySettings),waveGain:request.payload.gain as number}});schedulePreferences();break
       case 'view.window':
@@ -435,9 +437,10 @@ function handle(event:Electron.IpcMainInvokeEvent,raw:unknown):Promise<Reply>|Re
   }
 }
 async function initialize():Promise<void>{
-  let preferred:{monitoringRequested?:boolean;deviceId?:string;windowSeconds?:number;recordSettings?:unknown;recordDirectory?:string;displaySettings?:unknown;lastExportPreset?:unknown;confirmExitWhileRecording?:boolean;lastExportSaveCopy?:boolean}={}
+  let preferred:{workspace?:unknown;monitoringRequested?:boolean;deviceId?:string;windowSeconds?:number;recordSettings?:unknown;recordDirectory?:string;displaySettings?:unknown;lastExportPreset?:unknown;confirmExitWhileRecording?:boolean;lastExportSaveCopy?:boolean}={}
   try{preferred=JSON.parse(readFileSync(preferencesPath(),'utf8'))}catch{}
   if(validWindowSeconds(preferred.windowSeconds))state.windowSeconds=preferred.windowSeconds
+  state.workspace=restoreWorkspace(preferred.workspace)
   state.monitoringRequested=preferred.monitoringRequested!==false
   state.confirmExitWhileRecording=preferred.confirmExitWhileRecording!==false
   state.lastExportSaveCopy=preferred.lastExportSaveCopy===true
@@ -484,8 +487,8 @@ app.whenReady().then(()=>{
   const bounds=restoreWindowBounds(savedWindow.windowBounds,screen.getAllDisplays().map(d=>d.workArea))
   window=new BrowserWindow({
     icon:app.isPackaged?join(process.resourcesPath,'icon.png'):join(root,'resources/trace/icon.png'),title:testMode?'Trace — 自动验证':'Trace — Audio Recorder & Analyzer',width:1280,height:800,minWidth:1024,minHeight:700,
-    ...(bounds||{}),backgroundColor:'#121615',autoHideMenuBar:true,show:!testMode,
-    webPreferences:{preload:join(__dirname,'../preload/index.js'),contextIsolation:true,sandbox:true,nodeIntegration:false,backgroundThrottling:true},
+    ...(bounds||{}),backgroundColor:'#121615',autoHideMenuBar:true,show:!testMode||process.argv.includes('--trace-test-visible'),
+    webPreferences:{preload:join(__dirname,'../preload/index.js'),contextIsolation:true,sandbox:true,nodeIntegration:false,backgroundThrottling:!testMode},
   })
   if(savedWindow.maximized&&!testMode)window.maximize()
   let boundsTimer:ReturnType<typeof setTimeout>|undefined
