@@ -8,7 +8,7 @@ import {SelectionStats} from './FileControls'
 export type TimelineLayer={draw:(ctx:CanvasRenderingContext2D,g:{left:number;right:number;top:number;bottom:number;x:(frame:string)=>number})=>void;hover?:(frame:string,vertical:number)=>void;wheel?:(vertical:number,delta:number)=>void}
 export type TimelineProps={
  layer?:TimelineLayer;
- kind?:'both'|'waveform'|'history'|'spectrogram';traces?:('m'|'s'|'i')[];
+ kind?:'both'|'waveform'|'history'|'spectrogram'|'ruler';traces?:('m'|'s'|'i')[];
  feedback?:React.ReactNode;selectionMode?:boolean;controls?:React.ReactNode;snapshot:MeterSnapshot|null;seconds:number;gain:number;target?:DisplaySettings
  onSeek?:(position:string,resume:boolean,source:MeterSnapshot|null)=>void
  onSelection?:(start:string,end:string,source:MeterSnapshot|null)=>void
@@ -18,6 +18,11 @@ export type TimelineProps={
 }
 type Drag={source:MeterSnapshot|null;start:bigint;end:bigint;mode:'seek'|'selection'|'start'|'end';anchor:bigint;position:bigint;resume:boolean;fixed:bigint}
 const TimelinePreview=createContext<{preview:Drag|null;setPreview:React.Dispatch<React.SetStateAction<Drag|null>>}|null>(null)
+export function useTimelinePreviewRange(sourceId?:string):{startFrame:string;endFrame:string}|undefined{
+ const p=useContext(TimelinePreview)?.preview
+ if(!p||p.mode==='seek'||p.source?.sourceId!==sourceId)return
+ return {startFrame:(p.mode==='start'?p.position:p.mode==='end'?p.fixed:p.position<p.anchor?p.position:p.anchor).toString(),endFrame:(p.mode==='end'?p.position:p.mode==='start'?p.fixed:p.position>p.anchor?p.position:p.anchor).toString()}
+}
 export function TimelinePreviewProvider({children}:{children:React.ReactNode}){const [preview,setPreview]=useState<Drag|null>(null);return <TimelinePreview.Provider value={{preview,setPreview}}>{children}</TimelinePreview.Provider>}
 export function Timeline({layer,kind='both',traces=['m','s','i'],feedback,selectionMode=false,controls,snapshot,seconds,gain,target,onSeek,onSelection,onWindow,onGain,onSeconds}:TimelineProps):React.JSX.Element{
  const wave=useRef<HTMLCanvasElement>(null),loud=useRef<HTMLCanvasElement>(null),box=useRef<HTMLDivElement>(null)
@@ -151,7 +156,7 @@ export function Timeline({layer,kind='both',traces=['m','s','i'],feedback,select
     else onSeek?.(a.toString(),false,current.source)
   }
  }
- function wheel(event:React.WheelEvent<HTMLCanvasElement>){
+ function wheel(event:React.WheelEvent<HTMLElement>){
   if(drag.current||event.altKey||event.metaKey||(!event.deltaY&&!event.deltaX))return
    const delta=wheelPixels(event.deltaY||event.deltaX,event.deltaMode)
    if(event.shiftKey){
@@ -162,7 +167,7 @@ export function Timeline({layer,kind='both',traces=['m','s','i'],feedback,select
     if(next.start===a.toString()&&next.end===b.toString())return
     wheelWindow.current={sourceId:snapshot?.sourceId||'',...next};onWindow?.(next.start,next.end);return
    }
-  if(!event.ctrlKey){
+  if(!event.ctrlKey&&kind!=='ruler'){
    if(layer?.wheel){const r=event.currentTarget.getBoundingClientRect();layer.wheel(Math.max(0,Math.min(1,(r.bottom-event.clientY-14)/Math.max(1,r.height-28))),delta);return}
    const next=wheelValue(wheelGain.current,delta,1,4,true);if(next===wheelGain.current)return;wheelGain.current=next;onGain?.(next);return
   }
@@ -184,15 +189,15 @@ export function Timeline({layer,kind='both',traces=['m','s','i'],feedback,select
   if(snapshot?.sourceKind==='take')return (Math.max(1,Number(snapshot.positionFrame)/(snapshot.timelineRate||snapshot.format.sampleRate||48000))*i/6).toFixed(1)+'s'
   return i===6?'现在':'−'+zoomLabel(seconds*(6-i)/6)+'s'
  })
- return <div className={'timeline '+(interactive?'file-timeline':'')} ref={box} data-inspectable-start={snapshot?.timelineAvailableRange?.startFrame} data-inspectable-end={snapshot?.timelineAvailableRange?.endFrame}>
+ return <div className={'timeline '+(interactive?'file-timeline':'')+(kind==='ruler'?' surface-ruler':'')} ref={box} data-inspectable-start={snapshot?.timelineAvailableRange?.startFrame} data-inspectable-end={snapshot?.timelineAvailableRange?.endFrame}>
    {controls}
-  {kind!=='history'&&<section className="wave-panel">
+  {kind!=='history'&&kind!=='ruler'&&<section className="wave-panel">
    <div className="panel-heading"><h2>{kind==='spectrogram'?'声谱图':'波形'}</h2><span className="small-note" title="滚轮调整波形倍率；Ctrl + 滚轮调整时间窗">×{zoomLabel(gain,2)}</span></div>
    <canvas ref={wave} onWheel={wheel} title={kind==='spectrogram'?'滚轮：频率范围 · Ctrl + 滚轮：时间窗 · Shift + 滚轮：平移 · 拖动定位或选区':'滚轮：波形倍率 · Ctrl + 滚轮：时间窗 · Shift + 滚轮：平移 · 右键：选区操作'} aria-label={kind==='spectrogram'?'声谱图：共轴时间与频率定位':file?'文件波形定位':'系统音频滚动波形，左右声道分开显示'} {...handlers}/>
    {feedback}
     {kind!=='spectrogram'&&!feedback&&!snapshot?.waveform.length&&<div className="empty-wave">{file?'准备波形…':'等待音频'}</div>}
   </section>}
-  {kind!=='history'&&<div className="time-ruler" data-select-range="true" aria-label={file?'时间刻度，拖动选择范围':'时间刻度'} title="点击定位；拖动刻度轴选择范围；图内 Shift + 拖动也可选择" {...handlers}>{ruler.map((label,i)=><span key={i}>{label}</span>)}</div>}
+  {kind!=='history'&&<div className="time-ruler" onWheel={kind==='ruler'?wheel:undefined} data-select-range="true" aria-label={file?'时间刻度，拖动选择范围':'时间刻度'} title="点击定位；拖动刻度轴选择范围；图内 Shift + 拖动也可选择" {...handlers}>{ruler.map((label,i)=><span key={i}>{label}</span>)}</div>}
   {(kind==='both'||kind==='history')&&<section className="loudness-panel">
    <div className="panel-heading"><h2>响度历史 <small>LUFS</small></h2><div className="legend"><span className="legend-m">M</span><span className="legend-s">S</span><span className="legend-i">I</span></div></div>
    <canvas ref={loud} aria-label={file?'文件响度历史定位':'与波形共用时间轴的 M、S、I 响度历史'} {...handlers}/>

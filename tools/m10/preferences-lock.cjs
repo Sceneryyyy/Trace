@@ -1,0 +1,19 @@
+const fs=require('fs'),path=require('path'),assert=require('assert/strict'),{spawn}=require('child_process'),{launch,delay}=require('../m6/cdp.cjs')
+const root=path.resolve(__dirname,'../..'),folder=path.join(root,'artifacts/m10/preferences-lock-'+Date.now()),userData=path.join(folder,'user-data');fs.mkdirSync(userData,{recursive:true});fs.writeFileSync(path.join(userData,'trace-settings.json'),JSON.stringify({monitoringRequested:false,confirmExitWhileRecording:false}))
+let session;const report={folder,status:'running',checks:[]}
+async function wait(fn,label){for(const t=Date.now();Date.now()-t<15000;){if(await fn())return;await delay(20)}throw Error('Timeout '+label)}
+async function main(){
+ session=await launch(process.env.TRACE_PACKAGE_EXE||require('electron'),folder,{userData,args:process.env.TRACE_PACKAGE_EXE?[]:[path.join(root,'out-trace/main/index.js')]});const c=session.cdp
+ await wait(async()=>Boolean((await c.state()).deviceId),'device');await c.request('preferences.retry')
+ await c.evaluate('window.__frame=null;window.trace.onSnapshot(s=>window.__frame=s);true');await c.request('record.start');await wait(()=>c.evaluate('BigInt(window.__frame?.recording?.writtenFrames||0)>24000n'),'recording')
+ const file=path.join(userData,'trace-settings.json');assert(path.resolve(file).startsWith(userData+path.sep))
+ const ps="$s=[IO.File]::Open('"+file.replace(/'/g,"''")+"',[IO.FileMode]::Open,[IO.FileAccess]::Read,[IO.FileShare]::None);[Console]::Out.WriteLine('LOCKED');[Console]::Out.Flush();Start-Sleep -Milliseconds 550;$s.Dispose()"
+ const locker=spawn(path.join(process.env.SystemRoot||'C:\\Windows','System32/WindowsPowerShell/v1.0/powershell.exe'),['-NoProfile','-EncodedCommand',Buffer.from(ps,'utf16le').toString('base64')],{windowsHide:true,stdio:['ignore','pipe','pipe']})
+ const closed=new Promise((resolve,reject)=>{locker.once('exit',code=>code===0?resolve():reject(Error('Lock helper exit '+code)));locker.once('error',reject)})
+ await new Promise((resolve,reject)=>{let text='';locker.stdout.on('data',d=>{text+=d;if(text.includes('LOCKED'))resolve()});locker.once('error',reject);locker.once('exit',code=>{if(!text.includes('LOCKED'))reject(Error('Lock helper did not acquire the file: '+code))})})
+ const before=await c.evaluate('window.__frame.recording.writtenFrames'),at=Date.now();await c.request('app.configure',{confirmExitWhileRecording:true});report.commandMs=Date.now()-at;assert(report.commandMs<500,'settings lock blocks command handling')
+ await closed;await c.request('preferences.retry');report.frames={before,after:await c.evaluate('window.__frame.recording.writtenFrames')};assert(BigInt(report.frames.after)>BigInt(before));assert((await c.state()).preferencesError==null);report.writer=(await c.request('app.info')).data.preferencesWrites;assert(report.writer.retries>0,'the exclusive lock must exercise an actual retry')
+ assert.equal(JSON.parse(fs.readFileSync(file)).confirmExitWhileRecording,true);await c.request('record.stop');await wait(async()=>!(await c.state()).currentRecord,'finalization')
+ report.checks.push('A real exclusive Windows lock does not fail the requested setting change','Recorded frames advance while the atomic replacement is retried','The latest settings are persisted after unlock and recording finalizes');report.status='pass'
+}
+main().catch(e=>{report.error=String(e);report.status='fail';console.error(e);process.exitCode=1}).finally(async()=>{if(session)await session.close().catch(e=>{report.closeError=String(e);report.status='fail';process.exitCode=1});fs.writeFileSync(path.join(folder,'report.json'),JSON.stringify(report,null,2));fs.writeFileSync(path.join(root,'artifacts/m10/preferences-lock-latest.json'),JSON.stringify(report,null,2));console.log('PREFERENCES_LOCK',report.status,report.commandMs)})

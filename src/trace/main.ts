@@ -1,3 +1,4 @@
+import {PreferencesWriter} from './preferencesWriter'
 import {SpectrogramPresenter,type SpectrogramBinding} from './spectrogramPresenter'
 import {fileSpectrogramSource,replaySpectrogramSource,liveSpectrogramSource,takeSpectrogramSource} from './spectrogramSource'
 import {defaultSpectrogramSettings,restoreSpectrogramSettings,validateSpectrogramSettings,validateSpectrogramQuery,type SpectrogramQuery,type SpectrogramSettings} from './spectrogramProtocol'
@@ -15,7 +16,7 @@ import { app, BrowserWindow, dialog, ipcMain, shell, screen, clipboard } from 'e
 import { join, resolve, sep,isAbsolute } from 'node:path'
 import { randomUUID } from 'node:crypto'
 import { createRequire } from 'node:module'
-import { mkdirSync, readFileSync, writeFileSync, renameSync } from 'node:fs'
+import { mkdirSync, readFileSync } from 'node:fs'
 import { validateRequest, isMutation } from './contracts'
 import { RecordingService } from './recording'
 import { AnalysisService } from './analysisService'
@@ -62,6 +63,7 @@ let latestRecordingFrame:Pick<MeterSnapshot,'recording'|'recordingView'>={}
 let recordingCaptureHeld=false
 let preferencesTimer:ReturnType<typeof setTimeout>|undefined
 let preferencesReady=false
+let preferencesWriter:PreferencesWriter|undefined
 let displayTick=0,snapshotSequence=0,pollFailurePending=false,lastPollError=''
 let state:TraceState={spectrogramSettings:{...defaultSpectrogramSettings},revision:0,active:false,monitoringRequested:true,deviceId:'',windowSeconds:30,error:null,displaySettings:{...defaultDisplaySettings},workspace:defaultWorkspace(),instrumentSettings:{...defaultInstrumentSettings}}
 const completed=new Map<string,{signature:string;reply:Reply}>()
@@ -170,10 +172,8 @@ function publishInspectionSample():void{
 function preferencesPath():string{return join(app.getPath('userData'),'trace-settings.json')}
 function savePreferences():void{
   if(!preferencesReady)return
-  mkdirSync(app.getPath('userData'),{recursive:true})
-  const target=preferencesPath(),temp=target+'.tmp'
-  writeFileSync(temp,JSON.stringify({spectrogramSettings:state.spectrogramSettings,windowBounds:window&&!window.isDestroyed()?window.getNormalBounds():undefined,maximized:window?.isMaximized(),instrumentSettings:state.instrumentSettings,workspace:state.workspace,displaySettingsVersion,monitoringRequested:state.monitoringRequested,displaySettings:state.displaySettings,settingsVersion:recordSettingsVersion,deviceId:state.deviceId,windowSeconds:state.windowSeconds,recordSettings:recordings.settings,recordDirectory:recordings.directory,exportPreferencesVersion,lastExportPreset:state.lastExportPreset,confirmExitWhileRecording:state.confirmExitWhileRecording!==false,lastExportSaveCopy:state.lastExportSaveCopy===true}))
-  renameSync(temp,target)
+  preferencesWriter??=new PreferencesWriter(preferencesPath(),error=>{const message=error?String(error):null;if((state.preferencesError||null)!==message)update({preferencesError:message})})
+  preferencesWriter.save(JSON.stringify({spectrogramSettings:state.spectrogramSettings,windowBounds:window&&!window.isDestroyed()?window.getNormalBounds():undefined,maximized:window?.isMaximized(),instrumentSettings:state.instrumentSettings,workspace:state.workspace,displaySettingsVersion,monitoringRequested:state.monitoringRequested,displaySettings:state.displaySettings,settingsVersion:recordSettingsVersion,deviceId:state.deviceId,windowSeconds:state.windowSeconds,recordSettings:recordings.settings,recordDirectory:recordings.directory,exportPreferencesVersion,lastExportPreset:state.lastExportPreset,confirmExitWhileRecording:state.confirmExitWhileRecording!==false,lastExportSaveCopy:state.lastExportSaveCopy===true}))
 }
 function schedulePreferences():void{if(preferencesTimer)clearTimeout(preferencesTimer);preferencesTimer=setTimeout(()=>{try{savePreferences()}catch(error){console.error("Trace preferences:",error)}},150)}
 function startDevice(id:string):SourceFormat{
@@ -281,7 +281,8 @@ async function dispatch(request:Request):Promise<Reply>{
       case 'spectrogram.query':spectrogram.request(request.requestId,validateSpectrogramQuery(request.payload),state.spectrogramSettings||defaultSpectrogramSettings);data={accepted:true};break
       case 'spectrogram.point':data=await spectrogram.point(request.payload.queryId as string,request.payload.positionFrame as string,request.payload.frequency as number);break
       case 'spectrogram.cancel':spectrogram.cancel(request.payload.queryId as string);break
-      case 'app.info':data={...product,spectrogramUsage:testMode?spectrogram?.usage:undefined,processMetrics:testMode?app.getAppMetrics().map(({pid,type,cpu,memory})=>({pid,type,cpu,memory})):undefined,packaged:app.isPackaged,appVersion:app.getVersion(),electron:process.versions.electron,nativeModules:engine.runtimeModules(),resourcesPath:process.resourcesPath,userData:app.getPath('userData'),windowVisible:window?.isVisible()&&!window?.isMinimized(),windowBounds:window?.getBounds(),displays:screen.getAllDisplays().map(d=>({id:d.id,scaleFactor:d.scaleFactor,bounds:d.bounds,workArea:d.workArea}))};break
+      case 'preferences.retry':savePreferences();await preferencesWriter?.flush();break
+      case 'app.info':data={...product,preferencesWrites:testMode?preferencesWriter?.stats:undefined,spectrogramUsage:testMode?spectrogram?.usage:undefined,processMetrics:testMode?app.getAppMetrics().map(({pid,type,cpu,memory})=>({pid,type,cpu,memory})):undefined,packaged:app.isPackaged,appVersion:app.getVersion(),electron:process.versions.electron,nativeModules:engine.runtimeModules(),resourcesPath:process.resourcesPath,userData:app.getPath('userData'),windowVisible:window?.isVisible()&&!window?.isMinimized(),windowBounds:window?.getBounds(),displays:screen.getAllDisplays().map(d=>({id:d.id,scaleFactor:d.scaleFactor,bounds:d.bounds,workArea:d.workArea}))};break
       case 'record.capacity':{
         const snapshot=engine.snapshot(5,1),format=snapshot.active&&snapshot.sourceId===state.deviceId?snapshot.format:engine.devices().find(d=>d.id===state.deviceId)?.format||snapshot.format
         update({recordingCapacity:{...recordingCapacity(await freeSpace(recordings.directory),recordings.settings,format.sampleRate,format.channelCount),directory:recordings.directory}});break
@@ -483,7 +484,7 @@ async function dispatch(request:Request):Promise<Reply>{
     return {requestId:request.requestId,ok:true,state:{...state},data}
   }catch(error){
     const message=error instanceof Error?error.message:String(error)
-    if(request.command.startsWith('spectrogram.'))return {requestId:request.requestId,ok:false,state:{...state},error:{code:message.split(':')[0],message}}
+    if(request.command.startsWith('spectrogram.')||request.command==='preferences.retry')return {requestId:request.requestId,ok:false,state:{...state},error:{code:message.split(':')[0],message}}
     if(recordings&&!recordings.busy())releaseRecordingCapture()
     analyses?.setRecordingBusy(recordings?.busy()||false)
     if(exporter&&!recordings?.busy()&&!exiting){exporter.resume();retention?.resume()}
@@ -571,7 +572,7 @@ app.whenReady().then(()=>{
   window=new BrowserWindow({
     icon:app.isPackaged?join(process.resourcesPath,'icon.png'):join(root,'resources/trace/icon.png'),title:testMode?'Trace — 自动验证':'Trace — Audio Recorder & Analyzer',width:1280,height:800,minWidth:1024,minHeight:700,
     ...(bounds||{}),backgroundColor:'#121615',autoHideMenuBar:true,show:!testMode||process.argv.includes('--trace-test-visible'),
-    webPreferences:{preload:join(__dirname,'../preload/index.js'),contextIsolation:true,sandbox:true,nodeIntegration:false,backgroundThrottling:!testMode},
+    webPreferences:{webgl:!(testMode&&process.env.TRACE_TEST_NO_WEBGL==='1'),preload:join(__dirname,'../preload/index.js'),contextIsolation:true,sandbox:true,nodeIntegration:false,backgroundThrottling:!testMode},
   })
   const publishVisibility=()=>{const visible=Boolean(window?.isVisible()&&!window?.isMinimized());if(!visible)spectrogram?.cancel();if(state.windowVisible!==visible)update({windowVisible:visible})}
   window.on('show',publishVisibility);window.on('hide',publishVisibility);window.on('minimize',publishVisibility);window.on('restore',publishVisibility)
@@ -630,6 +631,7 @@ app.on('before-quit',event=>{
     await Promise.all([spectrogram?.close(),instruments?.shutdown(),deliveries?.shutdown(),retention?.shutdown(),exporter?.pauseForRecording(),analyses?.shutdown(),playback?.close()])
     if(final&&recordings)await recordings.finish(final)
     await exporter?.shutdown()
+    await preferencesWriter?.flush()
   })()
   finish.catch(error=>console.error('Trace finalization:',error)).finally(()=>{readyToQuit=true;app.quit()})
 })

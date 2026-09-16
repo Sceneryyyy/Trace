@@ -1,5 +1,7 @@
 import {useEffect,useLayoutEffect,useMemo,useRef,useState} from 'react'
-import {Timeline,type TimelineProps,type TimelineLayer} from './Timeline'
+import {SurfaceCanvas} from './SurfaceCanvas'
+import {defaultSurface,surfacePresets,type SurfaceOptions} from '../surfaceOptions'
+import {Timeline,useTimelinePreviewRange,type TimelineProps,type TimelineLayer} from './Timeline'
 import {colorizeSpectrogram,spectrogramPacketMatches,spectrogramContextKey} from './spectrogramPresentation'
 import {defaultSpectrogramSettings,spectrogramConfigKey,validateSpectrogramSettings,type SpectrogramSettings,type SpectrogramPacket,type SpectrogramQuery,type SpectrogramSourceRef} from '../spectrogramProtocol'
 import type {Command,MeterSnapshot} from '../shared'
@@ -15,11 +17,14 @@ function monoIncompatible(s:MeterSnapshot|null,settings:SpectrogramSettings):boo
  return (s?.sourceKind==='take'?s.recording?.sourceFormat.channelCount:s?.format.channelCount)===1&&!['stereo','left'].includes(settings.channel)
 }
 export function SpectrogramPanel({settings,change,isVisible,...timeline}:TimelineProps&{settings:SpectrogramSettings;change:(s:SpectrogramSettings)=>void;isVisible:()=>boolean}){
+ const [surfaceError,setSurfaceError]=useState<string|null>(null),[surfaceRetry,setSurfaceRetry]=useState(0)
  const box=useRef<HTMLDivElement>(null),[size,setSize]=useState({width:512,height:180}),[packet,setPacket]=useState<SpectrogramPacket|null>(null),[failure,setFailure]=useState<{context:string;text:string}|null>(null),[readout,setReadout]=useState<{context:string;text:string}|null>(null),[retry,setRetry]=useState(0)
  const current=useRef({timeline,settings,isVisible,size});current.current={timeline,settings,isVisible,size}
  const refreshRef=useRef<()=>void>(()=>{}),effectContext=useRef(''),requestStarted=useRef({id:'',at:0})
  const active=useRef(''),signature=useRef(''),hoverGeneration=useRef(0),hoverTime=useRef(0)
  const snapshot=timeline.snapshot,axis=snapshot?.fileView||snapshot?.timelineWindow
+ const selectionPreview=useTimelinePreviewRange(snapshot?.sourceId),surface=settings.surface||defaultSurface,wants3d=surface.mode==='3d',show3d=wants3d&&!surfaceError
+ const changeSurface=(next:SurfaceOptions)=>{setReadout(null);change({...settings,surface:next})}
  const reference=sourceRef(snapshot),sourceKey=JSON.stringify(reference),phase=snapshot?.fileView?.analysisPhase||'',displayKey=spectrogramContextKey(reference,settings)
  const visiblePacket=spectrogramPacketMatches(packet,reference,settings)?packet:null,error=failure?.context===displayKey?failure.text:'',reading=readout?.context===displayKey?readout.text:''
  const mono=monoIncompatible(snapshot,settings)
@@ -50,12 +55,12 @@ export function SpectrogramPanel({settings,change,isVisible,...timeline}:Timelin
  useLayoutEffect(()=>{if(snapshot?.sourceKind!=='file'&&effectContext.current===displayKey)refreshRef.current()},[axis?.startFrame,axis?.endFrame,displayKey])
  const view=visiblePacket?.view
  const image=useMemo(()=>{
-  if(!view)return null
+  if(!view||show3d)return null
   const canvas=document.createElement('canvas');canvas.width=view.width;canvas.height=view.height
   const ctx=canvas.getContext('2d');if(!ctx)return null
   const bytes=new ImageData(colorizeSpectrogram(view,settings),view.width,view.height)
   ctx.putImageData(bytes,0,0);return canvas
- },[view,settings.minDecibels,settings.maxDecibels,settings.palette])
+ },[view,settings.minDecibels,settings.maxDecibels,settings.palette,show3d])
  const nyquist=(view?.sampleRate||snapshot?.format.sampleRate||48000)/2,lo=Math.min(settings.minFrequency,nyquist*.9),hi=Math.min(settings.maxFrequency,nyquist)
  const reset=()=>change({...settings,minFrequency:20,maxFrequency:Math.min(20000,nyquist),minDecibels:-100,maxDecibels:0})
  const layer:TimelineLayer={draw:(ctx,g)=>{
@@ -84,9 +89,19 @@ export function SpectrogramPanel({settings,change,isVisible,...timeline}:Timelin
    let a=center/Math.exp(span*ratio),b=a*Math.exp(span);if(a<1){a=1;b=Math.exp(span)}if(b>nyquist){b=nyquist;a=b/Math.exp(span)}change({...settings,minFrequency:a,maxFrequency:b})
   }}
  const status=mono?'此声道模式需要双声道':error?/UNAVAILABLE|OUTSIDE|NOT_READY/.test(error)?'此处音频暂不可用':'声谱图准备失败':!visiblePacket?'准备声谱图…':visiblePacket.phase==='partial'?'正在准备 '+Math.round((view?.progress||0)*100)+'%':''
- return <div className="spectrogram-instrument" ref={box} data-spectrogram-context={displayKey} data-spectrogram-phase={mono?'unavailable':error?'error':visiblePacket?.phase||'preparing'} data-spectrogram-request={visiblePacket?.requestId} onPointerLeave={()=>{hoverGeneration.current++;setReadout(null)}}>
-  <div className="spectrogram-toolbar"><span className={'spectral-colors '+settings.palette}/><span>{settings.minDecibels} → {settings.maxDecibels} dBFS</span>{error&&<button onClick={()=>setRetry(n=>n+1)} aria-label="重试声谱图">重试</button>}{mono&&<button onClick={()=>change({...settings,channel:'stereo'})}>使用单声道</button>}<button onClick={reset} title="复位频率和色阶范围">复位</button></div>
-  <Timeline {...timeline} kind="spectrogram" layer={layer} feedback={(!visiblePacket||mono)&&status?<div className="spectrogram-empty" role="status">{status}</div>:undefined}/>
+ return <div className="spectrogram-instrument" ref={box} data-surface-mode={show3d?'3d':'2d'} data-spectrogram-context={displayKey} data-spectrogram-phase={mono?'unavailable':error?'error':visiblePacket?.phase||'preparing'} data-spectrogram-request={visiblePacket?.requestId} onPointerLeave={()=>{hoverGeneration.current++;setReadout(null)}}>
+  <div className="spectrogram-toolbar"><div role="group" aria-label="声谱图维度"><button aria-pressed={!wants3d} onClick={()=>changeSurface({...surface,mode:'2d'})}>2D</button><button aria-pressed={wants3d} onClick={()=>changeSurface({...surface,mode:'3d'})}>3D</button></div><span className={'spectral-colors '+settings.palette}/><span>{settings.minDecibels} → {settings.maxDecibels} dBFS</span>{error&&<button onClick={()=>setRetry(n=>n+1)} aria-label="重试声谱图">重试</button>}{mono&&<button onClick={()=>change({...settings,channel:'stereo'})}>使用单声道</button>}<button onClick={reset} title="复位频率和色阶范围">复位</button></div>
+  {wants3d&&<div className="surface-controls">
+   {(Object.keys(surfacePresets) as (keyof typeof surfacePresets)[]).map((key,i)=><button key={key} onClick={()=>changeSurface({...surface,...surfacePresets[key]})}>{['正面','侧面','斜视','俯视'][i]}</button>)}
+   <button title="复位相机角度和缩放" onClick={()=>changeSurface({...surface,yaw:defaultSurface.yaw,pitch:defaultSurface.pitch,zoom:defaultSurface.zoom})}>视角复位</button>
+   <label title="仅改变显示高度，不修改测量">高度<input aria-label="3D 显示高度" type="range" min=".25" max="2.5" step=".05" value={surface.height} onChange={e=>changeSurface({...surface,height:Number(e.target.value)})}/></label>
+   <label>细节<select aria-label="3D 细节" value={surface.detail} onChange={e=>changeSurface({...surface,detail:Number(e.target.value) as SurfaceOptions['detail']})}><option value="64">低</option><option value="128">中</option><option value="256">高</option></select></label>
+   <label title="与波形和响度历史共用时间范围">时间窗<input aria-label="3D 时间窗" type="range" min="5" max="60" step=".1" value={Math.max(5,Math.min(60,axis?Number(BigInt(axis.endFrame)-BigInt(axis.startFrame))/(snapshot?.timelineRate||snapshot?.format.sampleRate||48000):timeline.seconds))} onChange={e=>timeline.onSeconds?.(Number(e.target.value))}/></label>
+   {surfaceError&&<><span className="surface-failure" role="status">3D 暂不可用，已显示 2D</span><button title={surfaceError} onClick={()=>{setSurfaceError(null);setSurfaceRetry(n=>n+1)}}>重试 3D</button></>}
+  </div>}
+  {wants3d&&<SurfaceCanvas key={surfaceRetry} view={mono?undefined:view} context={displayKey} dataStart={visiblePacket?.axisStartFrame} dataEnd={visiblePacket?.axisEndFrame} start={axis?.startFrame||'0'} end={axis?.endFrame||'0'} cursor={snapshot?.positionFrame||'0'} selection={selectionPreview||snapshot?.fileView?.selection} rate={snapshot?.timelineRate||snapshot?.format.sampleRate||48000} timeOffset={snapshot?.fileView?.timeOffsetSeconds||0} options={surface} palette={settings.palette} minDb={settings.minDecibels} maxDb={settings.maxDecibels} minFrequency={lo} maxFrequency={hi} hidden={!show3d} isVisible={isVisible} change={changeSurface} failure={setSurfaceError} hover={(frame,frequency)=>layer.hover?.(frame,Math.log(frequency/lo)/Math.log(hi/lo))}/>}
+  <Timeline {...timeline} kind={show3d?'ruler':'spectrogram'} layer={show3d?undefined:layer} feedback={(!visiblePacket||mono)&&status?<div className="spectrogram-empty" role="status">{status}</div>:undefined}/>
+
   <div className="spectrogram-readout" title="原始频点读数；图中色块显示所覆盖频点与时间窗的最大幅度。滚轮缩放频率，Ctrl + 滚轮缩放时间。">{error||mono?status:reading||status||('FFT '+settings.fftSize+' · 悬停查看频点')}<span>斜纹：未覆盖 / 缺口</span></div>
  </div>
 }
