@@ -1,3 +1,6 @@
+import {ReportService,type ReportInput} from './reportService'
+import {defaultTargetSettings,restoreTargetSettings,validateTargetSettings} from './targetSettings'
+import {assetFormatLabel} from './assetFormat'
 import {PreferencesWriter} from './preferencesWriter'
 import {SpectrogramPresenter,SpectrogramContextChanged,type SpectrogramBinding} from './spectrogramPresenter'
 import {fileSpectrogramSource,replaySpectrogramSource,liveSpectrogramSource,takeSpectrogramSource} from './spectrogramSource'
@@ -64,8 +67,9 @@ let recordingCaptureHeld=false
 let preferencesTimer:ReturnType<typeof setTimeout>|undefined
 let preferencesReady=false
 let preferencesWriter:PreferencesWriter|undefined
+let reports:ReportService
 let displayTick=0,snapshotSequence=0,pollFailurePending=false,lastPollError=''
-let state:TraceState={spectrogramSettings:{...defaultSpectrogramSettings},revision:0,active:false,monitoringRequested:true,deviceId:'',windowSeconds:30,error:null,displaySettings:{...defaultDisplaySettings},workspace:defaultWorkspace(),instrumentSettings:{...defaultInstrumentSettings}}
+let state:TraceState={targetSettings:structuredClone(defaultTargetSettings),spectrogramSettings:{...defaultSpectrogramSettings},revision:0,active:false,monitoringRequested:true,deviceId:'',windowSeconds:30,error:null,displaySettings:{...defaultDisplaySettings},workspace:defaultWorkspace(),instrumentSettings:{...defaultInstrumentSettings}}
 const completed=new Map<string,{signature:string;reply:Reply}>()
 const pending=new Map<string,{signature:string;promise:Promise<Reply>}>()
 let mutations:Promise<unknown>=Promise.resolve()
@@ -114,6 +118,7 @@ function syncRecordingState():void{
   if(!recordings)return
   releaseRecordingCapture()
   analyses?.setRecordingBusy(recordings.busy()||managingLibrary)
+  reports?.setRecordingBusy(recordings.busy()||managingLibrary)
   if(exporter){if(recordings.busy()||exiting||managingLibrary)void exporter.pauseForRecording();else exporter.resume()}
   if(deliveries){if(recordings.busy()||exiting||managingLibrary)void deliveries.pause();else deliveries.resume()}
   if(retention){if(recordings.busy()||exiting||managingLibrary)void retention.pause();else retention.resume()}
@@ -173,7 +178,7 @@ function preferencesPath():string{return join(app.getPath('userData'),'trace-set
 function savePreferences():void{
   if(!preferencesReady)return
   preferencesWriter??=new PreferencesWriter(preferencesPath(),error=>{const message=error?String(error):null;if((state.preferencesError||null)!==message)update({preferencesError:message})})
-  preferencesWriter.save(JSON.stringify({spectrogramSettings:state.spectrogramSettings,windowBounds:window&&!window.isDestroyed()?window.getNormalBounds():undefined,maximized:window?.isMaximized(),instrumentSettings:state.instrumentSettings,workspace:state.workspace,displaySettingsVersion,monitoringRequested:state.monitoringRequested,displaySettings:state.displaySettings,settingsVersion:recordSettingsVersion,deviceId:state.deviceId,windowSeconds:state.windowSeconds,recordSettings:recordings.settings,recordDirectory:recordings.directory,exportPreferencesVersion,lastExportPreset:state.lastExportPreset,confirmExitWhileRecording:state.confirmExitWhileRecording!==false,lastExportSaveCopy:state.lastExportSaveCopy===true}))
+  preferencesWriter.save(JSON.stringify({targetSettings:state.targetSettings,spectrogramSettings:state.spectrogramSettings,windowBounds:window&&!window.isDestroyed()?window.getNormalBounds():undefined,maximized:window?.isMaximized(),instrumentSettings:state.instrumentSettings,workspace:state.workspace,displaySettingsVersion,monitoringRequested:state.monitoringRequested,displaySettings:state.displaySettings,settingsVersion:recordSettingsVersion,deviceId:state.deviceId,windowSeconds:state.windowSeconds,recordSettings:recordings.settings,recordDirectory:recordings.directory,exportPreferencesVersion,lastExportPreset:state.lastExportPreset,confirmExitWhileRecording:state.confirmExitWhileRecording!==false,lastExportSaveCopy:state.lastExportSaveCopy===true}))
 }
 function schedulePreferences():void{if(preferencesTimer)clearTimeout(preferencesTimer);preferencesTimer=setTimeout(()=>{try{savePreferences()}catch(error){console.error("Trace preferences:",error)}},150)}
 function startDevice(id:string):SourceFormat{
@@ -254,6 +259,15 @@ async function inspectHistory(payload:Record<string,unknown>):Promise<void>{
   if(BigInt(end)>BigInt(start))playback.window(map.id,start,end,900)
   if(payload.selectionEndFrame!==undefined)playback.selection(map.id,position,local(payload.selectionEndFrame,true),false)
 }
+function makeReportInput(playbackId:string,scope:'whole'|'selection'):ReportInput{
+ const c=playback.reportContext(playbackId,scope==='selection'),a=analyses.reportInput(c.analysisId),doc=recordings.session(c.source.takeId).document
+ const regions=c.source.regionId?doc.regions.filter(r=>r.id===c.source.regionId):doc.regions
+ const notes:string[]=[];let integrity:import('./reportTypes').ReportSource['integrity']['state']='complete'
+ if(doc.status==='recovered'||doc.status==='failed'||regions.some(r=>r.error||r.status==='interrupted')){integrity='unknown';notes.push('录音经过恢复或包含中断，可用文件不代表原始采集全部完整。')}
+ else if(regions.length>1||doc.hasDiscontinuities&&!c.source.regionId){integrity='gaps';notes.push('原录音包含多个采集区域或中断；当前文件按内容时间排列。')}
+ else if(regions.some(r=>BigInt(r.estimatedFrames)>0n||r.clock.startEstimated||r.clock.endEstimated)){integrity='estimated';notes.push('原采集含估计静音或估计时钟边界。')}
+ return {playbackId,request:{version:1,source:{label:c.source.label,takeId:c.source.takeId,role:c.source.role,regionId:c.source.regionId,exportId:c.source.exportId,format:assetFormatLabel(c.source.assetFormat)||c.source.sampleRate+' Hz',sourceFrames:c.source.frames,scope:{kind:scope,...c.range},integrity:{state:integrity,notes},physicalRange:a.manifest.sourceRange},cacheDirectory:a.directory,cacheKey:a.manifest.cacheKey,sourceFiles:a.source.sources},retain:()=>{try{analyses.retain(c.analysisId);return()=>analyses.release(c.analysisId)}catch(error){if(!String(error).includes('UNKNOWN_ANALYSIS_JOB'))throw error;return()=>{}}}}
+}
 async function chooseDirectory():Promise<boolean>{
   if(recordings.busy())throw Error('RECORDING_ACTIVE')
   if(exporter?.busy()||deliveries?.busy()||retention?.active())throw Error('EXPORT_ACTIVE')
@@ -264,7 +278,7 @@ async function chooseDirectory():Promise<boolean>{
     await retention.pause();await deliveries.pause();await analyses.pauseForRecording();await recordings.settled()
     if(exporter.busy())throw Error('EXPORT_ACTIVE')
     if(playback.active()&&!playback.view()?.temporary)await closeInspection()
-    for(const take of recordings.sessions()){await analyses.forgetTake(take.document.sessionId);retention.forget(take.document.sessionId);deliveries.forgetTake(take.document.sessionId)}
+    for(const take of recordings.sessions()){await reports.forgetTake(take.document.sessionId);await analyses.forgetTake(take.document.sessionId);retention.forget(take.document.sessionId);deliveries.forgetTake(take.document.sessionId)}
     await recordings.setDirectory(result.filePaths[0]);update({recordDirectoryError:null});savePreferences();return true
   }finally{managingLibrary=false;syncRecordingState();resumeInput()}
 }
@@ -282,8 +296,36 @@ async function dispatch(request:Request):Promise<Reply>{
       case 'spectrogram.query':spectrogram.request(request.requestId,validateSpectrogramQuery(request.payload),state.spectrogramSettings||defaultSpectrogramSettings);data={accepted:true};break
       case 'spectrogram.point':data=await spectrogram.point(request.payload.queryId as string,request.payload.positionFrame as string,request.payload.frequency as number);break
       case 'spectrogram.cancel':spectrogram.cancel(request.payload.queryId as string);break
+      case 'targets.configure':{
+        const targetSettings=validateTargetSettings(request.payload.settings);update({targetSettings,displaySettings:{...(state.displaySettings||defaultDisplaySettings),targetEnabled:targetSettings.enabled&&targetSettings.integrated!==null,targetLufs:targetSettings.integrated?.target??state.displaySettings?.targetLufs??-23}});savePreferences();break
+      }
+      case 'report.prepare':{
+        if(recordings.busy()||managingLibrary)throw Error('RECORDING_ACTIVE')
+        await retention.pause();const input=makeReportInput(request.payload.playbackId as string,request.payload.scope as 'whole'|'selection')
+        data={reportId:await reports.start(input,state.targetSettings||defaultTargetSettings)};retention.resume();break
+      }
+      case 'report.get':data=reports.result(request.payload.reportId as string);break
+      case 'report.cancel':reports.cancel(request.payload.reportId as string);break
+      case 'report.retry':if(recordings.busy()||managingLibrary)throw Error('RECORDING_ACTIVE');await retention.pause();data={reportId:await reports.retry(request.payload.reportId as string,state.targetSettings||defaultTargetSettings)};retention.resume();break
+      case 'report.open':{const error=await shell.openPath(reports.file(request.payload.reportId as string));if(error)throw Error('OPEN_REPORT_FAILED: '+error);break}
+      case 'report.jump':{
+        if(recordings.busy()||managingLibrary)throw Error('RECORDING_ACTIVE')
+        const report=reports.result(request.payload.reportId as string),file=playback.view(),event=report.eventPreview[request.payload.index as number]
+        if(!file||!event||file.takeId!==report.source.takeId||file.role!==report.source.role||file.regionId!==report.source.regionId||file.exportId!==report.source.exportId)throw Error('REPORT_SOURCE_NOT_OPEN')
+        const current=analyses.reportInput(file.analysisId);if(JSON.stringify(current.manifest.sourceSha256)!==JSON.stringify(report.analysis.sourceSha256))throw Error('REPORT_SOURCE_CHANGED')
+        playback.seek(file.id,event.startFrame,false);publishInspectionSample();break
+      }
+      case 'report.export':{
+        if(recordings.busy()||managingLibrary)throw Error('RECORDING_ACTIVE')
+        reports.assertExportable(request.payload.reportId as string)
+        let directory:string|undefined
+        if(testMode&&process.env.TRACE_TEST_REPORT_DEST){const candidate=resolve(process.env.TRACE_TEST_REPORT_DEST);if(!candidate.toLowerCase().startsWith((testRoot!+sep).toLowerCase()))throw Error('TEST_DIRECTORY_OUTSIDE_ARTIFACTS');mkdirSync(candidate,{recursive:true});directory=candidate}
+        else{const result=await dialog.showOpenDialog(window!,{title:'导出测量报告',properties:['openDirectory','createDirectory']});if(!result.canceled)directory=result.filePaths[0]}
+        if(directory){void reports.export(request.payload.reportId as string,directory).catch(()=>{});data={accepted:true}}else data={cancelled:true}
+        break
+      }
       case 'preferences.retry':savePreferences();await preferencesWriter?.flush();break
-      case 'app.info':data={...product,preferencesWrites:testMode?preferencesWriter?.stats:undefined,spectrogramUsage:testMode?spectrogram?.usage:undefined,processMetrics:testMode?app.getAppMetrics().map(({pid,type,cpu,memory})=>({pid,type,cpu,memory})):undefined,packaged:app.isPackaged,appVersion:app.getVersion(),electron:process.versions.electron,nativeModules:engine.runtimeModules(),resourcesPath:process.resourcesPath,userData:app.getPath('userData'),windowVisible:window?.isVisible()&&!window?.isMinimized(),windowBounds:window?.getBounds(),displays:screen.getAllDisplays().map(d=>({id:d.id,scaleFactor:d.scaleFactor,bounds:d.bounds,workArea:d.workArea}))};break
+      case 'app.info':data={...product,reportUsage:testMode?reports?.diagnostics:undefined,preferencesWrites:testMode?preferencesWriter?.stats:undefined,spectrogramUsage:testMode?spectrogram?.usage:undefined,processMetrics:testMode?app.getAppMetrics().map(({pid,type,cpu,memory})=>({pid,type,cpu,memory})):undefined,packaged:app.isPackaged,appVersion:app.getVersion(),electron:process.versions.electron,nativeModules:engine.runtimeModules(),resourcesPath:process.resourcesPath,userData:app.getPath('userData'),windowVisible:window?.isVisible()&&!window?.isMinimized(),windowBounds:window?.getBounds(),displays:screen.getAllDisplays().map(d=>({id:d.id,scaleFactor:d.scaleFactor,bounds:d.bounds,workArea:d.workArea}))};break
       case 'record.capacity':{
         const snapshot=engine.snapshot(5,1),format=snapshot.active&&snapshot.sourceId===state.deviceId?snapshot.format:engine.devices().find(d=>d.id===state.deviceId)?.format||snapshot.format
         update({recordingCapacity:{...recordingCapacity(await freeSpace(recordings.directory),recordings.settings,format.sampleRate,format.channelCount),directory:recordings.directory}});break
@@ -297,10 +339,11 @@ async function dispatch(request:Request):Promise<Reply>{
       case 'library.clearCache':{
         if(recordings.busy()||exporter.busy()||deliveries.busy())throw Error('LIBRARY_BUSY')
         const takeId=request.payload.takeId as string,item=await library.describe(takeId)
-        const answer=await dialog.showMessageBox(window!,{type:'question',title:'清理缓存',message:item.name,detail:'清理该录音可重建的分析与解码缓存，录音和成品音频保留。再次查看时会重新准备。',buttons:['取消','清理缓存'],defaultId:0,cancelId:0,noLink:true})
+        const testCacheConfirmation=testMode&&process.env.TRACE_TEST_CONFIRM_CACHE_CLEAR==='1'&&recordings.session(takeId).directory.toLowerCase().startsWith((testRoot!+sep).toLowerCase())
+        const answer=testCacheConfirmation?{response:1}:await dialog.showMessageBox(window!,{type:'question',title:'清理缓存',message:item.name,detail:'清理该录音可重建的分析与解码缓存，录音和成品音频保留。再次查看时会重新准备。',buttons:['取消','清理缓存'],defaultId:0,cancelId:0,noLink:true})
         if(answer.response!==1)break
         managingLibrary=true
-        try{await retention.pause();await analyses.pauseForRecording();await recordings.settled();if(playback.view()?.takeId===takeId)await closeInspection();await analyses.forgetTake(takeId);data=await library.clearCache(takeId)}
+        try{await retention.pause();await analyses.pauseForRecording();await recordings.settled();if(playback.view()?.takeId===takeId)await closeInspection();await reports.forgetTake(takeId);await analyses.forgetTake(takeId);data=await library.clearCache(takeId)}
         finally{managingLibrary=false;syncRecordingState();resumeInput()}
         break
       }
@@ -315,7 +358,7 @@ async function dispatch(request:Request):Promise<Reply>{
           const current=await library.missingEntries();let removed=0
           for(const item of items){if(!current.some(i=>i.takeId===item.takeId&&i.exportId===item.exportId))continue
             const viewing=playback.view();if(viewing?.takeId===item.takeId&&(!item.exportId||viewing.exportId===item.exportId))await closeInspection()
-            deliveries.forgetTake(item.takeId,item.exportId);await analyses.forgetTake(item.takeId,item.exportId);retention.forget(item.takeId);await library.remove(item.takeId,item.exportId);removed++}
+            deliveries.forgetTake(item.takeId,item.exportId);await reports.forgetTake(item.takeId);await analyses.forgetTake(item.takeId,item.exportId);retention.forget(item.takeId);await library.remove(item.takeId,item.exportId);removed++}
           data={removed}
         }finally{managingLibrary=false;syncRecordingState();resumeInput()}
         break
@@ -336,7 +379,7 @@ async function dispatch(request:Request):Promise<Reply>{
           await retention.pause();await recordings.settled()
           if(exporter.busy())throw Error('LIBRARY_BUSY')
           if(closeFile)await playback.close()
-          deliveries.forgetTake(takeId,exportId);await analyses.forgetTake(takeId,exportId);retention.forget(takeId)
+          deliveries.forgetTake(takeId,exportId);await reports.forgetTake(takeId);await analyses.forgetTake(takeId,exportId);retention.forget(takeId)
           await library.remove(takeId,exportId)
         }finally{
           managingLibrary=false;syncRecordingState()
@@ -485,6 +528,7 @@ async function dispatch(request:Request):Promise<Reply>{
     return {requestId:request.requestId,ok:true,state:{...state},data}
   }catch(error){
     const message=error instanceof Error?error.message:String(error)
+    if(request.command.startsWith('report.')){if(!recordings.busy()&&!managingLibrary&&!exiting)retention?.resume();return {requestId:request.requestId,ok:false,state:{...state},error:{code:message.split(':')[0],message}}}
     if(request.command.startsWith('spectrogram.')||request.command==='preferences.retry')return {requestId:request.requestId,ok:false,state:{...state},error:{code:message.split(':')[0],message}}
     if(recordings&&!recordings.busy())releaseRecordingCapture()
     analyses?.setRecordingBusy(recordings?.busy()||false)
@@ -504,7 +548,7 @@ function handle(event:Electron.IpcMainInvokeEvent,raw:unknown):Promise<Reply>|Re
     const operation=isMutation(request.command)?mutations.then(()=>dispatch(request)):dispatch(request)
     if(isMutation(request.command))mutations=operation.then(()=>undefined,()=>undefined)
     const promise=operation.then(reply=>{
-      if(!request.command.startsWith('spectrogram.')||isMutation(request.command))completed.set(requestId,{signature,reply});pending.delete(requestId)
+      if((!request.command.startsWith('spectrogram.')&&!request.command.startsWith('report.'))||isMutation(request.command))completed.set(requestId,{signature,reply});pending.delete(requestId)
       if(completed.size>256)completed.delete(completed.keys().next().value as string)
       return reply
     })
@@ -515,7 +559,7 @@ function handle(event:Electron.IpcMainInvokeEvent,raw:unknown):Promise<Reply>|Re
   }
 }
 async function initialize():Promise<void>{
-  let preferred:{spectrogramSettings?:unknown;instrumentSettings?:unknown;workspace?:unknown;monitoringRequested?:boolean;deviceId?:string;windowSeconds?:number;recordSettings?:unknown;recordDirectory?:string;displaySettings?:unknown;lastExportPreset?:unknown;confirmExitWhileRecording?:boolean;lastExportSaveCopy?:boolean}={}
+  let preferred:{targetSettings?:unknown;spectrogramSettings?:unknown;instrumentSettings?:unknown;workspace?:unknown;monitoringRequested?:boolean;deviceId?:string;windowSeconds?:number;recordSettings?:unknown;recordDirectory?:string;displaySettings?:unknown;lastExportPreset?:unknown;confirmExitWhileRecording?:boolean;lastExportSaveCopy?:boolean}={}
   try{preferred=JSON.parse(readFileSync(preferencesPath(),'utf8'))}catch{}
   if(validWindowSeconds(preferred.windowSeconds))state.windowSeconds=preferred.windowSeconds
   state.instrumentSettings=restoreInstrumentSettings(preferred.instrumentSettings)
@@ -527,6 +571,8 @@ async function initialize():Promise<void>{
   try{if(preferred.displaySettings)state.displaySettings=restoreDisplaySettings(preferred.displaySettings)}catch{}
   try{if(preferred.recordSettings)recordings.configure(preferred.recordSettings)}catch{}
   try{if(preferred.lastExportPreset)state.lastExportPreset=validateExportPreset(preferred.lastExportPreset)}catch{}
+  state.targetSettings=restoreTargetSettings(preferred.targetSettings,state.displaySettings)
+  await reports.initialize()
   if(testMode&&process.env.TRACE_RECORD_TEST_DIR){
     const target=resolve(process.env.TRACE_RECORD_TEST_DIR)
     if(!target.toLowerCase().startsWith((testRoot!+sep).toLowerCase()))throw Error('TEST_DIRECTORY_OUTSIDE_ARTIFACTS')
@@ -547,6 +593,7 @@ app.whenReady().then(()=>{
   instruments=new InstrumentService(engine)
   spectrogram=new SpectrogramPresenter(engine,resolveSpectrogram,packet=>{if(window&&!window.isDestroyed())window.webContents.send('trace:spectrogram',packet)})
   playback=new PlaybackService(engine,analyses,syncPlaybackState)
+  reports=new ReportService(join(app.getPath('userData'),'report-drafts'),()=>{state={...state,reportJobs:reports.views()};emitState();if(!recordings.busy()&&!managingLibrary&&!exiting)retention?.resume()})
   playback.beforeSourceChange=()=>spectrogram.release()
   playback.instrumentQuery=request=>instrumentsVisible()?instruments.query(request,state.instrumentSettings||defaultInstrumentSettings):Promise.resolve(undefined)
   const encoderLock=JSON.parse(readFileSync(app.isPackaged?join(process.resourcesPath,'ffmpeg.lock.json'):join(root,'ffmpeg.lock.json'),'utf8'))
@@ -555,6 +602,7 @@ app.whenReady().then(()=>{
   library=new LibraryService(recordings,path=>shell.trashItem(path),()=>{if(recordings)update({recordings:library.summaries(),exportJobs:exporter.views().map(e=>library.exportView(e))})},()=>exporter.busy()||deliveries.busy())
   recordings.setExportResolver((takeId,exportId)=>exporter.resolve(takeId,exportId))
   retention=new SourceRetention(recordings,exporter,playback,analyses,app.isPackaged?join(process.resourcesPath,'native/trace_engine.node'):join(root,'build/trace-engine/Release/trace_engine.node'),syncRetentionState)
+  retention.usesSource=id=>reports.usesTake(id)
   recordings.setFinalizedHandler(async id=>{
     const take=recordings.session(id),preset=take.document.preset
     if(!preset.format){retention.schedule();return}
@@ -629,6 +677,7 @@ app.on('before-quit',event=>{
   let final:NativeRecordSnapshot|undefined
   try{final=engine?.shutdown()}catch(error){console.error('Trace shutdown:',error)}
   const finish=(async()=>{
+    await reports?.shutdown()
     await Promise.all([spectrogram?.close(),instruments?.shutdown(),deliveries?.shutdown(),retention?.shutdown(),exporter?.pauseForRecording(),analyses?.shutdown(),playback?.close()])
     if(final&&recordings)await recordings.finish(final)
     await exporter?.shutdown()

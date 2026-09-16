@@ -48,6 +48,7 @@ export class PlaybackService {
   const c=this.context(id),job=this.analyses.snapshots().find(j=>j.id===c.analysisId)
   return {source:structuredClone(c.source),replay:c.replayInfo?{...c.replayInfo}:undefined,analysisKey:job?.phase==='ready'?job.cacheKey:undefined}
  }
+ reportContext(id:string,selection:boolean){const c=this.context(id);if(c.temporary)throw Error('SAVE_CACHE_BEFORE_REPORT');if(selection&&!c.selection)throw Error('INVALID_SELECTION');const analysisId=selection?c.selectionAnalysisId:c.analysisId;if(!analysisId)throw Error('ANALYSIS_NOT_READY');return {analysisId,source:structuredClone(c.source),range:selection?{...c.selection!}:{startFrame:'0',endFrame:c.source.frames}}}
  active():boolean{return this.current!==null}
  outputActive():boolean{return Boolean(this.current?.outputReady)}
  renameTake(takeId:string,oldName:string,name:string):void{const c=this.current;if(c?.source.takeId===takeId&&c.source.label.startsWith(oldName)){c.source={...c.source,label:name+c.source.label.slice(oldName.length)};this.changed()}}

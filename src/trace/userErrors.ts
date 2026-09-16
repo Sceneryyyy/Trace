@@ -1,5 +1,13 @@
 export function userError(error:unknown):string{
  const text=String(error||'')
+ if(/REPORT_QUEUE_FULL/.test(text))return '最多同时保留两项待生成报告，请等待完成或取消一项。'
+ if(/SAVE_CACHE_BEFORE_REPORT/.test(text))return '请先保存缓存，再生成测量报告。'
+ if(/REPORT_SOURCE_NOT_OPEN/.test(text))return '请先打开这份报告对应的文件，再定位事件。'
+ if(/UNKNOWN_REPORT/.test(text))return '临时报告已清理，请重新生成。'
+ if(/REPORT_CANCELLED/.test(text))return '报告任务已取消；已有报告和原音频保持不变。'
+ if(/REPORT_NOT_READY|REPORT_SOURCE_BUSY|REPORT_BUSY/.test(text))return '报告或来源仍在处理中，请完成后重试。'
+ if(/REPORT_WORKER_EXIT/.test(text))return '报告生成未完成，请重试；原音频和已有报告仍然保留。'
+ if(/RECORDING_ACTIVE/.test(text))return '请先结束录音，再执行此操作。'
  if(/STALE_REPLAY_SOURCE|STALE_PLAYBACK_SOURCE/.test(text))return '历史来源已变化，请重新查看缓存后保存。'
   if(/CACHE_SAVE_UNAVAILABLE/.test(text))return '当前引擎不支持缓存保存，请使用完整的新版本。'
   if(/CACHE_SAVE_FRAME_MISMATCH|CACHE_SAVE_INCOMPLETE/.test(text))return '缓存保存未完整完成，已保留写入内容，可在录音文件中检查或恢复。'

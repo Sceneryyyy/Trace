@@ -2,6 +2,6 @@
 module.exports=function productPath(value){
  const p=value.replaceAll('\\','/')
  return p===''||p==='main'||p==='main/chunks'||p.startsWith('main/chunks/')&&p.endsWith('.js')||
- ['main/index.js','main/file-worker.js','main/media-runner.js','preload','preload/index.js','renderer','renderer/index.html','renderer/assets'].includes(p)||
+ ['main/index.js','main/file-worker.js','main/media-runner.js','main/report-worker.js','preload','preload/index.js','renderer','renderer/index.html','renderer/assets'].includes(p)||
  p.startsWith('renderer/assets/')
 }

@@ -41,6 +41,16 @@ test('queries do not require a mutation revision match', () => {
   for (const command of ['live.start', 'live.stop', 'live.reset', 'view.window']) assert.equal(isMutation(command), true)
 })
 
+test('report commands accept identifiers only, bound event indices and permit immediate cancellation',()=>{
+ for(const scope of ['whole','selection'])assert.equal(validateRequest(request('report.prepare',{playbackId:'source',scope})).payload.scope,scope)
+ for(const scope of ['live','all',null])assert.throws(()=>validateRequest(request('report.prepare',{playbackId:'source',scope})))
+ for(const command of ['report.get','report.cancel','report.retry','report.open','report.export']){
+  validateRequest(request(command,{reportId:'id'}));assert.throws(()=>validateRequest(request(command,{reportId:'id',path:'C:/anywhere'})))
+ }
+ for(const index of [-1,1000,.5,'1'])assert.throws(()=>validateRequest(request('report.jump',{reportId:'id',index})))
+ validateRequest(request('report.jump',{reportId:'id',index:999}));assert.equal(isMutation('report.cancel'),false);assert.equal(isMutation('report.get'),false)
+})
+
 const timeOutput = resolve('artifacts/m1/time-test.mjs')
 await build({ entryPoints: ['src/trace/renderer/time.ts'], outfile: timeOutput, bundle: true, platform: 'node', format: 'esm' })
 const { timecode, relativeFrame } = await import(pathToFileURL(timeOutput))

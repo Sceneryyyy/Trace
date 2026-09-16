@@ -8,7 +8,7 @@ try{
  const pkg=JSON.parse(asar.extractFile(archive,'package.json'));assert.equal(pkg.name,'trace');assert.equal(pkg.version,packageVersion);assert.equal(pkg.main,'out-trace/main/index.js');assert.equal(Object.keys(pkg.dependencies||{}).length,0)
  const outputFiles=[];function visit(p){for(const item of fs.readdirSync(path.join(root,p),{withFileTypes:true})){const next=p+'/'+item.name;if(item.isDirectory())visit(next);else if(productPath(next.slice('out-trace/'.length)))outputFiles.push(next)}}visit('out-trace')
  for(const file of outputFiles)assert(fs.readFileSync(path.join(root,file)).equals(asar.extractFile(archive,path.normalize(file))),file+' mismatches app build')
- for(const p of ['out-trace/main/index.js','out-trace/main/file-worker.js','out-trace/main/media-runner.js','out-trace/preload/index.js','out-trace/renderer/index.html'])assert(entries.includes('/'+p),p)
+ for(const p of ['out-trace/main/index.js','out-trace/main/file-worker.js','out-trace/main/media-runner.js','out-trace/main/report-worker.js','out-trace/preload/index.js','out-trace/renderer/index.html'])assert(entries.includes('/'+p),p)
  report.checks.push('ASAR contains only the Trace build and a minimal package, with all workers and assets identical to the build')
  const files=[];function walk(p){for(const d of fs.readdirSync(p,{withFileTypes:true})){const name=path.join(p,d.name);if(d.isDirectory())walk(name);else files.push(name)}}walk(dir)
  assert(!files.some(p=>/\.(wav|mp3|m4a|aac|vst3)$/i.test(p)));assert(!fs.existsSync(path.join(dir,'resources/default_app.asar')))

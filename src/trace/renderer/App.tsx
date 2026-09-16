@@ -17,6 +17,9 @@ import {ExportDialog} from './ExportPanel'
 import {RecordSettingsForm} from './RecordSettingsForm'
 import {recordingLabel} from '../recordSettings'
 import {defaultDisplaySettings} from '../displaySettings'
+import {defaultTargetSettings} from '../targetSettings'
+import {TargetSettingsForm,TargetStrip} from './Targets'
+import {ReportPanel} from './ReportPanel'
 import {DisplaySettingsForm} from './DisplaySettingsForm'
 import {userError} from '../userErrors'
 import type {ExportDescription,ExportSource} from '../exportTypes'
@@ -85,7 +88,7 @@ export default function App(): React.JSX.Element {
   const gain=displayDraft.gain??state.displaySettings?.waveGain??4,seconds=displayDraft.seconds??state.windowSeconds
   const [selectionMode,setSelectionMode]=useState(false)
   const refreshingLibrary=useRef(false)
-  const [modal,setModal]=useState<'settings'|'files'|'export'|'display'|null>(null)
+  const [modal,setModal]=useState<'settings'|'files'|'export'|'display'|'targets'|'reports'|null>(null)
   useEffect(()=>{if(modal==='settings')void command('record.capacity').catch(()=>{})},[modal,state.recordDirectory,state.deviceId])
   const [exportSource,setExportSource]=useState<ExportSource|null>(null)
   const [exportDescription,setExportDescription]=useState<ExportDescription|null>(null),[exportInfoError,setExportInfoError]=useState('')
@@ -101,7 +104,7 @@ export default function App(): React.JSX.Element {
   const queue = useRef<Promise<unknown>>(Promise.resolve())
   function accept(next: TraceState): void { if (next.revision > current.current.revision || (next.revision === current.current.revision && (next.eventSequence||0)>=(current.current.eventSequence||0))) { const wasHidden=current.current.windowVisible===false;current.current = next; presentation.reconcile(next);if(next.windowVisible!==false){setState(next);if(wasHidden&&presentation.snapshot)setSnapshot({...presentation.snapshot})} } }
   function command(name: Command, payload: Record<string, unknown> = {}): Promise<unknown> {
-    const independent=['preferences.retry','library.storage','export.describe','app.diagnostics'].includes(name)
+    const independent=['report.get','report.cancel','preferences.retry','library.storage','export.describe','app.diagnostics'].includes(name)
     const execute=async()=>{
       const foreground=!independent&&!['playback.seek','view.inspect','library.refresh','workspace.configure','instrument.configure','spectrogram.configure'].includes(name)
       if(foreground){busyRef.current=true;setBusy(true)}
@@ -269,6 +272,11 @@ export default function App(): React.JSX.Element {
        else if(displaySnapshot)inspectAt({...displaySnapshot,timelineWindow:{startFrame:payload.startFrame as string,endFrame:payload.endFrame as string}},payload.endFrame as string)
      }
    }
+   const targets=state.targetSettings||defaultTargetSettings
+   const wholeSummary=file&&!file.temporary&&file.analysisPhase==='ready'?state.analysisJobs?.find(j=>j.id===file.analysisId&&j.phase==='ready')?.summary:null
+   const targetSummary=file&&!file.temporary?wholeSummary:numberMetrics
+   const targetScope=file&&!file.temporary?'整段':file?'截至游标':isRecording?(multiRegion?'当前段':'本次录音'):'本轮'
+   const targetDuration=file&&!file.temporary?Number(file.totalFrames)/file.sampleRate:displaySnapshot?.lraProvisional?0:Number(displaySnapshot?.positionFrame||0)/timelineRate
    const spectrogramSettings=state.spectrogramSettings||defaultSpectrogramSettings
    const configureSpectrogram=(settings:import('../spectrogramProtocol').SpectrogramSettings)=>queueLatest('spectrogramSettings','spectrogram.configure',{settings})
    const instrumentSettings=state.instrumentSettings||defaultInstrumentSettings
@@ -279,7 +287,7 @@ export default function App(): React.JSX.Element {
       <label className="zoom-control" title="Ctrl + 滚轮">时间窗<input aria-label="波形时间窗" type="range" min="5" max="60" step=".1" value={file?Math.max(5,Math.min(60,Number(BigInt(file.endFrame)-BigInt(file.startFrame))/file.sampleRate)):seconds} onChange={e=>setTimeSpan(Number(e.target.value))}/><output>{zoomLabel(file?Number(BigInt(file.endFrame)-BigInt(file.startFrame))/file.sampleRate:seconds)} s</output></label>
       <label className="zoom-control" title="波形区域滚轮">波形<input aria-label="波形显示倍率" type="range" min="1" max="4" step=".01" value={gain} onChange={e=>changeDisplay('gain',Number(e.target.value))}/><output>×{zoomLabel(gain,2)}</output></label>
         </div></div>:undefined}
-        snapshot={displaySnapshot} seconds={seconds} gain={gain} target={state.displaySettings||defaultDisplaySettings}
+        snapshot={displaySnapshot} seconds={seconds} gain={gain} target={state.displaySettings||defaultDisplaySettings} targets={targets}
         onSeek={(position,_resume,source)=>inspectAt(source,position)}
         onSelection={(startFrame,endFrame,source)=>inspectAt(source,startFrame,endFrame)}
         onWindow={(startFrame,endFrame)=>{if(file)changeWindow({playbackId:file.id,startFrame,endFrame,pixelWidth:900});else if(isRecording)setTimeSpan(Math.max(5,Math.min(60,Number(BigInt(endFrame)-BigInt(startFrame))/1e9)))}}/>
@@ -298,7 +306,7 @@ export default function App(): React.JSX.Element {
    return <main className="trace-app">
     <header className="topbar">
       <div className="brand"><svg viewBox="0 0 32 32" width="31" height="31" fill="none" aria-hidden="true"><path d="M2 16H7L11 5L16 27L21 10L24 16H30" stroke="currentColor" strokeWidth="2.1" strokeLinejoin="round" /></svg><span>TRACE</span><small>Audio Recorder &amp; Analyzer</small></div>
-      <div className="top-status"><span className={'live-badge '+(isRecording?'is-rec':state.active?'is-live':'')}><i />{isRecording?'REC':state.active?'采集中':'待机'}</span><span className="preview-badge">开发预览</span><button className="header-settings" aria-label="显示与帮助" onClick={()=>setModal('display')}>显示与帮助</button></div>
+      <div className="top-status"><span className={'live-badge '+(isRecording?'is-rec':state.active?'is-live':'')}><i />{isRecording?'REC':state.active?'采集中':'待机'}</span><span className="preview-badge">开发预览</span><button className="header-settings" aria-label="测量目标" aria-pressed={targets.enabled} onClick={()=>setModal('targets')}>目标</button><button className="header-settings" aria-label="显示与帮助" onClick={()=>setModal('display')}>显示与帮助</button></div>
     </header>
     {    <section className="sourcebar" aria-label="声音来源与录音设置">
       <label className="source-select">系统播放设备<select aria-label="系统播放设备" title={selected?.label} value={state.deviceId} disabled={busy||isRecording||Boolean(file?.outputReady)} onChange={e => run('devices.select', { deviceId: e.target.value })}>
@@ -312,6 +320,7 @@ export default function App(): React.JSX.Element {
     </section>}
 
     <div className="workbench-heading"><FileSourceBar file={workbenchFile} busy={busy} run={workbenchRun} live={!file}/><WorkspaceToolbar value={workspace.value} change={workspace.change} error={workspace.error} retry={workspace.retry}/></div>
+    <TargetStrip settings={targets} summary={targetSummary} current={numberMetrics} scope={targetScope} duration={targetDuration} configure={()=>setModal('targets')}/>
     <div className="workspace modular-workspace" data-history-position={file?displaySnapshot?.positionFrame:undefined} data-history-generation={file?displaySnapshot?.playback?.generation:undefined}>
       <TimelinePreviewProvider><InstrumentWorkspace value={workspace.value} change={workspace.change} settingsContent={{spectrogram:<SpectrogramSettingsForm value={spectrogramSettings} apply={configureSpectrogram}/>,spectrum:<AnalysisSettings kind="spectrum" value={instrumentSettings} apply={configureInstruments}/>,soundfield:<AnalysisSettings kind="soundfield" value={instrumentSettings} apply={configureInstruments}/>}} contents={{spectrogram:timelineInstrument('spectrogram'),spectrum:<SpectrumPanel packet={displaySnapshot?.instruments} settings={instrumentSettings} change={configureInstruments}/>,soundfield:<SoundFieldPanel packet={displaySnapshot?.instruments} settings={instrumentSettings} change={configureInstruments}/>,levels:<LevelPanel snapshot={numberMetrics} readout={workspace.value.layout.options.levelReadout}/>,waveform:timelineInstrument('waveform'),history:timelineInstrument('history'),loudness:loudnessInstrument}}/></TimelinePreviewProvider>
     </div>
@@ -332,6 +341,7 @@ export default function App(): React.JSX.Element {
       <div className="transport-spacer"/>
       <label className="monitor-gain">音量<input aria-label="文件回听音量" type="range" min="0" max="1" step=".01" value={file?.gain??1} disabled={!file||busy} onChange={e=>file&&run('playback.volume',{playbackId:file.id,gain:Number(e.target.value)})}/><span>{Math.round((file?.gain??1)*100)}%</span></label>
       <button className="file-export-button" disabled={busy||isRecording||(!file&&replaySeconds<=0)} title={file&&!file.temporary?'导出当前文件或选区':'将'+(file?.selection?'选区':'最近缓存')+'按录音设置保存为独立文件'} onClick={()=>file&&!file.temporary?openExport({takeId:file.takeId,role:file.role,regionId:file.regionId,exportId:file.exportId,...(file.selection?{range:file.selection}:{})}):void saveCache()}>{file&&!file.temporary?'导出':'保存缓存'}</button>
+      <button className="report-button" title="测量报告与超限事件" onClick={()=>setModal('reports')}>报告</button>
       <button data-open-files className="files-button" onClick={()=>{setLibraryAttention(false);setModal('files')}}>录音文件 {state.recordings?.length||0}</button>
       <button className="reset-button" disabled={busy||!state.active||isRecording||Boolean(file)} onClick={()=>run('live.reset')} title="重新开始本轮响度统计"><Icon name="reset"/></button>
     </footer>
@@ -345,12 +355,12 @@ export default function App(): React.JSX.Element {
       if(source)run('file.open',{...source});dismissNotice()
     }} folder={()=>notice.exportId?run(state.exportJobs?.find(j=>j.id===notice.exportId)?.delivery?.phase==='ready'?'export.openDeliveryFolder':'export.openFolder',{exportId:notice.exportId}):run('record.openFolder',{takeId:notice.takeId})} retry={()=>run(state.exportJobs?.find(j=>j.id===notice.exportId)?.phase==='ready'?'export.saveCopy':'export.retry',{exportId:notice.exportId})}/>}
     {modal && <div className="modal-backdrop" onMouseDown={e => { if(e.target===e.currentTarget&&!busy)setModal(null) }}>
-      <section className={'trace-modal '+(modal==='files'?'file-library':'')} role="dialog" aria-modal="true" aria-labelledby="modal-title" onKeyDown={e => {
+      <section className={'trace-modal '+(modal==='files'?'file-library':modal==='reports'?'report-modal':'')} role="dialog" aria-modal="true" aria-labelledby="modal-title" onKeyDown={e => {
         if(e.key==='Escape'&&!busy)setModal(null)
         if(e.key==='Tab'){const nodes=Array.from(e.currentTarget.querySelectorAll<HTMLElement>('button:not(:disabled),input:not(:disabled),select:not(:disabled),summary,[tabindex="0"]')).filter(node=>node.getClientRects().length>0);const first=nodes[0],last=nodes[nodes.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus()}}
       }}>
-        <header><h2 id="modal-title">{modal==='settings'?'录音保存设置':modal==='export'?'导出音频':modal==='display'?'显示与帮助':'录音文件'}</h2><button aria-label="关闭对话框" onClick={()=>setModal(null)}>×</button></header>
-        {modal==='display'?<DisplaySettingsForm confirmExit={state.confirmExitWhileRecording!==false} copyDiagnostics={()=>command('app.copyDiagnostics')} value={{...(state.displaySettings||defaultDisplaySettings),waveGain:gain}} busy={busy} apply={(value,confirmExitWhileRecording)=>command('view.settings',value).then(()=>command('app.configure',{confirmExitWhileRecording})).then(()=>setModal(null)).catch(()=>{})}/>:modal==='settings'?<RecordSettingsForm value={draft} change={setDraft} busy={busy||isRecording} directoryBusy={Boolean(state.exportJobs?.some(j=>!['ready','failed','cancelled'].includes(j.phase)))} sourceRate={format?.sampleRate} sourceChannels={format?.channelCount} capacity={state.recordingCapacity?.directory===state.recordDirectory?state.recordingCapacity:undefined} directory={state.recordDirectory} chooseDirectory={()=>run('record.chooseDirectory')} apply={()=>command('record.configure',draft).then(()=>setModal(null)).catch(()=>{})}/>:modal==='export'&&exportSource?exportDescription?<ExportDialog source={exportSource} description={exportDescription} saved={state.lastExportPreset} saveCopyDefault={state.lastExportSaveCopy===true} remember={preset=>queueLatest('exportPrefs','export.configure',{...preset})} busy={busy} submit={(preset,selection,saveCopy)=>command('export.start',{...exportSource,range:selection?exportSource.range:undefined,preset,saveCopy}).then(data=>{const result=data as {jobId?:string}|null;if(result?.jobId){trackExport(result.jobId);setModal(null)}}).catch(()=>{})}/>:<div className="settings-content" role="status">{exportInfoError||'正在读取文件信息…'}{exportInfoError&&<button onClick={()=>setExportSource({...exportSource})}>重试</button>}</div>:<RecordingLibrary initialStatus={libraryAttention?'attention':'all'} state={state} busy={busy} run={run} request={command} onExport={openExport}/>}
+        <header><h2 id="modal-title">{modal==='settings'?'录音保存设置':modal==='export'?'导出音频':modal==='display'?'显示与帮助':modal==='targets'?'测量目标':modal==='reports'?'测量报告':'录音文件'}</h2><button aria-label="关闭对话框" onClick={()=>setModal(null)}>×</button></header>
+        {modal==='reports'?<ReportPanel file={file} targets={targets} jobs={state.reportJobs||[]} recording={isRecording} request={command} onNavigate={()=>{presentation.cancel();setModal(null)}}/>:modal==='targets'?<TargetSettingsForm value={targets} apply={settings=>command('targets.configure',{settings}).then(()=>setModal(null))}/>:modal==='display'?<DisplaySettingsForm confirmExit={state.confirmExitWhileRecording!==false} copyDiagnostics={()=>command('app.copyDiagnostics')} value={{...(state.displaySettings||defaultDisplaySettings),waveGain:gain}} busy={busy} apply={(value,confirmExitWhileRecording)=>command('view.settings',value).then(()=>command('app.configure',{confirmExitWhileRecording})).then(()=>setModal(null)).catch(()=>{})}/>:modal==='settings'?<RecordSettingsForm value={draft} change={setDraft} busy={busy||isRecording} directoryBusy={Boolean(state.exportJobs?.some(j=>!['ready','failed','cancelled'].includes(j.phase)))} sourceRate={format?.sampleRate} sourceChannels={format?.channelCount} capacity={state.recordingCapacity?.directory===state.recordDirectory?state.recordingCapacity:undefined} directory={state.recordDirectory} chooseDirectory={()=>run('record.chooseDirectory')} apply={()=>command('record.configure',draft).then(()=>setModal(null)).catch(()=>{})}/>:modal==='export'&&exportSource?exportDescription?<ExportDialog source={exportSource} description={exportDescription} saved={state.lastExportPreset} saveCopyDefault={state.lastExportSaveCopy===true} remember={preset=>queueLatest('exportPrefs','export.configure',{...preset})} busy={busy} submit={(preset,selection,saveCopy)=>command('export.start',{...exportSource,range:selection?exportSource.range:undefined,preset,saveCopy}).then(data=>{const result=data as {jobId?:string}|null;if(result?.jobId){trackExport(result.jobId);setModal(null)}}).catch(()=>{})}/>:<div className="settings-content" role="status">{exportInfoError||'正在读取文件信息…'}{exportInfoError&&<button onClick={()=>setExportSource({...exportSource})}>重试</button>}</div>:<RecordingLibrary initialStatus={libraryAttention?'attention':'all'} state={state} busy={busy} run={run} request={command} onExport={openExport}/>}
 
       </section>
     </div>}

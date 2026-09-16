@@ -2,6 +2,7 @@ import {canvasSurface} from './canvasSurface'
 import {wheelPixels,wheelValue,zoomRange,zoomLabel,panRange} from './zoom'
 import {createContext,useContext,useEffect,useLayoutEffect,useRef,useState} from 'react'
 import type {DisplaySettings} from '../displaySettings'
+import type {TargetSettings} from '../targetSettings'
 import type {MeterSnapshot} from '../shared'
 import {relativeFrame} from './time'
 import {SelectionStats} from './FileControls'
@@ -9,7 +10,7 @@ export type TimelineLayer={draw:(ctx:CanvasRenderingContext2D,g:{left:number;rig
 export type TimelineProps={
  layer?:TimelineLayer;
  kind?:'both'|'waveform'|'history'|'spectrogram'|'ruler';traces?:('m'|'s'|'i')[];
- feedback?:React.ReactNode;selectionMode?:boolean;controls?:React.ReactNode;snapshot:MeterSnapshot|null;seconds:number;gain:number;target?:DisplaySettings
+ feedback?:React.ReactNode;selectionMode?:boolean;controls?:React.ReactNode;snapshot:MeterSnapshot|null;seconds:number;gain:number;target?:DisplaySettings;targets?:TargetSettings
  onSeek?:(position:string,resume:boolean,source:MeterSnapshot|null)=>void
  onSelection?:(start:string,end:string,source:MeterSnapshot|null)=>void
  onWindow?:(start:string,end:string)=>void
@@ -24,7 +25,7 @@ export function useTimelinePreviewRange(sourceId?:string):{startFrame:string;end
  return {startFrame:(p.mode==='start'?p.position:p.mode==='end'?p.fixed:p.position<p.anchor?p.position:p.anchor).toString(),endFrame:(p.mode==='end'?p.position:p.mode==='start'?p.fixed:p.position>p.anchor?p.position:p.anchor).toString()}
 }
 export function TimelinePreviewProvider({children}:{children:React.ReactNode}){const [preview,setPreview]=useState<Drag|null>(null);return <TimelinePreview.Provider value={{preview,setPreview}}>{children}</TimelinePreview.Provider>}
-export function Timeline({layer,kind='both',traces=['m','s','i'],feedback,selectionMode=false,controls,snapshot,seconds,gain,target,onSeek,onSelection,onWindow,onGain,onSeconds}:TimelineProps):React.JSX.Element{
+export function Timeline({layer,kind='both',traces=['m','s','i'],feedback,selectionMode=false,controls,snapshot,seconds,gain,target,targets,onSeek,onSelection,onWindow,onGain,onSeconds}:TimelineProps):React.JSX.Element{
  const wave=useRef<HTMLCanvasElement>(null),loud=useRef<HTMLCanvasElement>(null),box=useRef<HTMLDivElement>(null)
  const shared=useContext(TimelinePreview),[ownPreview,ownSetPreview]=useState<Drag|null>(null)
  const drag=useRef<Drag|null>(null),preview=shared?.preview??ownPreview,setPreview=shared?.setPreview??ownSetPreview
@@ -44,6 +45,7 @@ export function Timeline({layer,kind='both',traces=['m','s','i'],feedback,select
    const surface=canvasSurface(canvas);if(!surface)return
    const {rect,context:ctx}=surface
    const w=rect.width,h=rect.height,left=36,right=w-10,top=14,bottom=h-14
+   let targetMarkers=0
    const rate=snapshot?.timelineRate||snapshot?.format.sampleRate||48000
    const cursor=snapshot?.positionFrame||'0'
    const take=snapshot?.sourceKind==='take',ranged=Boolean(snapshot?.fileView||snapshot?.timelineWindow)
@@ -71,7 +73,8 @@ export function Timeline({layer,kind='both',traces=['m','s','i'],feedback,select
    }else{
     const y=(v:number)=>bottom-(Math.max(-60,Math.min(0,v))+60)/60*(bottom-top)
     for(const db of (bottom-top<80?[-60,-30,0]:[-60,-48,-36,-24,-12,0])){ctx.strokeStyle='#303a34';ctx.beginPath();ctx.moveTo(left,y(db));ctx.lineTo(right,y(db));ctx.stroke();ctx.fillStyle='#a8b5ac';ctx.fillText(String(db),5,y(db)+4)}
-    if(target?.targetEnabled){const py=y(target.targetLufs);ctx.strokeStyle='#efb65b';ctx.setLineDash([7,5]);ctx.beginPath();ctx.moveTo(left,py);ctx.lineTo(right,py);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#efb65b';ctx.textAlign='right';ctx.fillText('目标 '+target.targetLufs.toFixed(1)+' LUFS',right-3,Math.max(top+9,py-5));ctx.textAlign='left'}
+    const goal=targets?(targets.enabled?targets.integrated:null):target?.targetEnabled?{target:target.targetLufs,tolerance:0}:null
+    if(goal){const high=y(goal.target+goal.tolerance),low=y(goal.target-goal.tolerance);ctx.fillStyle='#efb65b14';ctx.fillRect(left,high,right-left,Math.max(1,low-high));const py=y(goal.target);ctx.strokeStyle='#efb65b';ctx.setLineDash([7,5]);ctx.beginPath();ctx.moveTo(left,py);ctx.lineTo(right,py);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#efb65b';ctx.textAlign='right';ctx.fillText('I '+goal.target.toFixed(1)+' LUFS ±'+goal.tolerance+' LU',right-3,Math.max(top+9,py-5));ctx.textAlign='left'}
     for(const [key,color,dash] of [['m','#91e65c',[]],['s','#58d4da',[5,3]],['i','#efb65b',[2,3]]] as const){
      if(!traces.includes(key))continue
      ctx.strokeStyle=color;ctx.lineWidth=1.5;ctx.setLineDash([...dash]);ctx.beginPath();let connected=false
@@ -80,7 +83,14 @@ export function Timeline({layer,kind='both',traces=['m','s','i'],feedback,select
       if(metric.status!=='ready'||metric.value===null||px<left||px>right||point.flags&4){connected=false;if(px<left||px>right||metric.status!=='ready'||metric.value===null)continue}
       if(connected)ctx.lineTo(px,y(metric.value));else ctx.moveTo(px,y(metric.value));connected=true
      }ctx.stroke()
+     const limit=targets?.enabled?(key==='m'?targets.momentaryMax:key==='s'?targets.shortTermMax:null):null
+     const bounds=targets?.enabled&&key==='i'?targets.integrated:null
+     if(limit!==null||bounds){ctx.setLineDash([]);ctx.strokeStyle='#ff7e83';ctx.lineWidth=1.25;let previous=-Infinity
+      for(const point of snapshot?.loudnessHistory||[]){const metric=point[key],px=x(point.frame);if(metric.status!=='ready'||metric.value===null||point.flags&4||px<left||px>right||px-previous<7)continue
+       if(limit!==null?metric.value>limit:bounds&&(metric.value<bounds.target-bounds.tolerance||metric.value>bounds.target+bounds.tolerance)){const py=y(metric.value);ctx.beginPath();ctx.moveTo(px-2,py-2);ctx.lineTo(px+2,py+2);ctx.moveTo(px+2,py-2);ctx.lineTo(px-2,py+2);ctx.stroke();previous=px;targetMarkers++}}
+     }
     }ctx.setLineDash([])
+    canvas.dataset.targetMarkers=String(targetMarkers)
    }
    if(selected){
     const a=Math.max(left,Math.min(right,x(selected.startFrame))),b=Math.max(left,Math.min(right,x(selected.endFrame)))
@@ -102,7 +112,7 @@ export function Timeline({layer,kind='both',traces=['m','s','i'],feedback,select
   }
   function draw(){if(wave.current)paint(wave.current,kind==='spectrogram'?'spectral':'wave');if(loud.current)paint(loud.current,'loud')}
   draw();const observer=new ResizeObserver(draw);if(box.current)observer.observe(box.current);return()=>observer.disconnect()
- },[snapshot,seconds,gain,target,preview,selected?.startFrame,selected?.endFrame,traces,kind,layer])
+ },[snapshot,seconds,gain,target,targets,preview,selected?.startFrame,selected?.endFrame,traces,kind,layer])
  useEffect(()=>{if(!drag.current)setPreview(null)},[snapshot?.sourceId])
  useEffect(()=>{
   const target=wave.current,prevent=(event:WheelEvent)=>event.preventDefault()
@@ -199,7 +209,7 @@ export function Timeline({layer,kind='both',traces=['m','s','i'],feedback,select
   </section>}
   {kind!=='history'&&<div className="time-ruler" onWheel={kind==='ruler'?wheel:undefined} data-select-range="true" aria-label={file?'时间刻度，拖动选择范围':'时间刻度'} title="点击定位；拖动刻度轴选择范围；图内 Shift + 拖动也可选择" {...handlers}>{ruler.map((label,i)=><span key={i}>{label}</span>)}</div>}
   {(kind==='both'||kind==='history')&&<section className="loudness-panel">
-   <div className="panel-heading"><h2>响度历史 <small>LUFS</small></h2><div className="legend"><span className="legend-m">M</span><span className="legend-s">S</span><span className="legend-i">I</span></div></div>
+   <div className="panel-heading"><h2>响度历史 <small>LUFS</small></h2><div className="legend">{targets?.enabled&&<span title="× 标出可见曲线中超出目标的点；I 为截至此处的累计值，完整事件见报告。">× 超出目标</span>}<span className="legend-m">M</span><span className="legend-s">S</span><span className="legend-i">I</span></div></div>
    <canvas ref={loud} aria-label={file?'文件响度历史定位':'与波形共用时间轴的 M、S、I 响度历史'} {...handlers}/>
   {kind==='history'&&feedback}
   </section>}

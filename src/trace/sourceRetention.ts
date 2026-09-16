@@ -6,6 +6,7 @@ import type {ExportService} from './exportService'
 import type {PlaybackService} from './playbackService'
 import type {AnalysisService} from './analysisService'
 export class SourceRetention {
+ usesSource?:(takeId:string)=>boolean
  private pending=new Set<string>()
  private running:Promise<void>|undefined
  private current:string|undefined
@@ -30,7 +31,7 @@ export class SourceRetention {
  }
  private pump():void{
   if(this.paused||this.closing||this.running)return
-  const id=[...this.pending].find(id=>this.playback.view()?.takeId!==id||this.playback.view()?.role==='export')
+  const id=[...this.pending].find(id=>!this.usesSource?.(id)&&(this.playback.view()?.takeId!==id||this.playback.view()?.role==='export'))
   if(!id||this.exporter.usesSource(id))return
   this.pending.delete(id);this.current=id;this.controller=new AbortController()
   this.running=this.run(id,this.controller.signal).finally(()=>{this.current=undefined;this.controller=undefined;this.running=undefined;this.changed();this.pump()})
@@ -46,7 +47,7 @@ export class SourceRetention {
    if(analyzed.manifest.frames!==source.frames)throw Error('RETENTION_OUTPUT_FRAME_MISMATCH')
    await this.analyses.cancelSources(id)
    if(signal.aborted)throw Error('RETENTION_PAUSED')
-   if(this.playback.view()?.takeId===id&&this.playback.view()?.role!=='export'||this.exporter.usesSource(id))throw Error('RETENTION_PAUSED')
+   if(this.playback.view()?.takeId===id&&this.playback.view()?.role!=='export'||this.exporter.usesSource(id)||this.usesSource?.(id))throw Error('RETENTION_PAUSED')
    const base=await realpath(take.directory),audio=await realpath(join(base,'audio'))
    if(!audio.toLowerCase().startsWith((base+sep).toLowerCase()))throw Error('INVALID_RETENTION_DIRECTORY')
    const candidates=d.assets.filter(a=>['source','recovered','session'].includes(a.role)&&a.state!=='removed'&&a.state!=='superseded')

@@ -9,15 +9,16 @@ type Job={view:AnalysisJobView;source:AnalysisSource;controller?:AbortController
 const terminal=(phase:string)=>['ready','failed','cancelled'].includes(phase)
 export class AnalysisService {
   private jobs=new Map<string,Job>()
-  private retained=new Set<string>()
+  private retained=new Map<string,number>()
   private current:Job|undefined
   private currentTask:Promise<void>|undefined
   private paused=false
   private closing=false
   private cache:{id:string;value:AnalysisCache}|undefined
   constructor(private nativePath:string,private changed:(control:boolean)=>void,private runAnalysis:typeof analyzeFiles=analyzeFiles){}
-  retain(id:string):void{if(!this.jobs.has(id))throw Error('UNKNOWN_ANALYSIS_JOB');if(!this.retained.has(id)&&this.retained.size>=8)throw Error('ANALYSIS_REFERENCE_LIMIT');this.retained.add(id)}
-  release(id:string):void{this.retained.delete(id)}
+  retain(id:string):void{if(!this.jobs.has(id))throw Error('UNKNOWN_ANALYSIS_JOB');if(!this.retained.has(id)&&this.retained.size>=8)throw Error('ANALYSIS_REFERENCE_LIMIT');this.retained.set(id,(this.retained.get(id)||0)+1)}
+  release(id:string):void{const count=this.retained.get(id)||0;if(count<=1)this.retained.delete(id);else this.retained.set(id,count-1)}
+  reportInput(id:string){const job=this.jobs.get(id);if(!job||job.view.phase!=='ready'||!job.result)throw Error('ANALYSIS_NOT_READY');return {source:structuredClone(job.source),directory:job.result.directory,manifest:structuredClone(job.result.manifest)}}
   snapshots():AnalysisJobView[]{return [...this.jobs.values()].reverse().map(job=>({...job.view}))}
   start(source:AnalysisSource):string {
     if(this.closing)throw Error('APP_CLOSING')

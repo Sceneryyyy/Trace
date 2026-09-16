@@ -24,7 +24,7 @@ async function main(){
   assert.equal(live.dpr,scale);await cdp.screenshot(path.join(dir,'live.png'))
   await cdp.click('[aria-label="显示与帮助"]');await wait(()=>cdp.evaluate('!!document.querySelector("[role=dialog]")'),'display')
   await fit(cdp,name+' display',['.trace-modal'])
-  await cdp.evaluate('document.querySelector("[aria-label=响度目标值]").focus()');await cdp.key('KeyR','r',82);assert(!(await cdp.state()).currentRecord)
+  await cdp.evaluate('document.querySelector("[aria-label=显示设置波形倍率]").focus()');await cdp.key('KeyR','r',82);assert(!(await cdp.state()).currentRecord)
   await cdp.screenshot(path.join(dir,'display.png'));await cdp.key('Escape','Escape',27)
   await wait(()=>cdp.evaluate('!document.querySelector("[role=dialog]")'),'close display')
   if(scale===1&&width===1024){

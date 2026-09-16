@@ -5,8 +5,6 @@ import {product} from '../product'
 export function DisplaySettingsForm({value,busy,apply,copyDiagnostics,confirmExit=true}:{value:DisplaySettings;busy:boolean;apply:(value:DisplaySettings,confirmExit:boolean)=>void;confirmExit?:boolean;copyDiagnostics:()=>Promise<unknown>}):React.JSX.Element{
  const [draft,setDraft]=useState(value),[copied,setCopied]=useState(false),[exitGuard,setExitGuard]=useState(confirmExit)
  return <div className="settings-content">
-  <label>响度目标线<input aria-label="显示响度目标线" type="checkbox" checked={draft.targetEnabled} onChange={e=>setDraft({...draft,targetEnabled:e.target.checked})}/></label>
-  <label>目标值 · LUFS<input aria-label="响度目标值" type="number" min="-60" max="0" step=".1" value={draft.targetLufs} onChange={e=>setDraft({...draft,targetLufs:Number(e.target.value)})}/></label>
   <label>波形倍率<div className="settings-range"><input aria-label="显示设置波形倍率" type="range" min="1" max="4" step=".01" value={draft.waveGain} onChange={e=>setDraft({...draft,waveGain:Number(e.target.value)})}/><output>×{zoomLabel(draft.waveGain,2)}</output></div></label>
   <label>录音中退出确认<input aria-label="录音中退出确认" type="checkbox" checked={exitGuard} onChange={e=>setExitGuard(e.target.checked)}/></label>
   <button className="primary-button" disabled={busy} onClick={()=>apply(draft,exitGuard)}>应用设置</button>
