@@ -31,7 +31,7 @@ async function main(){
    const info=(await c.request('app.info')).data,heap=await c.send('Runtime.getHeapUsage')
    const data=await c.evaluate('({frame:window.__resourceFrame,delivered:window.__resourceCount,instrumentErrors:window.__resourceErrors,spectral:window.__spectralStats})')
    const f=data.frame;assert(f);assert.equal(data.instrumentErrors,0,'instrument query errors');assert.deepEqual(data.spectral.errors,[],'spectrogram query errors');assert(!f.error,String(f.error));assert.equal(f.diagnostics.droppedFrames,'0','capture drop')
-   if(recording){const s=await c.state();assert.equal(s.currentRecord.id,take.id);assert(BigInt(f.recording.writtenFrames)>=BigInt(previous));previous=f.recording.writtenFrames;assert.equal(f.recording.error,null)}
+   if(recording){const s=await c.state();assert.equal(s.currentRecord.id,take.id);assert(BigInt(f.recording.writtenFrames)>BigInt(previous),'recorded frames must advance between resource samples');previous=f.recording.writtenFrames;assert.equal(f.recording.error,null)}
    report.version=info.version;assert.equal(info.windowVisible,true,'resource workload must render in a visible window');const metrics=info.processMetrics;assert(Array.isArray(metrics)&&metrics.length>0)
    const totalKB=metrics.reduce((sum,p)=>sum+p.memory.workingSetSize,0),browser=metrics.find(p=>p.type==='Browser')
    assert(Number.isFinite(totalKB)&&totalKB<1.5*1024*1024,'application working set budget')

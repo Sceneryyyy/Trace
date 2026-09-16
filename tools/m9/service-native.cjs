@@ -37,7 +37,11 @@ app.whenReady().then(async()=>{
   engine.recordStart('m9-tile-take',path.join(folder,'recording'),'pcm24');await delay(1200)
   const before=engine.recordStatus(),take=takeSpectrogramSource(before)
   const tv=await service.query(take,config,range(take.availableStart,take.availableEnd,before.sourceFormat.sampleRate));assert(tv.coverage.some(n=>n>0))
-  const after=engine.recordStatus();assert.equal(after.id,before.id);assert(BigInt(after.writtenFrames)>BigInt(before.writtenFrames));assert.equal(after.error,null)
+  const observedAt=Date.now();let after=engine.recordStatus()
+  // A tile may finish before the next WASAPI packet; observe real writer progress over a bounded interval.
+  while(BigInt(after.writtenFrames)<=BigInt(before.writtenFrames)&&Date.now()-observedAt<1500){await delay(20);after=engine.recordStatus()}
+  report.recordProgress={before:before.writtenFrames,after:after.writtenFrames,observedMs:Date.now()-observedAt}
+  assert.equal(after.id,before.id);assert(BigInt(after.writtenFrames)>BigInt(before.writtenFrames));assert.equal(after.error,null)
   engine.recordStop();for(let i=0;i<100&&engine.recordStatus().phase!=='complete';i++)await delay(30)
   const completed=engine.recordStatus();assert.equal(completed.phase,'complete');assert.equal(completed.error,null);assert(BigInt(completed.writtenFrames)>=BigInt(after.writtenFrames))
   report.recordedFrames=completed.writtenFrames;pass('Active native take supplies spectral tiles while recorded frame count continues')

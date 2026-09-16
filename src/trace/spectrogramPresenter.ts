@@ -25,7 +25,7 @@ export class SpectrogramPresenter {
           this.publish({requestId:id,source:q.source,phase,view,axisStartFrame:binding.toAxis(view.startFrame),axisEndFrame:binding.toAxis(view.endFrame)})
         }
         const view=await this.service.query(binding.source,s,binding.range,v=>send(v,'partial'));send(view,'ready')
-      }catch(error){if(this.active===active)this.publish({requestId:id,source:q.source,phase:'error',error:String(error)})}
+      }catch(error){if(this.active===active&&(!active.binding||active.binding.valid()))this.publish({requestId:id,source:q.source,phase:'error',error:String(error)})}
     })()
   }
   async point(id:string,frame:string,frequency:number){

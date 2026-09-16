@@ -41,3 +41,15 @@ test('late source resolution and invalidated source never overwrite the new sour
  p.request('old',payload,settings);p.request('new',{...payload,source:{...payload.source,sourceId:'file-two'}},settings);finish(binding);await wait()
  assert(packets.length>0);assert(packets.every(v=>v.requestId==='new'));await p.close()
 })
+
+test('late native failure after source invalidation is discarded like a late successful result',async()=>{
+ let rejectNative,entered,valid=true;const entry=new Promise(r=>entered=r),packets=[]
+ const p=new SpectrogramPresenter({spectrogramTile:()=>{entered();return new Promise((_,reject)=>rejectNative=reject)}},async()=>({...binding,valid:()=>valid}),v=>packets.push(v))
+ p.request('recording-source',payload,settings);await entry;valid=false;rejectNative(Error('STALE_INSTRUMENT_SOURCE'));await wait()
+ assert.deepEqual(packets,[]);await p.close()
+})
+
+test('native failure for the still-current source remains an explicit error',async()=>{
+ const packets=[],p=new SpectrogramPresenter({spectrogramTile:async()=>{throw Error('CURRENT_NATIVE_FAILURE')}},async()=>binding,v=>packets.push(v))
+ p.request('current',payload,settings);await wait();assert.equal(packets.length,1);assert.equal(packets[0].phase,'error');assert.match(packets[0].error,/CURRENT_NATIVE_FAILURE/);await p.close()
+})

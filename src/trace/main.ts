@@ -202,7 +202,7 @@ async function resolveSpectrogram(q:SpectrogramQuery,settings:SpectrogramSetting
   if(q.source.kind==='live'){
    if(state.currentRecord||snap.sourceId!==q.source.sourceId)throw Error('STALE_SPECTROGRAM_SOURCE')
    source=liveSpectrogramSource(snap)
-   valid=()=>{const n=engine.snapshot(5,1);return stillConfigured()&&!playback.active()&&!state.currentRecord&&n.sourceId===snap.sourceId&&n.epochId===snap.epochId&&n.measurementEpoch===snap.measurementEpoch}
+   valid=()=>{if(!stillConfigured()||playback.active()||state.currentRecord)return false;const n=engine.snapshot(5,1);return n.sourceId===snap.sourceId&&n.epochId===snap.epochId&&n.measurementEpoch===snap.measurementEpoch}
   }else{
    if(state.currentRecord?.id!==q.source.sourceId)throw Error('STALE_SPECTROGRAM_SOURCE')
    const record=engine.recordStatus(),regions=recordings.session(q.source.sourceId).document.regions
@@ -213,7 +213,7 @@ async function resolveSpectrogram(q:SpectrogramQuery,settings:SpectrogramSetting
    toNative=value=>{const n=BigInt(value);if(n<=BigInt(position.mediaStartNs))return '0';if(n>=BigInt(position.mediaEndNs))return record.writtenFrames;return timeline.mediaNsToRegion(value)!.relativeFrame}
    toAxis=value=>timeline.frameToMediaNs(region.id,value)
    source=takeSpectrogramSource(record)
-   valid=()=>stillConfigured()&&!playback.active()&&state.currentRecord?.id===q.source.sourceId&&engine.recordStatus().id===record.id
+   valid=()=>{if(!stillConfigured()||playback.active()||state.currentRecord?.id!==q.source.sourceId)return false;const now=engine.recordStatus();return now.id===record.id&&now.phase==='recording'}
   }
  }
  const startFrame=toNative(q.range.startFrame),endFrame=toNative(q.range.endFrame),nyquist=source.request.sampleRate/2
@@ -408,7 +408,7 @@ async function dispatch(request:Request):Promise<Reply>{
         recordingCaptureHeld=true
         if(!engine.snapshot(5,1).active||state.error)startDevice(state.deviceId)
         await recordings.start(engine.snapshot(10,1).format,{deviceId:state.deviceId,captureEpochId:captureInstance+':'+engine.snapshot(10,1).epochId});break
-      case 'record.stop':data=await recordings.stop();releaseRecordingCapture();break
+      case 'record.stop':spectrogram.cancel();data=await recordings.stop();releaseRecordingCapture();break
       case 'file.open':{
         if(recordings.busy())throw Error('RECORDING_ACTIVE')
         const source=await recordings.analysisSource(request.payload.takeId as string,request.payload.role as import('./shared').AnalysisRole,request.payload.regionId as string|undefined,request.payload.exportId as string|undefined)

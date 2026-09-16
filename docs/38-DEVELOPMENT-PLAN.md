@@ -6,11 +6,11 @@
 
 更新日期：2026-09-17
 
-状态：**持续开发目标已启动；M7/M8 工程交付完成、待人工复验；M9 共轴 2D 已接入，preview.15 短门禁通过；长测与 2D 专项矩阵继续验证。**
+状态：**持续开发目标已启动；M7/M8 工程交付完成、待人工复验；M9 共轴 2D 已接入，preview.16 短门禁通过；来源切换修复后的长测与 2D 专项矩阵继续验证。**
 
 依据：用户要求将 [Insight 2 调研建议](37-INSIGHT2-COMPARISON.md) 落地为后续计划。
 
-当前候选：Trace 0.1.0-preview.15，共轴 2D 短门禁 14 阶段通过，M9 长测进行中，见 [46](46-M9-2D-INTEGRATION.md)。M8 已工程交付的 preview.14 保留，记录见 [42](42-M8-ACCEPTANCE.md)/[45](45-VISIBILITY-AND-RESOURCE-GATE.md)；已有专项继续见 36。
+当前候选：Trace 0.1.0-preview.16，共轴 2D 短门禁 14 阶段通过，过期来源异常修复后的 M9 长测进行中，见 [46](46-M9-2D-INTEGRATION.md)。M8 已工程交付的 preview.14 保留，记录见 [42](42-M8-ACCEPTANCE.md)/[45](45-VISIBILITY-AND-RESOURCE-GATE.md)；已有专项继续见 36。
 
 ## 1. 产品目标与执行口径
 
