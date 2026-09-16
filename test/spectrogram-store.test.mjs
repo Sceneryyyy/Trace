@@ -30,3 +30,13 @@ test('cache writes refuse linked directories and malformed cache identities',asy
  const a=new SpectrogramStore(async r=>tile(r),link);await assert.rejects(a.get({key,firstFrame:'2048',columns:1}),/LINKED/)
  assert.deepEqual(await readdir(outside),[]);await assert.rejects(a.get({key:'../escape',firstFrame:'0',columns:1}),/INVALID/)
 })
+
+test('a growing live tail fetches only new FFT columns and keeps the old raw values exact',async()=>{
+ const calls=[],a=new SpectrogramStore(async r=>{calls.push({...r});const t=tile(r);for(let c=0;c<t.columns;c++)t.decibels.fill(-Number(BigInt(r.firstFrame)+BigInt(c*t.hop)),c*t.bins,(c+1)*t.bins);return t})
+ const first=await a.get({key,firstFrame:'2048',columns:3}),old=first.decibels.slice()
+ const extended=await a.get({key,firstFrame:'2048',columns:8})
+ assert.deepEqual(calls.map(r=>[r.firstFrame,r.columns]),[['2048',3],['3584',5]])
+ assert.deepEqual(extended.decibels.subarray(0,old.length),old);assert.deepEqual(first.decibels,old)
+ for(let c=0;c<8;c++)assert.equal(extended.decibels[c*extended.bins],-(2048+c*512))
+ await a.close()
+})

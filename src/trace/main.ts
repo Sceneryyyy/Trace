@@ -190,7 +190,7 @@ async function resolveSpectrogram(q:SpectrogramQuery,settings:SpectrogramSetting
  let source:import('./spectrogramSource').SpectrogramSource,toNative=(v:string)=>v,toAxis=(v:string)=>v,valid:()=>boolean
  if(q.source.kind==='file'){
   const view=playback.view()
-  if(!view||view.id!==q.source.sourceId||q.source.epochId!=='0'||q.source.measurementEpoch!=='0')throw Error('STALE_SPECTROGRAM_SOURCE')
+  if(!view||view.id!==q.source.sourceId||q.source.analysisId!==undefined&&q.source.analysisId!==view.analysisId||q.source.epochId!=='0'||q.source.measurementEpoch!=='0')throw Error('STALE_SPECTROGRAM_SOURCE')
   const bound=playback.spectralSource(view.id)
   source=bound.replay?replaySpectrogramSource(bound.replay):fileSpectrogramSource(bound.source,bound.analysisKey||'pending:'+view.id)
   if(!bound.replay&&!bound.analysisKey)delete source.cacheRoot

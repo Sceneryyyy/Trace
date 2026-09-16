@@ -34,7 +34,7 @@ export function Timeline({layer,kind='both',traces=['m','s','i'],feedback,select
   ?{startFrame:(preview.mode==='start'?preview.position:preview.mode==='end'?preview.fixed:preview.position<preview.anchor?preview.position:preview.anchor).toString(),
     endFrame:(preview.mode==='end'?preview.position:preview.mode==='start'?preview.fixed:preview.position>preview.anchor?preview.position:preview.anchor).toString()}
   :snapshot?.fileView?.selection
- useEffect(()=>{
+ useLayoutEffect(()=>{
   function paint(canvas:HTMLCanvasElement,kind:'wave'|'loud'|'spectral'){
    const surface=canvasSurface(canvas);if(!surface)return
    const {rect,context:ctx}=surface

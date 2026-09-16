@@ -1,4 +1,5 @@
 import type {SpectrogramTile} from './spectrogramTile'
+import {SpectrogramProjectionCache,spectralRows,spectralMaximum,type SpectralRows} from './spectrogramProjection'
 
 export type SpectrogramRange = {
   startFrame:string; endFrame:string; width:number; height:number
@@ -32,7 +33,10 @@ export class SpectrogramRaster {
   private edges:bigint[]
   private ready:Float64Array
   private touched:Float64Array
-  constructor(range:SpectrogramRange,key:string,generation:number,rate:number,fftSize:number) {
+  private rows:SpectralRows
+  private peaks:Float32Array
+  private nodes=new Uint16Array(16)
+  constructor(range:SpectrogramRange,key:string,generation:number,rate:number,fftSize:number,private projections=new SpectrogramProjectionCache(),private projectionBudget=16*1024*1024) {
     validateSpectrogramRange(range,rate)
     this.start=spectralFrame(range.startFrame);this.end=spectralFrame(range.endFrame)
     // Do not manufacture several pixels for a sub-frame time range.
@@ -48,30 +52,33 @@ export class SpectrogramRaster {
       if(b<a)a=b=Math.min(fftSize/2,Math.round(Math.sqrt(lo*hi)/binHz))
       first[y]=a;last[y]=b
     }
+    this.rows=spectralRows(first,last);this.peaks=new Float32Array(this.rows.first.length)
     this.view={...range,width,key,requestGeneration:generation,sampleRate:rate,fftSize,hop:Math.min(fftSize/4,Math.floor(rate/50)),
       decibels:new Float32Array(width*range.height).fill(-Infinity),status:new Uint8Array(width),coverage:new Float32Array(width),rowFirstBin:first,rowLastBin:last,progress:0,complete:false}
   }
+  setProjectionBudget(bytes:number):void {this.projectionBudget=bytes;this.projections.trim(bytes)}
   add(tile:SpectrogramTile,availableStart:bigint,availableEnd:bigint):void {
     const v=this.view
     if(tile.fftSize!==v.fftSize||tile.sampleRate!==v.sampleRate||tile.hop!==v.hop)throw Error('STALE_SPECTROGRAM_TILE')
-    const levels=new Float32Array(v.height)
-    for(let i=0;i<tile.columns;i++) {
-      const at=BigInt(tile.firstFrame)+BigInt(i*tile.hop)
-      const begin=max(at,this.start),finish=min(min(at+BigInt(tile.hop),this.end),availableEnd)
-      if(finish<=begin)continue
-      const state=at-BigInt(tile.fftSize)<availableStart?0:tile.status[i]
-      const x0=Number(((begin-this.start+1n)*BigInt(v.width)-1n)/(this.end-this.start))
-      const x1=Number(((finish-this.start)*BigInt(v.width)-1n)/(this.end-this.start))
-      levels.fill(-Infinity)
-      if(state===1)for(let y=0;y<v.height;y++)for(let bin=v.rowFirstBin[y];bin<=v.rowLastBin[y];bin++)levels[y]=Math.max(levels[y],tile.decibels[i*tile.bins+bin])
-      for(let x=x0;x<=x1;x++) {
-        const amount=Number(min(finish,this.edges[x+1])-max(begin,this.edges[x]));if(amount<=0)continue
-        this.touched[x]+=amount;v.status[x]|=1<<state
-        if(state===1) {
-          this.ready[x]+=amount
-          for(let y=0;y<v.height;y++)v.decibels[y*v.width+x]=Math.max(v.decibels[y*v.width+x],levels[y])
-        }
+    const first=BigInt(tile.firstFrame),hop=BigInt(tile.hop),begin=max(first,this.start),finish=min(min(first+BigInt(tile.columns)*hop,this.end),availableEnd)
+    if(finish<=begin)return
+    const projection=this.projections.get(tile,this.rows,this.projectionBudget)
+    const x0=Number(((begin-this.start+1n)*BigInt(v.width)-1n)/(this.end-this.start)),x1=Number(((finish-this.start)*BigInt(v.width)-1n)/(this.end-this.start))
+    const validFrom=Number(min(BigInt(tile.columns),max(0n,(availableStart+BigInt(tile.fftSize)-first+hop-1n)/hop)))
+    for(let x=x0;x<=x1;x++){
+      const left=max(begin,this.edges[x]),right=min(finish,this.edges[x+1]);if(right<=left)continue
+      const from=Number((left-first)/hop),to=Number((right-1n-first)/hop)+1,eligible=Math.min(to,Math.max(from,validFrom))
+      const leftTrim=Number(left-first-BigInt(from)*hop),rightTrim=Number(first+BigInt(to)*hop-right)
+      let readyFrames=0
+      for(let state=0;state<4;state++){
+        const count=projection.counts[state][to]-projection.counts[state][eligible]+(state===0?eligible-from:0)
+        if(count)v.status[x]|=1<<state
+        if(state===1)readyFrames=count*tile.hop
       }
+      if(from>=validFrom&&tile.status[from]===1)readyFrames-=leftTrim
+      if(to-1>=validFrom&&tile.status[to-1]===1)readyFrames-=rightTrim
+      this.touched[x]+=Number(right-left);this.ready[x]+=readyFrames
+      if(readyFrames>0){spectralMaximum(projection,eligible,to,this.peaks,this.nodes);for(let y=0;y<v.height;y++)v.decibels[y*v.width+x]=Math.max(v.decibels[y*v.width+x],this.peaks[this.rows.map[y]])}
     }
   }
   snapshot(progress:number,complete:boolean):SpectrogramView {

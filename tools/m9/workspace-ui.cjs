@@ -39,6 +39,12 @@ async function main(){
  pass('Closing the file releases spectral storage before source teardown')
  await c.request('view.live');await c.request('live.start',{deviceId:(await c.state()).deviceId});await wait(()=>c.evaluate('window.__sp?.source.kind==="live"&&window.__sp.view?.coverage.some(v=>v>0)'),'LIVE data');await shot(c,'live-2d')
  pass('Actual LIVE capture feeds the same 2D panel')
+ const liveRect=await c.evaluate('(()=>{const r=document.querySelector("[data-instrument=spectrogram] canvas").getBoundingClientRect();return {x:r.x+36+(r.width-46)*.65,y:r.y+r.height*.5}})()')
+ await c.send('Input.dispatchMouseEvent',{type:'mousePressed',button:'left',clickCount:1,...liveRect});await c.send('Input.dispatchMouseEvent',{type:'mouseReleased',button:'left',clickCount:1,...liveRect})
+ await wait(async()=>Boolean((await c.state()).playback?.temporary),'fixed cache')
+ await wait(()=>c.evaluate('window.__sp?.source.kind==="file"&&window.__sp.phase==="ready"'),'fixed cache spectral view')
+ pass('Clicking the live spectrogram opens the fixed cache in the same timeline')
+ await c.request('view.live')
  await c.request('live.stop');await c.request('record.start');const take=(await c.state()).currentRecord
  await wait(()=>c.evaluate('window.__sp?.source.kind==="take"&&window.__sp.view?.coverage.some(v=>v>0)'),'REC data')
  const before=await c.evaluate('window.__m9Frame.recording.writtenFrames');await delay(700);assert.equal((await c.state()).currentRecord.id,take.id);assert(BigInt(await c.evaluate('window.__m9Frame.recording.writtenFrames'))>BigInt(before));await shot(c,'recording-2d')

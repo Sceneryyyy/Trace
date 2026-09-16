@@ -1,6 +1,6 @@
 # 06 · 模块接口与消息契约
 
-M9 内部接口增量：SpectrogramService.query 接收内部来源、FFT/声道配置及可视区，返回有界 SpectrogramView；point 返回实际窗起止/bin/Hz/状态和值；cancel/close 抑制旧视口并等待释放。视图使用独立数组与覆盖掩码，原始点不返回像素汇总值。Native spectrogramTile 一次最多 64 列，与瞬时仪器共享两任务上限。具体类型和语义见 spectrogramSource.ts/spectrogramView.ts/spectrogramService.ts 与 43；renderer 白名单已增加 spectrogram.configure/query/point/cancel，query 只带来源引用与范围，point 绑定 queryId；大数组经独立 trace:spectrogram 流发布，新增 TraceAPI.onSpectrogram，不进入命令回复缓存。SpectrogramPresenter 负责请求/来源释放与旧回包淘汰，见 46。内部路径参数仍不暴露给界面。
+M9 内部接口增量：SpectrogramService.query 接收内部来源、FFT/声道配置及可视区，返回有界 SpectrogramView；point 返回实际窗起止/bin/Hz/状态和值；cancel/close 抑制旧视口并等待释放。视图使用独立数组与覆盖掩码，原始点不返回像素汇总值。Native spectrogramTile 一次最多 64 列，与瞬时仪器共享两任务上限。具体类型和语义见 spectrogramSource.ts/spectrogramView.ts/spectrogramService.ts 与 43；renderer 白名单已增加 spectrogram.configure/query/point/cancel，query 只带来源引用与范围，point 绑定 queryId；大数组经独立 trace:spectrogram 流发布，新增 TraceAPI.onSpectrogram，不进入命令回复缓存。SpectrogramPresenter 负责请求/来源释放与旧回包淘汰，见 46/47。preview.17 包增加 configKey，FILE 引用可携 analysisId；绘制前比较来源/epoch/分析 ID/配置。时间范围改变可保留同来源、同配置、有实际坐标的旧分辨率图像。内部路径参数仍不暴露给界面。
 
 M8：新增 instrument.configure，payload 仅为 {settings}，数值/枚举范围见 instrumentTypes.ts；前端不发送文件路径。MeterSnapshot 可携带 instruments（configKey、phase、经校验的 NativeInstrumentResult），文件与实时均按同一呈现上下文发布。旧代次/来源/设置回复不覆盖新状态。native instrumentAnalyze 为内部四来源异步接口，最多两个任务；见 41/42。
 

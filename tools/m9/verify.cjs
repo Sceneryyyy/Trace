@@ -6,11 +6,14 @@ function run(name,script,extra={},args=[]){console.log('START',name);const r=cp.
 function copy(source,name){const data=JSON.parse(fs.readFileSync(path.join(root,source)));assert.equal(data.status,'pass');fs.writeFileSync(path.join(folder,name+'.json'),JSON.stringify(data,null,2));return data}
 try{
  run('typecheck','node_modules/typescript/bin/tsc',{},['--noEmit'])
- const cases=[...JSON.parse(fs.readFileSync(path.join(root,'artifacts/iteration/final-js.json'))).files,'test/workspace-layout.test.mjs','test/instrument-service.test.mjs','test/snapshot-transport.test.mjs','test/canvas-surface.test.mjs','test/spectrogram-codec.test.mjs','test/spectrogram-store.test.mjs','test/spectrogram-service.test.mjs','test/spectrogram-presenter.test.mjs']
+ const cases=[...JSON.parse(fs.readFileSync(path.join(root,'artifacts/iteration/final-js.json'))).files,'test/workspace-layout.test.mjs','test/instrument-service.test.mjs','test/snapshot-transport.test.mjs','test/canvas-surface.test.mjs','test/spectrogram-codec.test.mjs','test/spectrogram-store.test.mjs','test/spectrogram-service.test.mjs','test/spectrogram-presenter.test.mjs','test/spectrogram-presentation.test.mjs','test/spectrogram-projection.test.mjs']
  const js=cp.spawnSync(process.execPath,['--test',...cases],{cwd:root,env,encoding:'utf8',windowsHide:true});fs.writeFileSync(path.join(folder,'javascript.log'),(js.stdout||'')+(js.stderr||''));assert.equal(js.status,0,(js.stdout||'').slice(-1800));report.checks.push('javascript')
  run('native-bridge','tools/m8/run-native.cjs');copy('artifacts/m8/native-latest.json','native-bridge')
  run('spectral-native','tools/m9/run-native.cjs');copy('artifacts/m9/native-service-latest.json','spectral-native')
  run('spectral-ui','tools/m9/workspace-ui.cjs',{TRACE_PACKAGE_EXE:path.join(dir,'Trace.exe')});copy('artifacts/m9/ui-latest.json','spectral-ui')
+ for(const scale of [1,1.5,2]){run('spectral-presentation-'+scale,'tools/m9/presentation-ui.cjs',{TRACE_PACKAGE_EXE:path.join(dir,'Trace.exe'),TRACE_UI_SCALE:String(scale)});copy('artifacts/m9/presentation-latest.json','spectral-presentation-'+scale)}
+ run('spectral-latency','tools/m9/latency.cjs',{TRACE_PACKAGE_EXE:path.join(dir,'Trace.exe')});copy('artifacts/m9/latency-latest.json','spectral-latency')
+ run('spectral-long-file','tools/m9/long-file.cjs',{TRACE_PACKAGE_EXE:path.join(dir,'Trace.exe')});copy('artifacts/m9/long-file-latest.json','spectral-long-file')
  run('package-audit','tools/m6/package-audit.cjs');const audit=copy('artifacts/m6/package-audit-latest.json','package-audit')
  for(const scale of [1,1.5,2]){run('ui-'+scale,'tools/m8/workspace-ui.cjs',{TRACE_PACKAGE_EXE:path.join(dir,'Trace.exe'),TRACE_UI_SCALE:String(scale)});const ui=copy('artifacts/m8/ui-latest.json','ui-'+scale);assert(ui.seekP95<=100,'seek p95 exceeds 100ms');assert.equal(ui.seekMs.length,100)}
  run('window-visibility','tools/m8/visibility-check.cjs',{TRACE_PACKAGE_EXE:path.join(dir,'Trace.exe')});copy('artifacts/m8/visibility-latest.json','window-visibility')

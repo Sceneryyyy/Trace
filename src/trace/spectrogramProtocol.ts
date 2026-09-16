@@ -10,14 +10,16 @@ export function validateSpectrogramSettings(v:unknown):SpectrogramSettings {
   return {...v} as SpectrogramSettings
 }
 export function restoreSpectrogramSettings(v:unknown):SpectrogramSettings {try{return validateSpectrogramSettings(v)}catch{return {...defaultSpectrogramSettings}}}
-export type SpectrogramSourceRef={kind:'live'|'take'|'file';sourceId:string;epochId:string;measurementEpoch:string}
+export function spectrogramConfigKey(s:SpectrogramSettings):string{return JSON.stringify([s.fftSize,s.channel,s.minFrequency,s.maxFrequency])}
+export type SpectrogramSourceRef={analysisId?:string;kind:'live'|'take'|'file';sourceId:string;epochId:string;measurementEpoch:string}
 export type SpectrogramQuery={source:SpectrogramSourceRef;range:{startFrame:string;endFrame:string;width:number;height:number}}
-export type SpectrogramPacket={requestId:string;phase:'partial'|'ready'|'error';source:SpectrogramSourceRef;axisStartFrame?:string;axisEndFrame?:string;view?:SpectrogramView;error?:string}
+export type SpectrogramPacket={configKey:string;requestId:string;phase:'partial'|'ready'|'error';source:SpectrogramSourceRef;axisStartFrame?:string;axisEndFrame?:string;view?:SpectrogramView;error?:string}
 export function validateSpectrogramQuery(v:unknown):SpectrogramQuery {
   if(!plain(v)||Object.keys(v).sort().join(',')!=='range,source'||!plain(v.source)||!plain(v.range))throw Error('INVALID_SPECTROGRAM_QUERY')
   const s=v.source,r=v.range
-  if(Object.keys(s).sort().join(',')!=='epochId,kind,measurementEpoch,sourceId'||!['file','live','take'].includes(s.kind as string)||typeof s.sourceId!=='string'||!s.sourceId||s.sourceId.length>1024||s.sourceId.includes('\0')||
+  if(Object.keys(s).filter(k=>k!=='analysisId').sort().join(',')!=='epochId,kind,measurementEpoch,sourceId'||!['file','live','take'].includes(s.kind as string)||typeof s.sourceId!=='string'||!s.sourceId||s.sourceId.length>1024||s.sourceId.includes('\0')||
     Object.keys(r).sort().join(',')!=='endFrame,height,startFrame,width'||!Number.isInteger(r.width)||Number(r.width)<1||Number(r.width)>1024||!Number.isInteger(r.height)||Number(r.height)<1||Number(r.height)>512)throw Error('INVALID_SPECTROGRAM_QUERY')
+  if(s.analysisId!==undefined&&(s.kind!=='file'||typeof s.analysisId!=='string'||!s.analysisId||s.analysisId.length>128||s.analysisId.includes('\0')))throw Error('INVALID_SPECTROGRAM_QUERY')
   spectralFrame(s.epochId as string);spectralFrame(s.measurementEpoch as string)
   if(spectralFrame(r.endFrame as string)<=spectralFrame(r.startFrame as string))throw Error('INVALID_SPECTROGRAM_QUERY')
   return structuredClone(v) as SpectrogramQuery

@@ -37,8 +37,9 @@ async function main(){
    assert(Number.isFinite(totalKB)&&totalKB<1.5*1024*1024,'application working set budget')
    assert(browser&&browser.memory.workingSetSize<=600*1024,'main working set budget')
    assert(heap.usedSize<128*1024*1024,'renderer JS heap budget')
+   const spectralCache=info.spectrogramUsage;assert(spectralCache.bytes+(spectralCache.projectionBytes||0)<=128*1024*1024,'combined spectral cache budget')
    assert(Number(f.diagnostics.replayFrames)<=Number(f.diagnostics.replayCapacityFrames))
-   report.samples.push({spectral:data.spectral,seconds:elapsed,recording,sourceEpoch:f.epochId,position:f.positionFrame,writtenFrames:recording?f.recording.writtenFrames:null,delivered:data.delivered,instrumentErrors:data.instrumentErrors,totalWorkingSetKB:totalKB,mainWorkingSetKB:browser.memory.workingSetSize,heapBytes:heap.usedSize,heapBackingBytes:heap.backingStorageSize,heapEmbedderBytes:heap.embedderHeapUsedSize,processes:metrics.map(p=>({pid:p.pid,type:p.type,memory:p.memory})),computeMs:f.instruments?.data?.elapsedMs,replayFrames:f.diagnostics.replayFrames,replayCapacityFrames:f.diagnostics.replayCapacityFrames,droppedFrames:f.diagnostics.droppedFrames,estimatedFrames:f.diagnostics.estimatedFrames})
+   report.samples.push({spectralCache:info.spectrogramUsage,spectral:data.spectral,seconds:elapsed,recording,sourceEpoch:f.epochId,position:f.positionFrame,writtenFrames:recording?f.recording.writtenFrames:null,delivered:data.delivered,instrumentErrors:data.instrumentErrors,totalWorkingSetKB:totalKB,mainWorkingSetKB:browser.memory.workingSetSize,heapBytes:heap.usedSize,heapBackingBytes:heap.backingStorageSize,heapEmbedderBytes:heap.embedderHeapUsedSize,processes:metrics.map(p=>({pid:p.pid,type:p.type,memory:p.memory})),computeMs:f.instruments?.data?.elapsedMs,replayFrames:f.diagnostics.replayFrames,replayCapacityFrames:f.diagnostics.replayCapacityFrames,droppedFrames:f.diagnostics.droppedFrames,estimatedFrames:f.diagnostics.estimatedFrames})
    persist();console.log('RESOURCE_SAMPLE',Math.round(elapsed),Math.round(totalKB/1024)+' MiB',data.delivered+' frames');nextSample+=15
   }
   await delay(500)

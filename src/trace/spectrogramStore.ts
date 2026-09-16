@@ -18,6 +18,7 @@ export class SpectrogramStore{
   if(!Number.isSafeInteger(budgetBytes)||budgetBytes<4*1024*1024)throw Error('INVALID_SPECTROGRAM_BUDGET')
   this.root=root?resolve(root):undefined
  }
+ hasMemory(r:TileRequest):boolean{const cached=this.memory.get(this.id(r));return Boolean(cached&&cached.tile.columns>=r.columns)}
  get usage(){return {bytes:this.bytes,tiles:this.memory.size,pending:this.pending.size}}
  retainRange(key:string,startFrame:string,endFrame:string):void{
   const start=BigInt(startFrame),end=BigInt(endFrame)
@@ -40,7 +41,7 @@ export class SpectrogramStore{
   if(this.pending.size>=2)throw Error('SPECTROGRAM_QUEUE_FULL')
   const generation=this.generation,current=()=>{if(this.closed||generation!==this.generation)throw Error('SPECTROGRAM_CANCELLED')}
   const task=this.tail.catch(()=>{}).then(async()=>{
-   current();let directory:string|undefined,file:string|undefined
+   current();let prefix=cached?.tile;let directory:string|undefined,file:string|undefined
    if(this.root){
     // Refuse links at the owned cache boundary and at each newly-created key directory.
     await mkdir(this.root,{recursive:true});current()
@@ -53,6 +54,7 @@ export class SpectrogramStore{
      const tile=decodeSpectrogramTile(await readFile(file),request.key);current()
      if(tile.firstFrame!==request.firstFrame)throw Error('CORRUPT_SPECTROGRAM_TILE')
      if(tile.columns>=request.columns){this.keep(id,tile);return tile}
+     if(!prefix||tile.columns>prefix.columns)prefix=tile
     }catch(error){
      if((error as NodeJS.ErrnoException).code!=='ENOENT'){
       if(!(error instanceof Error)||error.message!=='CORRUPT_SPECTROGRAM_TILE')throw error
@@ -60,7 +62,17 @@ export class SpectrogramStore{
      }
     }
    }
-   const tile=validateSpectrogramTile(await this.fetchTile(request));current()
+   const next=prefix?{...request,firstFrame:String(BigInt(prefix.firstFrame)+BigInt(prefix.columns*prefix.hop)),columns:request.columns-prefix.columns}:request
+   const suffix=validateSpectrogramTile(await this.fetchTile(next));current()
+   if(suffix.firstFrame!==next.firstFrame||suffix.columns<next.columns)throw Error('STALE_SPECTROGRAM_TILE')
+   let tile=suffix
+   if(prefix){
+    if(['fftSize','hop','bins','sampleRate','channels'].some(key=>prefix![key as keyof SpectrogramTile]!==suffix[key as keyof SpectrogramTile]))throw Error('STALE_SPECTROGRAM_TILE')
+    const decibels=new Float32Array(request.columns*prefix.bins),status=new Uint8Array(request.columns)
+    decibels.set(prefix.decibels);decibels.set(suffix.decibels.subarray(0,next.columns*prefix.bins),prefix.decibels.length)
+    status.set(prefix.status);status.set(suffix.status.subarray(0,next.columns),prefix.columns)
+    tile=validateSpectrogramTile({...prefix,columns:request.columns,decibels,status})
+   }
    if(tile.firstFrame!==request.firstFrame||tile.columns<request.columns)throw Error('STALE_SPECTROGRAM_TILE')
    if(file){
     const temporary=file+'.'+randomUUID()+'.tmp'

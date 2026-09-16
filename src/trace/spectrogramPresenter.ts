@@ -1,7 +1,7 @@
 import {SpectrogramService,type SpectrogramNative} from './spectrogramService'
 import type {SpectrogramSource} from './spectrogramSource'
 import type {SpectrogramRange} from './spectrogramView'
-import type {SpectrogramQuery,SpectrogramSettings,SpectrogramPacket} from './spectrogramProtocol'
+import {spectrogramConfigKey,type SpectrogramQuery,type SpectrogramSettings,type SpectrogramPacket} from './spectrogramProtocol'
 export type SpectrogramBinding={source:SpectrogramSource;range:SpectrogramRange;toNative:(frame:string)=>string;toAxis:(frame:string)=>string;valid:()=>boolean}
 /** Owns presentation requests, separate from the meter snapshot stream and command reply cache. */
 export class SpectrogramPresenter {
@@ -22,10 +22,10 @@ export class SpectrogramPresenter {
         const send=(view:import('./spectrogramView').SpectrogramView,phase:'partial'|'ready')=>{
           if(this.active!==active||!binding.valid())return
           active.key=view.key
-          this.publish({requestId:id,source:q.source,phase,view,axisStartFrame:binding.toAxis(view.startFrame),axisEndFrame:binding.toAxis(view.endFrame)})
+          this.publish({configKey:spectrogramConfigKey(s),requestId:id,source:q.source,phase,view,axisStartFrame:binding.toAxis(view.startFrame),axisEndFrame:binding.toAxis(view.endFrame)})
         }
         const view=await this.service.query(binding.source,s,binding.range,v=>send(v,'partial'));send(view,'ready')
-      }catch(error){if(this.active===active&&(!active.binding||active.binding.valid()))this.publish({requestId:id,source:q.source,phase:'error',error:String(error)})}
+      }catch(error){if(this.active===active&&(!active.binding||active.binding.valid()))this.publish({configKey:spectrogramConfigKey(s),requestId:id,source:q.source,phase:'error',error:String(error)})}
     })()
   }
   async point(id:string,frame:string,frequency:number){

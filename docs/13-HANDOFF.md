@@ -1,5 +1,21 @@
 # 13 · 当前状态与下一会话
 
+## 当前焦点：preview.17 的 M9 专项通过，等待新资源门禁
+
+2026-09-17：preview.16 已实际完成 **1800.258 秒 pass**，29 次显隐、无声谱错误/丢帧；WAV 14,434,560 帧 / 300.72 秒的头、格式和 hash 与清单一致，报告 resources-1789582017255/file-integrity.json。原 exec 7602 已结束，不再轮询。
+
+preview.17 完成绘制前来源/epoch/analysisId/配置校验、错误重试、单声道说明，以及隐藏恢复后的查询续接。Canvas 在 layout effect 绘制，同源缩放保留正确坐标的已有图像。旧 500 ms 请求改为随时间轴快照触发并以 33 ms 补充检查。新增列只计算一次；原始块之外加入精确区间最大值结构，颜色使用复用表，均不改变原始 bin/dB。
+
+**19 阶段短门禁 / 140 JS pass：** artifacts/m9/final-1789585180170/report.json。新 2D 多 DPI、WAV96/MP3/M4A/ADTS、单声道、快速换源/FFT、错误重试、固定缓存 GUI 和两小时文件优先查询通过。真实端到端查询至绘制 p95 **12.7 ms**；两小时文件取消宽视图后聚焦两秒 **27 ms**、缓存命中绘制 **6.7 ms**。完整范围、对照算法、缓存预算及候选 hash 见 [47-M9-PRESENTATION-PERFORMANCE](47-M9-PRESENTATION-PERFORMANCE.md)。已查看 200% 进程缩放截图，原文件保持 hash。
+
+**唯一当前长测：** exec **67230**，runner **55868**，app **65924**；**artifacts/m9/resources-1789585398846/report.json**，1800 秒、不可变 preview.17。已确认进程存活；约 330 秒已结束录音进入 LIVE，无错误/丢帧，继续检查原工作集/堆门槛和新增原始+派生缓存总量。先 poll 同一 handle 并核对 PID，不能因一次超时重启。
+
+下一步：收取该长测及录音最终完整性，若通过则关闭 M9 工程关口并记录人工复验项；若失败保留报告并针对原因修复。当前 M9 功能/正确性/专项均已有证据，不重复重做已完成的 UI、缓存或格式工作。可独立准备 M10 的同数据 3D 渲染/相机/降级设计，M9 关口通过后再集成交付。M10–M12 和最终原八维复评尚未完成，目标 active；原硬件/标准素材/人工专项独立开放。
+
+运行入口 dist-trace/preview.17/win-unpacked/Trace.exe；ASAR 020334198a05665eeabc41dc15433c960d5a177df40d811fee9fb5638cab1b88，Native 7f1606b31bdf1664b7563b418ba0d43e3c025198e874c387851338eb9c0a7dbe。文件/旧包/失败证据保留，当前无外部阻塞；按阶段本地提交，不远程推送。
+
+## 以下为阶段历史
+
 ## 当前焦点：M9 录音结束时的过期异常，preview.16 修复候选
 
 2026-09-17：2D 接入已提交 **e7a9253**。preview.15 长测在约 300 秒录音结束/切回 LIVE 时失败于声谱错误计数，错误为 STALE_INSTRUMENT_SOURCE；报告 artifacts/m9/resources-1789580510557/report.json 已终止为 fail，原 exec 83274 不再运行，不能再称其为进行中。此前短门禁 14 阶段 pass 仍有效，但 M9 未关闭。
