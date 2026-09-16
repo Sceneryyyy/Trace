@@ -1,3 +1,4 @@
+import {canvasSurface} from './canvasSurface'
 import {wheelPixels,wheelValue,zoomRange,zoomLabel,panRange} from './zoom'
 import {createContext,useContext,useEffect,useLayoutEffect,useRef,useState} from 'react'
 import type {DisplaySettings} from '../displaySettings'
@@ -33,10 +34,8 @@ export function Timeline({kind='both',traces=['m','s','i'],feedback,selectionMod
   :snapshot?.fileView?.selection
  useEffect(()=>{
   function paint(canvas:HTMLCanvasElement,kind:'wave'|'loud'){
-   const rect=canvas.getBoundingClientRect(),dpr=window.devicePixelRatio||1
-   canvas.width=Math.round(rect.width*dpr);canvas.height=Math.round(rect.height*dpr)
-   const ctx=canvas.getContext('2d');if(!ctx)return
-   ctx.scale(dpr,dpr)
+   const surface=canvasSurface(canvas);if(!surface)return
+   const {rect,context:ctx}=surface
    const w=rect.width,h=rect.height,left=36,right=w-10,top=14,bottom=h-14
    const rate=snapshot?.timelineRate||snapshot?.format.sampleRate||48000
    const cursor=snapshot?.positionFrame||'0'

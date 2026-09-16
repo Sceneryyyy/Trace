@@ -1,3 +1,4 @@
+import {canvasSurface} from './canvasSurface'
 import {useEffect,useRef,useState} from 'react'
 import {instrumentConfigKey,validateInstrumentSettings,type InstrumentSettings,type InstrumentPacket} from '../instrumentTypes'
 import './analysis-instruments.css'
@@ -22,7 +23,7 @@ export function SpectrumPanel({packet,settings,change}:{packet?:InstrumentPacket
  useEffect(()=>{const element=canvas.current;if(!element)return;const prevent=(e:WheelEvent)=>e.preventDefault();element.addEventListener('wheel',prevent,{passive:false});return()=>element.removeEventListener('wheel',prevent)},[])
  useEffect(()=>{
   const el=canvas.current;if(!el)return
-  const paint=()=>{const r=el.getBoundingClientRect(),dpr=devicePixelRatio;el.width=Math.round(r.width*dpr);el.height=Math.round(r.height*dpr);const c=el.getContext('2d');if(!c)return;c.scale(dpr,dpr)
+  const paint=()=>{const surface=canvasSurface(el);if(!surface)return;const {rect:r,context:c}=surface
    const l=44,t=12,b=Math.max(t+1,r.height-29),right=r.width-12,w=Math.max(1,right-l),h=b-t
    const x=(f:number)=>l+Math.log(f/lo)/Math.log(hi/lo)*w,y=(v:number)=>b-(v-settings.minDecibels)/(settings.maxDecibels-settings.minDecibels)*h
    c.font='11px "JetBrains Mono",monospace';c.lineWidth=1
@@ -58,7 +59,7 @@ export function SpectrumPanel({packet,settings,change}:{packet?:InstrumentPacket
 }
 export function SoundFieldPanel({packet,settings,change}:{packet?:InstrumentPacket;settings:InstrumentSettings;change:(s:InstrumentSettings)=>void}){
  const canvas=useRef<HTMLCanvasElement>(null),box=useRef<HTMLDivElement>(null),data=available(packet,settings),error=message(packet,settings,true)
- useEffect(()=>{const el=canvas.current;if(!el)return;const paint=()=>{const r=el.getBoundingClientRect(),dpr=devicePixelRatio;el.width=Math.round(r.width*dpr);el.height=Math.round(r.height*dpr);const c=el.getContext('2d');if(!c)return;c.scale(dpr,dpr)
+ useEffect(()=>{const el=canvas.current;if(!el)return;const paint=()=>{const surface=canvasSurface(el);if(!surface)return;const {rect:r,context:c}=surface
   const polar=settings.fieldMode!=='lissajous',radius=Math.max(10,Math.min(r.width*.42,polar?r.height*.76:r.height*.42)),cx=r.width/2,cy=polar?r.height-18:r.height/2
   c.strokeStyle='#41505c';c.lineWidth=1;c.beginPath()
   if(polar){c.arc(cx,cy,radius,Math.PI,2*Math.PI);c.moveTo(cx-radius,cy);c.lineTo(cx+radius,cy);for(const a of [-Math.PI/4,0,Math.PI/4]){c.moveTo(cx,cy);c.lineTo(cx+Math.sin(a)*radius,cy-Math.cos(a)*radius)}}

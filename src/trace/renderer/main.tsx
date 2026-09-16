@@ -7,4 +7,6 @@ import '@fontsource/jetbrains-mono/400.css'
 import App from './App'
 import './styles.css'
 import './instruments.css'
+import {installSnapshotTransport} from './snapshotTransport'
+installSnapshotTransport()
 createRoot(document.getElementById('root')!).render(<React.StrictMode><App /></React.StrictMode>)

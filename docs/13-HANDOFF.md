@@ -1,5 +1,22 @@
 # 13 · 当前状态与下一会话
 
+## 当前焦点：M8 长资源门禁未过，收取两个复测并继续定位
+
+2026-09-16：M8 功能提交 **3a8bda1**、M9 独立数据底座提交 **06693b5**。preview.11 的 1800 秒检查已实际失败于工作集增长门槛，录音完整、droppedFrames/instrumentErrors 均为 0；不能以短门禁通过关闭 M8。完整排查和候选说明见 [44-M8-RESOURCE-INVESTIGATION](44-M8-RESOURCE-INVESTIGATION.md)。
+
+**两项仍运行的复测，先等待/检查，禁止重复启动：**
+- preview.12 快照传递候选，1800 秒：exec **23741**，runner **7148**，app **48148**，artifacts/m8/resources-1789573295492/report.json。
+- preview.13 叠加 Canvas 存储复用，600 秒诊断：exec **8696**，runner **71012**，app **6260**，artifacts/m8/resources-1789574225764/report.json。
+两个任务都写 resources-latest.json；以各自目录和真实进程为准。10 分钟诊断通过也不能当成 30 分钟门禁通过。原失败为 resources-1789570665775/report.json，副本 resources-before-transfer.json。
+
+当前源码候选 preview.13，保留 contextIsolation/sandbox/命令白名单。高频快照改为 preload 单次转移再在主世界分发；绘图仅在尺寸改变时重建 canvas backing store。功能和对应单元测试通过，但资源改善尚未证明；preview.12 早期总工作集反而较高，后续要按证据决定保留或回退候选，不调整验收阈值。没有在门禁中主动 GC。
+
+M9 的 Native SpectrogramTile 与 log32 二进制编解码已独立验证（15/15 CTest、tile 20 场景、codec 3 项），文档 43；尚无原生瓦片 IPC、缓存存储服务或 2D 界面。M9 source firstFrame 为首列 FFT 结束帧，注意与 PCM 起点区分。
+
+下一步：收取复测，定位渲染/传递/共享工作集增长，验证并保存有效修复，再关闭 M8；随后继续 M9–M12。目标仍 active，未进行最终评分；文件/旧包/失败记录均保留，不执行全量删除或远程推送。
+
+## 以下为阶段历史
+
 ## 当前进度：M8 功能与短门禁通过，30 分钟资源门禁运行中
 
 2026-09-16：preview.11 已完成频谱/声场四来源接入、独立设置及 workspace v1→v2 迁移。实现、检查、包哈希见 [42-M8-ACCEPTANCE](42-M8-ACCEPTANCE.md)；数值规范继续见 41。短门禁 11 阶段通过（105 JS、14/14 原生、7 个原生桥接、三组缩放各 12 个工作台流程、旧导航/三格式/中文路径），不能据此跳过长测。

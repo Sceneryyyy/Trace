@@ -30,7 +30,8 @@ export type TraceAPI = {
   onState: (listener: (state: TraceState) => void) => () => void
   onSnapshot: (listener: (snapshot: MeterSnapshot) => void) => () => void
 }
-declare global { interface Window { trace: TraceAPI } }
+export type TraceHostAPI=Pick<TraceAPI,'request'|'onState'>
+declare global { interface Window { trace: TraceAPI;traceHost:TraceHostAPI } }
 
 export type WavRecordSettings = {format?:undefined;encoding:WavEncoding;sampleRate:'source'|44100|48000|88200|96000;namePrefix:string}
 export type RecordSettings = (WavRecordSettings | (Exclude<ExportPreset,{format:'wav'}>&{namePrefix:string}))&{keepOriginal?:boolean}
