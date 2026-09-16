@@ -1,4 +1,5 @@
 import {useEffect,useState} from 'react'
+import {ImportedLibrary} from './ImportedLibrary'
 import {timecode,timecodeNs} from './time'
 import {ExportItems} from './ExportPanel'
 import {userError} from '../userErrors'
@@ -58,8 +59,10 @@ export function RecordingLibrary({initialStatus='all',state,busy,run,request,onE
  useEffect(()=>{let active=true;setScanning(true);request('library.storage').then(result=>{if(active)setUsage(result as LibraryUsage)}).catch(error=>{if(active)setError(userError(error))}).finally(()=>{if(active)setScanning(false)});return()=>{active=false}},[state.recordDirectory])
  const act=async(command:Command,payload:Record<string,unknown>={})=>{
   setError('');setNotice('')
-  try{const data=await request(command,payload) as {removed?:number;freedBytes?:string;protectedExports?:number}|null
+  try{const data=await request(command,payload) as {accepted?:Array<{id:string}>;errors?:Array<{name:string;message:string}>;removed?:number;freedBytes?:string;protectedExports?:number}|null
    if(command==='library.rename')setEditing(null)
+   if(data?.accepted)setNotice(data.accepted.length?'已加入 '+data.accepted.length+' 个素材，准备完成后可查看。':'未添加素材。')
+   if(data?.errors?.length)setError(data.errors.map(e=>e.name+'：'+userError(e.message)).join('；'))
    if(data?.removed!==undefined)setNotice(data.removed?'已清理 '+data.removed+' 条失效记录':'没有可清理的失效记录；不完整录音仍保留。')
    if(data?.freedBytes!==undefined)setNotice('已清理 '+formatBytes(data.freedBytes)+' 缓存'+(data.protectedExports?'；'+data.protectedExports+' 个成品缺失或变化，已保留对应解码音频。':''))
    if(command!=='library.rename')await refreshUsage()
@@ -71,16 +74,17 @@ export function RecordingLibrary({initialStatus='all',state,busy,run,request,onE
    (status==='all'||status==='attention'&&needsAttention(t)||status==='ready'&&['ready','recovered'].includes(t.status)||status==='processing'&&(!['ready','recovered','failed','recoverable'].includes(t.status)||t.exports?.some(e=>!['ready','failed','cancelled'].includes(e.phase))))
  })
  return <div className="recording-list">
-  <div className="library-directory"><span title="此列表显示当前目录中的 Trace 录音；切换目录保留原目录的全部文件。">当前目录</span><strong>{state.recordDirectory||'尚未选择'}</strong><button disabled={busy||recording} onClick={()=>run('record.chooseDirectory')}>切换目录</button></div>
+  <div className="library-import-bar"><button onClick={()=>void act('imports.choose')}>导入素材</button><small>WAV · MP3 · M4A · AAC，支持拖放；原文件保持不变。</small><button onClick={()=>void act('imports.refresh')}>刷新素材</button></div>
+  <div className="library-directory"><span title="此列表显示当前目录中的 Trace 录音；切换目录保留原目录的全部文件。">录音目录</span><strong>{state.recordDirectory||'尚未选择'}</strong><button disabled={busy||recording} onClick={()=>run('record.chooseDirectory')}>切换目录</button></div>
   <div className="library-toolbar">
-   <input aria-label="搜索录音文件" placeholder="搜索录音名称" value={query} onChange={e=>{setQuery(e.target.value);setLimit(50)}}/>
-   <select aria-label="录音状态筛选" value={status} onChange={e=>{setStatus(e.target.value);setLimit(50)}}><option value="all">全部状态</option><option value="ready">已保存</option><option value="processing">处理中</option><option value="attention">需要处理</option></select>
+   <input aria-label="搜索音频文件" placeholder="搜索名称" value={query} onChange={e=>{setQuery(e.target.value);setLimit(50)}}/>
+   <select aria-label="文件状态筛选" value={status} onChange={e=>{setStatus(e.target.value);setLimit(50)}}><option value="all">全部状态</option><option value="ready">已保存</option><option value="processing">处理中</option><option value="attention">需要处理</option></select>
    <label>从<input aria-label="开始日期" type="date" value={from} onChange={e=>{setFrom(e.target.value);setLimit(50)}}/></label>
    <label>至<input aria-label="结束日期" type="date" value={to} onChange={e=>{setTo(e.target.value);setLimit(50)}}/></label>
   </div>
-  <div className="library-management"><span>{takes.length} 项</span><span>{scanning?'统计空间…':usage?'音频 '+formatBytes(usage.audioBytes)+' · 缓存 '+formatBytes(usage.cacheBytes)+(usage.incomplete?' · 部分不可访问':''):''}</span><button disabled={busy||recording||scanning} onClick={()=>void act('library.refresh')}>刷新</button><button disabled={busy||recording} onClick={()=>void act('library.pruneMissing')}>清理失效记录</button></div>
+  <div className="library-management"><span>录音 {takes.length} 项</span><span>{scanning?'统计空间…':usage?'录音占用：音频 '+formatBytes(usage.audioBytes)+' · 缓存 '+formatBytes(usage.cacheBytes)+(usage.incomplete?' · 部分不可访问':''):''}</span><button disabled={busy||recording||scanning} onClick={()=>void act('library.refresh')}>刷新</button><button disabled={busy||recording} onClick={()=>void act('library.pruneMissing')}>清理失效记录</button></div>
   {(error||notice)&&<p className={error?'library-message take-error':'library-message'} role={error?'alert':'status'}>{error||notice}</p>}
-  {!state.recordings?.length&&<p className="empty-recordings">暂无录音。点击“录音”开始保存系统声音。</p>}
+  {!state.recordings?.length&&!state.imports?.length&&<p className="empty-recordings">暂无录音。点击“录音”开始保存系统声音。</p>}
   {Boolean(state.recordings?.length)&&!takes.length&&<p className="empty-recordings">没有匹配的录音。</p>}
   {takes.slice(0,limit).map(take=>{
    const source=preferredSource(take),available=source&&['ready','recovered','failed'].includes(take.status)
@@ -105,5 +109,6 @@ export function RecordingLibrary({initialStatus='all',state,busy,run,request,onE
    </article>
   })}
   {takes.length>limit&&<button onClick={()=>setLimit(limit+50)}>显示更多录音</button>}
+  <ImportedLibrary state={state} busy={busy} query={query} status={status} from={from} to={to} run={run} request={request} onExport={onExport}/>
  </div>
 }

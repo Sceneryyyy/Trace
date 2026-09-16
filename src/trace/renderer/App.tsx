@@ -104,7 +104,7 @@ export default function App(): React.JSX.Element {
   const queue = useRef<Promise<unknown>>(Promise.resolve())
   function accept(next: TraceState): void { if (next.revision > current.current.revision || (next.revision === current.current.revision && (next.eventSequence||0)>=(current.current.eventSequence||0))) { const wasHidden=current.current.windowVisible===false;current.current = next; presentation.reconcile(next);if(next.windowVisible!==false){setState(next);if(wasHidden&&presentation.snapshot)setSnapshot({...presentation.snapshot})} } }
   function command(name: Command, payload: Record<string, unknown> = {}): Promise<unknown> {
-    const independent=['report.get','report.cancel','preferences.retry','library.storage','export.describe','app.diagnostics'].includes(name)
+    const independent=['imports.refresh','imports.cancel','report.get','report.cancel','preferences.retry','library.storage','export.describe','app.diagnostics'].includes(name)
     const execute=async()=>{
       const foreground=!independent&&!['playback.seek','view.inspect','library.refresh','workspace.configure','instrument.configure','spectrogram.configure'].includes(name)
       if(foreground){busyRef.current=true;setBusy(true)}
@@ -145,7 +145,7 @@ export default function App(): React.JSX.Element {
   }
   useEffect(()=>{
     if(modal!=='files')return
-    const refresh=()=>{if(!current.current.currentRecord&&!refreshingLibrary.current){refreshingLibrary.current=true;void command('library.refresh').catch(()=>{}).finally(()=>{refreshingLibrary.current=false})}}
+    const refresh=()=>{void command('imports.refresh').catch(()=>{});if(!current.current.currentRecord&&!refreshingLibrary.current){refreshingLibrary.current=true;void command('library.refresh').catch(()=>{}).finally(()=>{refreshingLibrary.current=false})}}
     refresh();const timer=setInterval(refresh,5000);window.addEventListener('focus',refresh)
     return()=>{clearInterval(timer);window.removeEventListener('focus',refresh)}
   },[modal])
@@ -303,7 +303,7 @@ export default function App(): React.JSX.Element {
         {file&&!history&&<div className="summary-metric"><div><b>整段 I</b></div><strong>{value(displaySnapshot?.fileView?.wholeFileIntegrated)} <small>LUFS</small></strong></div>}
         </div>
       </aside>
-   return <main className="trace-app">
+   return <main className="trace-app" onDragOver={e=>{if(e.dataTransfer.types.includes('Files')){e.preventDefault();e.dataTransfer.dropEffect='copy'}}} onDrop={e=>{if(!e.dataTransfer.files.length)return;e.preventDefault();const files=Array.from(e.dataTransfer.files);void window.trace.importFiles(files).then(result=>{setMessage(result.errors.map(e=>e.name+'：'+userError(e.message)).join('；'));setModal('files')}).catch(error=>setMessage(userError(error)))}}>
     <header className="topbar">
       <div className="brand"><svg viewBox="0 0 32 32" width="31" height="31" fill="none" aria-hidden="true"><path d="M2 16H7L11 5L16 27L21 10L24 16H30" stroke="currentColor" strokeWidth="2.1" strokeLinejoin="round" /></svg><span>TRACE</span><small>Audio Recorder &amp; Analyzer</small></div>
       <div className="top-status"><span className={'live-badge '+(isRecording?'is-rec':state.active?'is-live':'')}><i />{isRecording?'REC':state.active?'采集中':'待机'}</span><span className="preview-badge">开发预览</span><button className="header-settings" aria-label="测量目标" aria-pressed={targets.enabled} onClick={()=>setModal('targets')}>目标</button><button className="header-settings" aria-label="显示与帮助" onClick={()=>setModal('display')}>显示与帮助</button></div>
@@ -342,7 +342,7 @@ export default function App(): React.JSX.Element {
       <label className="monitor-gain">音量<input aria-label="文件回听音量" type="range" min="0" max="1" step=".01" value={file?.gain??1} disabled={!file||busy} onChange={e=>file&&run('playback.volume',{playbackId:file.id,gain:Number(e.target.value)})}/><span>{Math.round((file?.gain??1)*100)}%</span></label>
       <button className="file-export-button" disabled={busy||isRecording||(!file&&replaySeconds<=0)} title={file&&!file.temporary?'导出当前文件或选区':'将'+(file?.selection?'选区':'最近缓存')+'按录音设置保存为独立文件'} onClick={()=>file&&!file.temporary?openExport({takeId:file.takeId,role:file.role,regionId:file.regionId,exportId:file.exportId,...(file.selection?{range:file.selection}:{})}):void saveCache()}>{file&&!file.temporary?'导出':'保存缓存'}</button>
       <button className="report-button" title="测量报告与超限事件" onClick={()=>setModal('reports')}>报告</button>
-      <button data-open-files className="files-button" onClick={()=>{setLibraryAttention(false);setModal('files')}}>录音文件 {state.recordings?.length||0}</button>
+      <button data-open-files className="files-button" onClick={()=>{setLibraryAttention(false);setModal('files')}}>音频文件 {(state.recordings?.length||0)+(state.imports?.length||0)}</button>
       <button className="reset-button" disabled={busy||!state.active||isRecording||Boolean(file)} onClick={()=>run('live.reset')} title="重新开始本轮响度统计"><Icon name="reset"/></button>
     </footer>
 
@@ -359,7 +359,7 @@ export default function App(): React.JSX.Element {
         if(e.key==='Escape'&&!busy)setModal(null)
         if(e.key==='Tab'){const nodes=Array.from(e.currentTarget.querySelectorAll<HTMLElement>('button:not(:disabled),input:not(:disabled),select:not(:disabled),summary,[tabindex="0"]')).filter(node=>node.getClientRects().length>0);const first=nodes[0],last=nodes[nodes.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus()}}
       }}>
-        <header><h2 id="modal-title">{modal==='settings'?'录音保存设置':modal==='export'?'导出音频':modal==='display'?'显示与帮助':modal==='targets'?'测量目标':modal==='reports'?'测量报告':'录音文件'}</h2><button aria-label="关闭对话框" onClick={()=>setModal(null)}>×</button></header>
+        <header><h2 id="modal-title">{modal==='settings'?'录音保存设置':modal==='export'?'导出音频':modal==='display'?'显示与帮助':modal==='targets'?'测量目标':modal==='reports'?'测量报告':'音频文件'}</h2><button aria-label="关闭对话框" onClick={()=>setModal(null)}>×</button></header>
         {modal==='reports'?<ReportPanel file={file} targets={targets} jobs={state.reportJobs||[]} recording={isRecording} request={command} onNavigate={()=>{presentation.cancel();setModal(null)}}/>:modal==='targets'?<TargetSettingsForm value={targets} apply={settings=>command('targets.configure',{settings}).then(()=>setModal(null))}/>:modal==='display'?<DisplaySettingsForm confirmExit={state.confirmExitWhileRecording!==false} copyDiagnostics={()=>command('app.copyDiagnostics')} value={{...(state.displaySettings||defaultDisplaySettings),waveGain:gain}} busy={busy} apply={(value,confirmExitWhileRecording)=>command('view.settings',value).then(()=>command('app.configure',{confirmExitWhileRecording})).then(()=>setModal(null)).catch(()=>{})}/>:modal==='settings'?<RecordSettingsForm value={draft} change={setDraft} busy={busy||isRecording} directoryBusy={Boolean(state.exportJobs?.some(j=>!['ready','failed','cancelled'].includes(j.phase)))} sourceRate={format?.sampleRate} sourceChannels={format?.channelCount} capacity={state.recordingCapacity?.directory===state.recordDirectory?state.recordingCapacity:undefined} directory={state.recordDirectory} chooseDirectory={()=>run('record.chooseDirectory')} apply={()=>command('record.configure',draft).then(()=>setModal(null)).catch(()=>{})}/>:modal==='export'&&exportSource?exportDescription?<ExportDialog source={exportSource} description={exportDescription} saved={state.lastExportPreset} saveCopyDefault={state.lastExportSaveCopy===true} remember={preset=>queueLatest('exportPrefs','export.configure',{...preset})} busy={busy} submit={(preset,selection,saveCopy)=>command('export.start',{...exportSource,range:selection?exportSource.range:undefined,preset,saveCopy}).then(data=>{const result=data as {jobId?:string}|null;if(result?.jobId){trackExport(result.jobId);setModal(null)}}).catch(()=>{})}/>:<div className="settings-content" role="status">{exportInfoError||'正在读取文件信息…'}{exportInfoError&&<button onClick={()=>setExportSource({...exportSource})}>重试</button>}</div>:<RecordingLibrary initialStatus={libraryAttention?'attention':'all'} state={state} busy={busy} run={run} request={command} onExport={openExport}/>}
 
       </section>

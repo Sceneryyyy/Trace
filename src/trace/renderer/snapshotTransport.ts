@@ -6,7 +6,7 @@ export function createSnapshotTransport(host:TraceHostAPI,subscribe:(callback:(s
  const listeners=new Map<symbol,(snapshot:MeterSnapshot)=>void>()
  let latest:MeterSnapshot|undefined
  subscribe(snapshot=>{latest=snapshot;for(const listener of [...listeners.values()]){try{listener(snapshot)}catch(error){console.error('TRACE_SNAPSHOT_LISTENER',error)}}})
- return {onSpectrogram:listener=>{const id=Symbol();spectral.set(id,listener);return()=>{spectral.delete(id)}},request:request=>host.request(request),onState:listener=>host.onState(listener),onSnapshot:listener=>{const id=Symbol();listeners.set(id,listener);if(latest){try{listener(latest)}catch(error){console.error('TRACE_SNAPSHOT_LISTENER',error)}}return()=>{listeners.delete(id)}}}
+ return {importFiles:files=>host.importFiles(files),onSpectrogram:listener=>{const id=Symbol();spectral.set(id,listener);return()=>{spectral.delete(id)}},request:request=>host.request(request),onState:listener=>host.onState(listener),onSnapshot:listener=>{const id=Symbol();listeners.set(id,listener);if(latest){try{listener(latest)}catch(error){console.error('TRACE_SNAPSHOT_LISTENER',error)}}return()=>{listeners.delete(id)}}}
 }
 export function installSnapshotTransport():void{
  const api=createSnapshotTransport(window.traceHost,callback=>{

@@ -21,9 +21,10 @@ test('duplicate subscriber functions have independent removals and late subscrib
  let latest;api.onSnapshot(s=>latest=s);assert.equal(latest.positionFrame,'2')
 })
 test('transport only forwards the already-whitelisted host controls',async()=>{
- let request;const api=createSnapshotTransport({request:async v=>{request=v;return 7},onState:()=>()=>{}},()=>{})
- assert.deepEqual(Object.keys(api).sort(),['onSnapshot','onSpectrogram','onState','request'])
+ let request,files;const api=createSnapshotTransport({request:async v=>{request=v;return 7},onState:()=>()=>{},importFiles:async v=>{files=v;return {accepted:[],errors:[]}}},()=>{})
+ assert.deepEqual(Object.keys(api).sort(),['importFiles','onSnapshot','onSpectrogram','onState','request'])
  const value={command:'state.get'};assert.equal(await api.request(value),7);assert.strictEqual(request,value)
+ const input=[{testOnly:'disk-File reference is validated in preload'}];await api.importFiles(input);assert.strictEqual(files,input)
 })
 
 test('spectrogram subscriptions are independent and do not retain or replay old raster arrays',()=>{

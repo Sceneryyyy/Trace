@@ -1,5 +1,16 @@
 export function userError(error:unknown):string{
  const text=String(error||'')
+ if(/IMPORT_QUEUE_FULL|INVALID_IMPORT_FILES/.test(text))return '一次最多准备四个素材，请等待完成或取消部分任务后重试。'
+ if(/IMPORT_REQUIRES_DISK_FILE/.test(text))return '请拖入磁盘上的音频文件。'
+ if(/IMPORT_INSUFFICIENT_SPACE/.test(text))return '素材缓存空间不足，请释放磁盘空间后重试；原文件保持不变。'
+ if(/UNSUPPORTED_IMPORT_STREAMS/.test(text))return '请选择只有一条音轨的音频文件；暂不支持视频或多音轨素材。'
+ if(/UNSUPPORTED_IMPORT_CODEC|UNSUPPORTED_IMPORT_FORMAT/.test(text))return '支持单/双声道、8–96 kHz 的 WAV 16/24-bit 或 float32、MP3、AAC-LC；请检查文件格式。'
+ if(/IMPORT_RELOCATE_CONTENT_CHANGED/.test(text))return '所选文件与原素材内容不同，请另行导入；重新定位需要相同内容。'
+ if(/IMPORT_SOURCE_INSIDE_CACHE/.test(text))return '这是 Trace 管理的缓存，请从文件库查看已有素材。'
+ if(/IMPORT_SOURCE_CHANGED/.test(text))return '原文件内容已变化，请点击“更新素材”重新准备。'
+ if(/IMPORT_NOT_READY|IMPORT_SOURCE_BUSY/.test(text))return '素材还在准备或收尾，请完成后再试。'
+ if(/IMPORT_DECODED_CACHE_CHANGED|IMPORT_CACHE_IDENTITY_CHANGED|IMPORT_CACHE_FRAME_MISMATCH/.test(text))return '素材缓存需要重建，请点击“重新准备”；原文件保持不变。'
+ if(/IMPORT_CACHE_HAS_UNKNOWN_FILES|INVALID_IMPORT_CACHE_DIRECTORY/.test(text))return '缓存目录含未知文件或链接，已保留内容，请检查素材目录后再清理。'
  if(/REPORT_QUEUE_FULL/.test(text))return '最多同时保留两项待生成报告，请等待完成或取消一项。'
  if(/SAVE_CACHE_BEFORE_REPORT/.test(text))return '请先保存缓存，再生成测量报告。'
  if(/REPORT_SOURCE_NOT_OPEN/.test(text))return '请先打开这份报告对应的文件，再定位事件。'

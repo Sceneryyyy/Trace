@@ -8,7 +8,7 @@ import type {ExportOwner} from './exportRepository'
 import type {ImportFingerprint} from './importMedia'
 import type {AssetFormat} from './assetFormat'
 
-export type ImportedDocument={version:1;product:'Trace';kind:'imported';sessionId:string;name:string;createdAt:string;updatedAt:string;revision:number;
+export type ImportedDocument={archived?:boolean;version:1;product:'Trace';kind:'imported';sessionId:string;name:string;createdAt:string;updatedAt:string;revision:number;
  status:'unprepared'|'preparing'|'ready'|'missing'|'changed'|'failed';error:string|null;sourcePath:string;sourceName:string;source?:ImportFingerprint;
  cache?:{id:string;frames:string;format:AssetFormat;mediaIdentity:string;decoderSha256:string};exports:ExportRecord[];eventSequence:number}
 const uuid=/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/,hash=/^[a-f0-9]{64}$/
@@ -22,7 +22,8 @@ function validFormat(v:unknown):v is AssetFormat {
  return v.format==='wav'?['pcm16','pcm24','float32'].includes(String(v.encoding)):v.format==='mp3'?v.container==='mp3':v.format==='aac'&&['m4a','adts'].includes(String(v.container))
 }
 export function validateImportedDocument(raw:unknown):ImportedDocument {
- if(!plain(raw)||Object.keys(raw).some(k=>!['version','product','kind','sessionId','name','createdAt','updatedAt','revision','status','error','sourcePath','sourceName','source','cache','exports','eventSequence'].includes(k)))throw Error('INVALID_IMPORTED_ASSET');const d=raw as ImportedDocument
+ if(!plain(raw)||Object.keys(raw).some(k=>!['archived','version','product','kind','sessionId','name','createdAt','updatedAt','revision','status','error','sourcePath','sourceName','source','cache','exports','eventSequence'].includes(k)))throw Error('INVALID_IMPORTED_ASSET');const d=raw as ImportedDocument
+ if(d.archived!==undefined&&typeof d.archived!=='boolean')throw Error('INVALID_IMPORTED_ASSET')
  if(d.version!==1||d.product!=='Trace'||d.kind!=='imported'||!text(d.sessionId,36)||!uuid.test(d.sessionId)||!text(d.createdAt,64)||!text(d.updatedAt,64)||!Number.isFinite(Date.parse(d.createdAt))||!Number.isFinite(Date.parse(d.updatedAt))||!Number.isSafeInteger(d.revision)||d.revision<1||!Number.isSafeInteger(d.eventSequence)||d.eventSequence<0||!text(d.sourcePath,32767)||!isAbsolute(d.sourcePath)||!text(d.sourceName,1024)||!['unprepared','preparing','ready','missing','changed','failed'].includes(d.status)||(d.error!==null&&!text(d.error,8192))||!Array.isArray(d.exports)||d.exports.length>10000)throw Error('INVALID_IMPORTED_ASSET')
  if(validateTakeName(d.name)!==d.name)throw Error('INVALID_IMPORT_NAME')
  if(d.source&&(!plain(d.source)||!text(d.source.path,32767)||!isAbsolute(d.source.path)||!text(d.source.name,1024)||!frame(d.source.bytes)||BigInt(d.source.bytes)<=0n||!same(resolve(d.source.path),resolve(d.sourcePath))||!Number.isFinite(d.source.mtimeMs)||!hash.test(d.source.sha256)))throw Error('INVALID_IMPORT_FINGERPRINT')

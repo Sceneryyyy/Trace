@@ -51,6 +51,14 @@ test('report commands accept identifiers only, bound event indices and permit im
  validateRequest(request('report.jump',{reportId:'id',index:999}));assert.equal(isMutation('report.cancel'),false);assert.equal(isMutation('report.get'),false)
 })
 
+test('imports expose owned identifiers and native picking, never a path-bearing renderer command',()=>{
+ for(const command of ['imports.choose','imports.refresh','imports.openRoot']){validateRequest(request(command));assert.throws(()=>validateRequest(request(command,{path:'C:/arbitrary.wav'})))}
+ for(const command of ['imports.prepare','imports.cancel','imports.clearCache','imports.remove','imports.relocate','imports.openSource','imports.openFolder']){
+  const payload={assetId:'asset',...(command==='imports.prepare'?{acceptChanged:false}:{})};validateRequest(request(command,payload));assert.throws(()=>validateRequest(request(command,{...payload,path:'C:/arbitrary.wav'})))
+ }
+ assert.throws(()=>validateRequest(request('imports.add',{path:'C:/arbitrary.wav'})));assert.equal(isMutation('imports.cancel'),false);assert.equal(isMutation('imports.refresh'),false)
+})
+
 const timeOutput = resolve('artifacts/m1/time-test.mjs')
 await build({ entryPoints: ['src/trace/renderer/time.ts'], outfile: timeOutput, bundle: true, platform: 'node', format: 'esm' })
 const { timecode, relativeFrame } = await import(pathToFileURL(timeOutput))

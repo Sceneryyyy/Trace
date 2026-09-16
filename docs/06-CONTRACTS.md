@@ -1,5 +1,7 @@
 # 06 · 模块接口与消息契约
 
+M12：新增 imports.choose/refresh/cancel/prepare/relocate/clearCache/remove/removeExport/rename/openSource/openFolder/openRoot；通用命令仅接受 ID/选项/名称。TraceHostAPI/TraceAPI 增加 importFiles(File[])，preload 通过 webUtils 解析磁盘 File，经专用 trace:import-files 通道送入主进程；主窗口/mainFrame 和批量上限同时验证。TraceState 携带有限字段的 imports/importIssues，刷新与取消不等待 mutation 队列，读取回复不进入完成缓存。旧的快照/声谱数组转移语义保持。见 53。
+
 M11：新增 targets.configure 与 report.prepare/get/cancel/retry/jump/open/export，严格 ID/范围/事件索引白名单，无来源或输出任意路径。TraceState 仅携带目标设置及有限任务摘要，report.get 按需获取结果、不进入命令回复缓存。AnalysisService 引用由 Set 改为计数，报告取消后须等 worker 退出才释放。完整 payload、取消及源清理契约见 [51](51-M11-INTEGRATION.md)。
 
 preview.20：声谱包增加 cancelled，表示应用解析器确证原引用已不适用；前端重试当前来源。结构错误、原生/文件故障仍走 error。取消不以捕获错误字符串替代，见 49。

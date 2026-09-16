@@ -1,3 +1,7 @@
+import {ImportService} from './importService'
+import {AssetRepository} from './assetRepository'
+import {realpath as realpathAsync} from 'node:fs/promises'
+import {basename} from 'node:path'
 import {ReportService,type ReportInput} from './reportService'
 import {defaultTargetSettings,restoreTargetSettings,validateTargetSettings} from './targetSettings'
 import {assetFormatLabel} from './assetFormat'
@@ -60,6 +64,7 @@ let retention:SourceRetention
 let window:BrowserWindow|null=null
 let closePromptPending=false
 let timer:ReturnType<typeof setInterval>|undefined
+let importWatchTimer:ReturnType<typeof setInterval>|undefined
 let inspection:{id:string;sourceKind:string;sourceId:string;epochId:string;measurementEpoch:string;origin:bigint;rate:number;total:bigint}|null=null
 let finishingOutput=false,inspectionFailurePending=false
 let latestRecordingFrame:Pick<MeterSnapshot,'recording'|'recordingView'>={}
@@ -68,6 +73,8 @@ let preferencesTimer:ReturnType<typeof setTimeout>|undefined
 let preferencesReady=false
 let preferencesWriter:PreferencesWriter|undefined
 let reports:ReportService
+let imports:ImportService
+let assets:AssetRepository
 let displayTick=0,snapshotSequence=0,pollFailurePending=false,lastPollError=''
 let state:TraceState={targetSettings:structuredClone(defaultTargetSettings),spectrogramSettings:{...defaultSpectrogramSettings},revision:0,active:false,monitoringRequested:true,deviceId:'',windowSeconds:30,error:null,displaySettings:{...defaultDisplaySettings},workspace:defaultWorkspace(),instrumentSettings:{...defaultInstrumentSettings}}
 const completed=new Map<string,{signature:string;reply:Reply}>()
@@ -119,12 +126,13 @@ function syncRecordingState():void{
   releaseRecordingCapture()
   analyses?.setRecordingBusy(recordings.busy()||managingLibrary)
   reports?.setRecordingBusy(recordings.busy()||managingLibrary)
+  imports?.setRecordingBusy(recordings.busy()||managingLibrary)
   if(exporter){if(recordings.busy()||exiting||managingLibrary)void exporter.pauseForRecording();else exporter.resume()}
   if(deliveries){if(recordings.busy()||exiting||managingLibrary)void deliveries.pause();else deliveries.resume()}
   if(retention){if(recordings.busy()||exiting||managingLibrary)void retention.pause();else retention.resume()}
   update({recordSettings:{...recordings.settings},recordDirectory:recordings.directory,currentRecord:recordings.activeSummary(),recordings:library?library.summaries():recordings.summaries()})
 }
-function syncExportState(control=true):void{if(!exporter||!recordings)return;const patch={exportJobs:exporter.views().map(e=>library?library.exportView(e):e),recordings:library?library.summaries():recordings.summaries()};if(control)update(patch);else{state={...state,...patch};emitState()}retention?.schedule();deliveries?.observe();void prepareMemoryAnalyses()}
+function syncExportState(control=true):void{if(!exporter||!recordings)return;const patch={exportJobs:exporter.views().map(decorateExport),recordings:library?library.summaries():recordings.summaries()};if(control)update(patch);else{state={...state,...patch};emitState()}retention?.schedule();deliveries?.observe();imports?.resume();void prepareMemoryAnalyses()}
 function syncPlaybackState():void{if(playback)update({playback:playback.view()});retention?.schedule()}
 function syncRetentionState():void{if(recordings)update({recordings:library?library.summaries():recordings.summaries()})}
 function instrumentsVisible():boolean{return Boolean(state.workspace&&['spectrum','soundfield'].some(id=>!state.workspace!.layout.hidden.includes(id as never)))}
@@ -259,14 +267,29 @@ async function inspectHistory(payload:Record<string,unknown>):Promise<void>{
   if(BigInt(end)>BigInt(start))playback.window(map.id,start,end,900)
   if(payload.selectionEndFrame!==undefined)playback.selection(map.id,position,local(payload.selectionEndFrame,true),false)
 }
+function decorateExport(value:import('./exportTypes').ExportView){return imports?.has(value.takeId)?imports.exportView(value):library?library.exportView(value):value}
+function syncImportState():void{if(imports){state={...state,imports:imports.views(),importIssues:imports.issues,...(exporter?{exportJobs:exporter.views().map(decorateExport)}:{})};emitState()}}
+async function acceptImportFiles(paths:unknown):Promise<import('./shared').ImportFilesResult>{
+ if(exiting)throw Error('APP_CLOSING')
+ if(!Array.isArray(paths)||!paths.length||paths.length>4||paths.some(p=>typeof p!=='string'||!isAbsolute(p)||p.includes('\0')||p.length>32767))throw Error('INVALID_IMPORT_FILES')
+ const result:import('./shared').ImportFilesResult={accepted:[],errors:[]}
+ for(const path of paths as string[]){try{if(testMode){const actual=await realpathAsync(path);if(!actual.toLowerCase().startsWith((testRoot!+sep).toLowerCase()))throw Error('TEST_DIRECTORY_OUTSIDE_ARTIFACTS')}const id=await imports.add(path);result.accepted.push({id,name:basename(path)})}catch(error){result.errors.push({name:basename(path),message:String(error)})}}
+ return result
+}
+async function chooseImportFiles(single=false):Promise<string[]>{
+ if(testMode&&process.env.TRACE_TEST_IMPORT_FILES){const paths=JSON.parse(process.env.TRACE_TEST_IMPORT_FILES) as string[];if(!Array.isArray(paths))throw Error('INVALID_TEST_IMPORT_FILES');return single?paths.slice(0,1):paths}
+ const selected=await dialog.showOpenDialog(window!,{title:single?'重新定位原文件':'导入音频素材',properties:single?['openFile']:['openFile','multiSelections'],filters:[{name:'音频文件',extensions:['wav','mp3','m4a','aac']}]})
+ return selected.canceled?[]:selected.filePaths
+}
 function makeReportInput(playbackId:string,scope:'whole'|'selection'):ReportInput{
- const c=playback.reportContext(playbackId,scope==='selection'),a=analyses.reportInput(c.analysisId),doc=recordings.session(c.source.takeId).document
- const regions=c.source.regionId?doc.regions.filter(r=>r.id===c.source.regionId):doc.regions
+ const c=playback.reportContext(playbackId,scope==='selection'),a=analyses.reportInput(c.analysisId),imported=imports.has(c.source.takeId)
  const notes:string[]=[];let integrity:import('./reportTypes').ReportSource['integrity']['state']='complete'
+ if(imported)notes.push('外部文件的完整性表示文件读取与解码已校验，不声明其原始录制过程完整。')
+ else{const doc=recordings.session(c.source.takeId).document,regions=c.source.regionId?doc.regions.filter(r=>r.id===c.source.regionId):doc.regions
  if(doc.status==='recovered'||doc.status==='failed'||regions.some(r=>r.error||r.status==='interrupted')){integrity='unknown';notes.push('录音经过恢复或包含中断，可用文件不代表原始采集全部完整。')}
  else if(regions.length>1||doc.hasDiscontinuities&&!c.source.regionId){integrity='gaps';notes.push('原录音包含多个采集区域或中断；当前文件按内容时间排列。')}
- else if(regions.some(r=>BigInt(r.estimatedFrames)>0n||r.clock.startEstimated||r.clock.endEstimated)){integrity='estimated';notes.push('原采集含估计静音或估计时钟边界。')}
- return {playbackId,request:{version:1,source:{label:c.source.label,takeId:c.source.takeId,role:c.source.role,regionId:c.source.regionId,exportId:c.source.exportId,format:assetFormatLabel(c.source.assetFormat)||c.source.sampleRate+' Hz',sourceFrames:c.source.frames,scope:{kind:scope,...c.range},integrity:{state:integrity,notes},physicalRange:a.manifest.sourceRange},cacheDirectory:a.directory,cacheKey:a.manifest.cacheKey,sourceFiles:a.source.sources},retain:()=>{try{analyses.retain(c.analysisId);return()=>analyses.release(c.analysisId)}catch(error){if(!String(error).includes('UNKNOWN_ANALYSIS_JOB'))throw error;return()=>{}}}}
+ else if(regions.some(r=>BigInt(r.estimatedFrames)>0n||r.clock.startEstimated||r.clock.endEstimated)){integrity='estimated';notes.push('原采集含估计静音或估计时钟边界。')}}
+ return {playbackId,request:{version:1,source:{origin:imported?'imported':'recording',label:c.source.label,takeId:c.source.takeId,role:c.source.role,regionId:c.source.regionId,exportId:c.source.exportId,format:assetFormatLabel(c.source.assetFormat)||c.source.sampleRate+' Hz',sourceFrames:c.source.frames,scope:{kind:scope,...c.range},integrity:{state:integrity,notes},physicalRange:a.manifest.sourceRange},cacheDirectory:a.directory,cacheKey:a.manifest.cacheKey,sourceFiles:a.source.sources},retain:()=>{try{analyses.retain(c.analysisId);return()=>analyses.release(c.analysisId)}catch(error){if(!String(error).includes('UNKNOWN_ANALYSIS_JOB'))throw error;return()=>{}}}}
 }
 async function chooseDirectory():Promise<boolean>{
   if(recordings.busy())throw Error('RECORDING_ACTIVE')
@@ -277,7 +300,7 @@ async function chooseDirectory():Promise<boolean>{
   try{
     await retention.pause();await deliveries.pause();await analyses.pauseForRecording();await recordings.settled()
     if(exporter.busy())throw Error('EXPORT_ACTIVE')
-    if(playback.active()&&!playback.view()?.temporary)await closeInspection()
+    if(playback.active()&&!playback.view()?.temporary&&!imports.has(playback.view()!.takeId))await closeInspection()
     for(const take of recordings.sessions()){await reports.forgetTake(take.document.sessionId);await analyses.forgetTake(take.document.sessionId);retention.forget(take.document.sessionId);deliveries.forgetTake(take.document.sessionId)}
     await recordings.setDirectory(result.filePaths[0]);update({recordDirectoryError:null});savePreferences();return true
   }finally{managingLibrary=false;syncRecordingState();resumeInput()}
@@ -288,6 +311,18 @@ async function dispatch(request:Request):Promise<Reply>{
     if(testMode&&isMutation(request.command))console.log('TRACE_CONTROL',JSON.stringify({command:request.command,revision:state.revision,at:new Date().toISOString()}))
     let data:unknown=null
     switch(request.command){
+      case 'imports.choose':{const paths=await chooseImportFiles();data=paths.length?await acceptImportFiles(paths):{accepted:[],errors:[]};break}
+      case 'imports.refresh':await imports.refresh();syncImportState();break
+      case 'imports.cancel':imports.cancel(request.payload.assetId as string);break
+      case 'imports.prepare':imports.prepare(request.payload.assetId as string,request.payload.acceptChanged as boolean);break
+      case 'imports.clearCache':await imports.clearCache(request.payload.assetId as string);break
+      case 'imports.remove':deliveries.forgetTake(request.payload.assetId as string);await imports.remove(request.payload.assetId as string);break
+      case 'imports.removeExport':{const id=request.payload.assetId as string,exportId=request.payload.exportId as string;const answer=await dialog.showMessageBox(window!,{type:'warning',title:'移除生成的成品',message:imports.session(id).document.name,detail:'该成品及其缓存将移入回收站；外部原文件保留。',buttons:['取消','移除成品'],defaultId:0,cancelId:0,noLink:true});if(answer.response===1){deliveries.forgetTake(id,exportId);await imports.removeExport(id,exportId,path=>shell.trashItem(path))}break}
+      case 'imports.rename':{const id=request.payload.assetId as string,old=imports.session(id).document.name;await imports.rename(id,request.payload.name as string);playback.renameTake(id,old,imports.session(id).document.name);break}
+      case 'imports.relocate':{const paths=await chooseImportFiles(true);if(paths[0]){if(testMode&&!(await realpathAsync(paths[0])).toLowerCase().startsWith((testRoot!+sep).toLowerCase()))throw Error('TEST_DIRECTORY_OUTSIDE_ARTIFACTS');await imports.relocate(request.payload.assetId as string,paths[0])}break}
+      case 'imports.openSource':shell.showItemInFolder(imports.sourceFile(request.payload.assetId as string));break
+      case 'imports.openFolder':{const message=await shell.openPath(imports.folder(request.payload.assetId as string));if(message)throw Error(message);break}
+      case 'imports.openRoot':{const message=await shell.openPath(imports.store.root);if(message)throw Error(message);break}
       case 'app.configure':update({confirmExitWhileRecording:request.payload.confirmExitWhileRecording as boolean});savePreferences();break
       case 'app.diagnostics':data=safeDiagnostics(product.version,state,engine.snapshot(5,1),engine.recordStatus());break
       case 'app.copyDiagnostics':clipboard.writeText(JSON.stringify(safeDiagnostics(product.version,state,engine.snapshot(5,1),engine.recordStatus()),null,2));data={copied:true};break
@@ -332,7 +367,7 @@ async function dispatch(request:Request):Promise<Reply>{
       }
       case 'export.configure':update({lastExportPreset:validateExportPreset(request.payload)});schedulePreferences();break
       case 'export.describe':{
-        const s=await recordings.analysisSource(request.payload.takeId as string,request.payload.role as import('./shared').AnalysisRole,request.payload.regionId as string|undefined,request.payload.exportId as string|undefined)
+        const s=await assets.analysisSource(request.payload.takeId as string,request.payload.role as import('./shared').AnalysisRole,request.payload.regionId as string|undefined,request.payload.exportId as string|undefined)
         data={label:s.label,frames:s.frames,sampleRate:s.sampleRate,assetFormat:s.assetFormat};break
       }
       case 'library.storage':data=await library.usage();break
@@ -456,7 +491,7 @@ async function dispatch(request:Request):Promise<Reply>{
       case 'record.stop':spectrogram.cancel();data=await recordings.stop();releaseRecordingCapture();break
       case 'file.open':{
         if(recordings.busy())throw Error('RECORDING_ACTIVE')
-        const source=await recordings.analysisSource(request.payload.takeId as string,request.payload.role as import('./shared').AnalysisRole,request.payload.regionId as string|undefined,request.payload.exportId as string|undefined)
+        const source=await assets.analysisSource(request.payload.takeId as string,request.payload.role as import('./shared').AnalysisRole,request.payload.regionId as string|undefined,request.payload.exportId as string|undefined)
         if(playback.outputActive())await playback.pause(playback.view()!.id)
         inspection=null;resumeInput();await playback.open(source,state.deviceId);break
       }
@@ -488,6 +523,7 @@ async function dispatch(request:Request):Promise<Reply>{
         if(recordings.busy())throw Error('RECORDING_ACTIVE')
         const source:ExportSource={takeId:request.payload.takeId as string,role:request.payload.role as ExportSource['role'],
           regionId:request.payload.regionId as string|undefined,exportId:request.payload.exportId as string|undefined,range:request.payload.range as ExportSource['range']}
+        if(imports.has(source.takeId)&&imports.preparing(source.takeId))throw Error('IMPORT_SOURCE_BUSY')
         const preset=validateExportPreset(request.payload.preset);update({lastExportSaveCopy:request.payload.saveCopy===true});savePreferences()
         let directory:string|undefined
         if(request.payload.saveCopy){const selected=await dialog.showOpenDialog(window!,{title:'选择导出成品的另存目录',properties:['openDirectory','createDirectory']});if(selected.canceled||!selected.filePaths[0]){data={cancelled:true};break}directory=selected.filePaths[0]}
@@ -512,7 +548,7 @@ async function dispatch(request:Request):Promise<Reply>{
       }
       case 'analysis.start':
         if(recordings.busy())throw Error('RECORDING_ACTIVE')
-        {const source=await recordings.analysisSource(request.payload.takeId as string,request.payload.role as import('./shared').AnalysisRole,request.payload.regionId as string|undefined,request.payload.exportId as string|undefined)
+        {const source=await assets.analysisSource(request.payload.takeId as string,request.payload.role as import('./shared').AnalysisRole,request.payload.regionId as string|undefined,request.payload.exportId as string|undefined)
         const jobId=analyses.start(source);playback.useAnalysis(source,jobId);data={jobId}};break
       case 'job.cancel':if(exporter.owns(request.payload.jobId as string))exporter.cancel(request.payload.jobId as string);else analyses.cancel(request.payload.jobId as string);break
       case 'metrics.query':data={analysisId:request.payload.analysisId,requestGeneration:request.payload.requestGeneration,metrics:await analyses.metrics(request.payload.analysisId as string,request.payload.positionFrame as string)};break
@@ -528,6 +564,8 @@ async function dispatch(request:Request):Promise<Reply>{
     return {requestId:request.requestId,ok:true,state:{...state},data}
   }catch(error){
     const message=error instanceof Error?error.message:String(error)
+    if(imports?.has(request.payload.takeId as string)&&['file.open','analysis.start','export.describe','export.start'].includes(request.command)){const viewed=playback.view();if(request.command==='file.open'&&viewed&&viewed.takeId===request.payload.takeId&&viewed.role===request.payload.role&&viewed.exportId===request.payload.exportId)await closeInspection().catch(()=>{});return {requestId:request.requestId,ok:false,state:{...state},error:{code:message.split(':')[0],message}}}
+    if(request.command.startsWith('imports.'))return {requestId:request.requestId,ok:false,state:{...state},error:{code:message.split(':')[0],message}}
     if(request.command.startsWith('report.')){if(!recordings.busy()&&!managingLibrary&&!exiting)retention?.resume();return {requestId:request.requestId,ok:false,state:{...state},error:{code:message.split(':')[0],message}}}
     if(request.command.startsWith('spectrogram.')||request.command==='preferences.retry')return {requestId:request.requestId,ok:false,state:{...state},error:{code:message.split(':')[0],message}}
     if(recordings&&!recordings.busy())releaseRecordingCapture()
@@ -548,7 +586,7 @@ function handle(event:Electron.IpcMainInvokeEvent,raw:unknown):Promise<Reply>|Re
     const operation=isMutation(request.command)?mutations.then(()=>dispatch(request)):dispatch(request)
     if(isMutation(request.command))mutations=operation.then(()=>undefined,()=>undefined)
     const promise=operation.then(reply=>{
-      if((!request.command.startsWith('spectrogram.')&&!request.command.startsWith('report.'))||isMutation(request.command))completed.set(requestId,{signature,reply});pending.delete(requestId)
+      if((!request.command.startsWith('spectrogram.')&&!request.command.startsWith('report.')&&!request.command.startsWith('imports.'))||isMutation(request.command))completed.set(requestId,{signature,reply});pending.delete(requestId)
       if(completed.size>256)completed.delete(completed.keys().next().value as string)
       return reply
     })
@@ -573,6 +611,8 @@ async function initialize():Promise<void>{
   try{if(preferred.lastExportPreset)state.lastExportPreset=validateExportPreset(preferred.lastExportPreset)}catch{}
   state.targetSettings=restoreTargetSettings(preferred.targetSettings,state.displaySettings)
   await reports.initialize()
+  await imports.initialize()
+  importWatchTimer=setInterval(()=>{if(!exiting)void imports.refresh().catch(error=>console.error('TRACE_IMPORT_REFRESH',String(error)))},5000)
   if(testMode&&process.env.TRACE_RECORD_TEST_DIR){
     const target=resolve(process.env.TRACE_RECORD_TEST_DIR)
     if(!target.toLowerCase().startsWith((testRoot!+sep).toLowerCase()))throw Error('TEST_DIRECTORY_OUTSIDE_ARTIFACTS')
@@ -597,9 +637,13 @@ app.whenReady().then(()=>{
   playback.beforeSourceChange=()=>spectrogram.release()
   playback.instrumentQuery=request=>instrumentsVisible()?instruments.query(request,state.instrumentSettings||defaultInstrumentSettings):Promise.resolve(undefined)
   const encoderLock=JSON.parse(readFileSync(app.isPackaged?join(process.resourcesPath,'ffmpeg.lock.json'):join(root,'ffmpeg.lock.json'),'utf8'))
-  exporter=new ExportService(recordings,{ffmpeg:join(ffroot,'ffmpeg.exe'),ffprobe:join(ffroot,'ffprobe.exe'),nativePath:app.isPackaged?join(process.resourcesPath,'native/trace_engine.node'):join(root,'build/trace-engine/Release/trace_engine.node'),ffmpegSha256:encoderLock.ffmpegSha256,ffprobeSha256:encoderLock.ffprobeSha256},syncExportState)
-  deliveries=new DeliveryService(recordings,exporter,()=>syncExportState(),()=>!recordings.busy()&&!exiting&&!managingLibrary)
-  library=new LibraryService(recordings,path=>shell.trashItem(path),()=>{if(recordings)update({recordings:library.summaries(),exportJobs:exporter.views().map(e=>library.exportView(e))})},()=>exporter.busy()||deliveries.busy())
+  const mediaTools={ffmpeg:join(ffroot,'ffmpeg.exe'),ffprobe:join(ffroot,'ffprobe.exe'),nativePath:app.isPackaged?join(process.resourcesPath,'native/trace_engine.node'):join(root,'build/trace-engine/Release/trace_engine.node'),ffmpegSha256:encoderLock.ffmpegSha256,ffprobeSha256:encoderLock.ffprobeSha256}
+  imports=new ImportService(join(app.getPath('userData'),'imports'),mediaTools,syncImportState,async id=>{if(playback.view()?.takeId===id)await closeInspection();await reports.forgetTake(id);await analyses.forgetTake(id)},()=>!recordings.busy()&&!exporter?.busy()&&!deliveries?.busy()&&!exiting&&!managingLibrary)
+  assets=new AssetRepository(recordings,imports)
+  exporter=new ExportService(assets,mediaTools,syncExportState)
+  assets.setExportResolver((id,exportId)=>exporter.resolve(id,exportId))
+  deliveries=new DeliveryService(assets,exporter,()=>syncExportState(),()=>!recordings.busy()&&!exiting&&!managingLibrary)
+  library=new LibraryService(recordings,path=>shell.trashItem(path),()=>{if(recordings)update({recordings:library.summaries(),exportJobs:exporter.views().map(decorateExport)})},()=>exporter.busy()||deliveries.busy())
   recordings.setExportResolver((takeId,exportId)=>exporter.resolve(takeId,exportId))
   retention=new SourceRetention(recordings,exporter,playback,analyses,app.isPackaged?join(process.resourcesPath,'native/trace_engine.node'):join(root,'build/trace-engine/Release/trace_engine.node'),syncRetentionState)
   retention.usesSource=id=>reports.usesTake(id)
@@ -615,6 +659,7 @@ app.whenReady().then(()=>{
     return {format,source:{deviceId,captureEpochId:captureInstance+':'+engine.snapshot(10,1).epochId}}
   })
   ipcMain.handle('trace:command',handle)
+  ipcMain.handle('trace:import-files',(event,paths:unknown)=>{if(!window||event.sender!==window.webContents||event.senderFrame!==window.webContents.mainFrame)throw Error('UNTRUSTED_FRAME');const task=mutations.then(()=>acceptImportFiles(paths));mutations=task.then(()=>undefined,()=>undefined);return task})
   let savedWindow:{windowBounds?:unknown;maximized?:boolean}={};try{savedWindow=JSON.parse(readFileSync(preferencesPath(),'utf8'))}catch{}
   if(testMode&&process.env.TRACE_TEST_WINDOW_BOUNDS){try{savedWindow.windowBounds=JSON.parse(process.env.TRACE_TEST_WINDOW_BOUNDS)}catch{throw Error('INVALID_TEST_WINDOW_BOUNDS')}}
   const bounds=restoreWindowBounds(savedWindow.windowBounds,screen.getAllDisplays().map(d=>d.workArea))
@@ -677,6 +722,8 @@ app.on('before-quit',event=>{
   let final:NativeRecordSnapshot|undefined
   try{final=engine?.shutdown()}catch(error){console.error('Trace shutdown:',error)}
   const finish=(async()=>{
+    if(importWatchTimer)clearInterval(importWatchTimer)
+    await imports?.shutdown()
     await reports?.shutdown()
     await Promise.all([spectrogram?.close(),instruments?.shutdown(),deliveries?.shutdown(),retention?.shutdown(),exporter?.pauseForRecording(),analyses?.shutdown(),playback?.close()])
     if(final&&recordings)await recordings.finish(final)

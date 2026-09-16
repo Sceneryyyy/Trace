@@ -97,7 +97,7 @@ export async function decodeImport(tools:MediaTools,file:string,cacheRoot:string
  try{
   const decoded=await floatWave(tools,['-xerror','-err_detect','explode','-protocol_whitelist','file,pipe','-i',probe.source.path],undefined,join(directory,'pcm'),probe.format.sampleRate,probe.format.channelCount,probe.durationEstimate||0,options,'decoding')
   const frames=decoded.reduce((n,f)=>n+BigInt(f.frames),0n).toString();if(frames==='0'||probe.exactFrames&&frames!==probe.exactFrames||decoded.length>10000)throw Error('IMPORT_DECODED_FRAME_MISMATCH')
-  const after=await fingerprintImport(file,options.signal);if(after.sha256!==probe.source.sha256||after.bytes!==probe.source.bytes||after.mtimeMs!==probe.source.mtimeMs||!same(after.path,probe.source.path))throw Error('IMPORT_SOURCE_CHANGED')
+  options.progress?.({phase:'verifying',fraction:0});const after=await fingerprintImport(file,options.signal);if(after.sha256!==probe.source.sha256||after.bytes!==probe.source.bytes||after.mtimeMs!==probe.source.mtimeMs||!same(after.path,probe.source.path))throw Error('IMPORT_SOURCE_CHANGED')
   const mediaIdentity=createHash('sha256').update(JSON.stringify({version:1,sourceSha256:after.sha256,decoder:tools.ffmpegSha256,recipe:'full-external-decoding-v1',frames,format:probe.format})).digest('hex')
   const result:ImportedPCM={version:1,id,source:after,format:probe.format,codec:probe.codec,frames,decoderSha256:tools.ffmpegSha256,mediaIdentity,trim:probe.container==='adts'?'decoded-content':'decoder-metadata',directory,
    files:decoded.map(f=>({file:'pcm/'+basename(f.path),frames:f.frames,sha256:f.sha256}))}

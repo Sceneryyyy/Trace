@@ -3,7 +3,7 @@ import {createHash} from 'node:crypto'
 import {lstat,opendir,realpath,rm} from 'node:fs/promises'
 import {join,relative,sep,dirname} from 'node:path'
 import {freeSpace} from './storageCapacity'
-import type {StoredSession} from './sessionStore'
+import type {ExportOwner} from './exportRepository'
 
 export type LibraryUsage={directory:string;audioBytes:string;cacheBytes:string;freeBytes:string|null;incomplete:boolean}
 const absent=(error:unknown)=>(error as NodeJS.ErrnoException).code==='ENOENT'
@@ -25,7 +25,7 @@ async function walk(directory:string,visit:(file:string,size:number)=>void,stric
  }
  await descend(directory,0);return complete
 }
-export async function libraryUsage(directory:string,takes:readonly StoredSession[]):Promise<LibraryUsage>{
+export async function libraryUsage(directory:string,takes:readonly ExportOwner[]):Promise<LibraryUsage>{
  let audio=0n,cache=0n,incomplete=false
  for(const take of takes){
   const complete=await walk(take.directory,(file,size)=>{
@@ -38,7 +38,7 @@ export async function libraryUsage(directory:string,takes:readonly StoredSession
  return {directory,audioBytes:audio.toString(),cacheBytes:cache.toString(),freeBytes:(await freeSpace(directory))?.toString()??null,incomplete}
 }
 /** Called after analysis/output users are released and the library identity is verified. */
-export async function clearOwnedCache(take:StoredSession):Promise<{freedBytes:string;protectedExports:number}>{
+export async function clearOwnedCache(take:ExportOwner):Promise<{freedBytes:string;protectedExports:number}>{
  const root=await realpath(take.directory),cache=join(root,'cache')
  let removed=0n,protectedExports=0
  try{

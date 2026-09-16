@@ -7,7 +7,7 @@ import { validateRecordSettings } from './recording'
 import {validateExportPreset} from './mediaTypes'
 import {validateDisplaySettings,validWindowSeconds,validWaveGain} from './displaySettings'
 import type { Command, Request } from './shared'
-const commands = new Set<Command>(['targets.configure','report.prepare','report.get','report.cancel','report.retry','report.export','report.open','report.jump','preferences.retry','spectrogram.configure','spectrogram.query','spectrogram.point','spectrogram.cancel','test.window','instrument.configure','workspace.configure','cache.save','export.openDeliveryFolder','app.configure','app.diagnostics','app.copyDiagnostics','library.storage','library.clearCache','library.pruneMissing','library.rename','export.configure','export.describe','record.capacity','playback.clearSelection','playback.retryAnalysis','view.inspect','view.live','devices.select','view.gain','live.replay','library.refresh','library.remove','app.info','app.quit','retention.retry','view.settings','export.start','export.retry','export.openFolder','export.saveCopy','file.open','file.close','playback.play','playback.pause','playback.seek','playback.volume','playback.selection','playback.window','playback.follow','state.get', 'devices.list', 'live.start', 'live.stop', 'live.reset', 'view.window', 'record.configure', 'record.chooseDirectory', 'record.start', 'record.stop', 'record.openFolder', 'record.recover', 'analysis.start', 'job.cancel', 'metrics.query', 'timeline.query'])
+const commands = new Set<Command>(['imports.removeExport','imports.choose','imports.refresh','imports.cancel','imports.prepare','imports.relocate','imports.clearCache','imports.remove','imports.rename','imports.openSource','imports.openFolder','imports.openRoot','targets.configure','report.prepare','report.get','report.cancel','report.retry','report.export','report.open','report.jump','preferences.retry','spectrogram.configure','spectrogram.query','spectrogram.point','spectrogram.cancel','test.window','instrument.configure','workspace.configure','cache.save','export.openDeliveryFolder','app.configure','app.diagnostics','app.copyDiagnostics','library.storage','library.clearCache','library.pruneMissing','library.rename','export.configure','export.describe','record.capacity','playback.clearSelection','playback.retryAnalysis','view.inspect','view.live','devices.select','view.gain','live.replay','library.refresh','library.remove','app.info','app.quit','retention.retry','view.settings','export.start','export.retry','export.openFolder','export.saveCopy','file.open','file.close','playback.play','playback.pause','playback.seek','playback.volume','playback.selection','playback.window','playback.follow','state.get', 'devices.list', 'live.start', 'live.stop', 'live.reset', 'view.window', 'record.configure', 'record.chooseDirectory', 'record.start', 'record.stop', 'record.openFolder', 'record.recover', 'analysis.start', 'job.cancel', 'metrics.query', 'timeline.query'])
 function plain(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && (Object.getPrototypeOf(value) === Object.prototype || Object.getPrototypeOf(value) === null)
 }
@@ -20,7 +20,13 @@ export function validateRequest(value: unknown): Request {
   const keys = Object.keys(r.payload)
   const textId=(v:unknown)=>typeof v==='string'&&v.length>0&&v.length<=128&&!v.includes('\0')
   const frameId=(v:unknown)=>typeof v==='string'&&/^[0-9]{1,20}$/.test(v)&&BigInt(v)<=0xffffffffffffffffn
-  if(r.command==='targets.configure'){
+  if(['imports.choose','imports.refresh','imports.openRoot'].includes(r.command)){if(keys.length)throw Error('INVALID_IMPORT_REQUEST')
+  }else if(r.command.startsWith('imports.')){
+    if(!textId(r.payload.assetId)||keys.sort().join(',')!==(r.command==='imports.prepare'?'acceptChanged,assetId':r.command==='imports.rename'?'assetId,name':r.command==='imports.removeExport'?'assetId,exportId':'assetId'))throw Error('INVALID_IMPORT_REQUEST')
+    if(r.command==='imports.prepare'&&typeof r.payload.acceptChanged!=='boolean')throw Error('INVALID_IMPORT_REQUEST')
+    if(r.command==='imports.rename')validateTakeName(r.payload.name)
+    if(r.command==='imports.removeExport'&&!textId(r.payload.exportId))throw Error('INVALID_IMPORT_REQUEST')
+  }else if(r.command==='targets.configure'){
     if(keys.join(',')!=='settings')throw Error('INVALID_TARGET_SETTINGS');validateTargetSettings(r.payload.settings)
   }else if(r.command==='report.prepare'){
     if(keys.sort().join(',')!=='playbackId,scope'||!textId(r.payload.playbackId)||!['whole','selection'].includes(r.payload.scope as string))throw Error('INVALID_REPORT_SCOPE')
@@ -103,4 +109,4 @@ export function validateRequest(value: unknown): Request {
   } else if (keys.length) throw Error('INVALID_PAYLOAD')
   return r
 }
-export function isMutation(command: Command): boolean { return !['report.get','report.cancel','spectrogram.query','spectrogram.point','spectrogram.cancel','app.info','app.diagnostics','library.storage','export.describe','state.get', 'devices.list', 'metrics.query', 'timeline.query'].includes(command) }
+export function isMutation(command: Command): boolean { return !['imports.cancel','imports.refresh','report.get','report.cancel','spectrogram.query','spectrogram.point','spectrogram.cancel','app.info','app.diagnostics','library.storage','export.describe','state.get', 'devices.list', 'metrics.query', 'timeline.query'].includes(command) }

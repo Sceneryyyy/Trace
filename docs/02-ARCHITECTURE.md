@@ -1,5 +1,7 @@
 # 02 · 架构与模块边界
 
+M12：ImportService 管理只读外部素材、四项准备队列、源变化/取消/重建/归档；AssetRepository 组合录音与导入来源，ExportService/DeliveryService 依赖窄的 ExportOwner。原始录音生命周期保持独立，源解析后复用既有文件分析/回放/仪器/报告。拖放通过 File 对象与专用 preload 通道，接口和验证见 53；参考数据与调度设计见 54，尚未接入。
+
 M11：ReportService 管理独立进程、有界任务队列、源引用、取消/重试及报告导出；report-worker 按页读原分析缓存并分块写 CSV/HTML。目标设置独立于布局/分析，目标比较不改变基础测量。应用清理/删除来源前等待报告释放；REC 优先。实现与待验范围见 [51](51-M11-INTEGRATION.md)。
 
 2026-09-17 当前架构入口：后续目标与完成条件见 [38](38-DEVELOPMENT-PLAN.md)。M7 使用 React 分割树和独立 workspace 配置；M8 已把频谱与声场接入统一来源/呈现/选区，见 [41](41-M8-METERING.md)/[42](42-M8-ACCEPTANCE.md)。显隐与停靠不控制音频生命周期，隐藏窗口的呈现调度见 [45](45-VISIBILITY-AND-RESOURCE-GATE.md)。M9 原生瓦片、有界存储、来源服务/显示聚合及共轴 2D 已接入。大数组采用独立呈现流，来源关闭等待查询释放；设计见 [43](43-M9-SPECTROGRAM.md)，preview.15 接入和待验项目见 [46](46-M9-2D-INTEGRATION.md)。

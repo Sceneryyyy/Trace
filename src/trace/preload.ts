@@ -1,6 +1,7 @@
-import { contextBridge, ipcRenderer } from 'electron'
+import { contextBridge, ipcRenderer, webUtils } from 'electron'
 import type { TraceHostAPI, TraceState, MeterSnapshot } from './shared'
 const api: TraceHostAPI = {
+ importFiles:async files=>{if(!Array.isArray(files)||!files.length||files.length>4)throw Error('INVALID_IMPORT_FILES');const paths=files.map(file=>webUtils.getPathForFile(file));if(paths.some(path=>!path))throw Error('IMPORT_REQUIRES_DISK_FILE');return ipcRenderer.invoke('trace:import-files',paths)},
  request: request => ipcRenderer.invoke('trace:command', request),
  onState(listener) {
   const handler=(_event:Electron.IpcRendererEvent,state:TraceState):void=>listener(state)

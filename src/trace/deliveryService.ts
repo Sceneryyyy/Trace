@@ -1,17 +1,16 @@
 import {mkdir,lstat,realpath} from 'node:fs/promises'
 import {join,dirname} from 'node:path'
-import type {RecordingService} from './recording'
+import type {ExportOwner,ExportRepository} from './exportRepository'
 import type {ExportService} from './exportService'
 import type {ExportRecord} from './exportTypes'
-import type {StoredSession} from './sessionStore'
 export class DeliveryService{
  private grants=new Set<string>()
  private current:{id:string;controller:AbortController}|undefined
  private running:Promise<void>|undefined
  private paused=false
  private closing=false
- constructor(private recordings:RecordingService,private exporter:ExportService,private changed:()=>void,private canRun:()=>boolean){}
- private find(id:string):{take:StoredSession;record:ExportRecord}{
+ constructor(private recordings:Pick<ExportRepository,'sessions'>,private exporter:ExportService,private changed:()=>void,private canRun:()=>boolean){}
+ private find(id:string):{take:ExportOwner;record:ExportRecord}{
   for(const take of this.recordings.sessions()){const record=take.document.exports?.find(r=>r.id===id);if(record)return {take,record}}
   throw Error('UNKNOWN_EXPORT_JOB')
  }
