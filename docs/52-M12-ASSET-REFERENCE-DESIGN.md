@@ -1,6 +1,6 @@
 # 52 · M12 外部素材与参考比较设计
 
-2026-09-17。**前置设计与独立解码底座，尚未接入产品。** M11 完整工程关口仍在验证；本文件固定可以独立推进的资产边界与工作票，不表示已交付导入或参考功能。执行范围沿用 [38](38-DEVELOPMENT-PLAN.md) M12，不加入同录同播、编辑器或云服务。
+2026-09-17。**独立资产底座已验证，尚未接入产品。** M11 工程关口已通过；本文件固定可以独立推进的资产边界与工作票，不表示已交付导入或参考功能。执行范围沿用 [38](38-DEVELOPMENT-PLAN.md) M12，不加入同录同播、编辑器或云服务。
 
 ## 1. 当前复用点与缺口
 
@@ -76,4 +76,16 @@ importMedia.ts 已实现严格容器/音轨/编码判定、文件指纹、容量
 
 不足磁盘在创建 PCM 前拒绝，取消清理自身半成品，准备期间原文件变化不会发布 ready。清理遇到未知文件或指向外部目录的 junction 明确拒绝，所有原文件 hash 保持。测试本身仅操作隔离夹具；没有修改用户原文件或正在长测的 preview.22 包。
 
-下一步是持久化 ImportedAsset、窄 ExportRepository 适配及 ImportService 的队列/取消/重建/来源变化，再接入文件导入界面和参考比较。只有独立解码检查，不是 M12 产品验收。
+持久化及窄仓库的后续增量见下方；ImportService 队列/取消/重建/来源变化与产品界面仍待接入。这些基础检查不等于 M12 产品验收。
+
+### 持久化与导出宿主增量
+
+ImportedDocument v1 / ImportStore 已独立实现，严格区分外部 sourcePath/指纹与应用拥有的缓存和 exports。没有 CaptureRegion、deviceId 或 captureEpochId；未知/坏元数据以 issues 返回并保留文件。owner.json、目录规范化、拒绝 junction、版本/状态/导出归属、ready 身份和原子串行写入均验证；中断中的准备/导出/另存重启后明确为可重试失败，不重新授权外部写入。
+
+ExportService 改为依赖窄 ExportRepository/ExportOwner 类型；原 RecordingService 结构兼容，运行逻辑未变。ImportedAsset 实际完成 WAV float32、MP3 和 AAC-M4A 导出与重新解析，重启后恢复三个成品、原源 hash 保持；初次证据 artifacts/m12/export-1789596746218/report.json。此流程仍是独立测试仓库，不是应用已接入导入。
+
+readImportedPCM 校验解码目录 owner、连续分段顺序、来源与媒体身份、清单总帧、每段实际 hash；坏缓存/错误来源拒绝返回。新素材不能引用自身 import 存储树中的缓存文件，即使通过目录 junction 也拒绝，防止“外部原文件”实际上会被缓存清理移除。
+
+当前存储 6 项、格式 2 项、既有导出/另存 7 项共 15 项通过，类型检查通过；实际外部解码/安全清理 7 项与导出宿主 4 项通过。最新精确运行目录以 artifacts/m12/import-latest.json / export-latest.json 为索引，原失败/旧夹具保留。
+
+下一步固定为 ImportService：有界准备队列、取消/REC 暂停、源变化/缺失、重建与删除等待、已准备缓存解析，再将组合仓库接入应用与文件库。参考服务和 A/B/比较界面仍待实现。M11 的 preview.22 保持不可变。

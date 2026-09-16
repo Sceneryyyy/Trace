@@ -58,6 +58,22 @@ async function ownedDirectory(root:string,directory:string):Promise<string>{
  const owner=JSON.parse(await readFile(marker,'utf8'));if(owner.product!=='TraceImportedPCM'||owner.version!==1||owner.id!==basename(actual))throw Error('INVALID_IMPORT_CACHE_OWNER')
  return actual
 }
+export async function readImportedPCM(root:string,id:string,sourceSha256:string,signal?:AbortSignal):Promise<ImportedPCM>{
+ if(!idPattern.test(id)||!hashPattern.test(sourceSha256))throw Error('INVALID_IMPORT_CACHE_REFERENCE')
+ const directory=await ownedDirectory(root,join(resolve(root),id)),metadata=join(directory,'decoded.json'),info=await lstat(metadata)
+ if(!info.isFile()||info.isSymbolicLink()||info.size>16*1024*1024)throw Error('INVALID_IMPORT_CACHE_METADATA')
+ const d=JSON.parse(await readFile(metadata,'utf8')) as ImportedPCM
+ if(!d||d.version!==1||d.id!==id||!d.source||d.source.sha256!==sourceSha256||!hashPattern.test(d.decoderSha256)||!hashPattern.test(d.mediaIdentity)||!frame(d.frames)||d.frames==='0'||!d.format||!['decoder-metadata','decoded-content'].includes(d.trim)||!Array.isArray(d.files)||!d.files.length||d.files.length>10000)throw Error('INVALID_IMPORT_CACHE_METADATA')
+ const normalized=classifyImport({streams:[{codec_type:'audio',codec_name:d.codec,profile:d.codec==='aac'?'LC':undefined,sample_rate:String(d.format.sampleRate),channels:d.format.channelCount,bit_rate:d.format.bitrate===undefined?undefined:String(d.format.bitrate*1000)}],format:{format_name:d.format.format==='aac'?(d.format.container==='adts'?'aac':'mov'):d.format.format}})
+ const identity=createHash('sha256').update(JSON.stringify({version:1,sourceSha256,decoder:d.decoderSha256,recipe:'full-external-decoding-v1',frames:d.frames,format:normalized.format})).digest('hex')
+ if(identity!==d.mediaIdentity||d.trim!==(normalized.container==='adts'?'decoded-content':'decoder-metadata')||new Set(d.files.map(f=>f.file)).size!==d.files.length)throw Error('INVALID_IMPORT_CACHE_IDENTITY')
+ const paths:string[]=[];let frames=0n
+ const pcm=join(directory,'pcm'),pcmInfo=await lstat(pcm);if(!pcmInfo.isDirectory()||pcmInfo.isSymbolicLink()||!same(await realpath(pcm),pcm))throw Error('INVALID_IMPORT_CACHE_DIRECTORY')
+ for(const [index,f] of d.files.entries()){check(signal);if(f.file!=='pcm/part-'+String(index).padStart(6,'0')+'.wav'||!/^pcm\/part-[0-9]{6}\.wav$/.test(f.file)||!frame(f.frames)||f.frames==='0'||!hashPattern.test(f.sha256))throw Error('INVALID_IMPORT_CACHE_FILE');const file=join(directory,f.file),s=await lstat(file);if(!s.isFile()||s.isSymbolicLink()||!same(await realpath(file),file))throw Error('INVALID_IMPORT_CACHE_FILE');paths.push(file);frames+=BigInt(f.frames)}
+ if(frames.toString()!==d.frames)throw Error('IMPORT_CACHE_FRAME_MISMATCH')
+ const hashes=await hashFiles(paths,{signal});if(hashes.some((h,i)=>h!==d.files[i].sha256))throw Error('IMPORT_DECODED_CACHE_CHANGED')
+ return {...d,directory,format:normalized.format}
+}
 /** Deletes only the decoder's own identified files. Unknown contents stop cleanup. */
 export async function removeImportedPCM(root:string,directory:string):Promise<void>{
  const actual=await ownedDirectory(root,directory),names=await readdir(actual),files:string[]=[]

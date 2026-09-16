@@ -7,10 +7,10 @@ import {validateExportPreset} from './mediaTypes'
 import {validateExportRecord} from './exportTypes'
 import type {MediaTools,EncodedMedia,MediaFile,ExportPreset} from './mediaTypes'
 import type {ExportRecord,ExportResult,ExportView,ExportSource,ExportPhase} from './exportTypes'
-import type {StoredSession} from './sessionStore'
+import type {ExportOwner,ExportRepository} from './exportRepository'
 import type {AnalysisSource} from './analysisService'
-type Repository={session(id:string):StoredSession;sessions():StoredSession[];analysisSource(id:string,role:ExportSource['role'],regionId?:string,exportId?:string):Promise<AnalysisSource>}
-type Task={record:ExportRecord;take:StoredSession;controller?:AbortController;cancelled:boolean;suspended:boolean}
+
+type Task={record:ExportRecord;take:ExportOwner;controller?:AbortController;cancelled:boolean;suspended:boolean}
 const terminal=(phase:ExportPhase)=>['ready','failed','cancelled'].includes(phase)
 export class ExportService {
  private tasks=new Map<string,Task>()
@@ -21,7 +21,7 @@ export class ExportService {
  private rebuilds=new Set<AbortController>()
  private copies=new Set<Promise<unknown>>()
  private resolutions=new Map<string,Promise<AnalysisSource>>()
- constructor(private repository:Repository,private tools:MediaTools,private changed:(control?:boolean)=>void){}
+ constructor(private repository:ExportRepository,private tools:MediaTools,private changed:(control?:boolean)=>void){}
  views(takeId?:string):ExportView[]{
   return this.repository.sessions().filter(t=>!takeId||t.document.sessionId===takeId).flatMap(t=>(t.document.exports||[]).map(r=>({
    delivery:r.delivery,id:r.id,takeId:t.document.sessionId,label:t.document.name,preset:r.preset,createdAt:r.createdAt,automatic:r.automatic,phase:r.phase,fraction:r.fraction,error:r.error,
@@ -43,7 +43,7 @@ export class ExportService {
  usesSource(takeId:string):boolean{return [...this.tasks.values()].some(t=>!terminal(t.record.phase)&&t.record.source.takeId===takeId&&t.record.source.role!=='export')}
  busy():boolean{return Boolean(this.current)||this.copies.size>0||this.resolutions.size>0||this.rebuilds.size>0||[...this.tasks.values()].some(t=>!terminal(t.record.phase))}
  owns(id:string):boolean{return this.repository.sessions().some(t=>t.document.exports?.some(r=>r.id===id))}
- private find(id:string):{record:ExportRecord;take:StoredSession}{
+ private find(id:string):{record:ExportRecord;take:ExportOwner}{
   for(const take of this.repository.sessions()){const record=take.document.exports?.find(r=>r.id===id);if(record)return {record,take}}
   throw Error('UNKNOWN_EXPORT_JOB')
  }
@@ -75,7 +75,7 @@ export class ExportService {
   this.current=task;task.suspended=false;task.controller=new AbortController()
   this.running=this.run(task).finally(()=>{task.controller=undefined;this.current=undefined;this.running=undefined;if(terminal(task.record.phase))this.tasks.delete(task.record.id);this.changed();this.pump()})
  }
- private async cleanup(take:StoredSession,working:string):Promise<void>{
+ private async cleanup(take:ExportOwner,working:string):Promise<void>{
   const root=await realpath(take.directory)
   try{
    const target=await realpath(working),info=await lstat(working)
@@ -124,14 +124,14 @@ export class ExportService {
    await task.take.save().catch(()=>{})
   }finally{if(owned)await this.cleanup(task.take,working).catch(error=>{r.error=(r.error?r.error+'; ':'')+String(error)})}
  }
- private async cleanOrphans(record:ExportRecord,take:StoredSession):Promise<void>{
+ private async cleanOrphans(record:ExportRecord,take:ExportOwner):Promise<void>{
   for(const entry of await readdir(take.directory,{withFileTypes:true})){
    if(!entry.isDirectory()||entry.isSymbolicLink()||!entry.name.startsWith('.media-'+record.id+'-'))continue
    const directory=join(take.directory,entry.name)
    try{const file=join(directory,'owner.json'),info=await lstat(file);if(!info.isFile()||info.isSymbolicLink()||info.size>4096)continue;const owner=JSON.parse(await readFile(file,'utf8'));if(owner.version===1&&owner.exportId===record.id&&owner.takeId===take.document.sessionId)await this.cleanup(take,directory)}catch(error){if((error as NodeJS.ErrnoException).code!=='ENOENT')throw error}
   }
  }
- private async recoverCommitted(record:ExportRecord,take:StoredSession):Promise<boolean>{
+ private async recoverCommitted(record:ExportRecord,take:ExportOwner):Promise<boolean>{
   try{
    const directory=join(take.directory,'exports',record.id),file=join(directory,'export.json'),details=await lstat(file)
    if(!details.isFile()||details.isSymbolicLink()||details.size>4000000)throw Error('INVALID_EXPORT_MANIFEST')
@@ -142,7 +142,7 @@ export class ExportService {
    catch(error){Object.assign(record,before);throw error}
   }catch(error){if((error as NodeJS.ErrnoException).code==='ENOENT')return false;throw error}
  }
- private async rebuildDecoded(record:ExportRecord,take:StoredSession,directory:string,encoded:string):Promise<string[]>{
+ private async rebuildDecoded(record:ExportRecord,take:ExportOwner,directory:string,encoded:string):Promise<string[]>{
   const result=record.result!
   if(result.container==='wav')throw Error('EXPORTED_FILE_CHANGED')
   if(result.encoderSha256!==this.tools.ffmpegSha256)throw Error('DECODER_BUILD_CHANGED')
