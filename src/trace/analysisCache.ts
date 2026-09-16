@@ -195,6 +195,23 @@ export class AnalysisCache {
     }
     return result
   }
+  async *reportRows():AsyncGenerator<import('./reportTypes').ReportRow>{
+    const levels=this.manifest.streams[0],loudness=this.manifest.streams[1]
+    let nextLoud=0n,loudIndex=-1n,loudnessFrame='0',start='0',loudnessFlags=0
+    let m=empty('LUFS'),s=empty('LUFS'),i=empty('LUFS'),lra=empty('LU'),tp=empty('dBTP')
+    for(let index=0n;index<BigInt(levels.records);index++){
+      const row=await this.record(levels,index),frame=row.readBigUInt64LE(0),flags=row.readUInt32LE(8)
+      if(row.readUInt32LE(12)!==this.manifest.channelCount)corrupt('level channels')
+      let updated=false
+      while(nextLoud<BigInt(loudness.records)&&this.indexFrame(loudness,nextLoud)<=frame){
+        const value=await this.record(loudness,nextLoud);loudIndex=nextLoud++;loudnessFrame=value.readBigUInt64LE(0).toString()
+        loudnessFlags=value.readUInt32LE(8);m=metric(value,16,'LUFS');s=metric(value,32,'LUFS');i=metric(value,48,'LUFS');lra=metric(value,64,'LU');tp=metric(value,80,'dBTP');updated=true
+      }
+      yield {startFrame:start,endFrame:frame.toString(),flags,loudnessFlags,channels:Array.from({length:this.manifest.channelCount},(_,c)=>({samplePeak:metric(row,32+c*48,'dBFS'),rms:metric(row,48+c*48,'dBFS'),truePeak:metric(row,64+c*48,'dBTP')})),momentary:{...m},shortTerm:{...s},integrated:{...i},lra:{...lra},maxTruePeak:{...tp},loudnessFrame,loudnessUpdated:updated}
+      start=frame.toString()
+    }
+    if(loudIndex!==BigInt(loudness.records)-1n)corrupt('report loudness coverage')
+  }
   async validateAll():Promise<void>{
     for(const stream of this.manifest.streams)for(let i=0n;i<BigInt(stream.pages);i++)await this.page(stream,i)
   }
