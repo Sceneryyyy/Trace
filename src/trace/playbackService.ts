@@ -1,3 +1,5 @@
+import type {ReplaySaveRequest,ReplaySaveResult} from './replaySaveTypes'
+import {nativeFilePath} from './nativeFilePath'
 import {randomUUID} from 'node:crypto'
 import {measurementConfigId} from './analysisTypes'
 import type {HistoricalMetrics} from './analysisTypes'
@@ -5,6 +7,7 @@ import type {AnalysisService,AnalysisSource} from './analysisService'
 import type {FileView,Metric,NativePlaybackSnapshot,NativeMeterSnapshot,PlaybackView,WavePoint,LoudnessPoint,AnalysisJobView,NativeRecordSnapshot} from './shared'
 export type ReplayInfo={frames:string;originFrame:string;captureStartFrame:string;sourceId:string;epochId:string;measurementEpoch:string;sampleRate:number;channelCount:number}
 export type PlaybackNative={
+ replaySave?(request:ReplaySaveRequest):Promise<ReplaySaveResult>
  replayFreeze(recording?:boolean):ReplayInfo
  replayRelease?():void
  playbackReplayOpen(id:string,deviceId:string):Promise<NativePlaybackSnapshot>
@@ -40,13 +43,15 @@ export class PlaybackService {
  constructor(private native:PlaybackNative,private analyses:AnalysisService,private changed:()=>void){}
  active():boolean{return this.current!==null}
  outputActive():boolean{return Boolean(this.current?.outputReady)}
+ renameTake(takeId:string,oldName:string,name:string):void{const c=this.current;if(c?.source.takeId===takeId&&c.source.label.startsWith(oldName)){c.source={...c.source,label:name+c.source.label.slice(oldName.length)};this.changed()}}
+ replayForSave(id:string,selection:boolean):{info:ReplayInfo;range:{startFrame:string;endFrame:string}}{const c=this.context(id);if(!c.temporary||!c.replayInfo)throw Error('NOT_MEMORY_HISTORY');if(selection&&!c.selection)throw Error('INVALID_SELECTION');return {info:{...c.replayInfo},range:selection?{...c.selection!}:{startFrame:'0',endFrame:c.source.frames}}}
  setOutputDevice(id:string):void{if(this.current&&!this.current.outputReady){this.current.deviceId=id;this.changed()}}
  view():PlaybackView|null{
   const c=this.current;if(!c)return null
   const job=this.analyses.snapshots().find(job=>job.id===c.analysisId)
   return {timeOffsetSeconds:c.timeOffsetSeconds,outputReady:c.outputReady,temporary:c.temporary,id:c.id,takeId:c.source.takeId,role:c.source.role,regionId:c.source.regionId,exportId:c.source.exportId,label:c.source.label,phase:c.phase,error:c.error,
    positionFrame:c.positionFrame,totalFrames:c.source.frames,sampleRate:c.source.sampleRate,channelCount:c.source.channelCount,
-   generation:c.generation,analysisId:c.analysisId,analysisPhase:c.temporary?'ready':job?.phase||'queued',selectionAnalysis:c.selectionAnalysis||this.analyses.snapshots().find(job=>job.id===c.selectionAnalysisId),gain:this.gain,loop:c.loop,follow:c.follow,selection:c.selection,
+    assetFormat:c.source.assetFormat,analysisError:job?.error||null,generation:c.generation,analysisId:c.analysisId,analysisPhase:c.temporary?'ready':job?.phase||'queued',selectionAnalysis:c.selectionAnalysis||this.analyses.snapshots().find(job=>job.id===c.selectionAnalysisId),gain:this.gain,loop:c.loop,follow:c.follow,selection:c.selection,
    startFrame:c.startFrame,endFrame:c.endFrame}
  }
      async openReplay(deviceId:string,info=this.native.replayFreeze(),timeOffsetSeconds=Number(info.captureStartFrame)/info.sampleRate,label='系统声音 · 历史'):Promise<void>{
@@ -76,7 +81,26 @@ export class PlaybackService {
   private context(id:string):Context{
    const c=this.current;if(!c||c.id!==id)throw Error('STALE_PLAYBACK_SOURCE')
    if(!c.ready||c.readError)throw Error('PLAYBACK_NOT_READY')
-   return c
+    return c
+  }
+  useAnalysis(source:AnalysisSource,analysisId:string):void{
+   const c=this.current
+   if(!c||c.temporary||source.range||c.source.takeId!==source.takeId||c.source.role!==source.role||
+    c.source.regionId!==source.regionId||c.source.exportId!==source.exportId||c.source.mediaIdentity!==source.mediaIdentity||
+    c.source.frames!==source.frames||c.source.sampleRate!==source.sampleRate||c.source.channelCount!==source.channelCount||
+    JSON.stringify(c.source.sources)!==JSON.stringify(source.sources)||c.analysisId===analysisId)return
+   this.analyses.retain(analysisId)
+   if(c.analysisId)this.analyses.release(c.analysisId)
+   c.analysisId=analysisId;c.source=source;c.ready=true;c.readError=false;c.error=null
+   if(!c.outputReady)c.phase='paused'
+   c.generation=(BigInt(c.generation)+1n).toString();c.viewGeneration++;c.timeline=undefined
+   this.changed()
+  }
+  retryAnalysis(id:string):void{
+   const c=this.current
+   if(!c||c.id!==id)throw Error('STALE_PLAYBACK_SOURCE')
+   if(c.temporary)throw Error('INVALID_ANALYSIS_SOURCE')
+   this.useAnalysis(c.source,this.analyses.start(c.source))
   }
   async play(id:string):Promise<void>{
    const c=this.context(id),operation=this.operation
@@ -84,7 +108,7 @@ export class PlaybackService {
    c.error=null;c.phase='preparing';this.changed()
    try{
     if(!c.outputReady){
-     const result=c.temporary?await this.native.playbackReplayOpen(c.id,c.deviceId):await this.native.playbackOpen(c.id,c.source.sources,c.deviceId,true,c.source.decodeRange)
+     const result=c.temporary?await this.native.playbackReplayOpen(c.id,c.deviceId):await this.native.playbackOpen(c.id,c.source.sources.map(nativeFilePath),c.deviceId,true,c.source.decodeRange)
      if(operation!==this.operation||this.current!==c)return
      if(result.id!==c.id||result.totalFrames!==c.source.frames||result.format.sampleRate!==c.source.sampleRate||result.format.channelCount!==c.source.channelCount)throw Error('PLAYBACK_ASSET_CHANGED')
      c.outputReady=true;c.nativeGeneration=result.generation
@@ -123,7 +147,7 @@ seek(id:string,positionFrame:string,resume:boolean):void{
   c.positionFrame=positionFrame;c.desiredPlaying=resume;c.phase=resume?'buffering':'paused';this.changed()
  }
  volume(id:string,gain:number):void{const c=this.context(id);if(c.outputReady)this.native.playbackVolume(gain);this.gain=gain;this.changed()}
- selection(id:string,startFrame:string,endFrame:string,loop:boolean):void{
+  selection(id:string,startFrame:string,endFrame:string,loop:boolean):void{
   const c=this.context(id),start=BigInt(startFrame),end=BigInt(endFrame)
   if(start<0n||end<=start||end>BigInt(c.source.frames))throw Error('INVALID_SELECTION')
   const changed=c.selection?.startFrame!==startFrame||c.selection?.endFrame!==endFrame
@@ -139,8 +163,18 @@ seek(id:string,positionFrame:string,resume:boolean):void{
    const positionFrame=raw&&raw.id===c.id&&BigInt(raw.generation)>=BigInt(c.nativeGeneration)?raw.positionFrame:c.positionFrame
    if(raw?.phase==='ended')c.desiredPlaying=false
    const position=BigInt(positionFrame),inside=position>=start&&position<end
-   this.seek(id,loop&&!inside?startFrame:positionFrame,c.desiredPlaying)
- }
+    this.seek(id,loop&&!inside?startFrame:positionFrame,c.desiredPlaying)
+  }
+  clearSelection(id:string):void{
+   const c=this.context(id)
+   if(c.selectionAnalysisId){this.analyses.cancel(c.selectionAnalysisId);this.analyses.release(c.selectionAnalysisId)}
+   c.selectionAnalysisId=undefined;c.selectionAnalysis=undefined;c.selection=null;c.loop=false
+   if(this.replaySelectionNext===c)this.replaySelectionNext=undefined
+   const raw=c.outputReady?this.native.playbackSnapshot():undefined
+   const position=raw?.id===c.id&&BigInt(raw.generation)>=BigInt(c.nativeGeneration)?raw.positionFrame:c.positionFrame
+   if(raw?.phase==='ended')c.desiredPlaying=false
+   this.seek(id,position,c.desiredPlaying)
+  }
  private async drainReplaySelection():Promise<void>{
   if(this.replaySelectionBusy)return
   this.replaySelectionBusy=true
@@ -204,7 +238,7 @@ if(c.follow&&native.playing&&(BigInt(native.positionFrame)<BigInt(c.startFrame)|
    }
    if(this.current!==c||c.generation!==generation||c.viewGeneration!==viewGeneration)return
    const fileView:FileView={timeOffsetSeconds:c.timeOffsetSeconds,temporary:c.temporary,totalFrames:c.source.frames,startFrame:c.startFrame,endFrame:c.endFrame,selection:c.selection,
-    playingIntent:c.desiredPlaying,analysisId:c.analysisId,analysisPhase:c.temporary?'ready':job?.phase||'queued',selectionAnalysis:c.selectionAnalysis||this.analyses.snapshots().find(job=>job.id===c.selectionAnalysisId),wholeFileIntegrated:metrics.wholeFileIntegrated}
+     playingIntent:c.desiredPlaying,analysisId:c.analysisId,analysisError:job?.error||null,analysisPhase:c.temporary?'ready':job?.phase||'queued',selectionAnalysis:c.selectionAnalysis||this.analyses.snapshots().find(job=>job.id===c.selectionAnalysisId),wholeFileIntegrated:metrics.wholeFileIntegrated}
    return {protocolVersion:1,sourceKind:'file',sourceId:c.id,epochId:'0',measurementEpoch:'0',measurementConfigId,active:native.playing,error:native.error,
     format:native.format,positionFrame:native.positionFrame,measurementFrames:native.positionFrame,levelIndexFrame:metrics.levelIndexFrame,loudnessIndexFrame:metrics.loudnessIndexFrame,
     continuity:native.error?'unknown':'complete',channels:metrics.channels,momentary:metrics.momentary,shortTerm:metrics.shortTerm,integratedToCursor:metrics.integratedToCursor,

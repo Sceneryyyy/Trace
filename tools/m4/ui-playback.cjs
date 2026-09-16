@@ -44,7 +44,7 @@ app.whenReady().then(async()=>{
   if(device)await request('live.start',{deviceId:device.id})
   const liveEpoch=native.snapshot(10,1).epochId
   await evaluate("window.__file=null;window.trace.onSnapshot(s=>window.__file=s);true")
-  await click('.files-button');await click('[data-take-id="'+fixture.document.sessionId+'"] [data-file-open="source"]')
+  await click('.files-button');await click('[data-take-id="'+fixture.document.sessionId+'"] [data-take-open]')
   await wait(async()=>{const s=await snap();return s?.sourceKind==='file'&&s.fileView?.analysisPhase==='ready'&&s.waveform.length},'file history')
   const file=(await state()).playback
   check(file&&(await state()).active&&native.snapshot(10,1).active&&!file.outputReady,'Opening a file keeps LIVE capture active and does not open audio output')

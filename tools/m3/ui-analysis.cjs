@@ -54,6 +54,7 @@ app.whenReady().then(async()=>{
   if(device)await request('live.start',{deviceId:device.id})
   await click('.files-button')
   const selector='[data-take-id="'+converted.sessionId+'"]'
+  await click(selector+' .take-details summary')
   await click(selector+' [data-analysis-start="deliverable"]')
   const deliverable=await until(async()=>{const j=await currentJob(converted.sessionId,'deliverable');if(j?.phase==='failed')throw Error(j.error);return j?.phase==='ready'?j:null},'deliverable analysis')
   check(deliverable.sampleRate===44100&&deliverable.summary,'Actual file-list button produces converted-file analysis')

@@ -1,3 +1,4 @@
+import type {MemoryOrigin} from './replaySaveTypes'
 import { mkdir, readFile, writeFile, rename, appendFile } from 'node:fs/promises'
 import { join, basename } from 'node:path'
 import { SessionTimeline, u64 } from './sessionTimeline'
@@ -11,6 +12,7 @@ export type SessionAsset={assetId:string;role:Exclude<AnalysisRole,'export'>;rel
 export type CaptureRegion=TimelineRegion&{ordinal:number;nativeId:string;baseName:string;journalFile:string;encoding:WavEncoding;status:'preparing'|'recording'|'closed'|'interrupted'|'cancelled';error:string|null;estimatedFrames:string;clippedSamples:string}
 export type SessionSegment={segmentId:string;assetId:string;regionId?:string;frameCount:string;captureStartFrame:string|null;timelineStartFrame:string;regionStartFrame?:string;captureEpochId?:string;assetStartFrame?:string;timelineStartNs?:string;gapBeforeNs?:string|null;overlapBeforeNs?:string|null;sampleRate?:number;takeId?:string}
 export type SessionDocument={
+ origin?:MemoryOrigin;
  retention?:{phase:'pending'|'verifying'|'removing'|'removed'|'kept'|'error';error:string|null};exports?:ExportRecord[];schemaVersion:2;product:'Trace';sessionId:string;name:string;createdAt:string;status:string;deviceId:string;captureEpochId:string
  preset:RecordSettings;sourceFormat:RegionFormat;captureStartFrame:string|null;captureEndFrameExclusive:string|null;frames:string;durationNs:string;error:string|null
  regions:CaptureRegion[];assets:SessionAsset[];segments:SessionSegment[];takes:Array<Record<string,unknown>>;events:Array<Record<string,unknown>>;eventSequence:number;hasDiscontinuities:boolean
@@ -43,8 +45,9 @@ export function normalizeSession(value:unknown):SessionDocument {
   const r=d.regions[i]
   if(!u64(r.clippedSamples)||!u64(r.estimatedFrames)||r.ordinal!==i+1||!safeName(r.baseName)||!safeName(r.journalFile)||typeof r.nativeId!=='string'||!['preparing','recording','closed','interrupted','cancelled'].includes(r.status))throw Error('INVALID_REGION_MANIFEST')
  }
- if(d.exports!==undefined){if(!Array.isArray(d.exports)||d.exports.length>10000)throw Error('INVALID_EXPORT_RECORDS');for(const record of d.exports){validateExportRecord(record);if(!['ready','failed','cancelled'].includes(record.phase)){record.phase='failed';record.error='上次导出未完成，可以重试。'}}}
+ if(d.exports!==undefined){if(!Array.isArray(d.exports)||d.exports.length>10000)throw Error('INVALID_EXPORT_RECORDS');for(const record of d.exports){validateExportRecord(record);if(record.delivery&&['pending','copying'].includes(record.delivery.phase)){record.delivery.phase='failed';record.delivery.error='上次另存未完成，请重新选择另存位置。'}if(!['ready','failed','cancelled'].includes(record.phase)){record.phase='failed';record.error='上次导出未完成，可以重试。'}}}
  if(d.retention){if(!['pending','verifying','removing','removed','kept','error'].includes(d.retention.phase)||(d.retention.error!==null&&typeof d.retention.error!=='string'))throw Error('INVALID_RETENTION_STATE');if(['verifying','removing'].includes(d.retention.phase))d.retention.phase='pending'}
+ if(d.origin){const o=d.origin;if(o.kind!=='memory'||typeof o.sourceId!=='string'||!o.sourceId||o.sourceId.length>1024||![o.epochId,o.measurementEpoch,o.cacheOriginFrame,o.captureStartFrame,o.sourceFrames,o.startFrame,o.endFrame].every(u64)||BigInt(o.startFrame)>=BigInt(o.endFrame)||BigInt(o.endFrame)>BigInt(o.sourceFrames))throw Error('INVALID_MEMORY_ORIGIN')}
  const timeline=new SessionTimeline(d.regions)
  d.schemaVersion=2;d.durationNs=timeline.durationNs;d.hasDiscontinuities=d.regions.length>1||Boolean(d.hasDiscontinuities)
  if(['preparing','recording','reconnecting','finalizing','processing'].includes(d.status))d.status='recoverable'

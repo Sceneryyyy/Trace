@@ -18,14 +18,20 @@ void ReplayBuffer::push(const float* input,uint32_t frames){
 void ReplayBuffer::remember(const MeterValues& values,const WavePoint& wave,bool loud)noexcept{
  history_[rows_++%history_.size()]={values,wave,loud};
 }
-std::shared_ptr<ReplayClip> ReplayBuffer::freeze(bool publishedOnly)const{
- const auto end=publishedOnly?(rows_?history_[(rows_-1)%history_.size()].meters.frame:0):frames_;
- if(!end)throw std::runtime_error("REPLAY_EMPTY");
- auto out=std::make_shared<ReplayClip>();out->format=format_;out->format.containerBits=out->format.validBits=32;out->format.blockAlign=format_.channels*4;out->format.floatingPoint=true;
- out->originFrame=frames_-retainedFrames();
+ReplayRange ReplayBuffer::range(bool publishedOnly)const{
+ ReplayRange value;value.end=publishedOnly?(rows_?history_[(rows_-1)%history_.size()].meters.frame:0):frames_;
+ value.start=frames_-retainedFrames();
  const auto first=rows_>history_.size()?rows_-history_.size():0;
- if(out->originFrame)for(auto i=first;i<rows_;++i){const auto& p=history_[i%history_.size()];if(p.wave.frame>=out->originFrame){out->originFrame=p.wave.frame;break;}}
- if(end<=out->originFrame)throw std::runtime_error("REPLAY_EMPTY");
+ if(value.start)for(auto i=first;i<rows_;++i){const auto& p=history_[i%history_.size()];if(p.wave.frame>=value.start){value.start=p.wave.frame;break;}}
+ if(value.end<value.start)value.start=value.end;
+ return value;
+}
+std::shared_ptr<ReplayClip> ReplayBuffer::freeze(bool publishedOnly)const{
+ const auto bounds=range(publishedOnly);const auto end=bounds.end;
+ if(end<=bounds.start)throw std::runtime_error("REPLAY_EMPTY");
+ auto out=std::make_shared<ReplayClip>();out->format=format_;out->format.containerBits=out->format.validBits=32;out->format.blockAlign=format_.channels*4;out->format.floatingPoint=true;
+ out->originFrame=bounds.start;
+ const auto first=rows_>history_.size()?rows_-history_.size():0;
  const auto count=end-out->originFrame;out->samples.resize(static_cast<size_t>(count)*format_.channels);
  const auto at=out->originFrame%capacity_,head=std::min(count,capacity_-at);
  std::copy_n(samples_.data()+size_t(at)*format_.channels,size_t(head)*format_.channels,out->samples.data());

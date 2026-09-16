@@ -27,6 +27,7 @@ struct RecordSnapshot {
     SourceFormat format;
     WavEncoding encoding=WavEncoding::Pcm24;
     uint64_t startFrame=UINT64_MAX,endFrame=UINT64_MAX,acceptedFrames=0,writtenFrames=0,estimatedFrames=0,clippedSamples=0;
+    uint64_t replayStartFrame=0,replayEndFrame=0;
     uint64_t startQpc100ns=UINT64_MAX,endQpc100ns=UINT64_MAX;
     bool startQpcEstimated=false,endQpcEstimated=false;
     size_t queueDepth=0,queueHighWater=0;

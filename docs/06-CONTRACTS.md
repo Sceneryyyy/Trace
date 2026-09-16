@@ -177,3 +177,21 @@ TraceState.monitoringRequested 与 active 分开；record.start 不再要求监�
 ## preview.8 呈现更新
 
 协议 v1、file generation、音频/磁盘缓存语义不变。主进程在 seek / inspect 完成后触发只读历史快照，周期采样继续兜底；发布仍校验 sourceId、generation 与窗口。renderer 按同一身份验证并保留上一完整呈现，等待新快照不会占住主命令队列。录音观察与历史浏览持续并行。见 32。
+
+## 三批迭代的前两批接口
+
+新增 playback.retryAnalysis / playback.clearSelection（playbackId）；原位重试保留游标、选区和窗口，并换用新分析引用/代次。新增 AssetFormat 与 analysisError，文件元数据独立于输出 float PCM。
+
+新增 library.rename（takeId/name）、library.storage（只读）、library.clearCache（takeId）、library.pruneMissing（空参数）；清理使用主进程范围确认。清缓存前核对成品 hash，缺失或变化的成品保留解码音频。维护期间释放分析引用并保护原始音频。
+
+export.configure 持久化最近 ExportPreset；export.describe 返回逻辑来源说明；export.start 可带 saveCopy 布尔值，另存路径只由主进程目录对话框取得。ExportRecord 可选 delivery 状态；重启后的未完成交付转为失败，持久化记录本身不会触发新写入。录音优先暂停另存，继续时复用已授权目标、核对已有文件，禁止覆盖不同内容。export.openDeliveryFolder 按 exportId 打开已完成交付目录。
+
+新增 record.capacity、app.configure（confirmExitWhileRecording）、app.diagnostics、app.copyDiagnostics。诊断只输出固定字段，不含个人路径、录音名称、设备标识或 PCM。录音中窗口关闭确认可配置；普通退出流程保持完整收尾。
+
+Native LIVE diagnostics 与 RecordSnapshot 增加 replayStartFrame/replayEndFrame，范围与 freeze(true) 一致，不复制 PCM。RecordingView.inspectableRange 映射为会话纳秒。Native I/O 边界使用 Windows 扩展路径，元数据/缓存身份仍用原逻辑路径。协议主版本 1、Session 2、磁盘缓存键版本 3、Meter v4 均保持；均为可选字段和白名单扩展。
+
+## preview.9 缓存保存
+
+cache.save 只接受 playbackId 与 useSelection 布尔值。主进程校验当前固定缓存与范围，再选择已授权录音目录。Native replaySave 只在受信主进程接收路径，校验 sourceId、originFrame、frames、epochId、measurementEpoch 与当前冻结对象一致，持有不可变共享引用，在工作线程保存。
+
+保存结果返回新 takeId，原历史上下文保持。新的源文件和压缩成品各自自动排入独立分析；旧播放 ID、超范围、任意路径及格式外字段均拒绝。该扩展不启动 REC，不重启健康监测，不改变 Meter v4 或二进制缓存格式。

@@ -28,6 +28,8 @@ int main(){
                 if(s.meters.frame>s.writtenFrames||s.meters.loudnessFrame>s.writtenFrames)issue="meter exceeds written prefix";
                 if(!s.waveform.empty()&&s.waveform.back().frame!=s.meters.frame)issue="wave and meter belong to different publications";
                 if(s.estimatedFrames>s.writtenFrames)issue="estimated frames exceed written prefix";
+                if(s.replayStartFrame>s.replayEndFrame||s.replayEndFrame>s.writtenFrames||s.replayEndFrame-s.replayStartFrame>uint64_t(rate)*60)issue="replay range exceeds written or retained prefix";
+                if(s.replayEndFrame!=s.meters.frame)issue="replay range and meter belong to different publications";
                 if(s.writtenFrames){
                     const auto end=100000000+Trace::frameDuration100ns(s.writtenFrames,rate);
                     if(s.startQpc100ns!=100000000||s.endQpc100ns!=end)issue="QPC "+std::to_string(s.endQpc100ns)+" does not match written "+std::to_string(s.writtenFrames);

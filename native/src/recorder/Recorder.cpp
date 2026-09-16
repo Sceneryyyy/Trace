@@ -115,6 +115,7 @@ RecordSnapshot Recorder::snapshot() const {
     result.queueDepth=queue_?queue_->size():0;
     if(result.error.empty())result.error=failureName(failure_);
     result.waveform=waves_.points(900);result.loudness=loudness_.points(600);
+    if(replay_){const auto range=replay_->range(true);result.replayStartFrame=range.start;result.replayEndFrame=range.end;}
     return result;
 }
 std::shared_ptr<const ReplayClip> Recorder::freezeReplay() const {

@@ -15,7 +15,7 @@ std::vector<Device> listDevices();
 struct Snapshot {
     SourceFormat format;
     std::string deviceId, error;
-    uint64_t replayFrames=0,replayCapacityFrames=0;
+    uint64_t replayFrames=0,replayCapacityFrames=0,replayStartFrame=0,replayEndFrame=0;
     uint64_t captureEpoch = 0, measurementEpoch = 0, position = 0, measurementFrames = 0;
     uint64_t capturedFrames = 0, analyzedFrames = 0, estimatedFrames = 0, droppedFrames = 0;
     uint64_t discontinuities = 0, timestampErrors = 0, overlapEvents = 0, meterLagFrames = 0;

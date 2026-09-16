@@ -1,8 +1,9 @@
+import {validateTakeName} from './naming'
 import { validateRecordSettings } from './recording'
 import {validateExportPreset} from './mediaTypes'
 import {validateDisplaySettings,validWindowSeconds,validWaveGain} from './displaySettings'
 import type { Command, Request } from './shared'
-const commands = new Set<Command>(['view.inspect','view.live','devices.select','view.gain','live.replay','library.refresh','library.remove','app.info','app.quit','retention.retry','view.settings','export.start','export.retry','export.openFolder','export.saveCopy','file.open','file.close','playback.play','playback.pause','playback.seek','playback.volume','playback.selection','playback.window','playback.follow','state.get', 'devices.list', 'live.start', 'live.stop', 'live.reset', 'view.window', 'record.configure', 'record.chooseDirectory', 'record.start', 'record.stop', 'record.openFolder', 'record.recover', 'analysis.start', 'job.cancel', 'metrics.query', 'timeline.query'])
+const commands = new Set<Command>(['cache.save','export.openDeliveryFolder','app.configure','app.diagnostics','app.copyDiagnostics','library.storage','library.clearCache','library.pruneMissing','library.rename','export.configure','export.describe','record.capacity','playback.clearSelection','playback.retryAnalysis','view.inspect','view.live','devices.select','view.gain','live.replay','library.refresh','library.remove','app.info','app.quit','retention.retry','view.settings','export.start','export.retry','export.openFolder','export.saveCopy','file.open','file.close','playback.play','playback.pause','playback.seek','playback.volume','playback.selection','playback.window','playback.follow','state.get', 'devices.list', 'live.start', 'live.stop', 'live.reset', 'view.window', 'record.configure', 'record.chooseDirectory', 'record.start', 'record.stop', 'record.openFolder', 'record.recover', 'analysis.start', 'job.cancel', 'metrics.query', 'timeline.query'])
 function plain(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && (Object.getPrototypeOf(value) === Object.prototype || Object.getPrototypeOf(value) === null)
 }
@@ -15,28 +16,38 @@ export function validateRequest(value: unknown): Request {
   const keys = Object.keys(r.payload)
   const textId=(v:unknown)=>typeof v==='string'&&v.length>0&&v.length<=128&&!v.includes('\0')
   const frameId=(v:unknown)=>typeof v==='string'&&/^[0-9]{1,20}$/.test(v)&&BigInt(v)<=0xffffffffffffffffn
-  if(r.command==='view.inspect'){
+  if(r.command==='cache.save'){
+    if(keys.sort().join(',')!=='playbackId,useSelection'||!textId(r.payload.playbackId)||typeof r.payload.useSelection!=='boolean')throw Error('INVALID_REPLAY_SAVE')
+  }else if(r.command==='app.configure'){
+    if(keys.join(',')!=='confirmExitWhileRecording'||typeof r.payload.confirmExitWhileRecording!=='boolean')throw Error('INVALID_APP_SETTINGS')
+  }else if(r.command==='library.clearCache'){
+    if(keys.length!==1||!textId(r.payload.takeId))throw Error('INVALID_LIBRARY_REQUEST')
+  }else if(r.command==='library.rename'){
+    if(keys.sort().join(',')!=='name,takeId'||!textId(r.payload.takeId))throw Error('INVALID_LIBRARY_REQUEST')
+    validateTakeName(r.payload.name)
+  }else if(r.command==='export.configure'){validateExportPreset(r.payload)}else if(r.command==='view.inspect'){
      if(keys.some(k=>!['sourceKind','sourceId','epochId','measurementEpoch','positionFrame','startFrame','endFrame','selectionEndFrame'].includes(k))||
        !['live','take'].includes(r.payload.sourceKind as string)||typeof r.payload.sourceId!=='string'||!r.payload.sourceId||r.payload.sourceId.length>1024||
        !frameId(r.payload.epochId)||!frameId(r.payload.measurementEpoch)||!frameId(r.payload.positionFrame)||!frameId(r.payload.startFrame)||!frameId(r.payload.endFrame)||
        BigInt(r.payload.endFrame as string)<=BigInt(r.payload.startFrame as string)||('selectionEndFrame' in r.payload&&!frameId(r.payload.selectionEndFrame)))throw Error('INVALID_INSPECTION')
-   }else if(r.command==='view.gain'){if(keys.length!==1||keys[0]!=='gain'||!validWaveGain(r.payload.gain))throw Error('INVALID_DISPLAY_SETTINGS')}else if(r.command==='library.remove'){if(keys.some(k=>!['takeId','exportId'].includes(k))||!textId(r.payload.takeId)||('exportId' in r.payload&&!textId(r.payload.exportId)))throw Error('INVALID_LIBRARY_REQUEST')}else if(r.command==='retention.retry'){if(keys.length!==1||keys[0]!=='takeId'||!textId(r.payload.takeId))throw Error('INVALID_TAKE_ID')}else if(r.command==='view.settings'){validateDisplaySettings(r.payload)}else if(r.command==='analysis.start'||r.command==='file.open'||r.command==='export.start'){
-    const allowed=['takeId','role','regionId','exportId',...(r.command==='export.start'?['preset','range']:[])]
+   }else if(r.command==='view.gain'){if(keys.length!==1||keys[0]!=='gain'||!validWaveGain(r.payload.gain))throw Error('INVALID_DISPLAY_SETTINGS')}else if(r.command==='library.remove'){if(keys.some(k=>!['takeId','exportId'].includes(k))||!textId(r.payload.takeId)||('exportId' in r.payload&&!textId(r.payload.exportId)))throw Error('INVALID_LIBRARY_REQUEST')}else if(r.command==='retention.retry'){if(keys.length!==1||keys[0]!=='takeId'||!textId(r.payload.takeId))throw Error('INVALID_TAKE_ID')}else if(r.command==='view.settings'){validateDisplaySettings(r.payload)}else if(r.command==='analysis.start'||r.command==='file.open'||r.command==='export.start'||r.command==='export.describe'){
+    const allowed=['takeId','role','regionId','exportId',...(r.command==='export.start'?['preset','range','saveCopy']:[])]
     if(keys.some(k=>!allowed.includes(k))||!textId(r.payload.takeId)||!['source','deliverable','recovered','session','export'].includes(r.payload.role as string)||
       ('regionId' in r.payload&&(!textId(r.payload.regionId)||!['source','recovered'].includes(r.payload.role as string)))||
       (r.payload.role==='export'?(!textId(r.payload.exportId)||'regionId' in r.payload):'exportId' in r.payload))throw Error('INVALID_ANALYSIS_SOURCE')
     if(r.command==='export.start'){
       validateExportPreset(r.payload.preset)
+      if('saveCopy' in r.payload&&typeof r.payload.saveCopy!=='boolean')throw Error('INVALID_EXPORT_DELIVERY')
       if(r.payload.range!==undefined){
         if(!plain(r.payload.range)||Object.keys(r.payload.range).sort().join(',')!=='endFrame,startFrame'||!frameId(r.payload.range.startFrame)||!frameId(r.payload.range.endFrame)||BigInt(r.payload.range.endFrame as string)<=BigInt(r.payload.range.startFrame as string))throw Error('INVALID_EXPORT_RANGE')
       }
     }
-  }else if(r.command==='export.retry'||r.command==='export.openFolder'||r.command==='export.saveCopy'){
+  }else if(r.command==='export.retry'||r.command==='export.openFolder'||r.command==='export.saveCopy'||r.command==='export.openDeliveryFolder'){
     if(keys.length!==1||keys[0]!=='exportId'||!textId(r.payload.exportId))throw Error('INVALID_EXPORT_ID')
   }else if(r.command.startsWith('playback.')){
     if(!textId(r.payload.playbackId))throw Error('INVALID_PLAYBACK_ID')
     const sorted=keys.sort().join(',')
-    if(r.command==='playback.play'||r.command==='playback.pause'){
+    if(['playback.play','playback.pause','playback.clearSelection','playback.retryAnalysis'].includes(r.command)){
       if(sorted!=='playbackId')throw Error('INVALID_PLAYBACK_PAYLOAD')
     }else if(r.command==='playback.seek'){
       if(sorted!=='playbackId,positionFrame,resume'||!frameId(r.payload.positionFrame)||typeof r.payload.resume!=='boolean')throw Error('INVALID_PLAYBACK_SEEK')
@@ -68,4 +79,4 @@ export function validateRequest(value: unknown): Request {
   } else if (keys.length) throw Error('INVALID_PAYLOAD')
   return r
 }
-export function isMutation(command: Command): boolean { return !['app.info','state.get', 'devices.list', 'metrics.query', 'timeline.query'].includes(command) }
+export function isMutation(command: Command): boolean { return !['app.info','app.diagnostics','library.storage','export.describe','state.get', 'devices.list', 'metrics.query', 'timeline.query'].includes(command) }

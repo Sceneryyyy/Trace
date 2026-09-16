@@ -1,3 +1,6 @@
+import type {ReplaySaveIdentity,ReplaySaveRequest,ReplaySaveResult} from './replaySaveTypes'
+import {nativeFilePath} from './nativeFilePath'
+import {localRecordingName} from './naming'
 import {createReadStream} from 'node:fs'
 import {mkdir,readdir,stat,lstat,realpath} from 'node:fs/promises'
 import {createHash,randomUUID} from 'node:crypto'
@@ -5,7 +8,7 @@ import {basename,join,sep} from 'node:path'
 import {recoverFiles} from './fileJobs'
 import {inspectRecovery} from './recovery'
 import {measurementConfigId} from './analysisTypes'
-import {mediaDurationNs} from './sessionTimeline'
+import {mediaDurationNs,u64} from './sessionTimeline'
 import {StoredSession,readSession} from './sessionStore'
 import {exportView} from './exportTypes'
 import {defaultRecordSettings,validateRecordSettings,recordingEncoding} from './recordSettings'
@@ -17,6 +20,7 @@ import type {AnalysisSource} from './analysisService'
 import type {NativeRecordSnapshot,RecordSettings,TakeSummary,AnalysisRole,RecordingView} from './shared'
 
 export interface RecordNative {
+  replaySave?(request:ReplaySaveRequest):Promise<ReplaySaveResult>
  recordStart(id:string,path:string,encoding:string,segmentBytes?:number,journalPath?:string):NativeRecordSnapshot
  recordStop():NativeRecordSnapshot
  recordStatus():NativeRecordSnapshot
@@ -41,6 +45,7 @@ export class RecordingService {
  private jobs:Promise<void>=Promise.resolve()
  private transitions:Promise<void>=Promise.resolve()
  private recovering=false
+ private cacheSaving:Promise<{takeId:string;role:AnalysisRole}>|undefined
  private closing=false
  private reconnect?:ReconnectHandler
  private finalized?:(id:string)=>Promise<void>
@@ -54,7 +59,7 @@ export class RecordingService {
  async settled():Promise<void>{await this.transitions;await this.jobs}
  notify():void{this.changed()}
  setReconnectHandler(handler:ReconnectHandler):void{this.reconnect=handler}
- busy():boolean{return this.active!==null||this.recovering}
+ busy():boolean{return this.active!==null||this.recovering||Boolean(this.cacheSaving)}
  summaries():TakeSummary[]{
   return [...this.takes.values()].map(({document:d})=>{
    const preferred=(['deliverable','session','recovered','source'] as AnalysisRole[]).map(role=>d.assets.filter(a=>a.role===role&&!['superseded','removed','removing'].includes(a.state||''))).find(items=>items.length)||[]
@@ -93,7 +98,7 @@ export class RecordingService {
   if(this.busy())throw Error('RECORDING_ACTIVE')
   if(this.closing)throw Error('APP_CLOSING')
   if(!this.directory)throw Error('DIRECTORY_REQUIRED')
-  const id=randomUUID(),createdAt=new Date().toISOString(),name=this.settings.namePrefix+'-'+createdAt.replace(/[:.]/g,'-').slice(0,19)
+  const id=randomUUID(),createdAt=new Date().toISOString(),name=localRecordingName(this.settings.namePrefix,new Date(createdAt))
   const document:SessionDocument={schemaVersion:2,product:'Trace',sessionId:id,name,createdAt,status:'preparing',deviceId:source.deviceId,captureEpochId:source.captureEpochId,
    preset:{...this.settings},sourceFormat:{...format},captureStartFrame:null,captureEndFrameExclusive:null,frames:'0',durationNs:'0',error:null,regions:[],assets:[],segments:[],
    takes:[{takeId:id,sourceFormat:{...format},outputPreset:{...this.settings},measurementConfigId}],events:[],eventSequence:0,hasDiscontinuities:false}
@@ -110,6 +115,50 @@ export class RecordingService {
    throw error
   }finally{a.opening=undefined}
  }
+  saveReplay(info:ReplaySaveIdentity,range:{startFrame:string;endFrame:string}):Promise<{takeId:string;role:AnalysisRole}>{
+  if(this.busy())throw Error('RECORDING_ACTIVE')
+  if(this.closing)throw Error('APP_CLOSING')
+  if(!this.directory)throw Error('DIRECTORY_REQUIRED')
+  if(!this.native.replaySave)throw Error('CACHE_SAVE_UNAVAILABLE')
+  if(typeof info.sourceId!=='string'||!info.sourceId||info.sourceId.length>1024||info.sourceId.includes('\0')||!Number.isInteger(info.sampleRate)||info.sampleRate<8000||info.sampleRate>96000||![1,2].includes(info.channelCount)||
+   ![info.frames,info.originFrame,info.captureStartFrame,info.epochId,info.measurementEpoch,range.startFrame,range.endFrame].every(u64)||
+   BigInt(info.frames)>BigInt(info.sampleRate)*60n||BigInt(range.endFrame)>BigInt(info.frames)||BigInt(range.startFrame)>=BigInt(range.endFrame))throw Error('INVALID_REPLAY_SELECTION')
+  const settings={...this.settings},task=Promise.resolve().then(()=>this.writeReplay(info,range,settings))
+  this.cacheSaving=task;this.jobs=Promise.allSettled([this.jobs,task]).then(()=>undefined);this.changed()
+  return task.finally(()=>{if(this.cacheSaving===task)this.cacheSaving=undefined;this.changed()})
+ }
+ private async writeReplay(info:ReplaySaveIdentity,range:{startFrame:string;endFrame:string},settings:RecordSettings):Promise<{takeId:string;role:AnalysisRole}>{
+  const id=randomUUID(),createdAt=new Date().toISOString(),name=localRecordingName(settings.namePrefix+'-缓存',new Date(createdAt)),epoch='memory:'+id
+  const encoding=recordingEncoding(settings,info.sampleRate),format={sampleRate:info.sampleRate,channelCount:info.channelCount}
+  const region:CaptureRegion={id,nativeId:id,ordinal:1,baseName:name,journalFile:'journal.jsonl',captureEpochId:epoch,format,frames:'0',startFrame:'0',endFrameExclusive:'0',clock:{domain:epoch,startQpc100ns:null,endQpc100ns:null,startEstimated:false,endEstimated:false},encoding,status:'preparing',error:null,estimatedFrames:'0',clippedSamples:'0'}
+  const d:SessionDocument={schemaVersion:2,product:'Trace',sessionId:id,name,createdAt,status:'processing',deviceId:'memory',captureEpochId:epoch,preset:settings,sourceFormat:format,captureStartFrame:'0',captureEndFrameExclusive:'0',frames:'0',durationNs:'0',error:null,regions:[region],assets:[],segments:[],takes:[{takeId:id,measurementConfigId}],events:[],eventSequence:0,hasDiscontinuities:false,
+   origin:{kind:'memory',sourceId:info.sourceId,epochId:info.epochId,measurementEpoch:info.measurementEpoch,cacheOriginFrame:info.originFrame,captureStartFrame:info.captureStartFrame,sourceFrames:info.frames,...range}}
+  const take=new StoredSession(join(this.directory,name+'-'+id.slice(0,8)),d);this.takes.set(id,take);this.changed()
+  let sourceReady=false
+  try{
+   await mkdir(join(take.directory,'audio'),{recursive:true});await take.event('cache.save.prepared');await take.save()
+   const result=await this.native.replaySave!({...info,...range,encoding,basePath:nativeFilePath(join(take.directory,'audio',name)),journalPath:nativeFilePath(join(take.directory,'journal.jsonl'))})
+   if(result.sampleRate!==info.sampleRate||result.channelCount!==info.channelCount||result.encoding!==encoding||result.frames!==(BigInt(range.endFrame)-BigInt(range.startFrame)).toString()||
+    result.segments.reduce((n,s)=>n+BigInt(s.frames),0n).toString()!==result.frames)throw Error('CACHE_SAVE_FRAME_MISMATCH')
+   region.frames=result.frames;region.endFrameExclusive=result.frames;region.status='closed';region.clippedSamples=result.clippedSamples
+   let prefix=0n
+   for(const [index,segment]of result.segments.entries()){
+    if(segment.file!==name+'-'+(index+1)+'.wav')throw Error('INVALID_CACHE_SAVE_PATH')
+    const assetId=id+'-source-'+index
+    d.assets.push({assetId,role:'source',regionId:id,relativePath:'audio/'+segment.file,sampleRate:info.sampleRate,channelCount:info.channelCount,encoding,frameCount:segment.frames,clippedSamples:segment.clippedSamples,hash:await hashFile(join(take.directory,'audio',segment.file))})
+    d.segments.push({segmentId:assetId+'-segment',assetId,regionId:id,frameCount:segment.frames,captureStartFrame:prefix.toString(),timelineStartFrame:prefix.toString(),regionStartFrame:prefix.toString()});prefix+=BigInt(segment.frames)
+   }
+   sourceReady=true;await take.save()
+   await postprocessWav(take,this.ffmpeg,this.ffprobe,this.nativePath)
+   d.status='ready';await take.event('cache.saved',{frames:result.frames});await take.save();this.changed();await this.finalized?.(id)
+   return {takeId:id,role:d.assets.some(a=>a.role==='deliverable')?'deliverable':'source'}
+  }catch(error){
+   d.error=String(error);d.status=sourceReady?'failed':'recoverable'
+   if(!sourceReady){region.status='interrupted';region.error='CACHE_SAVE_INCOMPLETE';d.hasDiscontinuities=true
+    try{const inventory=await inspectRecovery(take.directory,name);region.frames=inventory.confirmedFrames||'0';region.endFrameExclusive=region.frames}catch{d.status='failed'}}
+   await take.save().catch(()=>{});this.changed();throw error
+  }
+ }
  private async beginRegion(a:Active,format:Format,source:SourceEpoch):Promise<boolean>{
   const d=a.take.document,ordinal=d.regions.length+1,generation=a.generation
   if(ordinal>10000)throw Error('TOO_MANY_CAPTURE_REGIONS')
@@ -122,7 +171,7 @@ export class RecordingService {
   d.regions.push(region);a.region=region;a.phase='preparing';a.last=undefined;this.changed()
   await a.take.event('region.prepared',{regionId:id,captureEpochId:source.captureEpochId,format});await a.take.save()
   if(!a.wanted||a.finished||a.generation!==generation||this.active!==a){region.status='cancelled';await a.take.save();return false}
-  this.native.recordStart(id,join(a.take.directory,'audio',region.baseName),region.encoding,this.segmentBytes,join(a.take.directory,region.journalFile))
+  this.native.recordStart(id,nativeFilePath(join(a.take.directory,'audio',region.baseName)),region.encoding,this.segmentBytes,nativeFilePath(join(a.take.directory,region.journalFile)))
   region.status='recording';d.status='recording';a.phase='armed';a.retryError=null;this.changed();await a.take.save();return true
  }
  private recordRegion(a:Active,snapshot:NativeRecordSnapshot):void{
@@ -295,7 +344,7 @@ export class RecordingService {
    sources.push(resolved)
   }
   const cacheRoot=join(base,'cache');try{const details=await lstat(cacheRoot);if(!details.isDirectory()||details.isSymbolicLink())throw Error('INVALID_CACHE_DIRECTORY')}catch(error){if((error as NodeJS.ErrnoException).code!=='ENOENT')throw error}
-  return {takeId:id,role,regionId,label:take.document.name+(regionId?' · 第 '+take.document.regions.find(r=>r.id===regionId)?.ordinal+' 段':'')+' · '+({source:'原始文件',deliverable:'成品文件',recovered:'恢复文件',session:'会话视图'}[role]),sources,cacheRoot,
+  return {assetFormat:{format:'wav',sampleRate:assets[0].sampleRate,channelCount:assets[0].channelCount,encoding:assets.every(a=>a.encoding===assets[0].encoding)?assets[0].encoding:undefined},takeId:id,role,regionId,label:take.document.name+(regionId?' · 第 '+take.document.regions.find(r=>r.id===regionId)?.ordinal+' 段':'')+' · '+({source:'原始文件',deliverable:'成品文件',recovered:'恢复文件',session:'会话视图'}[role]),sources,cacheRoot,
    sampleRate:assets[0].sampleRate,channelCount:assets[0].channelCount,frames:assets.reduce((n,a)=>n+BigInt(a.frameCount),0n).toString()}
  }
  folder(id:string):string{const take=this.takes.get(id);if(!take)throw Error('UNKNOWN_TAKE');return take.directory}

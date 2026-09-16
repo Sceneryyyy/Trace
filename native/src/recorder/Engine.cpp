@@ -353,7 +353,7 @@ Snapshot Engine::snapshot(unsigned seconds, size_t columns) {
     result.sourceRecoverable=recoverableCaptureFailure(error,result.errorSite);
     if (error) { std::ostringstream message; message << "DEVICE_OR_ANALYSIS_ERROR (0x" << std::hex << static_cast<unsigned long>(error) << ")"; result.error = message.str(); }
     std::lock_guard<std::mutex> lock(meterMutex_);
-    if(replay_){result.replayFrames=replay_->retainedFrames();result.replayCapacityFrames=replay_->capacityFrames();}
+    if(replay_){result.replayFrames=replay_->retainedFrames();result.replayCapacityFrames=replay_->capacityFrames();const auto range=replay_->range(true);result.replayStartFrame=analysisBase_+range.start;result.replayEndFrame=analysisBase_+range.end;}
     result.position = analysisEnd_; result.measurementEpoch = measurementEpoch_;
     result.gaps = measurementGap_; result.estimated = measurementEstimated_;
     if (meter_) {

@@ -1,6 +1,7 @@
 const {app,BrowserWindow,dialog}=require('electron'),fs=require('fs'),path=require('path'),assert=require('assert/strict')
 const root=path.resolve(__dirname,'../..'),folder=path.join(root,'artifacts/m5','ui-'+Date.now()),takes=path.join(folder,'takes');fs.mkdirSync(takes,{recursive:true})
 const fixture=require('../m4/fixture.cjs')(takes);process.env.TRACE_RECORD_TEST_DIR=takes
+const deliveryDirectory=path.join(folder,'delivered');fs.mkdirSync(deliveryDirectory);dialog.showOpenDialog=async()=>({canceled:false,filePaths:[deliveryDirectory]})
 const copies=[];dialog.showSaveDialog=async(...args)=>{const options=args.at(-1);const filePath=path.join(folder,'saved-'+copies.length+path.extname(options.defaultPath));copies.push(filePath);return {canceled:false,filePath}}
 require(path.join(root,'out-trace/main/index.js'))
 const report={status:'running',folder,checks:[]},delay=ms=>new Promise(r=>setTimeout(r,ms));let win
@@ -9,18 +10,19 @@ async function state(){return(await evaluate("window.trace.request({protocolVers
 async function request(command,payload={}){for(let i=0;i<8;i++){const s=await state(),r=await evaluate('window.trace.request('+JSON.stringify({protocolVersion:1,requestId:command+Date.now()+i,expectedStateRevision:s.revision,command,payload})+')');if(r.ok)return r;if(r.error?.code!=='STALE_REQUEST')throw Error(JSON.stringify(r.error))}throw Error('stale request')}
 async function wait(fn,label){const begin=Date.now();while(Date.now()-begin<30000){const v=await fn();if(v)return v;await delay(10)}throw Error('Timeout '+label)}
 async function click(selector){const p=await wait(()=>evaluate("(()=>{const e=document.querySelector("+JSON.stringify(selector)+");if(!e||e.disabled)return null;e.scrollIntoView({block:'nearest'});const r=e.getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2}})()"),selector);win.show();win.focus();for(const type of ['mouseDown','mouseUp'])win.webContents.sendInputEvent({type,button:'left',clickCount:1,x:Math.round(p.x),y:Math.round(p.y)});await delay(40)}
-async function select(label,value){await evaluate("(()=>{const e=document.querySelector('select[aria-label="+JSON.stringify(label)+"]');Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype,'value').set.call(e,"+JSON.stringify(value)+");e.dispatchEvent(new Event('change',{bubbles:true}));})()");await delay(30)}
+async function select(label,value){await wait(()=>evaluate('!!document.querySelector('+JSON.stringify('select[aria-label="'+label+'"]')+')'),'select '+label);await evaluate("(()=>{const e=document.querySelector('select[aria-label="+JSON.stringify(label)+"]');Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype,'value').set.call(e,"+JSON.stringify(value)+");e.dispatchEvent(new Event('change',{bubbles:true}));})()");await delay(30)}
 app.whenReady().then(async()=>{
  try{
   win=BrowserWindow.getAllWindows()[0];if(win.webContents.isLoadingMainFrame())await new Promise(r=>win.webContents.once('did-finish-load',r))
   await wait(async()=>(await state()).active,'LIVE');await evaluate("window.__m5=null;window.trace.onSnapshot(s=>window.__m5=s);true")
-  await click('.files-button');await click('[data-export-source="source"]')
+  await click('.files-button');await click('[data-take-export]');await select('导出格式','mp3')
   assert.deepEqual(await evaluate("Array.from(document.querySelector('select[aria-label=\"导出采样率\"]').options).map(o=>o.value)"),['44100','48000'])
   assert(!(await evaluate("document.querySelector('select[aria-label=\"导出采样精度\"]')!==null")))
   report.checks.push('MP3 export UI exposes only 44.1/48 kHz and bitrate')
-  await click('[data-export-submit]')
+  await click('[aria-label="同时另存到指定目录"]');await click('[data-export-submit]')
   const mp3=await wait(async()=>{const e=(await state()).exportJobs?.find(e=>e.preset.format==='mp3');if(e?.phase==='failed')throw Error(e.error);return e?.phase==='ready'?e:null},'MP3 export')
-  await click('[data-export-id="'+mp3.id+'"] [data-export-save]');await wait(()=>copies[0]&&fs.existsSync(copies[0]),'saved MP3 copy');assert(fs.statSync(copies[0]).size>0);report.checks.push('The save dialog publishes a standalone MP3 copy')
+  await wait(async()=>(await state()).exportJobs.find(e=>e.id===mp3.id)?.delivery?.phase==='ready','automatic delivery');assert(fs.readdirSync(deliveryDirectory).some(f=>f.endsWith('.mp3')));report.checks.push('Export directory chosen before encoding receives the completed file automatically')
+  await click('.files-button');await click('.take-details summary');await click('[data-export-id="'+mp3.id+'"] [data-export-save]');await wait(()=>copies[0]&&fs.existsSync(copies[0]),'saved MP3 copy');assert(fs.statSync(copies[0]).size>0);report.checks.push('The save dialog publishes a standalone MP3 copy')
   await click('[data-export-id="'+mp3.id+'"] [data-export-play]')
   await wait(async()=>{const f=(await state()).playback;return f?.exportId===mp3.id&&await evaluate('window.__m5?.sourceId==='+JSON.stringify(f.id)+'&&window.__m5.fileView.analysisPhase===\'ready\'&&!document.querySelector(\'[role=dialog]\')')},'MP3 file')
   const file=(await state()).playback;assert.equal(file.role,'export');assert.equal(file.exportId,mp3.id);assert.equal(file.totalFrames,'384000')
@@ -33,7 +35,7 @@ app.whenReady().then(async()=>{
   const aac=await wait(async()=>{const e=(await state()).exportJobs?.find(e=>e.preset.format==='aac');if(e?.phase==='failed')throw Error(e.error);return e?.phase==='ready'?e:null},'ADTS selection')
   assert.equal(aac.frames,'96000');assert.deepEqual(aac.range,{startFrame:'48000',endFrame:'144000'})
   report.checks.push('A selected range from a compressed file exports as AAC ADTS')
-  await click('[data-export-id="'+aac.id+'"] [data-export-play]')
+  await click('.files-button');await click('.take-details summary');await click('[data-export-id="'+aac.id+'"] [data-export-play]')
   await wait(async()=>{const s=(await state()).playback;return s?.exportId===aac.id&&s.totalFrames==='96000'},'ADTS open')
   await wait(async()=>{const f=(await state()).playback;return f?.exportId===aac.id&&await evaluate('window.__m5?.sourceId==='+JSON.stringify(f.id)+'&&window.__m5.fileView.analysisPhase===\'ready\'&&!document.querySelector(\'[role=dialog]\')')},'ADTS analysis')
   report.checks.push('ADTS playback and history use the recorded logical range after priming')

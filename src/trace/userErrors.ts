@@ -1,6 +1,10 @@
 export function userError(error:unknown):string{
  const text=String(error||'')
- if(/HISTORY_OUTSIDE_BUFFER/.test(text))return '该位置已超出最近 60 秒的精确缓存；完整历史可在结束录音后打开文件查看。'
+ if(/STALE_REPLAY_SOURCE|STALE_PLAYBACK_SOURCE/.test(text))return '历史来源已变化，请重新查看缓存后保存。'
+  if(/CACHE_SAVE_UNAVAILABLE/.test(text))return '当前引擎不支持缓存保存，请使用完整的新版本。'
+  if(/CACHE_SAVE_FRAME_MISMATCH|CACHE_SAVE_INCOMPLETE/.test(text))return '缓存保存未完整完成，已保留写入内容，可在录音文件中检查或恢复。'
+  if(/INVALID_TAKE_NAME/.test(text))return '名称不能为空，且不能包含路径符号、Windows 保留名称或末尾句点。'
+  if(/HISTORY_OUTSIDE_BUFFER/.test(text))return '该位置已超出最近 60 秒的精确缓存；完整历史可在结束录音后打开文件查看。'
  if(/STALE_INSPECTION_SOURCE/.test(text))return '声音来源已变化，请点击“实时”后重新定位。'
  if(/ANALYSIS_QUEUE_FULL|ANALYSIS_REFERENCE_LIMIT/.test(text))return '分析任务较多，请等待完成或取消部分任务后重新查看。'
  if(/REPLAY_EMPTY|REPLAY_NOT_READY/.test(text))return '还没有可回听的缓存，请先开始实时监测。'

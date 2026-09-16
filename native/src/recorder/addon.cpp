@@ -1,6 +1,7 @@
 #include <napi.h>
 #include <windows.h>
 #include "Engine.h"
+#include "ReplaySave.h"
 #include "PlaybackAddon.h"
 #include "FileAnalysis.h"
 #include "MeasurementConfig.h"
@@ -122,7 +123,7 @@ Napi::Value snapshot(const Napi::CallbackInfo& info) {
         }
         o.Set("loudnessHistory",history);
         auto d=Napi::Object::New(env);
-        frame(d,"replayFrames",s.replayFrames);frame(d,"replayCapacityFrames",s.replayCapacityFrames);
+        frame(d,"replayFrames",s.replayFrames);frame(d,"replayCapacityFrames",s.replayCapacityFrames);frame(d,"replayStartFrame",s.replayStartFrame);frame(d,"replayEndFrame",s.replayEndFrame);
         frame(d,"capturedFrames",s.capturedFrames);frame(d,"analyzedFrames",s.analyzedFrames);
         frame(d,"estimatedFrames",s.estimatedFrames);frame(d,"droppedFrames",s.droppedFrames);
         frame(d,"discontinuities",s.discontinuities);frame(d,"timestampErrors",s.timestampErrors);frame(d,"overlapEvents",s.overlapEvents);
@@ -164,7 +165,7 @@ Napi::Object recordObject(Napi::Env env,const Trace::RecordSnapshot& s) {
         frame(v,"frames",s.segments[i].frames);frame(v,"bytes",s.segments[i].bytes);frame(v,"clippedSamples",s.segments[i].clippedSamples);
         segments.Set(static_cast<uint32_t>(i),v);
     }
-    o.Set("segments",segments);
+    o.Set("segments",segments);frame(o,"replayStartFrame",s.replayStartFrame);frame(o,"replayEndFrame",s.replayEndFrame);
     auto wave=Napi::Array::New(env,s.waveform.size());
     for(size_t i=0;i<s.waveform.size();++i){
         const auto& p=s.waveform[i];auto v=Napi::Object::New(env);frame(v,"frame",p.frame);v.Set("flags",p.flags);
@@ -375,8 +376,41 @@ Napi::Value replayAnalyze(const Napi::CallbackInfo& info){return guard(info,[&](
  auto* worker=new ReplayRangeWorker(info.Env(),clip,a,b);const auto promise=worker->promise();worker->Queue();return promise;
 });}
 
+class ReplaySaveWorker:public Napi::AsyncWorker{
+ Napi::Promise::Deferred result_;std::shared_ptr<const Trace::ReplayClip> clip_;
+ std::filesystem::path base_,journal_;Trace::WavEncoding encoding_;uint64_t start_,end_;Trace::WavConversion value_;
+public:
+ ReplaySaveWorker(Napi::Env env,std::shared_ptr<const Trace::ReplayClip> clip,std::filesystem::path base,std::filesystem::path journal,Trace::WavEncoding encoding,uint64_t start,uint64_t end)
+  :Napi::AsyncWorker(env),result_(Napi::Promise::Deferred::New(env)),clip_(std::move(clip)),base_(std::move(base)),journal_(std::move(journal)),encoding_(encoding),start_(start),end_(end){}
+ Napi::Promise promise(){return result_.Promise();}
+ void Execute()override{try{value_=Trace::saveReplay(*clip_,base_,journal_,encoding_,start_,end_);}catch(const std::exception& error){SetError(error.what());}}
+ void OnOK()override{
+  auto value=format(Env(),value_.format);frame(value,"frames",value_.frames);frame(value,"clippedSamples",value_.clippedSamples);
+  value.Set("encoding",encoding_==Trace::WavEncoding::Pcm16?"pcm16":encoding_==Trace::WavEncoding::Pcm24?"pcm24":"float32");
+  auto segments=Napi::Array::New(Env(),value_.segments.size());
+  for(size_t i=0;i<value_.segments.size();++i){const auto& s=value_.segments[i];auto part=Napi::Object::New(Env());part.Set("file",s.path.filename().u8string());frame(part,"frames",s.frames);frame(part,"bytes",s.bytes);frame(part,"clippedSamples",s.clippedSamples);segments.Set(static_cast<uint32_t>(i),part);}
+  value.Set("segments",segments);result_.Resolve(value);
+ }
+ void OnError(const Napi::Error& error)override{result_.Reject(error.Value());}
+};
+Napi::Value replaySave(const Napi::CallbackInfo& info){return guard(info,[&]()->Napi::Value{
+ if(info.Length()!=1||!info[0].IsObject())throw std::runtime_error("INVALID_REPLAY_SAVE");
+ const auto request=info[0].As<Napi::Object>();const auto clip=engine().frozenReplay();
+ auto text=[&](const char* key,size_t limit){const auto value=request.Get(key);if(!value.IsString())throw std::runtime_error("INVALID_REPLAY_SAVE");const auto s=value.As<Napi::String>().Utf8Value();if(s.empty()||s.size()>limit||s.find('\0')!=std::string::npos)throw std::runtime_error("INVALID_REPLAY_SAVE");return s;};
+ const auto start=replayFrame(request.Get("startFrame")),end=replayFrame(request.Get("endFrame"));
+ if(text("sourceId",1024)!=clip->sourceId||replayFrame(request.Get("originFrame"))!=clip->originFrame||replayFrame(request.Get("frames"))!=clip->frames()||
+  replayFrame(request.Get("epochId"))!=clip->captureEpoch||replayFrame(request.Get("measurementEpoch"))!=clip->measurementEpoch)throw std::runtime_error("STALE_REPLAY_SOURCE");
+ if(start>=end||end>clip->frames())throw std::runtime_error("INVALID_REPLAY_SELECTION");
+ const auto base=std::filesystem::u8path(text("basePath",32767)),journal=std::filesystem::u8path(text("journalPath",32767));
+ if(!base.is_absolute()||!journal.is_absolute())throw std::runtime_error("INVALID_REPLAY_SAVE_PATH");
+ const auto name=text("encoding",16);const auto encoding=name=="pcm16"?Trace::WavEncoding::Pcm16:name=="pcm24"?Trace::WavEncoding::Pcm24:Trace::WavEncoding::Float32;
+ if(name!="pcm16"&&name!="pcm24"&&name!="float32")throw std::runtime_error("INVALID_RECORD_ENCODING");
+ auto* worker=new ReplaySaveWorker(info.Env(),clip,base,journal,encoding,start,end);const auto promise=worker->promise();worker->Queue();return promise;
+});}
+
 Napi::Object init(Napi::Env env,Napi::Object exports) {
     Trace::registerPlayback(env,exports);
+    exports.Set("replaySave",Napi::Function::New(env,replaySave));
     exports.Set("replayRelease",Napi::Function::New(env,replayRelease));
     exports.Set("replayFreeze",Napi::Function::New(env,replayFreeze));exports.Set("playbackReplayOpen",Napi::Function::New(env,replayOpen));exports.Set("replayView",Napi::Function::New(env,replayView));exports.Set("replayAnalyze",Napi::Function::New(env,replayAnalyze));
     exports.Set("runtimeModules",Napi::Function::New(env,runtimeModules));

@@ -1,3 +1,4 @@
+import {nativeFilePath} from './nativeFilePath'
 import { createReadStream } from 'node:fs'
 import { mkdir, writeFile, rename, lstat, realpath, stat } from 'node:fs/promises'
 import { createHash, randomUUID } from 'node:crypto'
@@ -55,7 +56,7 @@ export async function analyzeAsset(job:AnalyzeJob,progress:(value:AnalysisProgre
   }catch(error){if((error as NodeJS.ErrnoException).code!=='ENOENT')throw error}
   const working=directory+'.pending-'+job.id
   const native=requireNative(job.nativePath) as AnalyzeNative
-  const result=native.analyzeWaves(job.sources,working,job.readFrames??2048,(current,total)=>progress({phase:'analyzing',frames:current,totalFrames:total}),job.range)
+  const result=native.analyzeWaves(job.sources.map(nativeFilePath),nativeFilePath(working),job.readFrames??2048,(current,total)=>progress({phase:'analyzing',frames:current,totalFrames:total}),job.range)
   progress({phase:'verifying',frames:result.frames,totalFrames:result.frames})
   for(let i=0;i<job.sources.length;i++){
     const after=await stat(job.sources[i])

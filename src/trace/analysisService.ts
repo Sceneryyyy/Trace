@@ -1,9 +1,10 @@
+import type {AssetFormat} from './assetFormat'
 import { randomUUID } from 'node:crypto'
 import { analyzeFiles } from './fileJobs'
 import { AnalysisCache } from './analysisCache'
 import type { AnalyzeJobResult } from './analysisWorker'
 import type { AnalysisJobView, AnalysisRole } from './shared'
-export type AnalysisSource = {takeId:string;role:AnalysisRole;regionId?:string;exportId?:string;label:string;sources:string[];cacheRoot:string;sampleRate:number;channelCount:number;frames:string;mediaIdentity?:string;decodeRange?:{startFrame:string;endFrame:string};range?:{startFrame:string;endFrame:string}}
+export type AnalysisSource = {assetFormat?:AssetFormat;takeId:string;role:AnalysisRole;regionId?:string;exportId?:string;label:string;sources:string[];cacheRoot:string;sampleRate:number;channelCount:number;frames:string;mediaIdentity?:string;decodeRange?:{startFrame:string;endFrame:string};range?:{startFrame:string;endFrame:string}}
 type Job={view:AnalysisJobView;source:AnalysisSource;controller?:AbortController;result?:AnalyzeJobResult;cancelled:boolean;suspended:boolean;repairs:number}
 const terminal=(phase:string)=>['ready','failed','cancelled'].includes(phase)
 export class AnalysisService {

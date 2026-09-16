@@ -3,6 +3,7 @@
 #include <memory>
 #include <vector>
 namespace Trace {
+struct ReplayRange {uint64_t start=0,end=0;};
 struct ReplayPoint {MeterValues meters;WavePoint wave;bool loud=false;};
 struct ReplayView {MeterValues meters;std::vector<WavePoint> waveform;std::vector<LoudnessPoint> loudness;};
 struct ReplayClip {
@@ -29,6 +30,7 @@ public:
  void remember(const MeterValues&,const WavePoint&,bool loud)noexcept;
  uint64_t retainedFrames()const{return frames_<capacity_?frames_:capacity_;}
  uint64_t capacityFrames()const{return capacity_;}
+ ReplayRange range(bool publishedOnly=false)const;
  std::shared_ptr<ReplayClip> freeze(bool publishedOnly=false)const;
 };
 }

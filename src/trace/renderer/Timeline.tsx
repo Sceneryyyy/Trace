@@ -1,11 +1,11 @@
-import {wheelPixels,wheelValue,zoomRange,zoomLabel} from './zoom'
+import {wheelPixels,wheelValue,zoomRange,zoomLabel,panRange} from './zoom'
 import {useEffect,useLayoutEffect,useRef,useState} from 'react'
 import type {DisplaySettings} from '../displaySettings'
 import type {MeterSnapshot} from '../shared'
 import {relativeFrame} from './time'
 import {SelectionStats} from './FileControls'
 type Props={
- selectionMode?:boolean;controls?:React.ReactNode;snapshot:MeterSnapshot|null;seconds:number;gain:number;target?:DisplaySettings
+ feedback?:React.ReactNode;selectionMode?:boolean;controls?:React.ReactNode;snapshot:MeterSnapshot|null;seconds:number;gain:number;target?:DisplaySettings
  onSeek?:(position:string,resume:boolean,source:MeterSnapshot|null)=>void
  onSelection?:(start:string,end:string,source:MeterSnapshot|null)=>void
  onWindow?:(start:string,end:string)=>void
@@ -13,7 +13,7 @@ type Props={
  onSeconds?:(value:number)=>void
 }
 type Drag={source:MeterSnapshot|null;start:bigint;end:bigint;mode:'seek'|'selection'|'start'|'end';anchor:bigint;position:bigint;resume:boolean;fixed:bigint}
-export function Timeline({selectionMode=false,controls,snapshot,seconds,gain,target,onSeek,onSelection,onWindow,onGain,onSeconds}:Props):React.JSX.Element{
+export function Timeline({feedback,selectionMode=false,controls,snapshot,seconds,gain,target,onSeek,onSelection,onWindow,onGain,onSeconds}:Props):React.JSX.Element{
  const wave=useRef<HTMLCanvasElement>(null),loud=useRef<HTMLCanvasElement>(null),box=useRef<HTMLDivElement>(null)
  const drag=useRef<Drag|null>(null),[preview,setPreview]=useState<Drag|null>(null)
  const file=snapshot?.sourceKind==='file',take=snapshot?.sourceKind==='take',interactive=Boolean(snapshot)
@@ -77,7 +77,13 @@ export function Timeline({selectionMode=false,controls,snapshot,seconds,gain,tar
     ctx.strokeStyle='#58d4da';ctx.lineWidth=1
     for(const p of [a,b]){ctx.beginPath();ctx.moveTo(p,top);ctx.lineTo(p,bottom);ctx.stroke();ctx.fillStyle='#58d4da';ctx.fillRect(p-2,top,4,9)}
    }
-   ctx.strokeStyle='#efb65b';ctx.setLineDash([3,3])
+   const available=snapshot?.timelineAvailableRange
+    if(available&&!file){
+     const a=Math.max(left,Math.min(right,x(available.startFrame))),b=Math.max(left,Math.min(right,x(available.endFrame)))
+     ctx.fillStyle='rgba(9,13,11,.58)';ctx.fillRect(left,top,a-left,bottom-top);ctx.fillRect(b,top,right-b,bottom-top)
+     ctx.strokeStyle='#687166';ctx.setLineDash([2,3]);for(const p of [a,b])if(p>left&&p<right){ctx.beginPath();ctx.moveTo(p,top);ctx.lineTo(p,bottom);ctx.stroke()}
+    }
+    ctx.strokeStyle='#efb65b';ctx.setLineDash([3,3])
    for(const gap of snapshot?.recordingView?.gapFrames||[]){const px=x(gap);ctx.beginPath();ctx.moveTo(px,top);ctx.lineTo(px,bottom);ctx.stroke()}
    ctx.setLineDash([]);ctx.strokeStyle='#58d4da';ctx.lineWidth=1
    const head=ranged?x(cursor):right
@@ -99,8 +105,9 @@ export function Timeline({selectionMode=false,controls,snapshot,seconds,gain,tar
  }
  function down(event:React.PointerEvent<HTMLElement>){
   if(!interactive||end<=start||event.button!==0)return
-  event.preventDefault();event.currentTarget.setPointerCapture(event.pointerId)
-  const point=position(event),range=snapshot?.fileView?.selection
+  const point=position(event),range=snapshot?.fileView?.selection,available=snapshot?.timelineAvailableRange
+   if(available&&(BigInt(available.endFrame)<=BigInt(available.startFrame)||point<BigInt(available.startFrame)||point>BigInt(available.endFrame)))return
+   event.preventDefault();event.currentTarget.setPointerCapture(event.pointerId)
   let mode:Drag['mode']=(event.shiftKey||selectionMode||event.currentTarget.dataset.selectRange==='true')?'selection':'seek',fixed=point
   if(file&&!event.shiftKey&&!selectionMode&&event.currentTarget.dataset.selectRange!=='true'&&range){
    const tolerance=BigInt(Math.ceil(Number(end-start)*7/Math.max(1,event.currentTarget.getBoundingClientRect().width-46)))
@@ -112,8 +119,15 @@ export function Timeline({selectionMode=false,controls,snapshot,seconds,gain,tar
    else if(snapshot?.playback?.playing)onSeek?.(snapshot.positionFrame,false,snapshot)
  }
  function move(event:React.PointerEvent<HTMLElement>){
-  const current=drag.current;if(!current)return
-  let point=position(event)
+  const current=drag.current
+   if(!current){
+    const available=snapshot?.timelineAvailableRange,p=position(event),blocked=available&&(p<BigInt(available.startFrame)||p>BigInt(available.endFrame))
+    const element=event.currentTarget;if(!element.dataset.defaultTitle)element.dataset.defaultTitle=element.title
+    element.title=blocked?(take?'此处仅为概览，结束录音后打开文件可查看完整历史':'此处已超出可回看的实时缓存'):element.dataset.defaultTitle||'';element.style.cursor=blocked?'not-allowed':'crosshair';return
+   }
+   let point=position(event)
+   const available=current.source?.timelineAvailableRange
+   if(available)point=point<BigInt(available.startFrame)?BigInt(available.startFrame):point>BigInt(available.endFrame)?BigInt(available.endFrame):point
   if(current.mode==='start'&&point>=current.fixed)point=current.fixed-1n
   if(current.mode==='end'&&point<=current.fixed)point=current.fixed+1n
   current.position=point;if(current.mode!=='seek')setPreview({...current})
@@ -131,8 +145,16 @@ export function Timeline({selectionMode=false,controls,snapshot,seconds,gain,tar
   }
  }
  function wheel(event:React.WheelEvent<HTMLCanvasElement>){
-  if(drag.current||event.altKey||event.metaKey||event.shiftKey||!event.deltaY)return
-  const delta=wheelPixels(event.deltaY,event.deltaMode)
+  if(drag.current||event.altKey||event.metaKey||(!event.deltaY&&!event.deltaX))return
+   const delta=wheelPixels(event.deltaY||event.deltaX,event.deltaMode)
+   if(event.shiftKey){
+    if(!file||end<=start)return
+    const pending=wheelWindow.current.sourceId===snapshot?.sourceId?wheelWindow.current:null
+    const a=BigInt(pending?.start||start),b=BigInt(pending?.end||end)
+    const next=panRange(a,b,BigInt(snapshot!.fileView!.totalFrames),delta/500)
+    if(next.start===a.toString()&&next.end===b.toString())return
+    wheelWindow.current={sourceId:snapshot?.sourceId||'',...next};onWindow?.(next.start,next.end);return
+   }
   if(!event.ctrlKey){
    const next=wheelValue(wheelGain.current,delta,1,4,true);if(next===wheelGain.current)return;wheelGain.current=next;onGain?.(next);return
   }
@@ -154,12 +176,13 @@ export function Timeline({selectionMode=false,controls,snapshot,seconds,gain,tar
   if(snapshot?.sourceKind==='take')return (Math.max(1,Number(snapshot.positionFrame)/(snapshot.timelineRate||snapshot.format.sampleRate||48000))*i/6).toFixed(1)+'s'
   return i===6?'现在':'−'+zoomLabel(seconds*(6-i)/6)+'s'
  })
- return <div className={'timeline '+(interactive?'file-timeline':'')} ref={box}>
-  {controls}
+ return <div className={'timeline '+(interactive?'file-timeline':'')} ref={box} data-inspectable-start={snapshot?.timelineAvailableRange?.startFrame} data-inspectable-end={snapshot?.timelineAvailableRange?.endFrame}>
+   {controls}
   <section className="wave-panel">
    <div className="panel-heading"><h2>波形</h2><span className="small-note" title="滚轮调整波形倍率；Ctrl + 滚轮调整时间窗">×{zoomLabel(gain,2)}</span></div>
-   <canvas ref={wave} onWheel={wheel} title="滚轮：波形倍率 · Ctrl + 滚轮：时间窗" aria-label={file?'文件波形定位':'系统音频滚动波形，左右声道分开显示'} {...handlers}/>
-   {!snapshot?.waveform.length&&<div className="empty-wave">{file?'准备波形…':'等待音频'}</div>}
+   <canvas ref={wave} onWheel={wheel} title="滚轮：波形倍率 · Ctrl + 滚轮：时间窗 · Shift + 滚轮：平移 · 右键：选区操作" aria-label={file?'文件波形定位':'系统音频滚动波形，左右声道分开显示'} {...handlers}/>
+   {feedback}
+    {!feedback&&!snapshot?.waveform.length&&<div className="empty-wave">{file?'准备波形…':'等待音频'}</div>}
   </section>
   <div className="time-ruler" data-select-range="true" aria-label={file?'时间刻度，拖动选择范围':'时间刻度'} title="点击定位；拖动刻度轴选择范围；图内 Shift + 拖动也可选择" {...handlers}>{ruler.map((label,i)=><span key={i}>{label}</span>)}</div>
   <section className="loudness-panel">

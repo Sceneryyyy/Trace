@@ -105,3 +105,44 @@ test('analysis queue saturation produces an explicit failed inspection without o
  assert.equal(service.view().phase,'failed');assert.match(service.view().error,/ANALYSIS_QUEUE_FULL/);assert.equal(service.outputActive(),false)
  assert.equal(await service.sample(),undefined);await service.close();assert.equal(service.view(),null)
 })
+
+test('analysis retry preserves the inspection and rejects an old asynchronous read',async()=>{
+ const {service,analysis,id}=await setup()
+ service.seek(id,'144000',false);service.window(id,'48000','288000',900);service.selection(id,'96000','192000',false)
+ const original=service.view();let finish
+ analysis.read=()=>new Promise(resolve=>finish=resolve)
+ const old=service.sample();analysis.jobs.find(j=>j.id===original.analysisId).phase='cancelled'
+ service.retryAnalysis(id);finish(metrics('0'));assert.equal(await old,undefined)
+ const next=service.view();assert.equal(next.id,id);assert.notEqual(next.analysisId,original.analysisId);assert.notEqual(next.generation,original.generation)
+ assert.equal(next.positionFrame,'144000');assert.equal(next.startFrame,'48000');assert.deepEqual(next.selection,original.selection)
+ assert(!analysis.retained.has(original.analysisId));assert(analysis.retained.has(next.analysisId))
+ analysis.read=async position=>metrics(position);assert.equal((await service.sample()).positionFrame,'144000')
+})
+test('analysis retry can recover a latched error without replacing the file',async()=>{
+ const {service,id}=await setup();service.seek(id,'192000',false);service.fail('FILE_SNAPSHOT_FAILED: broken')
+ service.retryAnalysis(id);assert.equal(service.view().error,null);assert.equal(service.view().id,id)
+ assert.equal((await service.sample()).positionFrame,'192000')
+})
+test('library reanalysis binds only the same source and publishes terminal errors',async()=>{
+ const {service,analysis}=await setup(),before=service.view()
+ const different={...source,takeId:'different'},wrong=analysis.start(different);service.useAnalysis(different,wrong)
+ assert.equal(service.view().analysisId,before.analysisId)
+ const next=analysis.start(source);analysis.jobs.find(j=>j.id===next).phase='failed';analysis.jobs.find(j=>j.id===next).error='READ_FAILED'
+ service.useAnalysis(source,next);assert.equal(service.view().analysisError,'READ_FAILED')
+ assert.equal((await service.sample()).fileView.analysisPhase,'failed')
+})
+test('clear selection stops looping and releases independent analysis without moving the cursor',async()=>{
+ const {service,analysis,id}=await setup();service.seek(id,'144000',false);service.selection(id,'96000','192000',true)
+ const selected=service.view().selectionAnalysis.id
+ service.clearSelection(id);assert.equal(service.view().selection,null);assert.equal(service.view().selectionAnalysis,undefined);assert.equal(service.view().loop,false)
+ assert.equal(service.view().positionFrame,'144000');assert(analysis.cancelled.includes(selected));assert(!analysis.retained.has(selected))
+ assert.equal((await service.sample()).fileView.selection,null)
+})
+test('retry and clear selection commands reject paths and wrong payload fields',()=>{
+ for(const command of ['playback.clearSelection','playback.retryAnalysis']){
+  const valid={protocolVersion:1,requestId:'test',expectedStateRevision:0,command,payload:{playbackId:'p'}}
+  assert.equal(validateRequest(valid).command,command)
+  assert.throws(()=>validateRequest({...valid,payload:{playbackId:'p',path:'outside.wav'}}))
+  assert.throws(()=>validateRequest({...valid,payload:{}}))
+ }
+})

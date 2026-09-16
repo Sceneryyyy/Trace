@@ -31,7 +31,12 @@ export class RecordingDisplay {
   const timeline=new SessionTimeline(data)
   const wave=active?live.waveform.map(p=>({...p,frame:timeline.frameToMediaNs(region.id,p.frame)})):[]
   const loud=active?live.loudnessHistory.map(p=>({...p,frame:timeline.frameToMediaNs(region.id,p.frame)})):[]
-  return {durationNs:timeline.durationNs,waveform:waveMerge([...this.waves,...wave],1200),loudnessHistory:loudMerge([...this.loud,...loud],600),
+  let inspectableRange:RecordingView['inspectableRange']
+  if(active&&live.replayStartFrame!==undefined&&live.replayEndFrame!==undefined){
+   if(BigInt(live.replayStartFrame)>BigInt(live.replayEndFrame)||BigInt(live.replayEndFrame)>BigInt(live.writtenFrames))throw Error('REPLAY_RANGE_OUT_OF_BOUNDS')
+   inspectableRange={startFrame:timeline.frameToMediaNs(region.id,live.replayStartFrame),endFrame:timeline.frameToMediaNs(region.id,live.replayEndFrame)}
+  }
+  return {inspectableRange,durationNs:timeline.durationNs,waveform:waveMerge([...this.waves,...wave],1200),loudnessHistory:loudMerge([...this.loud,...loud],600),
    gapFrames:timeline.positions.slice(1).map(p=>p.mediaStartNs),channelCount:Math.max(1,...regions.map(r=>r.format.channelCount))}
  }
 }

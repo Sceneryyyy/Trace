@@ -1,4 +1,5 @@
 import type {Command,PlaybackView,FileView,Metric} from '../shared'
+import {FileFormat} from './WorkbenchFeedback'
 import {timecode} from './time'
 type Props={live?:boolean;file:PlaybackView;busy:boolean;run:(command:Command,payload?:Record<string,unknown>)=>void}
 function TimelineActionIcon({kind}:{kind:'reset'|'follow'|'loop'}):React.JSX.Element{
@@ -23,8 +24,8 @@ export function FileSourceBar({file,busy,run,live}:Props):React.JSX.Element{
  const ready=!busy&&!file.error&&file.phase!=='preparing'
  const selection=file.selection
  return <section className="sourcebar file-sourcebar" aria-label="统一时间轴与选区">
-  <div className="file-title" title={file.label}><b>{file.label}</b><span>{live?'跟随最新':file.phase==='playing'||file.phase==='buffering'?'播放中':'查看历史'} · {timecode(String(Math.round((Number(file.positionFrame)/file.sampleRate+offset)*1000)),1000)}</span></div>
-  <div className="timeline-actions" role="group" aria-label="时间轴控制">
+  <div className="file-title" title={file.label}><b>{file.label}</b><span>{live?'跟随最新':file.phase==='playing'||file.phase==='buffering'?'播放中':'查看历史'} · {timecode(String(Math.round((Number(file.positionFrame)/file.sampleRate+offset)*1000)),1000)}</span><FileFormat file={file}/></div>
+   <div className="timeline-actions" role="group" aria-label="时间轴控制">
    <button className="full-length-button" aria-label="波形复位" title="波形复位：恢复完整时间范围" disabled={!ready||!total} onClick={()=>run('playback.window',{playbackId:file.id,startFrame:'0',endFrame:file.totalFrames,pixelWidth:900})}><TimelineActionIcon kind="reset"/></button>
    <button className="follow-button" aria-label="跟随游标" title="跟随游标：画面随播放位置滚动" aria-pressed={file.follow} disabled={!ready||live} onClick={()=>run('playback.follow',{playbackId:file.id,enabled:!file.follow})}><TimelineActionIcon kind="follow"/></button>
    <button className="loop-button" aria-label="循环" aria-pressed={file.loop} title={selection?'循环：重复播放选区':'循环：先在时间轴上拖动建立选区'} disabled={!ready||!selection} onClick={()=>selection&&run('playback.selection',{playbackId:file.id,...selection,loop:!file.loop})}><TimelineActionIcon kind="loop"/></button>

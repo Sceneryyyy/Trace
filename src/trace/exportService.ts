@@ -24,7 +24,7 @@ export class ExportService {
  constructor(private repository:Repository,private tools:MediaTools,private changed:(control?:boolean)=>void){}
  views(takeId?:string):ExportView[]{
   return this.repository.sessions().filter(t=>!takeId||t.document.sessionId===takeId).flatMap(t=>(t.document.exports||[]).map(r=>({
-   id:r.id,takeId:t.document.sessionId,label:t.document.name,preset:r.preset,createdAt:r.createdAt,automatic:r.automatic,phase:r.phase,fraction:r.fraction,error:r.error,
+   delivery:r.delivery,id:r.id,takeId:t.document.sessionId,label:t.document.name,preset:r.preset,createdAt:r.createdAt,automatic:r.automatic,phase:r.phase,fraction:r.fraction,error:r.error,
    range:r.source.range,frames:r.result?.frames,sampleRate:r.result?.sampleRate,channelCount:r.result?.channelCount,actualBitrate:r.result?.actualBitrate
   }))).sort((a,b)=>b.createdAt.localeCompare(a.createdAt))
  }
@@ -41,7 +41,7 @@ export class ExportService {
   if(!full)this.tasks.set(record.id,{record,take,cancelled:false,suspended:false});this.changed();this.pump();return record.id
  }
  usesSource(takeId:string):boolean{return [...this.tasks.values()].some(t=>!terminal(t.record.phase)&&t.record.source.takeId===takeId&&t.record.source.role!=='export')}
- busy():boolean{return Boolean(this.current)||[...this.tasks.values()].some(t=>!terminal(t.record.phase))}
+ busy():boolean{return Boolean(this.current)||this.copies.size>0||this.resolutions.size>0||this.rebuilds.size>0||[...this.tasks.values()].some(t=>!terminal(t.record.phase))}
  owns(id:string):boolean{return this.repository.sessions().some(t=>t.document.exports?.some(r=>r.id===id))}
  private find(id:string):{record:ExportRecord;take:StoredSession}{
   for(const take of this.repository.sessions()){const record=take.document.exports?.find(r=>r.id===id);if(record)return {record,take}}
@@ -187,7 +187,7 @@ export class ExportService {
    decoded=await this.rebuildDecoded(record,take,actual,encoded[0])
   }
   const cacheRoot=join(take.directory,'cache');try{const details=await lstat(cacheRoot);if(!details.isDirectory()||details.isSymbolicLink())throw Error('INVALID_CACHE_DIRECTORY')}catch(error){if((error as NodeJS.ErrnoException).code!=='ENOENT')throw error}
-  return {takeId,role:'export',exportId:id,label:take.document.name+' · '+result.container.toUpperCase()+(record.source.range?' · 选区':''),
+  return {assetFormat:{format:record.preset.format,sampleRate:result.sampleRate,channelCount:result.channelCount,...(record.preset.format==='wav'?{encoding:record.preset.encoding}:{bitrate:record.preset.bitrate}),container:result.container},takeId,role:'export',exportId:id,label:take.document.name+' · '+result.container.toUpperCase()+(record.source.range?' · 选区':''),
    sources:decoded,cacheRoot,sampleRate:result.sampleRate,channelCount:result.channelCount,frames:result.frames,mediaIdentity:result.mediaIdentity,
    decodeRange:result.recipe.startFrame!=='0'||result.recipe.physicalFrames!==result.frames?{startFrame:result.recipe.startFrame,endFrame:(BigInt(result.recipe.startFrame)+BigInt(result.frames)).toString()}:undefined}
  }
@@ -196,20 +196,25 @@ export class ExportService {
   const extension=record.result.container==='adts'?'aac':record.result.container
   return {name:take.document.name+(record.source.range?'-selection':'')+'.'+extension,extension,multiple:record.result.files.length>1}
  }
- async saveCopy(id:string,target:string):Promise<void>{
+ async saveCopy(id:string,target:string,options:{signal?:AbortSignal;resume?:boolean;baseName?:string}={}):Promise<void>{
   const {record,take}=this.find(id);if(record.phase!=='ready'||!record.result)throw Error('EXPORT_NOT_READY')
   const result=record.result;validateExportRecord(record)
   const takeRoot=await realpath(take.directory),directory=join(take.directory,result.directory),info=await lstat(directory),root=await realpath(directory)
   if(info.isSymbolicLink()||!info.isDirectory()||!root.toLowerCase().startsWith((takeRoot+sep).toLowerCase()))throw Error('INVALID_EXPORT_DIRECTORY')
   const sourcePaths:string[]=[]
   for(const file of result.files){const p=join(root,file.file),info=await lstat(p),resolved=await realpath(p);if(info.isSymbolicLink()||!info.isFile()||!resolved.toLowerCase().startsWith((root+sep).toLowerCase()))throw Error('INVALID_EXPORT_FILE');sourcePaths.push(resolved)}
+  const copy=async(source:string,target:string,hash:string)=>{
+   if(options.signal?.aborted)throw Error('DELIVERY_PAUSED')
+   if(options.resume){try{const info=await lstat(target);if(!info.isFile()||info.isSymbolicLink())throw Error('EXPORT_DESTINATION_CHANGED');const [actual]=await hashFiles([target],{signal:options.signal});if(actual===hash)return;throw Error('EXPORT_DESTINATION_CHANGED')}catch(error){if((error as NodeJS.ErrnoException).code!=='ENOENT')throw error}}
+   await copyExportFile(this.tools.nativePath,source,target,hash,{signal:options.signal})
+  }
   const task=(async()=>{
    if(result.files.length===1){
     if(extname(target).toLowerCase()!==extname(result.files[0].file).toLowerCase())throw Error('EXPORT_EXTENSION_MISMATCH')
-    await copyExportFile(this.tools.nativePath,sourcePaths[0],target,result.files[0].sha256)
+    await copy(sourcePaths[0],target,result.files[0].sha256)
    }else{
     const base=await realpath(target),details=await lstat(base);if(!details.isDirectory())throw Error('INVALID_EXPORT_DIRECTORY')
-    for(let i=0;i<result.files.length;i++){const file=result.files[i];await copyExportFile(this.tools.nativePath,sourcePaths[i],join(base,take.document.name+'-'+(i+1)+extname(file.file)),file.sha256)}
+    for(let i=0;i<result.files.length;i++){const file=result.files[i];await copy(sourcePaths[i],join(base,(options.baseName||take.document.name)+'-'+(i+1)+extname(file.file)),file.sha256)}
    }
   })()
   this.copies.add(task);try{await task}finally{this.copies.delete(task)}

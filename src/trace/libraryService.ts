@@ -1,3 +1,5 @@
+import {libraryUsage,clearOwnedCache} from './libraryStorage'
+import {validateTakeName} from './naming'
 import {lstat,realpath,readFile} from 'node:fs/promises'
 import {dirname,join,sep} from 'node:path'
 import type {RecordingService} from './recording'
@@ -63,7 +65,36 @@ export class LibraryService{
   try{const p=await lstat(parent),c=await lstat(child),resolved=await realpath(child);if(!p.isDirectory()||p.isSymbolicLink()||!c.isDirectory()||c.isSymbolicLink()||resolved.toLowerCase()!==child.toLowerCase()||!resolved.toLowerCase().startsWith((actual+sep).toLowerCase()))throw Error('INVALID_LIBRARY_PATH');const owner=await identity(join(resolved,'export.json'));if(owner.id!==exportId||(owner.source as {takeId?:string}|undefined)?.takeId!==takeId)throw Error('LIBRARY_IDENTITY_CHANGED');return {path:resolved,name:take.document.name+' · 成品与导出',missing:false,exportId}}
   catch(e){if(absent(e))return {path:child,name:take.document.name+' · 成品与导出',missing:true,exportId};throw e}
  }
- async remove(takeId:string,exportId?:string):Promise<void>{
+ usage(){return libraryUsage(this.recordings.directory,this.recordings.sessions())}
+  async clearCache(takeId:string):Promise<{freedBytes:string;protectedExports:number}>{
+   const item=await this.describe(takeId);if(item.missing)throw Error('ENOENT')
+   const bytes=await clearOwnedCache(this.recordings.session(takeId));await this.refresh();return bytes
+  }
+  async missingEntries():Promise<Array<{takeId:string;exportId?:string;name:string}>>{
+   const items:Array<{takeId:string;exportId?:string;name:string}>=[]
+   for(const take of this.recordings.sessions()){
+    const d=take.document
+    if(!['ready','failed','recovered','recoverable'].includes(d.status))continue
+    const item=await this.describe(d.sessionId)
+    if(item.missing){items.push({takeId:d.sessionId,name:d.name});continue}
+    for(const r of d.exports||[]){
+     if(r.phase!=='ready'||!r.result)continue
+     let allMissing=true
+     for(const file of r.result.files){try{await lstat(join(take.directory,r.result.directory,file.file));allMissing=false}catch(error){if(!absent(error))allMissing=false}}
+     if(allMissing)items.push({takeId:d.sessionId,exportId:r.id,name:d.name+' · 成品'})
+    }
+   }
+   return items
+  }
+  async rename(takeId:string,value:unknown):Promise<{oldName:string;name:string}>{
+   const name=validateTakeName(value),item=await this.describe(takeId)
+   if(item.missing)throw Error('ENOENT')
+   const take=this.recordings.session(takeId);await take.settled();const oldName=take.document.name
+   take.document.name=name
+   try{await take.save()}catch(error){take.document.name=oldName;throw error}
+   this.changed();return {oldName,name}
+  }
+  async remove(takeId:string,exportId?:string):Promise<void>{
   await this.scanning
   await this.recordings.settled()
   const item=await this.describe(takeId,exportId),take=this.recordings.session(takeId)

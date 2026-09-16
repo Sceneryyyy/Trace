@@ -1,31 +1,36 @@
+import {initialExportPreset} from '../exportPreferences'
+import {timecode} from './time'
 import {userError} from '../userErrors'
 import {useState} from 'react'
 import type {Command,AnalysisJobView,Metric} from '../shared'
-import type {ExportSource,ExportView} from '../exportTypes'
+import type {ExportDescription,ExportSource,ExportView} from '../exportTypes'
 import type {ExportPreset} from '../mediaTypes'
 export function exportLabel(preset:ExportPreset):string{
  if(preset.format==='wav')return 'WAV · '+preset.sampleRate/1000+' kHz · '+(preset.encoding==='float32'?'32-bit float':preset.encoding==='pcm24'?'24-bit':'16-bit')
  return (preset.format==='mp3'?'MP3':'AAC '+preset.container.toUpperCase())+' · '+preset.sampleRate/1000+' kHz · '+preset.bitrate+' kbps'
 }
-export function ExportDialog({source,busy,submit}:{source:ExportSource;busy:boolean;submit:(preset:ExportPreset,selection:boolean)=>void}):React.JSX.Element{
- const [preset,setPreset]=useState<ExportPreset>({format:'mp3',sampleRate:48000,bitrate:192})
- const [selection,setSelection]=useState(Boolean(source.range))
+export function ExportDialog({source,description,saved,remember,busy,submit,saveCopyDefault=false}:{source:ExportSource;description:ExportDescription;saved?:ExportPreset;saveCopyDefault?:boolean;remember:(preset:ExportPreset)=>void;busy:boolean;submit:(preset:ExportPreset,selection:boolean,saveCopy:boolean)=>void}):React.JSX.Element{
+ const [preset,updatePreset]=useState<ExportPreset>(()=>initialExportPreset(saved,description.assetFormat))
+  const setPreset=(value:ExportPreset)=>{updatePreset(value);remember(value)}
+ const [selection,setSelection]=useState(Boolean(source.range)),[saveCopy,setSaveCopy]=useState(saveCopyDefault)
  const setFormat=(format:string)=>{
-  if(format==='wav')setPreset({format:'wav',sampleRate:48000,encoding:'pcm24'})
-  else if(format==='mp3')setPreset({format:'mp3',sampleRate:48000,bitrate:192})
-  else setPreset({format:'aac',container:'m4a',sampleRate:48000,bitrate:192})
+  if(format==='wav')setPreset(initialExportPreset(undefined,description.assetFormat))
+   else if(format==='mp3')setPreset({format:'mp3',sampleRate:description.sampleRate===44100?44100:48000,bitrate:192})
+   else setPreset({format:'aac',container:'m4a',sampleRate:description.sampleRate===44100?44100:48000,bitrate:192})
  }
  return <div className="settings-content">
-  {source.range&&<label>导出范围<select aria-label="导出范围" value={selection?'selection':'whole'} onChange={e=>setSelection(e.target.value==='selection')}><option value="selection">当前选区</option><option value="whole">整个文件</option></select></label>}
+   <div className="export-source-summary"><strong>{description.label}</strong><span>{selection&&source.range?timecode(source.range.startFrame,description.sampleRate)+' – '+timecode(source.range.endFrame,description.sampleRate):'整个文件'} · {timecode(selection&&source.range?(BigInt(source.range.endFrame)-BigInt(source.range.startFrame)).toString():description.frames,description.sampleRate)}</span></div>
+   {source.range&&<label>导出范围<select aria-label="导出范围" value={selection?'selection':'whole'} onChange={e=>setSelection(e.target.value==='selection')}><option value="selection">当前选区</option><option value="whole">整个文件</option></select></label>}
   <label>格式<select aria-label="导出格式" value={preset.format} onChange={e=>setFormat(e.target.value)}><option value="wav">WAV</option><option value="mp3">MP3</option><option value="aac">AAC</option></select></label>
   {preset.format==='aac'&&<label>AAC 封装<select aria-label="AAC 封装" value={preset.container} onChange={e=>setPreset({...preset,container:e.target.value as 'm4a'|'adts'})}><option value="m4a">M4A · 文件回听</option><option value="adts">ADTS · .aac</option></select></label>}
   <label>采样率<select aria-label="导出采样率" value={preset.sampleRate} onChange={e=>setPreset({...preset,sampleRate:Number(e.target.value)} as ExportPreset)}>{(preset.format==='wav'?[44100,48000,88200,96000]:[44100,48000]).map(rate=><option key={rate} value={rate}>{rate/1000} kHz</option>)}</select></label>
   {preset.format==='wav'?<label>采样精度<select aria-label="导出采样精度" value={preset.encoding} onChange={e=>setPreset({...preset,encoding:e.target.value as 'pcm16'|'pcm24'|'float32'})}><option value="pcm16">16-bit PCM</option><option value="pcm24">24-bit PCM</option><option value="float32">32-bit float</option></select></label>:
    <label>目标码率<select aria-label="导出码率" value={preset.bitrate} onChange={e=>setPreset({...preset,bitrate:Number(e.target.value)} as ExportPreset)}>{(preset.format==='mp3'?[128,192,256,320]:[128,192,256]).map(rate=><option value={rate} key={rate}>{rate} kbps</option>)}</select></label>}
-  <p className="settings-summary">{selection?'选区':'整段'} → {exportLabel(preset)}</p>
-  <p className="settings-hint">成品与本次录音一起保存。后台导出会保留原始文件，完成后可独立回听和分析。</p>
+  <label>同时另存到指定目录<input aria-label="同时另存到指定目录" type="checkbox" checked={saveCopy} onChange={e=>setSaveCopy(e.target.checked)}/></label>
+   <p className="settings-summary">{selection?'选区':'整段'} → {exportLabel(preset)}</p>
+  <p className="settings-hint">成品与本次录音一起保存，可独立回听和分析。原始文件按录音保留设置管理。</p>
   {preset.format==='aac'&&preset.container==='adts'&&<p className="settings-hint">ADTS 在其他播放器中可能多出首尾填充；本地文件回听建议选择 M4A。Trace 会话会保留准确的有效范围。</p>}
-  <button className="primary-button" data-export-submit disabled={busy} onClick={()=>submit(preset,selection)}>开始导出</button>
+  <button className="primary-button" data-export-submit disabled={busy} onClick={()=>submit(preset,selection,saveCopy)}>{saveCopy?'选择目录并导出':'开始导出'}</button>
  </div>
 }
 const value=(metric?:Metric)=>metric?.status==='ready'&&metric.value!==null?metric.value.toFixed(1).replace('-','−'):metric?.status==='silence'?'−∞':'—'
@@ -47,7 +52,8 @@ export function ExportItems({items,takeId,jobs,disabled,run}:{items:ExportView[]
    </div>
    {!active&&<button className="remove-export" data-remove-export disabled={disabled} onClick={()=>run('library.remove',{takeId,exportId:item.id})}>{missing?'清理失效项':'移除成品'}</button>}
    {active&&<progress max="1" value={item.fraction||undefined} aria-label="导出进度"/>}
-   {item.error&&<details className="take-error"><summary>{userError(item.error)}</summary><code>{item.error}</code></details>}
+   {item.delivery&&<div className="delivery-status"><span>{item.delivery.phase==='ready'?'已另存到 '+item.delivery.directory:item.delivery.phase==='failed'?'另存未完成：'+userError(item.delivery.error):item.delivery.phase==='copying'?'正在另存成品…':'导出完成后另存成品'}</span>{item.delivery.phase==='ready'&&<button disabled={disabled} onClick={()=>run('export.openDeliveryFolder',{exportId:item.id})}>另存位置</button>}</div>}
+    {item.error&&<details className="take-error"><summary>{userError(item.error)}</summary><code>{item.error}</code></details>}
    {job?.phase==='ready'&&job.summary&&<dl className="analysis-summary"><div><dt>成品 I · LUFS</dt><dd>{value(job.summary.integratedToCursor)}</dd></div><div><dt>LRA · LU</dt><dd>{value(job.summary.loudnessRange)}</dd></div><div><dt>MAX TP · dBTP</dt><dd>{value(job.summary.maxTruePeak)}</dd></div></dl>}
    {job&&!['ready','failed','cancelled'].includes(job.phase)&&<span>正在分析成品…</span>}
    {job?.error&&<details className="take-error"><summary>{userError(job.error)}</summary><code>{job.error}</code></details>}
