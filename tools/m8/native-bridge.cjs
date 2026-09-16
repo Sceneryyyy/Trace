@@ -14,6 +14,14 @@ app.whenReady().then(async()=>{
  assert.equal(result.positionFrame,'96000');assert(Math.abs(result.current[32]-.16)<1e-5);assert(Math.abs(result.field.correlation.value+1)<1e-9)
  assert.equal(result.field.polarRms.length,181);assert(result.field.polarRms[0]>0&&result.field.polarRms[180]>0)
  pass('Native async file window exposes calibrated spectrum, phase and Polar arrays')
+
+ const firstTile=48000,columns=4,hop=config.fftSize/4
+ const tile=await engine.spectrogramTile({...request,firstFrame:String(firstTile),columns,positionFrame:String(firstTile+(columns-1)*hop)})
+ assert(tile.decibels instanceof Float32Array);assert(tile.status instanceof Uint8Array);assert.equal(tile.columns,columns);assert(tile.status.every(v=>v===1))
+ for(let col=0;col<columns;col++)assert(Math.abs(tile.decibels[col*tile.bins+32]-20*Math.log10(.4))<.0001)
+ const invalidTile={...request,firstFrame:'48000',columns:65,positionFrame:'96000'};assert.throws(()=>engine.spectrogramTile(invalidTile))
+ pass('Native tile IPC preserves full frequency bins, logarithmic amplitudes and bounded dimensions')
+
  const repeat=await engine.instrumentAnalyze(request);assert.deepEqual(repeat.average,result.average)
  const cropped=await engine.instrumentAnalyze({...request,startFrame:'48000',endFrame:'144000',positionFrame:'48000'});assert.deepEqual(cropped.current,result.current)
  pass('Repeat and decoded-range coordinates use the same immutable file samples')
