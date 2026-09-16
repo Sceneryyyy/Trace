@@ -12,10 +12,10 @@ class CDP {
  async screenshot(file){const image=await this.send('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});fs.writeFileSync(file,Buffer.from(image.data,'base64'))}
  close(){this.socket.close()}
 }
-async function launch(executable,folder,{scale=1,userData,recordDirectory,bounds,args=[]}={}){
+async function launch(executable,folder,{scale=1,userData,recordDirectory,bounds,args=[],visible=true}={}){
  fs.mkdirSync(folder,{recursive:true});const debugPort=await port(),working=path.join(folder,'empty-working-directory');fs.mkdirSync(working,{recursive:true})
  const env={...process.env,PATH:'C:\\Windows\\System32;C:\\Windows',TRACE_TEST_WINDOW_BOUNDS:bounds?JSON.stringify(bounds):undefined,TRACE_TEST_ROOT:folder,TRACE_TEST_USER_DATA:userData||path.join(folder,'user-data'),TRACE_RECORD_TEST_DIR:recordDirectory||path.join(folder,'takes')};delete env.ELECTRON_RUN_AS_NODE;delete env.Path
- const child=spawn(executable,['--trace-test',...(process.env.TRACE_TEST_GPU==='1'?[]:['--disable-gpu','--disable-renderer-backgrounding']),'--remote-debugging-port='+debugPort,'--force-device-scale-factor='+scale,'--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE localhost',...args],{cwd:working,env,windowsHide:true,stdio:['ignore','pipe','pipe']})
+ const child=spawn(executable,['--trace-test',...(visible?['--trace-test-visible']:[]),...(process.env.TRACE_TEST_GPU==='1'?[]:['--disable-gpu','--disable-renderer-backgrounding']),'--remote-debugging-port='+debugPort,'--force-device-scale-factor='+scale,'--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE localhost',...args],{cwd:working,env,windowsHide:!visible,stdio:['ignore','pipe','pipe']})
  child.stdout.on('data',b=>fs.appendFileSync(path.join(folder,'console.log'),b));child.stderr.on('data',b=>fs.appendFileSync(path.join(folder,'console.log'),b))
  let target
  for(const start=Date.now();Date.now()-start<30000;){if(child.exitCode!==null)throw Error('Trace exited '+child.exitCode);try{const pages=await(await fetch('http://127.0.0.1:'+debugPort+'/json/list')).json();target=pages.find(p=>p.type==='page'&&p.url.includes('out-trace'));if(target)break}catch{}await delay(50)}

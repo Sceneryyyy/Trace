@@ -3,7 +3,7 @@ const {launch,delay}=require('../m6/cdp.cjs')
 const root=path.resolve(__dirname,'../..'),folder=path.join(root,'artifacts/m8/resources-'+Date.now()),userData=path.join(folder,'user-data'),duration=Number(process.env.TRACE_RESOURCE_SECONDS||1800)
 fs.mkdirSync(userData,{recursive:true});fs.writeFileSync(path.join(userData,'trace-settings.json'),JSON.stringify({monitoringRequested:false,confirmExitWhileRecording:false}))
 const executable=process.env.TRACE_PACKAGE_EXE||path.join(root,require('../../electron-builder.trace.cjs').directories.output,'win-unpacked/Trace.exe')
-const report={status:'running',folder,runnerPid:process.pid,startedAt:new Date().toISOString(),requestedSeconds:duration,samples:[],toggles:0,checks:[],softwareRendering:true};let session
+const report={status:'running',folder,executable,presentation:'visible-workbench',runnerPid:process.pid,startedAt:new Date().toISOString(),requestedSeconds:duration,samples:[],toggles:0,checks:[],softwareRendering:true};let session
 const persist=()=>{fs.writeFileSync(path.join(folder,'report.json'),JSON.stringify(report,null,2));fs.writeFileSync(path.join(root,'artifacts/m8/resources-latest.json'),JSON.stringify(report,null,2))}
 const wait=async(fn,label)=>{for(const t=Date.now();Date.now()-t<30000;){const v=await fn();if(v)return v;await delay(30)}throw Error('Timeout '+label)}
 async function main(){
@@ -29,7 +29,7 @@ async function main(){
    const data=await c.evaluate('({frame:window.__resourceFrame,delivered:window.__resourceCount,instrumentErrors:window.__resourceErrors})')
    const f=data.frame;assert(f);assert.equal(data.instrumentErrors,0,'instrument query errors');assert(!f.error,String(f.error));assert.equal(f.diagnostics.droppedFrames,'0','capture drop')
    if(recording){const s=await c.state();assert.equal(s.currentRecord.id,take.id);assert(BigInt(f.recording.writtenFrames)>=BigInt(previous));previous=f.recording.writtenFrames;assert.equal(f.recording.error,null)}
-   const metrics=info.processMetrics;assert(Array.isArray(metrics)&&metrics.length>0)
+   report.version=info.version;assert.equal(info.windowVisible,true,'resource workload must render in a visible window');const metrics=info.processMetrics;assert(Array.isArray(metrics)&&metrics.length>0)
    const totalKB=metrics.reduce((sum,p)=>sum+p.memory.workingSetSize,0),browser=metrics.find(p=>p.type==='Browser')
    assert(Number.isFinite(totalKB)&&totalKB<1.5*1024*1024,'application working set budget')
    assert(browser&&browser.memory.workingSetSize<=600*1024,'main working set budget')

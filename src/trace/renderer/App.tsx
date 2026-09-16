@@ -97,7 +97,7 @@ export default function App(): React.JSX.Element {
   const openExport=(source:ExportSource)=>{setExportSource({takeId:source.takeId,role:source.role,...(source.regionId?{regionId:source.regionId}:{}),...(source.exportId?{exportId:source.exportId}:{}),...(source.range?{range:source.range}:{})});setModal('export')}
   const [draft,setDraft]=useState<RecordSettings>({encoding:'pcm24',sampleRate:'source',namePrefix:'Trace'})
   const queue = useRef<Promise<unknown>>(Promise.resolve())
-  function accept(next: TraceState): void { if (next.revision > current.current.revision || (next.revision === current.current.revision && (next.eventSequence||0)>=(current.current.eventSequence||0))) { current.current = next; presentation.reconcile(next); setState(next) } }
+  function accept(next: TraceState): void { if (next.revision > current.current.revision || (next.revision === current.current.revision && (next.eventSequence||0)>=(current.current.eventSequence||0))) { const wasHidden=current.current.windowVisible===false;current.current = next; presentation.reconcile(next);if(next.windowVisible!==false){setState(next);if(wasHidden&&presentation.snapshot)setSnapshot({...presentation.snapshot})} } }
   function command(name: Command, payload: Record<string, unknown> = {}): Promise<unknown> {
     const independent=['library.storage','export.describe','app.diagnostics'].includes(name)
     const execute=async()=>{
@@ -124,9 +124,11 @@ export default function App(): React.JSX.Element {
   const workspace=useWorkspace(state.workspace,next=>command('workspace.configure',{workspace:next}))
   useEffect(() => {
     const unstate = window.trace.onState(accept)
-    const unsnapshot = window.trace.onSnapshot(next => {if(presentation.accept(next,current.current))setSnapshot(next)})
+    const unsnapshot = window.trace.onSnapshot(next => {if(presentation.accept(next,current.current)&&current.current.windowVisible!==false)setSnapshot(next)})
     command('state.get').then(() => command('devices.list')).then(result => setDevices(result as Device[])).catch(() => {})
-    return () => { unstate(); unsnapshot(); latest.current.clear(); presentation.cancel() }
+    const visible=()=>{if(!document.hidden&&current.current.windowVisible!==false){setState(current.current);if(presentation.snapshot)setSnapshot({...presentation.snapshot})}}
+    document.addEventListener('visibilitychange',visible)
+    return () => {document.removeEventListener('visibilitychange',visible); unstate(); unsnapshot(); latest.current.clear(); presentation.cancel() }
   }, [])
   useEffect(()=>{if(modal){const id=setTimeout(()=>document.querySelector<HTMLElement>('.trace-modal button')?.focus(),0);return()=>clearTimeout(id)}},[modal])
   const run = (name: Command, payload?: Record<string, unknown>): void => {

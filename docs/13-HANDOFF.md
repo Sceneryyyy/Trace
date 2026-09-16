@@ -1,5 +1,21 @@
 # 13 · 当前状态与下一会话
 
+## 当前焦点：preview.14 可见窗口长测运行中，M9 原生接口与缓存已推进
+
+2026-09-17：上一轮两项复测均已结束：preview.12 / 1800 秒仍因工作集增长失败；preview.13 / 600 秒诊断通过但不足以关闭 M8。新调查与改动见 [45-VISIBILITY-AND-RESOURCE-GATE](45-VISIBILITY-AND-RESOURCE-GATE.md)。
+
+找到测试启动器 windowsHide:true 与 --trace-test-visible 的冲突，旧长测实际长期隐藏。独立 40 次布局切换对照中，隐藏窗口诊断 GC 后约 3304 DOM 节点，可见窗口恢复到约 616。现在 UI 测试默认真实可见；产品也明确冻结隐藏/最小化的 React 呈现，同时持续采集/录音，恢复时应用最新状态。新增 DOM 文案、原生可见性和隐藏期间 DOM 不更新的检查。仅诊断实验触发过 GC，门禁中没有主动 GC 或放宽阈值。
+
+**唯一当前长测：** exec **68283**，runner **78012**，app **61252**；artifacts/m8/resources-1789576099071/report.json，preview.14 不可变包，1800 秒可见工作台。先 wait/poll 同一 handle 并核对实际 PID；不要重复启动。已通过前 300 秒录音收尾，随后 LIVE；最近约 510 秒时没有丢帧或仪器错误。不能仅凭 resources-latest.json 的历史状态宣称完成。
+
+preview.14 短门禁 **12 阶段通过**，artifacts/m8/final-1789576171939/report.json；隐藏/minimize/restore 录音生命周期 3 项、真实 M8 GUI 流程 12 项通过。当前包目录 dist-trace/preview.14；M8 仍等长测最终结论，尚未最终评分。
+
+M9 新进展：native spectrogramTile 接口与 M8 共享最多两个任务名额，文件瓦片接口通过；C++ 15/15 CTest、原生桥接 8 项通过。SpectrogramStore 已实现单一计算队列、内存总量预算、磁盘校验/损坏隔离、取消不发布、拒绝链接缓存根；4 项新存储测试通过。尚未接入完整来源服务/显示聚合/2D 面板。M9 工作可以独立推进，但不能越过 M8 未关闭的发布门禁。
+
+下一步：收取长测实际结果；若通过，完成 M8 关闭记录并继续 M9 的来源描述、可视区聚合与共轴 2D；若失败，保留证据继续定位。整个 M12+评分目标 active。代码按阶段提交，录音/旧包/失败记录保留，未远程推送。
+
+## 以下为阶段历史
+
 ## 当前焦点：M8 长资源门禁未过，收取两个复测并继续定位
 
 2026-09-16：M8 功能提交 **3a8bda1**、M9 独立数据底座提交 **06693b5**。preview.11 的 1800 秒检查已实际失败于工作集增长门槛，录音完整、droppedFrames/instrumentErrors 均为 0；不能以短门禁通过关闭 M8。完整排查和候选说明见 [44-M8-RESOURCE-INVESTIGATION](44-M8-RESOURCE-INVESTIGATION.md)。

@@ -55,6 +55,7 @@ let finishingOutput=false,inspectionFailurePending=false
 let latestRecordingFrame:Pick<MeterSnapshot,'recording'|'recordingView'>={}
 let recordingCaptureHeld=false
 let preferencesTimer:ReturnType<typeof setTimeout>|undefined
+let preferencesReady=false
 let displayTick=0,snapshotSequence=0,pollFailurePending=false,lastPollError=''
 let state:TraceState={revision:0,active:false,monitoringRequested:true,deviceId:'',windowSeconds:30,error:null,displaySettings:{...defaultDisplaySettings},workspace:defaultWorkspace(),instrumentSettings:{...defaultInstrumentSettings}}
 const completed=new Map<string,{signature:string;reply:Reply}>()
@@ -162,6 +163,7 @@ function publishInspectionSample():void{
 }
 function preferencesPath():string{return join(app.getPath('userData'),'trace-settings.json')}
 function savePreferences():void{
+  if(!preferencesReady)return
   mkdirSync(app.getPath('userData'),{recursive:true})
   const target=preferencesPath(),temp=target+'.tmp'
   writeFileSync(temp,JSON.stringify({windowBounds:window&&!window.isDestroyed()?window.getNormalBounds():undefined,maximized:window?.isMaximized(),instrumentSettings:state.instrumentSettings,workspace:state.workspace,displaySettingsVersion,monitoringRequested:state.monitoringRequested,displaySettings:state.displaySettings,settingsVersion:recordSettingsVersion,deviceId:state.deviceId,windowSeconds:state.windowSeconds,recordSettings:recordings.settings,recordDirectory:recordings.directory,exportPreferencesVersion,lastExportPreset:state.lastExportPreset,confirmExitWhileRecording:state.confirmExitWhileRecording!==false,lastExportSaveCopy:state.lastExportSaveCopy===true}))
@@ -230,7 +232,8 @@ async function dispatch(request:Request):Promise<Reply>{
       case 'app.configure':update({confirmExitWhileRecording:request.payload.confirmExitWhileRecording as boolean});savePreferences();break
       case 'app.diagnostics':data=safeDiagnostics(product.version,state,engine.snapshot(5,1),engine.recordStatus());break
       case 'app.copyDiagnostics':clipboard.writeText(JSON.stringify(safeDiagnostics(product.version,state,engine.snapshot(5,1),engine.recordStatus()),null,2));data={copied:true};break
-      case 'app.info':data={...product,processMetrics:testMode?app.getAppMetrics().map(({pid,type,cpu,memory})=>({pid,type,cpu,memory})):undefined,packaged:app.isPackaged,appVersion:app.getVersion(),electron:process.versions.electron,nativeModules:engine.runtimeModules(),resourcesPath:process.resourcesPath,userData:app.getPath('userData'),windowBounds:window?.getBounds(),displays:screen.getAllDisplays().map(d=>({id:d.id,scaleFactor:d.scaleFactor,bounds:d.bounds,workArea:d.workArea}))};break
+      case 'test.window':if(!testMode||!window)throw Error('TEST_ONLY');if(request.payload.mode==='show')window.show();else if(request.payload.mode==='hide')window.hide();else if(request.payload.mode==='minimize')window.minimize();else{window.restore();window.show()}break
+      case 'app.info':data={...product,processMetrics:testMode?app.getAppMetrics().map(({pid,type,cpu,memory})=>({pid,type,cpu,memory})):undefined,packaged:app.isPackaged,appVersion:app.getVersion(),electron:process.versions.electron,nativeModules:engine.runtimeModules(),resourcesPath:process.resourcesPath,userData:app.getPath('userData'),windowVisible:window?.isVisible()&&!window?.isMinimized(),windowBounds:window?.getBounds(),displays:screen.getAllDisplays().map(d=>({id:d.id,scaleFactor:d.scaleFactor,bounds:d.bounds,workArea:d.workArea}))};break
       case 'record.capacity':{
         const snapshot=engine.snapshot(5,1),format=snapshot.active&&snapshot.sourceId===state.deviceId?snapshot.format:engine.devices().find(d=>d.id===state.deviceId)?.format||snapshot.format
         update({recordingCapacity:{...recordingCapacity(await freeSpace(recordings.directory),recordings.settings,format.sampleRate,format.channelCount),directory:recordings.directory}});break
@@ -478,6 +481,7 @@ async function initialize():Promise<void>{
     mkdirSync(target,{recursive:true});await recordings.setDirectory(target)
   }else if(preferred.recordDirectory){try{await recordings.setDirectory(preferred.recordDirectory)}catch{update({recordDirectoryError:'SAVE_DIRECTORY_UNAVAILABLE'})}}
   syncRecordingState();await library.refresh()
+  preferencesReady=true
   const devices=engine.devices()
   const device=devices.find(d=>d.id===preferred.deviceId&&d.supported)||devices.find(d=>d.isDefault&&d.supported)
   if(device){if(state.monitoringRequested)startDevice(device.id);else update({deviceId:device.id,active:false,error:null})}else update({error:'没有可用的单声道或双声道播放设备。'})
@@ -517,6 +521,9 @@ app.whenReady().then(()=>{
     ...(bounds||{}),backgroundColor:'#121615',autoHideMenuBar:true,show:!testMode||process.argv.includes('--trace-test-visible'),
     webPreferences:{preload:join(__dirname,'../preload/index.js'),contextIsolation:true,sandbox:true,nodeIntegration:false,backgroundThrottling:!testMode},
   })
+  const publishVisibility=()=>{const visible=Boolean(window?.isVisible()&&!window?.isMinimized());if(state.windowVisible!==visible)update({windowVisible:visible})}
+  window.on('show',publishVisibility);window.on('hide',publishVisibility);window.on('minimize',publishVisibility);window.on('restore',publishVisibility)
+  publishVisibility()
   if(savedWindow.maximized&&!testMode)window.maximize()
   let boundsTimer:ReturnType<typeof setTimeout>|undefined
   const rememberBounds=()=>{if(boundsTimer)clearTimeout(boundsTimer);boundsTimer=setTimeout(()=>{if(!exiting&&window&&!window.isDestroyed())savePreferences()},250)}
@@ -536,7 +543,7 @@ app.whenReady().then(()=>{
     if(!window||window.isDestroyed())return
     if(pollFailurePending)return
     try{
-    const skip=window.isMinimized()&&++displayTick%10!==0
+    const skip=(!window.isVisible()||window.isMinimized())&&++displayTick%10!==0
     const record=engine.recordStatus()
     const source=engine.snapshot(skip?10:state.windowSeconds,skip?1:900)
     recordings.observe(record,{recoverable:source.diagnostics.sourceRecoverable===true,error:source.error});releaseRecordingCapture()
