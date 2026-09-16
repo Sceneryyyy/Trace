@@ -1,3 +1,5 @@
+import {SpectrogramPanel,SpectrogramSettingsForm} from './SpectrogramPanel'
+import {defaultSpectrogramSettings} from '../spectrogramProtocol'
 import {SpectrumPanel,SoundFieldPanel,AnalysisSettings} from './AnalysisInstruments'
 import {defaultInstrumentSettings,type InstrumentSettings} from '../instrumentTypes'
 import {OperationNotice,useOperationNotice} from './OperationNotice'
@@ -101,7 +103,7 @@ export default function App(): React.JSX.Element {
   function command(name: Command, payload: Record<string, unknown> = {}): Promise<unknown> {
     const independent=['library.storage','export.describe','app.diagnostics'].includes(name)
     const execute=async()=>{
-      const foreground=!independent&&!['playback.seek','view.inspect','library.refresh','workspace.configure','instrument.configure'].includes(name)
+      const foreground=!independent&&!['playback.seek','view.inspect','library.refresh','workspace.configure','instrument.configure','spectrogram.configure'].includes(name)
       if(foreground){busyRef.current=true;setBusy(true)}
       try {
         for (let attempt = 0; attempt < 2; attempt++) {
@@ -267,10 +269,12 @@ export default function App(): React.JSX.Element {
        else if(displaySnapshot)inspectAt({...displaySnapshot,timelineWindow:{startFrame:payload.startFrame as string,endFrame:payload.endFrame as string}},payload.endFrame as string)
      }
    }
+   const spectrogramSettings=state.spectrogramSettings||defaultSpectrogramSettings
+   const configureSpectrogram=(settings:import('../spectrogramProtocol').SpectrogramSettings)=>queueLatest('spectrogramSettings','spectrogram.configure',{settings})
    const instrumentSettings=state.instrumentSettings||defaultInstrumentSettings
    const configureInstruments=(settings:InstrumentSettings)=>queueLatest('instrumentSettings','instrument.configure',{settings})
-   const timelineInstrument=(kind:'waveform'|'history')=><TimelineMenu hasSelection={Boolean(file?.selection)} clear={()=>file&&run('playback.clearSelection',{playbackId:file.id})}>
-       <Timeline kind={kind} traces={workspace.value.layout.options.historyTraces} feedback={file?<AnalysisFeedback file={file} job={state.analysisJobs?.find(j=>j.id===file.analysisId)} busy={busy||isRecording} retry={()=>run('playback.retryAnalysis',{playbackId:file.id})}/>:undefined} onGain={value=>changeDisplay('gain',value)} onSeconds={setTimeSpan} selectionMode={selectionMode}
+   const timelineInstrument=(kind:'waveform'|'history'|'spectrogram')=>{const Component=kind==='spectrogram'?SpectrogramPanel:Timeline;return <TimelineMenu hasSelection={Boolean(file?.selection)} clear={()=>file&&run('playback.clearSelection',{playbackId:file.id})}>
+       <Component settings={spectrogramSettings} change={configureSpectrogram} isVisible={()=>current.current.windowVisible!==false} kind={kind} traces={workspace.value.layout.options.historyTraces} feedback={file?<AnalysisFeedback file={file} job={state.analysisJobs?.find(j=>j.id===file.analysisId)} busy={busy||isRecording} retry={()=>run('playback.retryAnalysis',{playbackId:file.id})}/>:undefined} onGain={value=>changeDisplay('gain',value)} onSeconds={setTimeSpan} selectionMode={selectionMode}
         controls={kind==='waveform'?<div className="timeline-controls"><div className="timeline-modes" role="group" aria-label="时间轴定位方式" title="拖动图形定位；拖动刻度轴或 Shift 拖动选择范围"><button aria-pressed={!selectionMode} onClick={()=>setSelectionMode(false)}>定位</button><button aria-pressed={selectionMode} onClick={()=>setSelectionMode(true)}>选区</button></div>{isRecording&&!file&&view?.inspectableRange&&BigInt(view.inspectableRange.startFrame)-BigInt(recBounds.startFrame)>1000000000n&&<span className="record-overview-note" title="亮色范围可精确回看；暗色部分在结束录音后打开文件查看。">暗色区域为概览</span>}<div className="timeline-zoom-controls" role="group" aria-label="波形显示设置">
       <label className="zoom-control" title="Ctrl + 滚轮">时间窗<input aria-label="波形时间窗" type="range" min="5" max="60" step=".1" value={file?Math.max(5,Math.min(60,Number(BigInt(file.endFrame)-BigInt(file.startFrame))/file.sampleRate)):seconds} onChange={e=>setTimeSpan(Number(e.target.value))}/><output>{zoomLabel(file?Number(BigInt(file.endFrame)-BigInt(file.startFrame))/file.sampleRate:seconds)} s</output></label>
       <label className="zoom-control" title="波形区域滚轮">波形<input aria-label="波形显示倍率" type="range" min="1" max="4" step=".01" value={gain} onChange={e=>changeDisplay('gain',Number(e.target.value))}/><output>×{zoomLabel(gain,2)}</output></label>
@@ -279,7 +283,7 @@ export default function App(): React.JSX.Element {
         onSeek={(position,_resume,source)=>inspectAt(source,position)}
         onSelection={(startFrame,endFrame,source)=>inspectAt(source,startFrame,endFrame)}
         onWindow={(startFrame,endFrame)=>{if(file)changeWindow({playbackId:file.id,startFrame,endFrame,pixelWidth:900});else if(isRecording)setTimeSpan(Math.max(5,Math.min(60,Number(BigInt(endFrame)-BigInt(startFrame))/1e9)))}}/>
-      </TimelineMenu>
+      </TimelineMenu>}
    const loudnessInstrument=<aside className="loudness-values panel">
         <div className="panel-heading"><h2>响度</h2><span className="small-note">LUFS</span></div>
         <div className="loudness-readings">
@@ -309,7 +313,7 @@ export default function App(): React.JSX.Element {
 
     <div className="workbench-heading"><FileSourceBar file={workbenchFile} busy={busy} run={workbenchRun} live={!file}/><WorkspaceToolbar value={workspace.value} change={workspace.change} error={workspace.error} retry={workspace.retry}/></div>
     <div className="workspace modular-workspace" data-history-position={file?displaySnapshot?.positionFrame:undefined} data-history-generation={file?displaySnapshot?.playback?.generation:undefined}>
-      <TimelinePreviewProvider><InstrumentWorkspace value={workspace.value} change={workspace.change} settingsContent={{spectrum:<AnalysisSettings kind="spectrum" value={instrumentSettings} apply={configureInstruments}/>,soundfield:<AnalysisSettings kind="soundfield" value={instrumentSettings} apply={configureInstruments}/>}} contents={{spectrum:<SpectrumPanel packet={displaySnapshot?.instruments} settings={instrumentSettings} change={configureInstruments}/>,soundfield:<SoundFieldPanel packet={displaySnapshot?.instruments} settings={instrumentSettings} change={configureInstruments}/>,levels:<LevelPanel snapshot={numberMetrics} readout={workspace.value.layout.options.levelReadout}/>,waveform:timelineInstrument('waveform'),history:timelineInstrument('history'),loudness:loudnessInstrument}}/></TimelinePreviewProvider>
+      <TimelinePreviewProvider><InstrumentWorkspace value={workspace.value} change={workspace.change} settingsContent={{spectrogram:<SpectrogramSettingsForm value={spectrogramSettings} apply={configureSpectrogram}/>,spectrum:<AnalysisSettings kind="spectrum" value={instrumentSettings} apply={configureInstruments}/>,soundfield:<AnalysisSettings kind="soundfield" value={instrumentSettings} apply={configureInstruments}/>}} contents={{spectrogram:timelineInstrument('spectrogram'),spectrum:<SpectrumPanel packet={displaySnapshot?.instruments} settings={instrumentSettings} change={configureInstruments}/>,soundfield:<SoundFieldPanel packet={displaySnapshot?.instruments} settings={instrumentSettings} change={configureInstruments}/>,levels:<LevelPanel snapshot={numberMetrics} readout={workspace.value.layout.options.levelReadout}/>,waveform:timelineInstrument('waveform'),history:timelineInstrument('history'),loudness:loudnessInstrument}}/></TimelinePreviewProvider>
     </div>
     {file&&displaySnapshot?.fileView&&<div className="workspace-selection"><SelectionStats view={displaySnapshot.fileView} rate={displaySnapshot.format.sampleRate}/></div>}
     {(sourceError || file?.error || message) && <div className="error-banner" role="alert"><strong>需要处理</strong><span>{file?.error?(file.error.startsWith('FILE_SNAPSHOT_FAILED:')?userError(file.error):'回听输出不可用；历史数据仍可查看。'):snapshotFailure ? '录音数据更新失败，已停止本次录音并保留已写入的文件。请重新连接后重试。' : sourceError ? '声音来源暂不可用，请重试或选择其他设备。' : userError(message)}</span>{file&&!file.temporary&&(file.error?.startsWith('FILE_SNAPSHOT_FAILED:')||['failed','cancelled'].includes(file.analysisPhase))&&<button disabled={busy||isRecording} onClick={()=>run('playback.retryAnalysis',{playbackId:file.id})}>重新分析</button>}<button disabled={busy} onClick={()=>{setLibraryAttention(true);setModal('files')}}>查看文件</button><button disabled={busy} onClick={()=>command('app.copyDiagnostics').then(()=>setCopied(true)).catch(()=>{})}>{copied?'已复制诊断':'复制诊断'}</button>{file?.error&&!file.error.startsWith('FILE_SNAPSHOT_FAILED:')&&<button disabled={busy||isRecording} onClick={()=>run('playback.play',{playbackId:file.id})}>重试回听</button>}{sourceError && state.deviceId && !isRecording && !file?.outputReady && <button onClick={() => run('live.start', { deviceId: state.deviceId })} disabled={busy}>重新连接</button>}</div>}

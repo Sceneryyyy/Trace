@@ -35,8 +35,8 @@ test('all docking directions preserve each instrument exactly once; hidden sibli
   assert.equal(w.visibleTree(before.layout.tree,before.layout.hidden).first,'levels')
  }
  let s={...w.defaultWorkspace(),locked:false};s=w.toggleInstrument(s,'levels')
- s=w.resizeSplit(s,[0,0,1,0],.7);assert.equal(s.layout.tree.first.first.second.first.ratio,.7)
- assert.equal(w.resizeSplit(s,[0,0,1,0],100).layout.tree.first.first.second.first.ratio,.85)
+ s=w.resizeSplit(s,[0,0,0,1,0],.7);assert.equal(s.layout.tree.first.first.first.second.first.ratio,.7)
+ assert.equal(w.resizeSplit(s,[0,0,0,1,0],100).layout.tree.first.first.first.second.first.ratio,.85)
  assert.throws(()=>w.resizeSplit(s,[9],.5))
  assert.deepEqual(w.dockInstrument(w.defaultWorkspace(),'levels','history','top'),w.defaultWorkspace())
 })
@@ -50,7 +50,7 @@ test('user presets update rename delete independently and factory presets stay i
  assert.equal(w.deleteWorkspacePreset(loaded,'user-one').presets.length,0)
  assert.throws(()=>w.renameWorkspacePreset(saved,'recorder','覆盖'))
  assert.throws(()=>w.saveWorkspacePreset(saved,'user-two','检查'))
- assert.deepEqual(w.factoryLayouts[0].layout.hidden,['spectrum','soundfield'])
+ assert.deepEqual(w.factoryLayouts[0].layout.hidden,['spectrogram','spectrum','soundfield'])
 })
 test('workspace IPC only accepts a bounded visual state; cannot smuggle audio or file commands',()=>{
  const r={protocolVersion:1,requestId:'layout',expectedStateRevision:0,command:'workspace.configure',payload:{workspace:w.defaultWorkspace()}}
@@ -66,8 +66,17 @@ test('version-one layouts migrate without losing user presets or changing the vi
  const layout={tree:legacyTree,hidden:['levels'],options:{loudness:'compact',levelReadout:'rms',historyTraces:['s']}}
  const legacy={version:1,layout,presets:[{id:'user-old',name:'我的布局',layout}],activePreset:'user-old',locked:true}
  const upgraded=w.restoreWorkspace(legacy)
- assert.equal(upgraded.version,2);assert.equal(upgraded.presets[0].name,'我的布局');assert.equal(upgraded.activePreset,'user-old')
+ assert.equal(upgraded.version,3);assert.equal(upgraded.presets[0].name,'我的布局');assert.equal(upgraded.activePreset,'user-old')
  assert.deepEqual(w.visibleTree(upgraded.layout.tree,upgraded.layout.hidden),w.visibleTree(legacyTree,['levels']))
  assert(upgraded.layout.hidden.includes('spectrum')&&upgraded.layout.hidden.includes('soundfield'))
  assert.equal(legacy.version,1)
+})
+
+test('version-two six-instrument layouts add only a hidden spectrogram and retain custom presets',()=>{
+ const tree={axis:'column',ratio:.7,first:{axis:'row',ratio:.6,first:'spectrum',second:'soundfield'},second:{axis:'row',ratio:.7,first:{axis:'column',ratio:.5,first:'waveform',second:'history'},second:{axis:'column',ratio:.5,first:'loudness',second:'levels'}}}
+ const layout={tree,hidden:['levels'],options:{loudness:'auto',levelReadout:'both',historyTraces:['m','i']}}
+ const old={version:2,layout,presets:[{id:'user-six',name:'六仪器',layout}],activePreset:'user-six',locked:false},copy=structuredClone(old)
+ const next=w.restoreWorkspace(old);assert.equal(next.version,3);assert.deepEqual(next.layout.hidden,['levels','spectrogram']);assert.equal(next.activePreset,'user-six')
+ assert.deepEqual(w.visibleTree(next.layout.tree,next.layout.hidden),w.visibleTree(tree,['levels']));assert.deepEqual(old,copy)
+ assert.deepEqual(next.presets[0].layout,next.layout)
 })

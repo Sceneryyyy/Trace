@@ -14,7 +14,7 @@ async function start(){return launch(process.env.TRACE_PACKAGE_EXE||require('ele
 async function screenshot(c,name){await delay(150);const image=await c.send('Page.captureScreenshot',{format:'jpeg',quality:88,fromSurface:true,captureBeyondViewport:false});fs.writeFileSync(path.join(folder,name+'.jpg'),Buffer.from(image.data,'base64'))}
 async function main(){
  session=await start();let c=session.cdp;await c.send('Emulation.setDeviceMetricsOverride',{width:1264,height:761,deviceScaleFactor:scale,mobile:false})
- await wait(async()=>(await c.state()).workspace?.version===2,'migration');assert.deepEqual((await c.state()).workspace.layout.hidden,['spectrum','soundfield']);pass('Existing four-instrument workspace migrates without changing its visible layout')
+ await wait(async()=>(await c.state()).workspace?.version===3,'migration');assert.deepEqual((await c.state()).workspace.layout.hidden,['spectrogram','spectrum','soundfield']);pass('Existing four-instrument workspace migrates without changing its visible layout')
  await c.evaluate('window.__m8=null;window.trace.onSnapshot(s=>window.__m8=s);true')
  await c.evaluate("(()=>{const e=document.querySelector('[aria-label=工作台布局]');e.value='spectral';e.dispatchEvent(new Event('change',{bubbles:true}))})()")
  await c.request('file.open',{takeId:fixture.document.sessionId,role:'source'});await wait(async()=>(await c.state()).playback?.analysisPhase==='ready','file analysis')

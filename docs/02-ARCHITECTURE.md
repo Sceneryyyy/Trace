@@ -1,6 +1,6 @@
 # 02 · 架构与模块边界
 
-2026-09-17 当前架构入口：后续目标与完成条件见 [38](38-DEVELOPMENT-PLAN.md)。M7 使用 React 分割树和独立 workspace 配置；M8 已把频谱与声场接入统一来源/呈现/选区，见 [41](41-M8-METERING.md)/[42](42-M8-ACCEPTANCE.md)。显隐与停靠不控制音频生命周期，隐藏窗口的呈现调度见 [45](45-VISIBILITY-AND-RESOURCE-GATE.md)。M9 原生瓦片接口与有界存储已建立，完整来源服务/显示聚合/2D 尚待接入，见 [43](43-M9-SPECTROGRAM.md)。
+2026-09-17 当前架构入口：后续目标与完成条件见 [38](38-DEVELOPMENT-PLAN.md)。M7 使用 React 分割树和独立 workspace 配置；M8 已把频谱与声场接入统一来源/呈现/选区，见 [41](41-M8-METERING.md)/[42](42-M8-ACCEPTANCE.md)。显隐与停靠不控制音频生命周期，隐藏窗口的呈现调度见 [45](45-VISIBILITY-AND-RESOURCE-GATE.md)。M9 原生瓦片、有界存储、来源服务/显示聚合及共轴 2D 已接入。大数组采用独立呈现流，来源关闭等待查询释放；设计见 [43](43-M9-SPECTROGRAM.md)，preview.15 接入和待验项目见 [46](46-M9-2D-INTEGRATION.md)。
 
 M7 结构、上游复用审计和资源预算见 [39-M7-WORKSPACE](39-M7-WORKSPACE.md)。以下首版设计及历史状态保留追溯；实际包/源码身份和未关闭门禁以 13 为准，不把上游模块或规划接口的存在视为 Trace 已交付功能。
 

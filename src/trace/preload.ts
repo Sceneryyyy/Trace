@@ -15,4 +15,8 @@ ipcRenderer.on('trace:snapshot',(_event:Electron.IpcRendererEvent,snapshot:Meter
  const buffers=[...new Set(views.map(view=>view.buffer as ArrayBuffer))]
  window.postMessage({type:'trace-meter-stream-v1',snapshot},'*',buffers)
 })
+ipcRenderer.on('trace:spectrogram',(_event:Electron.IpcRendererEvent,packet:import('./spectrogramProtocol').SpectrogramPacket)=>{
+ const v=packet.view,arrays=v?[v.decibels,v.status,v.coverage,v.rowFirstBin,v.rowLastBin]:[]
+ window.postMessage({type:'trace-spectrogram-stream-v1',packet},'*',[...new Set(arrays.map(a=>a.buffer as ArrayBuffer))])
+})
 contextBridge.exposeInMainWorld('traceHost',api)

@@ -1,3 +1,4 @@
+import {validateSpectrogramQuery,validateSpectrogramSettings} from './spectrogramProtocol'
 import {validateInstrumentSettings} from './instrumentTypes'
 import {validateWorkspace} from './workspace'
 import {validateTakeName} from './naming'
@@ -5,7 +6,7 @@ import { validateRecordSettings } from './recording'
 import {validateExportPreset} from './mediaTypes'
 import {validateDisplaySettings,validWindowSeconds,validWaveGain} from './displaySettings'
 import type { Command, Request } from './shared'
-const commands = new Set<Command>(['test.window','instrument.configure','workspace.configure','cache.save','export.openDeliveryFolder','app.configure','app.diagnostics','app.copyDiagnostics','library.storage','library.clearCache','library.pruneMissing','library.rename','export.configure','export.describe','record.capacity','playback.clearSelection','playback.retryAnalysis','view.inspect','view.live','devices.select','view.gain','live.replay','library.refresh','library.remove','app.info','app.quit','retention.retry','view.settings','export.start','export.retry','export.openFolder','export.saveCopy','file.open','file.close','playback.play','playback.pause','playback.seek','playback.volume','playback.selection','playback.window','playback.follow','state.get', 'devices.list', 'live.start', 'live.stop', 'live.reset', 'view.window', 'record.configure', 'record.chooseDirectory', 'record.start', 'record.stop', 'record.openFolder', 'record.recover', 'analysis.start', 'job.cancel', 'metrics.query', 'timeline.query'])
+const commands = new Set<Command>(['spectrogram.configure','spectrogram.query','spectrogram.point','spectrogram.cancel','test.window','instrument.configure','workspace.configure','cache.save','export.openDeliveryFolder','app.configure','app.diagnostics','app.copyDiagnostics','library.storage','library.clearCache','library.pruneMissing','library.rename','export.configure','export.describe','record.capacity','playback.clearSelection','playback.retryAnalysis','view.inspect','view.live','devices.select','view.gain','live.replay','library.refresh','library.remove','app.info','app.quit','retention.retry','view.settings','export.start','export.retry','export.openFolder','export.saveCopy','file.open','file.close','playback.play','playback.pause','playback.seek','playback.volume','playback.selection','playback.window','playback.follow','state.get', 'devices.list', 'live.start', 'live.stop', 'live.reset', 'view.window', 'record.configure', 'record.chooseDirectory', 'record.start', 'record.stop', 'record.openFolder', 'record.recover', 'analysis.start', 'job.cancel', 'metrics.query', 'timeline.query'])
 function plain(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && (Object.getPrototypeOf(value) === Object.prototype || Object.getPrototypeOf(value) === null)
 }
@@ -18,7 +19,14 @@ export function validateRequest(value: unknown): Request {
   const keys = Object.keys(r.payload)
   const textId=(v:unknown)=>typeof v==='string'&&v.length>0&&v.length<=128&&!v.includes('\0')
   const frameId=(v:unknown)=>typeof v==='string'&&/^[0-9]{1,20}$/.test(v)&&BigInt(v)<=0xffffffffffffffffn
-  if(r.command==='test.window'){
+  if(r.command==='spectrogram.configure'){
+    if(keys.join(',')!=='settings')throw Error('INVALID_SPECTROGRAM_SETTINGS');validateSpectrogramSettings(r.payload.settings)
+  }else if(r.command==='spectrogram.query'){validateSpectrogramQuery(r.payload)
+  }else if(r.command==='spectrogram.cancel'){
+    if(keys.join(',')!=='queryId'||!textId(r.payload.queryId))throw Error('INVALID_SPECTROGRAM_QUERY')
+  }else if(r.command==='spectrogram.point'){
+    if(keys.sort().join(',')!=='frequency,positionFrame,queryId'||!textId(r.payload.queryId)||!frameId(r.payload.positionFrame)||typeof r.payload.frequency!=='number'||!Number.isFinite(r.payload.frequency)||r.payload.frequency<0||r.payload.frequency>48000)throw Error('INVALID_SPECTROGRAM_POINT')
+  }else if(r.command==='test.window'){
     if(keys.join(',')!=='mode'||!['show','hide','minimize','restore'].includes(r.payload.mode as string))throw Error('INVALID_TEST_WINDOW')
   }else if(r.command==='instrument.configure'){
     if(keys.join(',')!=='settings')throw Error('INVALID_INSTRUMENT_SETTINGS');validateInstrumentSettings(r.payload.settings)
@@ -88,4 +96,4 @@ export function validateRequest(value: unknown): Request {
   } else if (keys.length) throw Error('INVALID_PAYLOAD')
   return r
 }
-export function isMutation(command: Command): boolean { return !['app.info','app.diagnostics','library.storage','export.describe','state.get', 'devices.list', 'metrics.query', 'timeline.query'].includes(command) }
+export function isMutation(command: Command): boolean { return !['spectrogram.query','spectrogram.point','spectrogram.cancel','app.info','app.diagnostics','library.storage','export.describe','state.get', 'devices.list', 'metrics.query', 'timeline.query'].includes(command) }

@@ -1,3 +1,8 @@
+import {SpectrogramPresenter,type SpectrogramBinding} from './spectrogramPresenter'
+import {fileSpectrogramSource,replaySpectrogramSource,liveSpectrogramSource,takeSpectrogramSource} from './spectrogramSource'
+import {defaultSpectrogramSettings,restoreSpectrogramSettings,validateSpectrogramSettings,validateSpectrogramQuery,type SpectrogramQuery,type SpectrogramSettings} from './spectrogramProtocol'
+import type {SpectrogramNative} from './spectrogramService'
+import {SessionTimeline} from './sessionTimeline'
 import {InstrumentService} from './instrumentService'
 import {defaultInstrumentSettings,restoreInstrumentSettings,validateInstrumentSettings,instrumentConfigKey,type InstrumentNative} from './instrumentTypes'
 import {DeliveryService} from './deliveryService'
@@ -29,7 +34,7 @@ import type { Device, NativeMeterSnapshot, MeterSnapshot, NativeRecordSnapshot, 
 const requireNative=createRequire(__filename)
 const root=resolve(__dirname,'../..')
 const captureInstance=randomUUID()
-type NativeEngine=PlaybackNative&InstrumentNative&{
+type NativeEngine=PlaybackNative&InstrumentNative&SpectrogramNative&{
   runtimeModules():Record<string,string|null>;devices():Device[];start(id:string):SourceFormat;stop():void;reset():void;shutdown():NativeRecordSnapshot
   snapshot(seconds:number,columns:number):NativeMeterSnapshot
   recordStart(id:string,path:string,encoding:string,segmentBytes?:number,journalPath?:string):NativeRecordSnapshot
@@ -37,6 +42,7 @@ type NativeEngine=PlaybackNative&InstrumentNative&{
 }
 let engine:NativeEngine
 let instruments:InstrumentService
+let spectrogram:SpectrogramPresenter
 let instrumentLiveBusy=false
 let lastLivePublication:{key:string;frame:bigint}|undefined
 let recordings:RecordingService
@@ -57,7 +63,7 @@ let recordingCaptureHeld=false
 let preferencesTimer:ReturnType<typeof setTimeout>|undefined
 let preferencesReady=false
 let displayTick=0,snapshotSequence=0,pollFailurePending=false,lastPollError=''
-let state:TraceState={revision:0,active:false,monitoringRequested:true,deviceId:'',windowSeconds:30,error:null,displaySettings:{...defaultDisplaySettings},workspace:defaultWorkspace(),instrumentSettings:{...defaultInstrumentSettings}}
+let state:TraceState={spectrogramSettings:{...defaultSpectrogramSettings},revision:0,active:false,monitoringRequested:true,deviceId:'',windowSeconds:30,error:null,displaySettings:{...defaultDisplaySettings},workspace:defaultWorkspace(),instrumentSettings:{...defaultInstrumentSettings}}
 const completed=new Map<string,{signature:string;reply:Reply}>()
 const pending=new Map<string,{signature:string;promise:Promise<Reply>}>()
 let mutations:Promise<unknown>=Promise.resolve()
@@ -166,7 +172,7 @@ function savePreferences():void{
   if(!preferencesReady)return
   mkdirSync(app.getPath('userData'),{recursive:true})
   const target=preferencesPath(),temp=target+'.tmp'
-  writeFileSync(temp,JSON.stringify({windowBounds:window&&!window.isDestroyed()?window.getNormalBounds():undefined,maximized:window?.isMaximized(),instrumentSettings:state.instrumentSettings,workspace:state.workspace,displaySettingsVersion,monitoringRequested:state.monitoringRequested,displaySettings:state.displaySettings,settingsVersion:recordSettingsVersion,deviceId:state.deviceId,windowSeconds:state.windowSeconds,recordSettings:recordings.settings,recordDirectory:recordings.directory,exportPreferencesVersion,lastExportPreset:state.lastExportPreset,confirmExitWhileRecording:state.confirmExitWhileRecording!==false,lastExportSaveCopy:state.lastExportSaveCopy===true}))
+  writeFileSync(temp,JSON.stringify({spectrogramSettings:state.spectrogramSettings,windowBounds:window&&!window.isDestroyed()?window.getNormalBounds():undefined,maximized:window?.isMaximized(),instrumentSettings:state.instrumentSettings,workspace:state.workspace,displaySettingsVersion,monitoringRequested:state.monitoringRequested,displaySettings:state.displaySettings,settingsVersion:recordSettingsVersion,deviceId:state.deviceId,windowSeconds:state.windowSeconds,recordSettings:recordings.settings,recordDirectory:recordings.directory,exportPreferencesVersion,lastExportPreset:state.lastExportPreset,confirmExitWhileRecording:state.confirmExitWhileRecording!==false,lastExportSaveCopy:state.lastExportSaveCopy===true}))
   renameSync(temp,target)
 }
 function schedulePreferences():void{if(preferencesTimer)clearTimeout(preferencesTimer);preferencesTimer=setTimeout(()=>{try{savePreferences()}catch(error){console.error("Trace preferences:",error)}},150)}
@@ -175,6 +181,44 @@ function startDevice(id:string):SourceFormat{
 }
 function resumeInput():void{
   if(!exiting&&!playback?.outputActive()&&state.monitoringRequested&&state.deviceId&&!engine.snapshot(5,1).active&&!recordings.busy())startDevice(state.deviceId)
+}
+async function resolveSpectrogram(q:SpectrogramQuery,settings:SpectrogramSettings):Promise<SpectrogramBinding>{
+ const visible=()=>!exiting&&!managingLibrary&&state.windowVisible!==false&&!state.workspace?.layout.hidden.includes('spectrogram')
+ if(!visible())throw Error('SPECTROGRAM_NOT_VISIBLE')
+ const configKey=(s:SpectrogramSettings)=>JSON.stringify([s.fftSize,s.channel,s.minFrequency,s.maxFrequency])
+ const config=configKey(settings),stillConfigured=()=>visible()&&config===configKey(state.spectrogramSettings||defaultSpectrogramSettings)
+ let source:import('./spectrogramSource').SpectrogramSource,toNative=(v:string)=>v,toAxis=(v:string)=>v,valid:()=>boolean
+ if(q.source.kind==='file'){
+  const view=playback.view()
+  if(!view||view.id!==q.source.sourceId||q.source.epochId!=='0'||q.source.measurementEpoch!=='0')throw Error('STALE_SPECTROGRAM_SOURCE')
+  const bound=playback.spectralSource(view.id)
+  source=bound.replay?replaySpectrogramSource(bound.replay):fileSpectrogramSource(bound.source,bound.analysisKey||'pending:'+view.id)
+  if(!bound.replay&&!bound.analysisKey)delete source.cacheRoot
+  valid=()=>stillConfigured()&&playback.view()?.id===view.id&&playback.view()?.analysisId===view.analysisId
+ }else{
+  if(playback.active())throw Error('STALE_SPECTROGRAM_SOURCE')
+  const snap=engine.snapshot(5,1)
+  if(q.source.epochId!==snap.epochId||q.source.measurementEpoch!==snap.measurementEpoch||snap.error)throw Error('STALE_SPECTROGRAM_SOURCE')
+  if(q.source.kind==='live'){
+   if(state.currentRecord||snap.sourceId!==q.source.sourceId)throw Error('STALE_SPECTROGRAM_SOURCE')
+   source=liveSpectrogramSource(snap)
+   valid=()=>{const n=engine.snapshot(5,1);return stillConfigured()&&!playback.active()&&!state.currentRecord&&n.sourceId===snap.sourceId&&n.epochId===snap.epochId&&n.measurementEpoch===snap.measurementEpoch}
+  }else{
+   if(state.currentRecord?.id!==q.source.sourceId)throw Error('STALE_SPECTROGRAM_SOURCE')
+   const record=engine.recordStatus(),regions=recordings.session(q.source.sourceId).document.regions
+   const region=regions.find(r=>r.nativeId===record.id)
+   if(!region)throw Error('STALE_SPECTROGRAM_SOURCE')
+   const data=regions.map(r=>r===region?{...r,frames:record.writtenFrames,startFrame:record.startFrame,endFrameExclusive:record.startFrame===null?null:String(BigInt(record.startFrame)+BigInt(record.writtenFrames))}:r)
+   const timeline=new SessionTimeline(data),position=timeline.positions.find(p=>p.regionId===region.id)!
+   toNative=value=>{const n=BigInt(value);if(n<=BigInt(position.mediaStartNs))return '0';if(n>=BigInt(position.mediaEndNs))return record.writtenFrames;return timeline.mediaNsToRegion(value)!.relativeFrame}
+   toAxis=value=>timeline.frameToMediaNs(region.id,value)
+   source=takeSpectrogramSource(record)
+   valid=()=>stillConfigured()&&!playback.active()&&state.currentRecord?.id===q.source.sourceId&&engine.recordStatus().id===record.id
+  }
+ }
+ const startFrame=toNative(q.range.startFrame),endFrame=toNative(q.range.endFrame),nyquist=source.request.sampleRate/2
+ if(BigInt(endFrame)<=BigInt(startFrame)||BigInt(endFrame)>BigInt(source.availableEnd)&&source.request.kind==='file')throw Error('SPECTROGRAM_RANGE_UNAVAILABLE')
+ return {source,toNative,toAxis,valid,range:{...q.range,startFrame,endFrame,minFrequency:Math.min(settings.minFrequency,nyquist*.9),maxFrequency:Math.min(settings.maxFrequency,nyquist)}}
 }
 async function closeInspection():Promise<void>{await playback.close();inspection=null;resumeInput()}
 async function inspectHistory(payload:Record<string,unknown>):Promise<void>{
@@ -233,7 +277,11 @@ async function dispatch(request:Request):Promise<Reply>{
       case 'app.diagnostics':data=safeDiagnostics(product.version,state,engine.snapshot(5,1),engine.recordStatus());break
       case 'app.copyDiagnostics':clipboard.writeText(JSON.stringify(safeDiagnostics(product.version,state,engine.snapshot(5,1),engine.recordStatus()),null,2));data={copied:true};break
       case 'test.window':if(!testMode||!window)throw Error('TEST_ONLY');if(request.payload.mode==='show')window.show();else if(request.payload.mode==='hide')window.hide();else if(request.payload.mode==='minimize')window.minimize();else{window.restore();window.show()}break
-      case 'app.info':data={...product,processMetrics:testMode?app.getAppMetrics().map(({pid,type,cpu,memory})=>({pid,type,cpu,memory})):undefined,packaged:app.isPackaged,appVersion:app.getVersion(),electron:process.versions.electron,nativeModules:engine.runtimeModules(),resourcesPath:process.resourcesPath,userData:app.getPath('userData'),windowVisible:window?.isVisible()&&!window?.isMinimized(),windowBounds:window?.getBounds(),displays:screen.getAllDisplays().map(d=>({id:d.id,scaleFactor:d.scaleFactor,bounds:d.bounds,workArea:d.workArea}))};break
+      case 'spectrogram.configure':update({spectrogramSettings:validateSpectrogramSettings(request.payload.settings)});schedulePreferences();break
+      case 'spectrogram.query':spectrogram.request(request.requestId,validateSpectrogramQuery(request.payload),state.spectrogramSettings||defaultSpectrogramSettings);data={accepted:true};break
+      case 'spectrogram.point':data=await spectrogram.point(request.payload.queryId as string,request.payload.positionFrame as string,request.payload.frequency as number);break
+      case 'spectrogram.cancel':spectrogram.cancel(request.payload.queryId as string);break
+      case 'app.info':data={...product,spectrogramUsage:testMode?spectrogram?.usage:undefined,processMetrics:testMode?app.getAppMetrics().map(({pid,type,cpu,memory})=>({pid,type,cpu,memory})):undefined,packaged:app.isPackaged,appVersion:app.getVersion(),electron:process.versions.electron,nativeModules:engine.runtimeModules(),resourcesPath:process.resourcesPath,userData:app.getPath('userData'),windowVisible:window?.isVisible()&&!window?.isMinimized(),windowBounds:window?.getBounds(),displays:screen.getAllDisplays().map(d=>({id:d.id,scaleFactor:d.scaleFactor,bounds:d.bounds,workArea:d.workArea}))};break
       case 'record.capacity':{
         const snapshot=engine.snapshot(5,1),format=snapshot.active&&snapshot.sourceId===state.deviceId?snapshot.format:engine.devices().find(d=>d.id===state.deviceId)?.format||snapshot.format
         update({recordingCapacity:{...recordingCapacity(await freeSpace(recordings.directory),recordings.settings,format.sampleRate,format.channelCount),directory:recordings.directory}});break
@@ -334,7 +382,7 @@ async function dispatch(request:Request):Promise<Reply>{
         engine.reset();update({error:null});break
       case 'retention.retry':await retention.retry(request.payload.takeId as string);break
       case 'instrument.configure':update({instrumentSettings:validateInstrumentSettings(request.payload.settings)});savePreferences();break
-      case 'workspace.configure':update({workspace:validateWorkspace(request.payload.workspace)});savePreferences();break
+      case 'workspace.configure':update({workspace:validateWorkspace(request.payload.workspace)});if(state.workspace!.layout.hidden.includes('spectrogram'))spectrogram.cancel();savePreferences();break
       case 'view.settings':update({displaySettings:validateDisplaySettings(request.payload)});savePreferences();break
       case 'view.gain':update({displaySettings:{...(state.displaySettings||defaultDisplaySettings),waveGain:request.payload.gain as number}});schedulePreferences();break
       case 'view.window':
@@ -435,6 +483,7 @@ async function dispatch(request:Request):Promise<Reply>{
     return {requestId:request.requestId,ok:true,state:{...state},data}
   }catch(error){
     const message=error instanceof Error?error.message:String(error)
+    if(request.command.startsWith('spectrogram.'))return {requestId:request.requestId,ok:false,state:{...state},error:{code:message.split(':')[0],message}}
     if(recordings&&!recordings.busy())releaseRecordingCapture()
     analyses?.setRecordingBusy(recordings?.busy()||false)
     if(exporter&&!recordings?.busy()&&!exiting){exporter.resume();retention?.resume()}
@@ -453,7 +502,7 @@ function handle(event:Electron.IpcMainInvokeEvent,raw:unknown):Promise<Reply>|Re
     const operation=isMutation(request.command)?mutations.then(()=>dispatch(request)):dispatch(request)
     if(isMutation(request.command))mutations=operation.then(()=>undefined,()=>undefined)
     const promise=operation.then(reply=>{
-      completed.set(requestId,{signature,reply});pending.delete(requestId)
+      if(!request.command.startsWith('spectrogram.')||isMutation(request.command))completed.set(requestId,{signature,reply});pending.delete(requestId)
       if(completed.size>256)completed.delete(completed.keys().next().value as string)
       return reply
     })
@@ -464,10 +513,11 @@ function handle(event:Electron.IpcMainInvokeEvent,raw:unknown):Promise<Reply>|Re
   }
 }
 async function initialize():Promise<void>{
-  let preferred:{instrumentSettings?:unknown;workspace?:unknown;monitoringRequested?:boolean;deviceId?:string;windowSeconds?:number;recordSettings?:unknown;recordDirectory?:string;displaySettings?:unknown;lastExportPreset?:unknown;confirmExitWhileRecording?:boolean;lastExportSaveCopy?:boolean}={}
+  let preferred:{spectrogramSettings?:unknown;instrumentSettings?:unknown;workspace?:unknown;monitoringRequested?:boolean;deviceId?:string;windowSeconds?:number;recordSettings?:unknown;recordDirectory?:string;displaySettings?:unknown;lastExportPreset?:unknown;confirmExitWhileRecording?:boolean;lastExportSaveCopy?:boolean}={}
   try{preferred=JSON.parse(readFileSync(preferencesPath(),'utf8'))}catch{}
   if(validWindowSeconds(preferred.windowSeconds))state.windowSeconds=preferred.windowSeconds
   state.instrumentSettings=restoreInstrumentSettings(preferred.instrumentSettings)
+  state.spectrogramSettings=restoreSpectrogramSettings(preferred.spectrogramSettings)
   state.workspace=restoreWorkspace(preferred.workspace)
   state.monitoringRequested=preferred.monitoringRequested!==false
   state.confirmExitWhileRecording=preferred.confirmExitWhileRecording!==false
@@ -493,7 +543,9 @@ app.whenReady().then(()=>{
   recordings=new RecordingService(engine,join(ffroot,'ffmpeg.exe'),join(ffroot,'ffprobe.exe'),app.isPackaged?join(process.resourcesPath,'native/trace_engine.node'):join(root,'build/trace-engine/Release/trace_engine.node'),syncRecordingState,segment)
   analyses=new AnalysisService(app.isPackaged?join(process.resourcesPath,'native/trace_engine.node'):join(root,'build/trace-engine/Release/trace_engine.node'),syncAnalysisState)
   instruments=new InstrumentService(engine)
+  spectrogram=new SpectrogramPresenter(engine,resolveSpectrogram,packet=>{if(window&&!window.isDestroyed())window.webContents.send('trace:spectrogram',packet)})
   playback=new PlaybackService(engine,analyses,syncPlaybackState)
+  playback.beforeSourceChange=()=>spectrogram.release()
   playback.instrumentQuery=request=>instrumentsVisible()?instruments.query(request,state.instrumentSettings||defaultInstrumentSettings):Promise.resolve(undefined)
   const encoderLock=JSON.parse(readFileSync(app.isPackaged?join(process.resourcesPath,'ffmpeg.lock.json'):join(root,'ffmpeg.lock.json'),'utf8'))
   exporter=new ExportService(recordings,{ffmpeg:join(ffroot,'ffmpeg.exe'),ffprobe:join(ffroot,'ffprobe.exe'),nativePath:app.isPackaged?join(process.resourcesPath,'native/trace_engine.node'):join(root,'build/trace-engine/Release/trace_engine.node'),ffmpegSha256:encoderLock.ffmpegSha256,ffprobeSha256:encoderLock.ffprobeSha256},syncExportState)
@@ -521,7 +573,7 @@ app.whenReady().then(()=>{
     ...(bounds||{}),backgroundColor:'#121615',autoHideMenuBar:true,show:!testMode||process.argv.includes('--trace-test-visible'),
     webPreferences:{preload:join(__dirname,'../preload/index.js'),contextIsolation:true,sandbox:true,nodeIntegration:false,backgroundThrottling:!testMode},
   })
-  const publishVisibility=()=>{const visible=Boolean(window?.isVisible()&&!window?.isMinimized());if(state.windowVisible!==visible)update({windowVisible:visible})}
+  const publishVisibility=()=>{const visible=Boolean(window?.isVisible()&&!window?.isMinimized());if(!visible)spectrogram?.cancel();if(state.windowVisible!==visible)update({windowVisible:visible})}
   window.on('show',publishVisibility);window.on('hide',publishVisibility);window.on('minimize',publishVisibility);window.on('restore',publishVisibility)
   publishVisibility()
   if(savedWindow.maximized&&!testMode)window.maximize()
@@ -575,7 +627,7 @@ app.on('before-quit',event=>{
   let final:NativeRecordSnapshot|undefined
   try{final=engine?.shutdown()}catch(error){console.error('Trace shutdown:',error)}
   const finish=(async()=>{
-    await Promise.all([instruments?.shutdown(),deliveries?.shutdown(),retention?.shutdown(),exporter?.pauseForRecording(),analyses?.shutdown(),playback?.close()])
+    await Promise.all([spectrogram?.close(),instruments?.shutdown(),deliveries?.shutdown(),retention?.shutdown(),exporter?.pauseForRecording(),analyses?.shutdown(),playback?.close()])
     if(final&&recordings)await recordings.finish(final)
     await exporter?.shutdown()
   })()

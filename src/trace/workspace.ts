@@ -1,4 +1,5 @@
 export const instruments = [
+  {id:'spectrogram',title:'声谱图',unit:'Hz · dBFS',help:'频率随时间的变化；颜色表示幅度。与波形共用游标和选区，悬停查询原始频点。'},
   {id:'levels',title:'电平',unit:'dBFS',help:'各声道峰值与 RMS；TP 使用 dBTP。'},
   {id:'waveform',title:'波形',unit:'L / R',help:'拖动查看历史；Shift 拖动建立选区。滚轮调整倍率，Ctrl + 滚轮缩放时间。'},
   {id:'history',title:'响度历史',unit:'LUFS',help:'M、S、I 与波形共享时间范围和游标；线型用于区分曲线。'},
@@ -11,7 +12,7 @@ export type LayoutNode = InstrumentId | {axis:'row'|'column';ratio:number;first:
 export type PanelOptions = {loudness:'auto'|'compact'|'meters';levelReadout:'both'|'peak'|'rms';historyTraces:('m'|'s'|'i')[]}
 export type InstrumentLayout = {tree:LayoutNode;hidden:InstrumentId[];options:PanelOptions}
 export type WorkspacePreset = {id:string;name:string;layout:InstrumentLayout}
-export type WorkspaceState = {version:2;layout:InstrumentLayout;presets:WorkspacePreset[];activePreset:string|null;locked:boolean}
+export type WorkspaceState = {version:3;layout:InstrumentLayout;presets:WorkspacePreset[];activePreset:string|null;locked:boolean}
 const ids=instruments.map(i=>i.id)
 const options=():PanelOptions=>({loudness:'auto',levelReadout:'both',historyTraces:['m','s','i']})
 export const factoryLayouts:WorkspacePreset[]=[
@@ -24,9 +25,10 @@ function complete(tree:LayoutNode,hidden:InstrumentId[],optionsValue:PanelOption
  return {tree,hidden,options:optionsValue}
 }
 for(const preset of factoryLayouts)preset.layout=complete(preset.layout.tree,preset.layout.hidden,preset.layout.options)
+factoryLayouts.push({id:'time-frequency',name:'时频检查',layout:complete({axis:'column',ratio:.7,first:'spectrogram',second:{axis:'row',ratio:.65,first:'waveform',second:'history'}},[],options())})
 factoryLayouts.push({id:'spectral',name:'频率与声像',layout:complete({axis:'column',ratio:.65,first:{axis:'row',ratio:.65,first:'spectrum',second:'soundfield'},second:'waveform'},[],options())})
 const clone=<T,>(v:T):T=>structuredClone(v)
-export function defaultWorkspace():WorkspaceState{return {version:2,layout:clone(factoryLayouts[0].layout),presets:[],activePreset:'recorder',locked:true}}
+export function defaultWorkspace():WorkspaceState{return {version:3,layout:clone(factoryLayouts[0].layout),presets:[],activePreset:'recorder',locked:true}}
 function object(v:unknown):v is Record<string,unknown>{return Boolean(v)&&typeof v==='object'&&!Array.isArray(v)&&(Object.getPrototypeOf(v)===Object.prototype||Object.getPrototypeOf(v)===null)}
 function keys(v:Record<string,unknown>,expected:string):void{if(Object.keys(v).sort().join(',')!==expected)throw Error('INVALID_WORKSPACE')}
 export function validateLayout(value:unknown,expected:readonly InstrumentId[]=ids):InstrumentLayout{
@@ -40,7 +42,7 @@ export function validateLayout(value:unknown,expected:readonly InstrumentId[]=id
   node(v.first,depth+1);node(v.second,depth+1)
  }
  node(value.tree,0)
- if(leaves.length!==expected.length||!Array.isArray(value.hidden)||value.hidden.length>ids.length||new Set(value.hidden).size!==value.hidden.length||value.hidden.some(v=>!ids.includes(v)))throw Error('INVALID_WORKSPACE')
+ if(leaves.length!==expected.length||!Array.isArray(value.hidden)||value.hidden.length>ids.length||new Set(value.hidden).size!==value.hidden.length||value.hidden.some(v=>!expected.includes(v)))throw Error('INVALID_WORKSPACE')
  const o=value.options
  if(!object(o))throw Error('INVALID_WORKSPACE');keys(o,'historyTraces,levelReadout,loudness')
  if(!['auto','compact','meters'].includes(o.loudness as string)||!['both','peak','rms'].includes(o.levelReadout as string)||!Array.isArray(o.historyTraces)||o.historyTraces.length>3||new Set(o.historyTraces).size!==o.historyTraces.length||o.historyTraces.some(v=>!['m','s','i'].includes(v)))throw Error('INVALID_WORKSPACE')
@@ -48,7 +50,7 @@ export function validateLayout(value:unknown,expected:readonly InstrumentId[]=id
 }
 export function validateWorkspace(value:unknown):WorkspaceState{
  if(!object(value))throw Error('INVALID_WORKSPACE');keys(value,'activePreset,layout,locked,presets,version')
- if(value.version!==2||typeof value.locked!=='boolean'||!Array.isArray(value.presets)||value.presets.length>20)throw Error('INVALID_WORKSPACE')
+ if(value.version!==3||typeof value.locked!=='boolean'||!Array.isArray(value.presets)||value.presets.length>20)throw Error('INVALID_WORKSPACE')
  const layout=validateLayout(value.layout),seen=new Set<string>(),names=new Set<string>()
  const presets=value.presets.map(p=>{
   if(!object(p))throw Error('INVALID_WORKSPACE');keys(p,'id,layout,name')
@@ -58,10 +60,10 @@ export function validateWorkspace(value:unknown):WorkspaceState{
  })
  if(value.activePreset!==null&&!(typeof value.activePreset==='string'&&[...factoryLayouts,...presets].some(p=>p.id===value.activePreset)))throw Error('INVALID_WORKSPACE')
  if(JSON.stringify(value).length>65536)throw Error('INVALID_WORKSPACE')
- return {version:2,layout,presets,activePreset:value.activePreset as string|null,locked:value.locked}
+ return {version:3,layout,presets,activePreset:value.activePreset as string|null,locked:value.locked}
 }
 export function restoreWorkspace(value:unknown):WorkspaceState{try{
- if(object(value)&&value.version===1){const old=['levels','waveform','history','loudness'] as const;const migrate=(v:unknown)=>{const l=validateLayout(v,old);return complete(l.tree,l.hidden,l.options)};value={...value,version:2,layout:migrate(value.layout),presets:Array.isArray(value.presets)?value.presets.map(p=>{if(!object(p))throw Error('INVALID_WORKSPACE');return {...p,layout:migrate(p.layout)}}):value.presets}}
+ if(object(value)&&(value.version===1||value.version===2)){const old=value.version===1?['levels','waveform','history','loudness'] as const:['levels','waveform','history','spectrum','soundfield','loudness'] as const;const migrate=(v:unknown)=>{const l=validateLayout(v,old);return complete(l.tree,l.hidden,l.options)};value={...value,version:3,layout:migrate(value.layout),presets:Array.isArray(value.presets)?value.presets.map(p=>{if(!object(p))throw Error('INVALID_WORKSPACE');return {...p,layout:migrate(p.layout)}}):value.presets}}
  return validateWorkspace(value)
  }catch{return defaultWorkspace()}}
 export function visibleTree(tree:LayoutNode,hidden:InstrumentId[]):LayoutNode|null{

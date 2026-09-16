@@ -5,8 +5,10 @@ import type {DisplaySettings} from '../displaySettings'
 import type {MeterSnapshot} from '../shared'
 import {relativeFrame} from './time'
 import {SelectionStats} from './FileControls'
-type Props={
- kind?:'both'|'waveform'|'history';traces?:('m'|'s'|'i')[];
+export type TimelineLayer={draw:(ctx:CanvasRenderingContext2D,g:{left:number;right:number;top:number;bottom:number;x:(frame:string)=>number})=>void;hover?:(frame:string,vertical:number)=>void;wheel?:(vertical:number,delta:number)=>void}
+export type TimelineProps={
+ layer?:TimelineLayer;
+ kind?:'both'|'waveform'|'history'|'spectrogram';traces?:('m'|'s'|'i')[];
  feedback?:React.ReactNode;selectionMode?:boolean;controls?:React.ReactNode;snapshot:MeterSnapshot|null;seconds:number;gain:number;target?:DisplaySettings
  onSeek?:(position:string,resume:boolean,source:MeterSnapshot|null)=>void
  onSelection?:(start:string,end:string,source:MeterSnapshot|null)=>void
@@ -17,7 +19,7 @@ type Props={
 type Drag={source:MeterSnapshot|null;start:bigint;end:bigint;mode:'seek'|'selection'|'start'|'end';anchor:bigint;position:bigint;resume:boolean;fixed:bigint}
 const TimelinePreview=createContext<{preview:Drag|null;setPreview:React.Dispatch<React.SetStateAction<Drag|null>>}|null>(null)
 export function TimelinePreviewProvider({children}:{children:React.ReactNode}){const [preview,setPreview]=useState<Drag|null>(null);return <TimelinePreview.Provider value={{preview,setPreview}}>{children}</TimelinePreview.Provider>}
-export function Timeline({kind='both',traces=['m','s','i'],feedback,selectionMode=false,controls,snapshot,seconds,gain,target,onSeek,onSelection,onWindow,onGain,onSeconds}:Props):React.JSX.Element{
+export function Timeline({layer,kind='both',traces=['m','s','i'],feedback,selectionMode=false,controls,snapshot,seconds,gain,target,onSeek,onSelection,onWindow,onGain,onSeconds}:TimelineProps):React.JSX.Element{
  const wave=useRef<HTMLCanvasElement>(null),loud=useRef<HTMLCanvasElement>(null),box=useRef<HTMLDivElement>(null)
  const shared=useContext(TimelinePreview),[ownPreview,ownSetPreview]=useState<Drag|null>(null)
  const drag=useRef<Drag|null>(null),preview=shared?.preview??ownPreview,setPreview=shared?.setPreview??ownSetPreview
@@ -33,7 +35,7 @@ export function Timeline({kind='both',traces=['m','s','i'],feedback,selectionMod
     endFrame:(preview.mode==='end'?preview.position:preview.mode==='start'?preview.fixed:preview.position>preview.anchor?preview.position:preview.anchor).toString()}
   :snapshot?.fileView?.selection
  useEffect(()=>{
-  function paint(canvas:HTMLCanvasElement,kind:'wave'|'loud'){
+  function paint(canvas:HTMLCanvasElement,kind:'wave'|'loud'|'spectral'){
    const surface=canvasSurface(canvas);if(!surface)return
    const {rect,context:ctx}=surface
    const w=rect.width,h=rect.height,left=36,right=w-10,top=14,bottom=h-14
@@ -46,7 +48,7 @@ export function Timeline({kind='both',traces=['m','s','i'],feedback,selectionMod
    ctx.strokeStyle='#303a34';ctx.lineWidth=1
    for(let i=0;i<=6;i++){const px=left+(right-left)*i/6;ctx.beginPath();ctx.moveTo(px,top);ctx.lineTo(px,bottom);ctx.stroke()}
    ctx.font='10px "JetBrains Mono", monospace';ctx.fillStyle='#a8b5ac'
-   if(kind==='wave'){
+   if(kind==='spectral'){layer?.draw(ctx,{left,right,top,bottom,x})}else if(kind==='wave'){
     const channels=snapshot?.format.channelCount||2
     for(let c=0;c<channels;c++){
      const center=top+(bottom-top)*(c+.5)/channels,scale=(bottom-top)/channels*.42
@@ -93,9 +95,9 @@ export function Timeline({kind='both',traces=['m','s','i'],feedback,selectionMod
    const head=ranged?x(cursor):right
    if(head>=left&&head<=right){ctx.beginPath();ctx.moveTo(head,top);ctx.lineTo(head,bottom);ctx.stroke()}
   }
-  function draw(){if(wave.current)paint(wave.current,'wave');if(loud.current)paint(loud.current,'loud')}
+  function draw(){if(wave.current)paint(wave.current,kind==='spectrogram'?'spectral':'wave');if(loud.current)paint(loud.current,'loud')}
   draw();const observer=new ResizeObserver(draw);if(box.current)observer.observe(box.current);return()=>observer.disconnect()
- },[snapshot,seconds,gain,target,preview,selected?.startFrame,selected?.endFrame,traces,kind])
+ },[snapshot,seconds,gain,target,preview,selected?.startFrame,selected?.endFrame,traces,kind,layer])
  useEffect(()=>{if(!drag.current)setPreview(null)},[snapshot?.sourceId])
  useEffect(()=>{
   const target=wave.current,prevent=(event:WheelEvent)=>event.preventDefault()
@@ -125,6 +127,7 @@ export function Timeline({kind='both',traces=['m','s','i'],feedback,selectionMod
  function move(event:React.PointerEvent<HTMLElement>){
   const current=drag.current
    if(!current){
+    const rect=event.currentTarget.getBoundingClientRect();layer?.hover?.(position(event).toString(),Math.max(0,Math.min(1,(rect.bottom-event.clientY-14)/Math.max(1,rect.height-28))))
     const available=snapshot?.timelineAvailableRange,p=position(event),blocked=available&&(p<BigInt(available.startFrame)||p>BigInt(available.endFrame))
     const element=event.currentTarget;if(!element.dataset.defaultTitle)element.dataset.defaultTitle=element.title
     element.title=blocked?(take?'此处仅为概览，结束录音后打开文件可查看完整历史':'此处已超出可回看的实时缓存'):element.dataset.defaultTitle||'';element.style.cursor=blocked?'not-allowed':'crosshair';return
@@ -160,6 +163,7 @@ export function Timeline({kind='both',traces=['m','s','i'],feedback,selectionMod
     wheelWindow.current={sourceId:snapshot?.sourceId||'',...next};onWindow?.(next.start,next.end);return
    }
   if(!event.ctrlKey){
+   if(layer?.wheel){const r=event.currentTarget.getBoundingClientRect();layer.wheel(Math.max(0,Math.min(1,(r.bottom-event.clientY-14)/Math.max(1,r.height-28))),delta);return}
    const next=wheelValue(wheelGain.current,delta,1,4,true);if(next===wheelGain.current)return;wheelGain.current=next;onGain?.(next);return
   }
   if(!file&&!take){
@@ -183,13 +187,13 @@ export function Timeline({kind='both',traces=['m','s','i'],feedback,selectionMod
  return <div className={'timeline '+(interactive?'file-timeline':'')} ref={box} data-inspectable-start={snapshot?.timelineAvailableRange?.startFrame} data-inspectable-end={snapshot?.timelineAvailableRange?.endFrame}>
    {controls}
   {kind!=='history'&&<section className="wave-panel">
-   <div className="panel-heading"><h2>波形</h2><span className="small-note" title="滚轮调整波形倍率；Ctrl + 滚轮调整时间窗">×{zoomLabel(gain,2)}</span></div>
-   <canvas ref={wave} onWheel={wheel} title="滚轮：波形倍率 · Ctrl + 滚轮：时间窗 · Shift + 滚轮：平移 · 右键：选区操作" aria-label={file?'文件波形定位':'系统音频滚动波形，左右声道分开显示'} {...handlers}/>
+   <div className="panel-heading"><h2>{kind==='spectrogram'?'声谱图':'波形'}</h2><span className="small-note" title="滚轮调整波形倍率；Ctrl + 滚轮调整时间窗">×{zoomLabel(gain,2)}</span></div>
+   <canvas ref={wave} onWheel={wheel} title={kind==='spectrogram'?'滚轮：频率范围 · Ctrl + 滚轮：时间窗 · Shift + 滚轮：平移 · 拖动定位或选区':'滚轮：波形倍率 · Ctrl + 滚轮：时间窗 · Shift + 滚轮：平移 · 右键：选区操作'} aria-label={kind==='spectrogram'?'声谱图：共轴时间与频率定位':file?'文件波形定位':'系统音频滚动波形，左右声道分开显示'} {...handlers}/>
    {feedback}
-    {!feedback&&!snapshot?.waveform.length&&<div className="empty-wave">{file?'准备波形…':'等待音频'}</div>}
+    {kind!=='spectrogram'&&!feedback&&!snapshot?.waveform.length&&<div className="empty-wave">{file?'准备波形…':'等待音频'}</div>}
   </section>}
   {kind!=='history'&&<div className="time-ruler" data-select-range="true" aria-label={file?'时间刻度，拖动选择范围':'时间刻度'} title="点击定位；拖动刻度轴选择范围；图内 Shift + 拖动也可选择" {...handlers}>{ruler.map((label,i)=><span key={i}>{label}</span>)}</div>}
-  {kind!=='waveform'&&<section className="loudness-panel">
+  {(kind==='both'||kind==='history')&&<section className="loudness-panel">
    <div className="panel-heading"><h2>响度历史 <small>LUFS</small></h2><div className="legend"><span className="legend-m">M</span><span className="legend-s">S</span><span className="legend-i">I</span></div></div>
    <canvas ref={loud} aria-label={file?'文件响度历史定位':'与波形共用时间轴的 M、S、I 响度历史'} {...handlers}/>
   {kind==='history'&&feedback}

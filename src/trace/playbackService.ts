@@ -43,6 +43,11 @@ export class PlaybackService {
  private release(c:Context|null):void{if(!c)return;if(c.analysisId)this.analyses.release(c.analysisId);if(c.selectionAnalysisId){this.analyses.cancel(c.selectionAnalysisId);this.analyses.release(c.selectionAnalysisId)}}
  constructor(private native:PlaybackNative,private analyses:AnalysisService,private changed:()=>void){}
  instrumentQuery?: (request:InstrumentRequest)=>Promise<InstrumentPacket|undefined>
+ beforeSourceChange?:()=>Promise<void>
+ spectralSource(id:string):{source:AnalysisSource;replay?:ReplayInfo;analysisKey?:string}{
+  const c=this.context(id),job=this.analyses.snapshots().find(j=>j.id===c.analysisId)
+  return {source:structuredClone(c.source),replay:c.replayInfo?{...c.replayInfo}:undefined,analysisKey:job?.phase==='ready'?job.cacheKey:undefined}
+ }
  active():boolean{return this.current!==null}
  outputActive():boolean{return Boolean(this.current?.outputReady)}
  renameTake(takeId:string,oldName:string,name:string):void{const c=this.current;if(c?.source.takeId===takeId&&c.source.label.startsWith(oldName)){c.source={...c.source,label:name+c.source.label.slice(oldName.length)};this.changed()}}
@@ -61,7 +66,8 @@ export class PlaybackService {
   }
   async open(source:AnalysisSource,deviceId:string,replayInfo?:ReplayInfo,timeOffsetSeconds=0):Promise<void>{
    const operation=++this.operation
-   this.release(this.current)
+   const previous=this.current;this.current=null;this.release(previous)
+   await this.beforeSourceChange?.()
    await this.native.playbackClose()
    if(operation!==this.operation)return
    if(!replayInfo)this.native.replayRelease?.()
@@ -78,7 +84,7 @@ export class PlaybackService {
    c.error=error;c.readError=true;c.desiredPlaying=false;c.phase='failed';try{if(c.outputReady)this.native.playbackPause()}catch{};this.changed()
   }
   async close():Promise<void>{
-   ++this.operation;this.release(this.current);this.current=null;this.changed();await this.native.playbackClose();this.native.replayRelease?.()
+   ++this.operation;this.release(this.current);this.current=null;this.changed();await this.beforeSourceChange?.();await this.native.playbackClose();this.native.replayRelease?.()
   }
   private context(id:string):Context{
    const c=this.current;if(!c||c.id!==id)throw Error('STALE_PLAYBACK_SOURCE')
