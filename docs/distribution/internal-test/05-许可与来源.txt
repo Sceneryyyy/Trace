@@ -1,0 +1,32 @@
+LeoMoon / Trace 内测包 - 许可与来源
+
+本批按同一组织内的同事试用准备。运行文件和许可说明一起保留，
+本文件不修改任何组件的原许可条款，也不宣称公开分发准备已全部完成。
+
+Trace
+- 产品：Trace 声迹 / Audio Recorder & Analyzer，LeoMoon 系列。
+- 基于 Prism 锁定提交 df0755b8caaaab85157ac51aefffca0526974fc1 修改。
+- Prism 上游：https://github.com/Boof2015/prism
+- 上游 GPL-3.0 文本：resources/licenses/Prism-GPL-3.0.txt。
+- 本包具体程序版本、构建与文档身份见 BUILD-INFO.json。
+- Trace 修改后的代码在发起人的项目仓库中；上游链接不是 Trace 修改源码的下载地址。
+  如需审阅源码，请向内测发起人联系。对组织外分发时，需同时安排对应源码等分发材料。
+
+随包依赖
+- Electron：LICENSE.electron.txt、LICENSES.chromium.html。
+- React / ReactDOM / Scheduler：resources/licenses 对应 MIT 文本。
+- Inter / JetBrains Mono：resources/licenses 对应字体许可。
+- libebur128：resources/licenses/libebur128-MIT.txt、libebur128-source.json 与补丁说明。
+- FFmpeg / ffprobe：resources/ffmpeg；版本、来源、构建配置和哈希见
+  resources/ffmpeg.lock.json、resources/licenses/FFmpeg-build.txt、FFmpeg-GPL.txt。
+  当前构建为 Gyan essentials GPL v3，不标作纯 LGPL 构建。
+- 其他上游说明：resources/THIRD_PARTY_NOTICES.md。
+
+原始来源
+FFmpeg：https://www.ffmpeg.org/
+libebur128：https://github.com/jiixyj/libebur128
+Electron：https://www.electronjs.org/
+内部使用与对外分发的区别可参照 GNU 官方说明：
+https://www.gnu.org/licenses/gpl-faq.en.html#InternalDistribution
+
+反馈：472841772@qq.com

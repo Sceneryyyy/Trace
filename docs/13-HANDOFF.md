@@ -1,5 +1,17 @@
 # 13 · 当前状态与下一会话
 
+## 当前状态：preview.28 同事内测分发修订 r1 已就绪
+
+2026-09-17：按用户要求准备同事内测 ZIP，程序沿用 preview.28，补入 PDF 快速上手、最新 README、首次使用说明、试用清单、已知限制、反馈模板、许可/来源和校验信息。详情见 [63](63-INTERNAL-TEST-DISTRIBUTION.md)。未更改业务代码、重编译或覆盖旧包，未代发/上传。
+
+交付：dist-trace/internal-test/LeoMoon-Trace-preview.28-InternalTest-r1-Windows-x64.zip，210,504,189 bytes；SHA256 8b1d206f938cafe91eeb1bc5b9697655b30d2a77d1d03be5ecd4fedefdeabf72。同目录有 .zip.sha256。完整解压后先读 00-开始使用.txt，运行目录内 Trace.exe。
+
+105 文件校验、PDF 原件一致、无个人路径/配置/音频、中文路径解压后运行、八项录音编码重开、四项单实例均通过，报告 artifacts/internal-distribution-1789628708810/report.json。源目录新增 debug.log 已按运行组件白名单排除并保留原件。所有测试已结束。
+
+这是同事内测准备，干净 Windows/硬件/官方素材等 PB3–PB5 验收仍未全部完成；未签名状态已在开始说明注明。无工程阻塞，下一步收集同事反馈。
+
+## 以下为阶段历史
+
 ## 当前状态：preview.28 快速上手 PDF 已交付
 
 2026-09-17：核对发现已有 docs/28-USER-GUIDE.md 文字说明，但没有成册 PDF，且有报告/参考比较仍写后续等旧条目。本次修正文字说明，并生成 8 页 A4 中文快速上手手册：output/pdf/LeoMoon-Trace-Quick-Start-preview.28-zh-CN.pdf，内容与维护方式见 [62](62-USER-MANUAL.md)。

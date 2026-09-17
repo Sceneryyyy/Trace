@@ -1,5 +1,7 @@
 # 07 · 开发里程碑与任务单
 
+同事内测分发：preview.28 / InternalTest-r1 已就绪，手册、试用/反馈材料及重定位验证见 [63](63-INTERNAL-TEST-DISTRIBUTION.md)。下一步收集同事环境证据；不据此将 PB3–PB5 标为全部完成。
+
 公测准备：PB1 单实例及 PB2 故障诊断/反馈已完成 preview.27 工程交付，见 [60](60-PB1-PB2-SUPPORT.md)。PB3–PB5 待后续授权推进，原验收范围以 59 为准。
 
 ## 后续开发主线：M7–M12
