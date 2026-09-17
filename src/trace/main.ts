@@ -28,7 +28,7 @@ import { app, BrowserWindow, dialog, ipcMain, shell, screen, clipboard } from 'e
 import { join, resolve, sep,isAbsolute } from 'node:path'
 import { randomUUID } from 'node:crypto'
 import { createRequire } from 'node:module'
-import { mkdirSync, readFileSync } from 'node:fs'
+import { mkdirSync, readFileSync, realpathSync } from 'node:fs'
 import { validateRequest, isMutation } from './contracts'
 import { RecordingService } from './recording'
 import { AnalysisService } from './analysisService'
@@ -92,6 +92,18 @@ const testMode=process.argv.includes('--trace-test')
 const testRoot=testMode?(process.env.TRACE_TEST_ROOT?resolve(process.env.TRACE_TEST_ROOT):app.isPackaged?join(app.getPath('temp'),'Trace-validation',String(process.pid)):join(root,'artifacts')):undefined
 if(testMode){if(!testRoot||!isAbsolute(testRoot))throw Error('INVALID_TEST_ROOT');const dir=process.env.TRACE_TEST_USER_DATA?resolve(process.env.TRACE_TEST_USER_DATA):join(testRoot,'test-users',String(process.pid));if(!dir.toLowerCase().startsWith((testRoot+sep).toLowerCase()))throw Error('INVALID_TEST_USER_DATA');mkdirSync(dir,{recursive:true});app.setPath('userData',dir)}
 app.setName('Trace')
+// Key the OS lock by the actual shared profile, including portable copies and path aliases.
+const profileDirectory=app.getPath('userData')
+mkdirSync(profileDirectory,{recursive:true})
+app.setPath('userData',realpathSync.native(profileDirectory))
+if(!app.requestSingleInstanceLock())app.exit(0)
+let activateWhenReady=false
+function activateExistingWindow():void{
+ if(!window||window.isDestroyed()){activateWhenReady=true;return}
+ if(window.isMinimized())window.restore()
+ window.show();window.focus();activateWhenReady=false
+}
+app.on('second-instance',()=>activateExistingWindow())
 function emitState():void{state={...state,eventSequence:(state.eventSequence||0)+1};if(window&&!window.isDestroyed())window.webContents.send('trace:state',{...state})}
 function update(patch:Partial<TraceState>):void{state={...state,...patch,revision:state.revision+1};emitState()}
 const memoryAnalysisTakes=new Set<string>(),memoryAnalysisJobs=new Set<string>()
@@ -722,6 +734,7 @@ app.whenReady().then(()=>{
     if(preferencesTimer)clearTimeout(preferencesTimer);try{savePreferences()}catch(error){console.error('Trace preferences:',error)}})
   window.on('closed',()=>{window=null})
   window.loadFile(join(__dirname,'../renderer/index.html')).then(initialize).catch(error=>update({active:false,error:String(error)}))
+  if(activateWhenReady)activateExistingWindow()
   timer=setInterval(()=>{
     if(!window||window.isDestroyed())return
     if(pollFailurePending)return
