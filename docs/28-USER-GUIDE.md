@@ -1,6 +1,6 @@
 # Trace 声迹 · 使用说明
 
-当前版本：0.1.0-preview.24（Windows x64 开发预览）
+当前版本：0.1.0-preview.25（Windows x64 开发预览）
 
 ## 启动
 

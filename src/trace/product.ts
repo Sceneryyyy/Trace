@@ -1,1 +1,1 @@
-export const product={name:'Trace',brand:'TRACE',chineseName:'声迹',fullName:'Trace 声迹 · 音频分析录音机',subtitle:'Audio Recorder & Analyzer',version:'0.1.0-preview.24'} as const
+export const product={name:'Trace',brand:'TRACE',chineseName:'声迹',fullName:'Trace 声迹 · 音频分析录音机',subtitle:'Audio Recorder & Analyzer',version:'0.1.0-preview.25'} as const
