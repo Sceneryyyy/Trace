@@ -22,6 +22,7 @@ import {TargetSettingsForm,TargetStrip} from './Targets'
 import {ReportPanel} from './ReportPanel'
 import {ReferencePanel} from './ReferencePanel'
 import {DisplaySettingsForm} from './DisplaySettingsForm'
+import {BrandLockup} from './BrandLockup'
 import {userError} from '../userErrors'
 import type {ExportDescription,ExportSource} from '../exportTypes'
 import type { Command, Device, Metric, MeterSnapshot, TraceState, PlaybackView, RecordSettings } from '../shared'
@@ -307,7 +308,7 @@ export default function App(): React.JSX.Element {
       </aside>
    return <main className="trace-app" onDragOver={e=>{if(e.dataTransfer.types.includes('Files')){e.preventDefault();e.dataTransfer.dropEffect='copy'}}} onDrop={e=>{if(!e.dataTransfer.files.length)return;e.preventDefault();const files=Array.from(e.dataTransfer.files);void window.trace.importFiles(files).then(result=>{setMessage(result.errors.map(e=>e.name+'：'+userError(e.message)).join('；'));setModal('files')}).catch(error=>setMessage(userError(error)))}}>
     <header className="topbar">
-      <div className="brand"><svg viewBox="0 0 32 32" width="31" height="31" fill="none" aria-hidden="true"><path d="M2 16H7L11 5L16 27L21 10L24 16H30" stroke="currentColor" strokeWidth="2.1" strokeLinejoin="round" /></svg><span>TRACE</span><small>Audio Recorder &amp; Analyzer</small></div>
+      <BrandLockup/>
       <div className="top-status"><span className={'live-badge '+(isRecording?'is-rec':state.active?'is-live':'')}><i />{isRecording?'REC':state.active?'采集中':'待机'}</span><span className="preview-badge">开发预览</span><button className="header-settings" aria-label="测量目标" aria-pressed={targets.enabled} onClick={()=>setModal('targets')}>目标</button><button className="header-settings" aria-label="显示与帮助" onClick={()=>setModal('display')}>显示与帮助</button></div>
     </header>
     {    <section className="sourcebar" aria-label="声音来源与录音设置">

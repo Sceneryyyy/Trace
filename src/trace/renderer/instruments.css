@@ -3,8 +3,8 @@
  --bg:#11151a;--panel:#191f26;--border:#333d48;--text:#e8edf2;--secondary:#abb7c4;
 }
 .trace-app .topbar {height:42px;flex-basis:42px;padding:0 16px;background:#171d24}
-.trace-app .brand>span {font-size:20px;letter-spacing:3px}
-.trace-app .brand svg {width:25px;height:25px}
+.trace-app .brand {gap:9px}
+.trace-app .brand-mark {width:36px;height:36px}
 .trace-app .sourcebar {height:43px;flex-basis:43px;background:#151b21;padding:0 14px}
 .trace-app .sourcebar button,.trace-app .sourcebar select {background:#202831;border-color:#3b4653}
 .trace-app .workbench-heading {height:47px;flex:0 0 47px;display:flex;align-items:center;border-bottom:1px solid var(--border);background:#151b21}

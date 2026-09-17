@@ -1,6 +1,8 @@
 # Trace 声迹 · 使用说明
 
-当前版本：0.1.0-preview.27（Windows x64 开发预览）
+当前版本：0.1.0-preview.28（Windows x64 开发预览）
+
+界面以 LeoMoon 为系列品牌，TRACE 为当前产品名；绿色至青色的狮子月牙标识同时用于顶部和 Windows 图标。
 
 ## 启动
 

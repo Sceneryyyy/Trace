@@ -1,5 +1,15 @@
 # 13 · 当前状态与下一会话
 
+## 当前状态：LeoMoon 系列品牌接入，preview.28
+
+2026-09-17 用户纠正品牌方向：复用狮子月牙形状，仅换色；LeoMoon 保留为系列，Trace 为个体产品。现已接入绿—青标识、LeoMoon / TRACE 两级字标、帮助说明和 Windows 六尺寸图标。最终素材在 resources/trace/branding，另一项目仅作读取参考；原波形 SVG 与旧包保留，详见 [61](61-LEOMOON-TRACE-BRANDING.md)。
+
+类型检查/构建、实际包六组窗口/缩放、图标及包审计通过。八个 main/worker/preload JS 除版本外与 preview.27 相同，native 相同，未重跑音频全量门禁。报告 artifacts/branding/ui-1789625259550/report.json。入口 dist-trace/preview.28/win-unpacked/Trace.exe，ZIP SHA256 550153407e6865484713be7188a0ee6c0cb952fa7d5624b14446a85add160637。
+
+没有运行中的验证任务或工程阻塞；下一步用户确认品牌显示。PB1/PB2 已交付状态不变，PB3–PB5 未启动。
+
+## 以下为阶段历史
+
 ## 当前状态：PB1/PB2 已交付，preview.27
 
 2026-09-17：已按用户要求完成单实例保护及故障诊断/反馈，详情与机制见 [60](60-PB1-PB2-SUPPORT.md)。重复启动激活已有窗口；帮助中可导出/复制诊断、打开 472841772@qq.com 邮件草稿。日志有界且只存固定字段，异常界面可恢复，主进程致命异常退出后能识别未正常结束并查看录音恢复。旧版 preview.26 及更早不遵守锁，首次升级先退出它们。
