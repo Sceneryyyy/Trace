@@ -1,5 +1,15 @@
 # 13 · 当前状态与下一会话
 
+## 当前状态：preview.28 快速上手 PDF 已交付
+
+2026-09-17：核对发现已有 docs/28-USER-GUIDE.md 文字说明，但没有成册 PDF，且有报告/参考比较仍写后续等旧条目。本次修正文字说明，并生成 8 页 A4 中文快速上手手册：output/pdf/LeoMoon-Trace-Quick-Start-preview.28-zh-CN.pdf，内容与维护方式见 [62](62-USER-MANUAL.md)。
+
+手册采用 LeoMoon / TRACE 品牌及实际 preview.28 演示截图，覆盖首次录音、历史/选区/循环、布局与仪器、报告、A/B、文件管理和反馈。中文字体嵌入、八页文本、八个书签、四个跳转、边界检查通过，全部页面已渲染查看。报告 artifacts/manual-qa.json。没有运行中的采集或验证任务。
+
+本轮未修改业务代码或重打包，运行包仍为 preview.28；原 ZIP 的 README 保持原交付快照，PDF 单独交付。下一步可根据用户反馈修订，或在后续授权中加入帮助入口和分发包；PB3–PB5 未启动，无工程阻塞。
+
+## 以下为阶段历史
+
 ## 当前状态：LeoMoon 系列品牌接入，preview.28
 
 2026-09-17 用户纠正品牌方向：复用狮子月牙形状，仅换色；LeoMoon 保留为系列，Trace 为个体产品。现已接入绿—青标识、LeoMoon / TRACE 两级字标、帮助说明和 Windows 六尺寸图标。最终素材在 resources/trace/branding，另一项目仅作读取参考；原波形 SVG 与旧包保留，详见 [61](61-LEOMOON-TRACE-BRANDING.md)。

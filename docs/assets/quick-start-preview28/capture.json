@@ -1,0 +1,77 @@
+{
+  "version": "0.1.0-preview.28",
+  "source": "Actual isolated application, generated demonstration signal; no personal recording",
+  "captures": {
+    "workbench": {
+      "width": 1280,
+      "height": 800
+    },
+    "transport": {
+      "x": 0,
+      "y": 736,
+      "width": 1280,
+      "height": 64,
+      "scale": 1
+    },
+    "selection": {
+      "x": 0,
+      "y": 132,
+      "width": 1280,
+      "height": 531,
+      "scale": 1
+    },
+    "waveform": {
+      "x": 206.34375,
+      "y": 142,
+      "width": 780.4375,
+      "height": 312.46875,
+      "scale": 1
+    },
+    "meters": {
+      "x": 993.78125,
+      "y": 142,
+      "width": 274.21875,
+      "height": 511,
+      "scale": 1
+    },
+    "timeline-actions": {
+      "x": 803,
+      "y": 92,
+      "width": 112,
+      "height": 32,
+      "scale": 1
+    },
+    "editing": {
+      "width": 1280,
+      "height": 800
+    },
+    "layout-toolbar": {
+      "x": 929,
+      "y": 93,
+      "width": 351,
+      "height": 30,
+      "scale": 1
+    },
+    "spectrum-field": {
+      "x": 0,
+      "y": 132,
+      "width": 1280,
+      "height": 531,
+      "scale": 1
+    },
+    "spectrogram": {
+      "x": 0,
+      "y": 132,
+      "width": 1280,
+      "height": 531,
+      "scale": 1
+    },
+    "support": {
+      "x": 385,
+      "y": 48,
+      "width": 510,
+      "height": 704,
+      "scale": 1
+    }
+  }
+}
