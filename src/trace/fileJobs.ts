@@ -1,4 +1,5 @@
 import { spawn } from 'node:child_process'
+import {supportEvent} from './supportEvents'
 import {retryHashWorker} from './readOnlyWorkerRetry'
 import { join, sep,dirname,basename,isAbsolute } from 'node:path'
 import { readdir, realpath, rm,writeFile } from 'node:fs/promises'
@@ -35,6 +36,7 @@ async function runJob<T>(job:Record<string,unknown>,options:JobOptions={}):Promi
         else result=message
       })
       child.on('close',code=>{
+        if(!cancelled&&code!==0)supportEvent('file-worker-exit',code??-1)
         if(settled)return;settled=true;options.signal?.removeEventListener('abort',abort)
         if(cancelled)reject(Error('ANALYSIS_CANCELLED'))
         else if(code===0&&result?.ok)resolve(result.results)

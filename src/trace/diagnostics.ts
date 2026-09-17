@@ -9,6 +9,6 @@ export function safeDiagnostics(version:string,state:TraceState,snapshot:NativeM
   capture:{active:state.active,requested:state.monitoringRequested,format:snapshot.format,captureEpoch:snapshot.epochId,measurementEpoch:snapshot.measurementEpoch,errorCode:errorCode(state.error||snapshot.error),nativeErrorCode:typeof snapshot.diagnostics?.sourceErrorCode==='number'?snapshot.diagnostics.sourceErrorCode:null},
   recording:record?{phase:record.phase,acceptedFrames:record.acceptedFrames,writtenFrames:record.writtenFrames,queueDepth:record.queueDepth,queueHighWater:record.queueHighWater,errorCode:errorCode(record.error)}:null,
   view:file?{kind:file.temporary?'memory':'file',phase:file.phase,positionFrame:file.positionFrame,totalFrames:file.totalFrames,analysisPhase:file.analysisPhase,errorCode:errorCode(file.error||file.analysisError)}:{kind:'live'},
-  jobs:{analysis:state.analysisJobs?.map(j=>({phase:j.phase,errorCode:errorCode(j.error)})),export:state.exportJobs?.map(j=>({phase:j.phase,errorCode:errorCode(j.error),deliveryPhase:j.delivery?.phase,deliveryErrorCode:errorCode(j.delivery?.error)}))}
+  jobs:{analysis:state.analysisJobs?.slice(-32).map(j=>({phase:j.phase,errorCode:errorCode(j.error)})),export:state.exportJobs?.slice(-32).map(j=>({phase:j.phase,errorCode:errorCode(j.error),deliveryPhase:j.delivery?.phase,deliveryErrorCode:errorCode(j.delivery?.error)}))}
  }
 }

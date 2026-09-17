@@ -8,7 +8,7 @@ const report={status:'running',folder,checks:[]};let session
 async function wait(fn,label){for(const t=Date.now();Date.now()-t<15000;){if(await fn())return;await delay(30)}throw Error('Timeout '+label)}
 async function duplicate(){
  const env={...process.env,TRACE_TEST_ROOT:folder,TRACE_TEST_USER_DATA:userData,TRACE_RECORD_TEST_DIR:takes};delete env.ELECTRON_RUN_AS_NODE
- const child=spawn(exe,['--trace-test',...args],{env,windowsHide:true,stdio:'ignore',cwd:path.join(folder,'empty-working-directory')})
+ const child=spawn(process.env.TRACE_SECOND_EXE||exe,['--trace-test',...(process.env.TRACE_SECOND_EXE?[]:args)],{env,windowsHide:true,stdio:'ignore',cwd:path.join(folder,'empty-working-directory')})
  await wait(()=>child.exitCode!==null,'duplicate exits');assert.equal(child.exitCode,0)
 }
 async function main(){

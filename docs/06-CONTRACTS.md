@@ -1,5 +1,7 @@
 # 06 · 模块接口与消息契约
 
+PB2：Request v1 增加无参数 app.exportDiagnostics / app.feedback / app.reloadUI，以及仅接受 kind=react/script/promise 的 app.rendererFault；拒绝路径、收件地址与异常原文。TraceState.support 是可选固定字段状态。app.diagnostics 保留原摘要形状，复制/导出使用 SupportReport schemaVersion=1，包含主模块构建 SHA256 与脱敏历史。support.testFault 仅在隔离 testMode 接受 renderer/main/worker，生产模式返回 TEST_ONLY。源目录选择与固定 mailto 构造均在主进程，见 60。
+
 M12 参考：reference.set/clear/activate/range/configure/retry 使用来源 ID、A/B 槽、十进制帧范围与有界纳秒偏移，禁止路径参数。TraceState.reference 仅含来源/分析摘要及差值；ReferencePacket 通过 trace:reference → preload 独立转移流发送，带版本/序号/配置键和各自真实查询位置，不保留过期数组。workspace v4、引用释放与原生两槽调度见 54/55。
 
 M12：新增 imports.choose/refresh/cancel/prepare/relocate/clearCache/remove/removeExport/rename/openSource/openFolder/openRoot；通用命令仅接受 ID/选项/名称。TraceHostAPI/TraceAPI 增加 importFiles(File[])，preload 通过 webUtils 解析磁盘 File，经专用 trace:import-files 通道送入主进程；主窗口/mainFrame 和批量上限同时验证。TraceState 携带有限字段的 imports/importIssues，刷新与取消不等待 mutation 队列，读取回复不进入完成缓存。旧的快照/声谱数组转移语义保持。见 53。

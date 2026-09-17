@@ -20,6 +20,7 @@ import {InstrumentService} from './instrumentService'
 import {defaultInstrumentSettings,restoreInstrumentSettings,validateInstrumentSettings,instrumentConfigKey,type InstrumentNative} from './instrumentTypes'
 import {DeliveryService} from './deliveryService'
 import {safeDiagnostics} from './diagnostics'
+import {SupportRuntime} from './supportRuntime'
 import {exportPreferencesVersion} from './exportPreferences'
 import {recordingCapacity,freeSpace} from './storageCapacity'
 import {mediaDurationNs} from './sessionTimeline'
@@ -67,6 +68,7 @@ let library:LibraryService
 let managingLibrary=false
 let retention:SourceRetention
 let window:BrowserWindow|null=null
+let rendererUsable=false
 let closePromptPending=false
 let timer:ReturnType<typeof setInterval>|undefined
 let importWatchTimer:ReturnType<typeof setInterval>|undefined
@@ -77,6 +79,7 @@ let recordingCaptureHeld=false
 let preferencesTimer:ReturnType<typeof setTimeout>|undefined
 let preferencesReady=false
 let preferencesWriter:PreferencesWriter|undefined
+let supportRuntime:SupportRuntime|undefined
 let reports:ReportService
 let imports:ImportService
 let assets:AssetRepository
@@ -104,7 +107,15 @@ function activateExistingWindow():void{
  window.show();window.focus();activateWhenReady=false
 }
 app.on('second-instance',()=>activateExistingWindow())
-function emitState():void{state={...state,eventSequence:(state.eventSequence||0)+1};if(window&&!window.isDestroyed())window.webContents.send('trace:state',{...state})}
+process.on('uncaughtException',()=>{if(supportRuntime)return supportRuntime.fatal('main-uncaught');app.exit(1)})
+process.on('unhandledRejection',()=>{if(supportRuntime)return supportRuntime.fatal('main-rejection');app.exit(1)})
+function diagnosticSnapshot(){
+ const basic=safeDiagnostics(product.version,state,engine.snapshot(5,1),engine.recordStatus())
+ return {...basic,workbench:{visibleInstruments:state.workspace?8-state.workspace.layout.hidden.length:null,fftSize:state.instrumentSettings?.fftSize,spectrogramFftSize:state.spectrogramSettings?.fftSize},
+  background:{imports:(state.imports||[]).slice(-32).map(j=>({status:j.status})),reports:(state.reportJobs||[]).slice(-32).map(j=>({phase:j.phase})),reference:state.reference?{active:state.reference.active,hasA:Boolean(state.reference.a),hasB:Boolean(state.reference.b),error:Boolean(state.reference.error)}:null}}
+}
+function sendRenderer(channel:string,value:unknown):void{if(rendererUsable&&window&&!window.isDestroyed())window.webContents.send(channel,value)}
+function emitState():void{supportRuntime?.observe();state={...state,eventSequence:(state.eventSequence||0)+1};sendRenderer('trace:state',{...state})}
 function update(patch:Partial<TraceState>):void{state={...state,...patch,revision:state.revision+1};emitState()}
 const memoryAnalysisTakes=new Set<string>(),memoryAnalysisJobs=new Set<string>()
 let preparingMemoryAnalysis=false
@@ -160,7 +171,7 @@ function referenceVisible(){return Boolean(!exiting&&!recordings?.busy()&&state.
 function syncReferenceState(){if(references){state={...state,reference:references.view()};emitState();if(!recordings?.busy()&&!managingLibrary&&!exiting)retention?.resume()}}
 function instrumentsVisible():boolean{const peer=references?.activeSlot?references.peer(references.activeSlot):undefined;return Boolean(state.workspace&&(['spectrum','soundfield'].some(id=>!state.workspace!.layout.hidden.includes(id as never))||referenceVisible()&&peer&&references.peer('b')&&peer.range.startFrame==='0'&&peer.range.endFrame===peer.source.frames))}
 function publishLiveSample(snapshot:MeterSnapshot):void{
- const send=()=>{if(!window||window.isDestroyed()||exiting||playback.active())return;const key=[snapshot.sourceId,snapshot.epochId,snapshot.measurementEpoch,state.currentRecord?snapshot.recording?.id:''].join(':');const frame=BigInt(state.currentRecord?snapshot.recording?.writtenFrames||'0':snapshot.positionFrame);if(lastLivePublication?.key===key&&frame<lastLivePublication.frame)return;lastLivePublication={key,frame};snapshot.eventSequence=++snapshotSequence;snapshot.stateRevision=state.revision;window.webContents.send('trace:snapshot',snapshot)}
+ const send=()=>{if(!window||window.isDestroyed()||exiting||playback.active())return;const key=[snapshot.sourceId,snapshot.epochId,snapshot.measurementEpoch,state.currentRecord?snapshot.recording?.id:''].join(':');const frame=BigInt(state.currentRecord?snapshot.recording?.writtenFrames||'0':snapshot.positionFrame);if(lastLivePublication?.key===key&&frame<lastLivePublication.frame)return;lastLivePublication={key,frame};snapshot.eventSequence=++snapshotSequence;snapshot.stateRevision=state.revision;sendRenderer('trace:snapshot',snapshot)}
  if(!instrumentsVisible()||snapshot.error){send();return}
  if(instrumentLiveBusy)return
  const settings=state.instrumentSettings||defaultInstrumentSettings,configKey=instrumentConfigKey(settings),record=snapshot.recording
@@ -185,7 +196,7 @@ function publishInspectionSample():void{
       current.endFrame!==snapshot.fileView.endFrame)return
     if(snapshot.instruments&&snapshot.instruments.configKey!==instrumentConfigKey(state.instrumentSettings||defaultInstrumentSettings))return
     references?.observe({...current,positionFrame:snapshot.positionFrame});if(referenceVisible())referenceSpectrum?.request(snapshot,state.instrumentSettings||defaultInstrumentSettings)
-    window.webContents.send('trace:snapshot',{...snapshot,...latestRecordingFrame,eventSequence:++snapshotSequence,stateRevision:state.revision})
+    sendRenderer('trace:snapshot',{...snapshot,...latestRecordingFrame,eventSequence:++snapshotSequence,stateRevision:state.revision})
     if(playback.outputActive()&&['ended','failed'].includes(current.phase)&&!finishingOutput){
       finishingOutput=true
       const id=current.id,generation=current.generation
@@ -368,7 +379,18 @@ async function dispatch(request:Request):Promise<Reply>{
       case 'imports.openRoot':{const message=await shell.openPath(imports.store.root);if(message)throw Error(message);break}
       case 'app.configure':update({confirmExitWhileRecording:request.payload.confirmExitWhileRecording as boolean});savePreferences();break
       case 'app.diagnostics':data=safeDiagnostics(product.version,state,engine.snapshot(5,1),engine.recordStatus());break
-      case 'app.copyDiagnostics':clipboard.writeText(JSON.stringify(safeDiagnostics(product.version,state,engine.snapshot(5,1),engine.recordStatus()),null,2));data={copied:true};break
+      case 'app.copyDiagnostics':clipboard.writeText(JSON.stringify(await supportRuntime!.report(),null,2));data={copied:true};break
+      case 'app.exportDiagnostics':data=await supportRuntime!.export(window);break
+      case 'app.feedback':data=await supportRuntime!.feedback();break
+      case 'app.rendererFault':supportRuntime?.record(('renderer-'+request.payload.kind) as 'renderer-react'|'renderer-script'|'renderer-promise');data={recording:Boolean(state.currentRecord)};break
+      case 'app.reloadUI':if(window)setTimeout(()=>{if(window&&!window.isDestroyed())supportRuntime?.reload(window)},50);break
+      case 'support.testFault':{
+        if(!testMode)throw Error('TEST_ONLY')
+        if(request.payload.kind==='renderer')setTimeout(()=>window?.webContents.forcefullyCrashRenderer(),50)
+        else if(request.payload.kind==='main')setTimeout(()=>{throw Error('TEST_ONLY_MAIN_FAILURE')},50)
+        else {await hashFiles([join(testRoot!,'missing-test-file.wav')]).catch(()=>{});data={tested:true}}
+        break
+      }
       case 'test.window':if(!testMode||!window)throw Error('TEST_ONLY');if(request.payload.mode==='show')window.show();else if(request.payload.mode==='hide')window.hide();else if(request.payload.mode==='minimize')window.minimize();else{window.restore();window.show()}break
       case 'spectrogram.configure':update({spectrogramSettings:validateSpectrogramSettings(request.payload.settings)});schedulePreferences();break
       case 'spectrogram.query':spectrogram.request(request.requestId,validateSpectrogramQuery(request.payload),state.spectrogramSettings||defaultSpectrogramSettings);data={accepted:true};break
@@ -630,6 +652,7 @@ function handle(event:Electron.IpcMainInvokeEvent,raw:unknown):Promise<Reply>|Re
     const operation=isMutation(request.command)?mutations.then(()=>dispatch(request)):dispatch(request)
     if(isMutation(request.command))mutations=operation.then(()=>undefined,()=>undefined)
     const promise=operation.then(reply=>{
+      if(!reply.ok&&reply.error?.code!=='STALE_REQUEST'&&!request.command.startsWith('spectrogram.'))supportRuntime?.record('command-failed')
       if((!request.command.startsWith('spectrogram.')&&!request.command.startsWith('report.')&&!request.command.startsWith('imports.'))||isMutation(request.command))completed.set(requestId,{signature,reply});pending.delete(requestId)
       if(completed.size>256)completed.delete(completed.keys().next().value as string)
       return reply
@@ -668,7 +691,10 @@ async function initialize():Promise<void>{
   const device=devices.find(d=>d.id===preferred.deviceId&&d.supported)||devices.find(d=>d.isDefault&&d.supported)
   if(device){if(state.monitoringRequested)startDevice(device.id);else update({deviceId:device.id,active:false,error:null})}else update({error:'没有可用的单声道或双声道播放设备。'})
 }
-app.whenReady().then(()=>{
+app.whenReady().then(async()=>{
+  supportRuntime=await SupportRuntime.create(product.version,__filename,()=>state,diagnosticSnapshot,()=>{if(supportRuntime){state={...state,support:supportRuntime.status};emitState()}},testRoot)
+  state={...state,support:supportRuntime.status}
+  if(testMode&&process.env.TRACE_TEST_STARTUP_FAILURE==='1')throw Error('TEST_ONLY_STARTUP_FAILURE')
   engine=requireNative(app.isPackaged?join(process.resourcesPath,'native/trace_engine.node'):join(root,'build/trace-engine/Release/trace_engine.node')) as NativeEngine
   const ffroot=app.isPackaged?join(process.resourcesPath,'ffmpeg'):join(root,'.tools/ffmpeg/bin')
   const segment=testMode&&process.env.TRACE_TEST_SEGMENT_BYTES?Number(process.env.TRACE_TEST_SEGMENT_BYTES):2147483648
@@ -676,7 +702,7 @@ app.whenReady().then(()=>{
   analyses=new AnalysisService(app.isPackaged?join(process.resourcesPath,'native/trace_engine.node'):join(root,'build/trace-engine/Release/trace_engine.node'),syncAnalysisState)
   const analysisNative:InstrumentNative&SpectrogramNative={instrumentAnalyze:request=>nativeAnalysisQueue.run(()=>engine.instrumentAnalyze(request),String(request.identity||'').startsWith('reference:')?1:0),spectrogramTile:request=>nativeAnalysisQueue.run(()=>engine.spectrogramTile(request))}
   instruments=new InstrumentService(analysisNative)
-  spectrogram=new SpectrogramPresenter(analysisNative,resolveSpectrogram,packet=>{if(window&&!window.isDestroyed())window.webContents.send('trace:spectrogram',packet)})
+  spectrogram=new SpectrogramPresenter(analysisNative,resolveSpectrogram,packet=>{if(window&&!window.isDestroyed())sendRenderer('trace:spectrogram',packet)})
   playback=new PlaybackService(engine,analyses,syncPlaybackState)
   reports=new ReportService(join(app.getPath('userData'),'report-drafts'),()=>{state={...state,reportJobs:reports.views()};emitState();if(!recordings.busy()&&!managingLibrary&&!exiting)retention?.resume()})
   playback.beforeSourceChange=()=>spectrogram.release()
@@ -688,7 +714,7 @@ app.whenReady().then(()=>{
   exporter=new ExportService(assets,mediaTools,syncExportState)
   assets.setExportResolver((id,exportId)=>exporter.resolve(id,exportId))
   references=new ReferenceService(analyses,source=>assets.analysisSource(source.takeId,source.role,source.regionId,source.exportId),syncReferenceState)
-  referenceSpectrum=new ReferenceSpectrumService(references,(request,settings)=>instruments.query(request,settings),packet=>{if(window&&!window.isDestroyed()&&!exiting&&referenceVisible())window.webContents.send('trace:reference',packet)})
+  referenceSpectrum=new ReferenceSpectrumService(references,(request,settings)=>instruments.query(request,settings),packet=>{if(window&&!window.isDestroyed()&&!exiting&&referenceVisible())sendRenderer('trace:reference',packet)})
   references.stopQueries=()=>referenceSpectrum.cancel()
   deliveries=new DeliveryService(assets,exporter,()=>syncExportState(),()=>!recordings.busy()&&!exiting&&!managingLibrary)
   library=new LibraryService(recordings,path=>shell.trashItem(path),()=>{if(recordings)update({recordings:library.summaries(),exportJobs:exporter.views().map(decorateExport)})},()=>exporter.busy()||deliveries.busy())
@@ -716,6 +742,10 @@ app.whenReady().then(()=>{
     ...(bounds||{}),backgroundColor:'#121615',autoHideMenuBar:true,show:!testMode||process.argv.includes('--trace-test-visible'),
     webPreferences:{webgl:!(testMode&&process.env.TRACE_TEST_NO_WEBGL==='1'),preload:join(__dirname,'../preload/index.js'),contextIsolation:true,sandbox:true,nodeIntegration:false,backgroundThrottling:!testMode},
   })
+  window.webContents.on('did-start-loading',()=>{rendererUsable=false})
+  window.webContents.on('render-process-gone',()=>{rendererUsable=false})
+  window.webContents.on('did-finish-load',()=>{rendererUsable=true;emitState()})
+  supportRuntime.bindWindow(window)
   const publishVisibility=()=>{const visible=Boolean(window?.isVisible()&&!window?.isMinimized());if(!visible)spectrogram?.cancel();if(state.windowVisible!==visible)update({windowVisible:visible})}
   window.on('show',publishVisibility);window.on('hide',publishVisibility);window.on('minimize',publishVisibility);window.on('restore',publishVisibility)
   publishVisibility()
@@ -733,7 +763,7 @@ app.whenReady().then(()=>{
     }
     if(preferencesTimer)clearTimeout(preferencesTimer);try{savePreferences()}catch(error){console.error('Trace preferences:',error)}})
   window.on('closed',()=>{window=null})
-  window.loadFile(join(__dirname,'../renderer/index.html')).then(initialize).catch(error=>update({active:false,error:String(error)}))
+  window.loadFile(join(__dirname,'../renderer/index.html')).then(initialize).catch(()=>supportRuntime!.startupFailure())
   if(activateWhenReady)activateExistingWindow()
   timer=setInterval(()=>{
     if(!window||window.isDestroyed())return
@@ -760,11 +790,12 @@ app.whenReady().then(()=>{
       void recordings.fail(message).catch(failure=>{console.error('TRACE_RECORD_FINALIZE_ERROR',failure);update({error:message+'; '+String(failure)})}).finally(()=>{pollFailurePending=false})
     }
   },33)
-}).catch(error=>{console.error('Trace startup failed:',error);app.exit(1)})
+}).catch(async()=>{if(supportRuntime)return supportRuntime.startupFailure();dialog.showErrorBox('Trace 启动失败','无法启动 Trace。请检查安装文件和配置目录权限。');app.exit(1)})
 let exiting=false,readyToQuit=false
 app.on('before-quit',event=>{
   if(readyToQuit)return
   event.preventDefault();if(exiting)return;try{if(window&&!window.isDestroyed())savePreferences()}catch(error){console.error('Trace preferences:',error)}exiting=true
+  supportRuntime?.stopDialogs()
   if(timer)clearInterval(timer)
   if(preferencesTimer)clearTimeout(preferencesTimer)
   recordings?.prepareShutdown()
@@ -780,6 +811,7 @@ app.on('before-quit',event=>{
     await exporter?.shutdown()
     await nativeAnalysisQueue.close()
     await preferencesWriter?.flush()
+    await supportRuntime?.finish()
   })()
   finish.catch(error=>console.error('Trace finalization:',error)).finally(()=>{readyToQuit=true;app.quit()})
 })

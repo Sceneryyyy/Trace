@@ -5,6 +5,15 @@
   color: var(--text); background: var(--bg); font-size: 13px; font-synthesis: none;
 }
 * { box-sizing: border-box; }
+.support-panel {margin-top:16px;padding-top:12px;border-top:1px solid var(--border)}
+.support-panel h3 {margin:0 0 8px;font-size:14px}
+.support-panel p {font-size:12px;line-height:1.7;color:var(--secondary)}
+.support-actions {display:flex;gap:8px;flex-wrap:wrap}
+.support-address {overflow-wrap:anywhere}
+.recovery-screen {height:100vh;display:grid;place-items:center;padding:30px;overflow:auto}
+.recovery-screen>section {max-width:640px;padding:28px;border:1px solid var(--border);border-radius:8px;background:var(--panel)}
+.recovery-screen h1 {font-size:23px;margin-top:0}
+.recovery-screen p {line-height:1.7}
 body { margin: 0; min-width: 980px; height: 100vh; overflow: hidden; }
 button, select { font: inherit; color: inherit; }
 button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid var(--border); border-radius: 5px; background: #242d27; cursor: pointer; min-height: 34px; padding: 0 13px; transition: background 130ms, border-color 130ms; }

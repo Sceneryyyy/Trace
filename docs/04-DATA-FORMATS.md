@@ -1,5 +1,7 @@
 # 04 · 会话、音频、缓存与恢复
 
+PB2：配置目录下 support/events.json 为 schemaVersion=1，最多 128 条固定字段事件与 clean 标记；support/fatal.json 仅保存致命异常类别/时间。异步原子写入、短时重复合并；致命退出前只写极小同步标记。导出诊断为独立新目录中的 diagnostics.json + feedback.txt，不附带音频/文件名/路径/设备身份。音频会话和计量缓存格式不变，见 60。
+
 M12 参考比较：workspace v4 增加 comparison 仪器及预设，v1/v2/v3 迁移保留已有树/隐藏状态/自定义预设，新增面板默认隐藏。A/B 配对是本次运行状态，不写入布局或音频文件。各自范围分析、原始测量和监听增益分离；ReferencePacket 的功率数组走独立可转移通道。共享分析取消需等最后一份引用释放，自动原始源整理还需等待参考及关闭中的播放源。见 54/55。
 
 M12：外部素材使用 ImportedDocument v1 与独立 owner.json，不创建虚假的 CaptureRegion。sourcePath/源指纹只指向只读外部文件；decoded/cache/exports 的应用归属分开。archived 为可选字段，移除引用后隐藏记录、保留元数据和成品；清缓存先失效 ready 状态并等待消费者释放。解码缓存有独立 owner/来源身份/顺序/帧数/实际 hash 校验。报告 source.origin 与摘要 CSV origin 列区分录音/导入；原有列顺序不变。设计及边界见 52/53。
