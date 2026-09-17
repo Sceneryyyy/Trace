@@ -17,7 +17,8 @@ export class AnalysisService {
   private cache:{id:string;value:AnalysisCache}|undefined
   constructor(private nativePath:string,private changed:(control:boolean)=>void,private runAnalysis:typeof analyzeFiles=analyzeFiles){}
   retain(id:string):void{if(!this.jobs.has(id))throw Error('UNKNOWN_ANALYSIS_JOB');if(!this.retained.has(id)&&this.retained.size>=8)throw Error('ANALYSIS_REFERENCE_LIMIT');this.retained.set(id,(this.retained.get(id)||0)+1)}
-  release(id:string):void{const count=this.retained.get(id)||0;if(count<=1)this.retained.delete(id);else this.retained.set(id,count-1)}
+  release(id:string,cancelUnused=false):void{const count=this.retained.get(id)||0;if(count<=1){this.retained.delete(id);if(cancelUnused&&this.jobs.has(id))this.cancel(id)}else this.retained.set(id,count-1)}
+  identity(id:string){const m=this.jobs.get(id)?.result?.manifest;return m?{engineSha256:m.engineSha256,measurementConfigId:m.measurementConfigId}:undefined}
   reportInput(id:string){const job=this.jobs.get(id);if(!job||job.view.phase!=='ready'||!job.result)throw Error('ANALYSIS_NOT_READY');return {source:structuredClone(job.source),directory:job.result.directory,manifest:structuredClone(job.result.manifest)}}
   snapshots():AnalysisJobView[]{return [...this.jobs.values()].reverse().map(job=>({...job.view}))}
   start(source:AnalysisSource):string {

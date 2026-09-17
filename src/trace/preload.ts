@@ -20,4 +20,5 @@ ipcRenderer.on('trace:spectrogram',(_event:Electron.IpcRendererEvent,packet:impo
  const v=packet.view,arrays=v?[v.decibels,v.status,v.coverage,v.rowFirstBin,v.rowLastBin]:[]
  window.postMessage({type:'trace-spectrogram-stream-v1',packet},'*',[...new Set(arrays.map(a=>a.buffer as ArrayBuffer))])
 })
+ipcRenderer.on('trace:reference',(_event:Electron.IpcRendererEvent,packet:import('./referenceTypes').ReferencePacket)=>{const buffers=[packet.a?.powers.buffer,packet.b?.powers.buffer].filter((v):v is ArrayBuffer=>v instanceof ArrayBuffer);window.postMessage({type:'trace-reference-stream-v1',packet},'*',[...new Set(buffers)])})
 contextBridge.exposeInMainWorld('traceHost',api)

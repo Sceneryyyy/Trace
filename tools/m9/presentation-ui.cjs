@@ -17,7 +17,7 @@ async function wait(fn,label,max=30000){for(const t=Date.now();Date.now()-t<max;
 async function main(){
  session=await launch(process.env.TRACE_PACKAGE_EXE||require('electron'),folder,{userData,recordDirectory:takes,scale,args:process.env.TRACE_PACKAGE_EXE?[]:[path.join(root,'out-trace/main/index.js')],bounds:{x:20,y:20,width:1280,height:800}})
  const c=session.cdp;await c.send('Emulation.setDeviceMetricsOverride',{width:1264,height:761,deviceScaleFactor:scale,mobile:false})
- await wait(async()=>(await c.state()).workspace?.version===3,'workspace')
+ await wait(async()=>(await c.state()).workspace?.version===4,'workspace')
  await c.evaluate('window.__m9Frame=null;window.trace.onSnapshot(s=>window.__m9Frame=s);window.__sp=null;window.__audit={samples:0,mismatches:0};window.trace.onSpectrogram(p=>{if(!p.testInjected)window.__sp=p});window.__auditTick=()=>{const p=document.querySelector(".spectrogram-instrument"),v=p?.querySelector("canvas"),drawn=v?.dataset.spectrogramDrawnContext;if(p&&drawn&&drawn!==p.dataset.spectrogramContext)window.__audit.mismatches++;window.__audit.samples++;window.__raf=requestAnimationFrame(window.__auditTick)};window.__auditTick();true')
  await c.evaluate("(()=>{const e=document.querySelector('[aria-label=工作台布局]');e.value='time-frequency';e.dispatchEvent(new Event('change',{bubbles:true}))})()")
  async function ready(){return wait(()=>c.evaluate('window.__sp?.phase==="ready"&&window.__sp.requestId===document.querySelector(".spectrogram-instrument")?.dataset.spectrogramRequest'),'current raster')}

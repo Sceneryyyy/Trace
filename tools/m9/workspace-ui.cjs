@@ -10,7 +10,7 @@ async function wait(fn,label,max=30000){for(const t=Date.now();Date.now()-t<max;
 async function shot(c,name){const im=await c.send('Page.captureScreenshot',{format:'jpeg',quality:90,fromSurface:true});fs.writeFileSync(path.join(folder,name+'.jpg'),Buffer.from(im.data,'base64'))}
 async function main(){
  session=await launch(process.env.TRACE_PACKAGE_EXE||require('electron'),folder,{userData,recordDirectory:takes,args:process.env.TRACE_PACKAGE_EXE?[]:[path.join(root,'out-trace/main/index.js')],bounds:{x:20,y:20,width:1280,height:800}})
- const c=session.cdp;await wait(async()=>(await c.state()).workspace?.version===3,'workspace');assert.equal((await c.request('app.info')).data.windowVisible,true)
+ const c=session.cdp;await wait(async()=>(await c.state()).workspace?.version===4,'workspace');assert.equal((await c.request('app.info')).data.windowVisible,true)
  await c.evaluate('window.__m9Frame=null;window.trace.onSnapshot(s=>window.__m9Frame=s);window.__sp=null;window.__spErrors=[];window.trace.onSpectrogram(p=>{window.__sp=p;if(p.phase==="error")window.__spErrors.push(p.error)});true')
  await c.evaluate("(()=>{const e=document.querySelector('[aria-label=工作台布局]');e.value='time-frequency';e.dispatchEvent(new Event('change',{bubbles:true}))})()")
  await c.request('file.open',{takeId:fixture.document.sessionId,role:'source'});await wait(async()=>(await c.state()).playback?.analysisPhase==='ready','analysis')

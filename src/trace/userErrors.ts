@@ -1,5 +1,9 @@
 export function userError(error:unknown):string{
  const text=String(error||'')
+ if(/REFERENCE_POSITION_OUTSIDE_RANGE/.test(text))return '游标不在比较范围内，请查看范围起点或调整偏移。'
+ if(/REFERENCE_SOURCE_MISSING/.test(text))return '请先选择主素材 A 和参考 B。'
+ if(/REFERENCE_SOURCE_CHANGED|REFERENCE_SOURCE_UNAVAILABLE|STALE_REFERENCE_SOURCE/.test(text))return '参考来源已变化或不可用，请重新选择。'
+ if(/INVALID_REFERENCE/.test(text))return '请检查比较范围和时间偏移。'
  if(/IMPORT_QUEUE_FULL|INVALID_IMPORT_FILES/.test(text))return '一次最多准备四个素材，请等待完成或取消部分任务后重试。'
  if(/IMPORT_REQUIRES_DISK_FILE/.test(text))return '请拖入磁盘上的音频文件。'
  if(/IMPORT_INSUFFICIENT_SPACE/.test(text))return '素材缓存空间不足，请释放磁盘空间后重试；原文件保持不变。'

@@ -64,7 +64,7 @@ export function WorkspaceToolbar({value,change,error,retry}:{error:string;retry:
  </div>
 }
 type Side='left'|'right'|'top'|'bottom'
-function minimum(node:LayoutNode):{w:number;h:number}{if(typeof node==='string')return node==='spectrogram'?{w:300,h:230}:node==='spectrum'?{w:300,h:200}:node==='soundfield'?{w:230,h:200}:node==='levels'?{w:130,h:160}:node==='loudness'?{w:190,h:220}:node==='waveform'?{w:280,h:180}:{w:280,h:140};const a=minimum(node.first),b=minimum(node.second);return node.axis==='row'?{w:a.w+b.w+7,h:Math.max(a.h,b.h)}:{w:Math.max(a.w,b.w),h:a.h+b.h+7}}
+function minimum(node:LayoutNode):{w:number;h:number}{if(typeof node==='string')return node==='comparison'?{w:360,h:280}:node==='spectrogram'?{w:300,h:230}:node==='spectrum'?{w:300,h:200}:node==='soundfield'?{w:230,h:200}:node==='levels'?{w:130,h:160}:node==='loudness'?{w:190,h:220}:node==='waveform'?{w:280,h:180}:{w:280,h:140};const a=minimum(node.first),b=minimum(node.second);return node.axis==='row'?{w:a.w+b.w+7,h:Math.max(a.h,b.h)}:{w:Math.max(a.w,b.w),h:a.h+b.h+7}}
 function dropSide(e:React.DragEvent):Side{const r=e.currentTarget.getBoundingClientRect(),x=(e.clientX-r.left)/r.width,y=(e.clientY-r.top)/r.height;return Math.min(x,1-x)<Math.min(y,1-y)?x<.5?'left':'right':y<.5?'top':'bottom'}
 function Splitter({node,path,value,change}:{node:Exclude<LayoutNode,string>;path:number[]}&Controls){
  const drag=useRef<{rect:DOMRect;pointer:number;ratio:number}|null>(null)

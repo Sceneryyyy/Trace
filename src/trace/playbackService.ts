@@ -38,9 +38,12 @@ export class PlaybackService {
  private operation=0
  private sampling=false
  private gain=1
+ private closingSources=new Set<Context>()
+ usesSource(takeId:string):boolean{return [this.current,...this.closingSources].some(c=>c?.source.takeId===takeId&&c.source.role!=='export')}
+ private async closeOutput(c:Context|null):Promise<void>{if(c)this.closingSources.add(c);try{await this.beforeSourceChange?.();await this.native.playbackClose()}finally{if(c)this.closingSources.delete(c);this.changed()}}
  private replaySelectionBusy=false
  private replaySelectionNext:Context|undefined
- private release(c:Context|null):void{if(!c)return;if(c.analysisId)this.analyses.release(c.analysisId);if(c.selectionAnalysisId){this.analyses.cancel(c.selectionAnalysisId);this.analyses.release(c.selectionAnalysisId)}}
+ private release(c:Context|null):void{if(!c)return;if(c.analysisId)this.analyses.release(c.analysisId);if(c.selectionAnalysisId){this.analyses.release(c.selectionAnalysisId,true)}}
  constructor(private native:PlaybackNative,private analyses:AnalysisService,private changed:()=>void){}
  instrumentQuery?: (request:InstrumentRequest)=>Promise<InstrumentPacket|undefined>
  beforeSourceChange?:()=>Promise<void>
@@ -68,8 +71,7 @@ export class PlaybackService {
   async open(source:AnalysisSource,deviceId:string,replayInfo?:ReplayInfo,timeOffsetSeconds=0):Promise<void>{
    const operation=++this.operation
    const previous=this.current;this.current=null;this.release(previous)
-   await this.beforeSourceChange?.()
-   await this.native.playbackClose()
+   await this.closeOutput(previous)
    if(operation!==this.operation)return
    if(!replayInfo)this.native.replayRelease?.()
    const c:Context={temporary:Boolean(replayInfo),replayInfo,readError:false,timeOffsetSeconds,deviceId,outputReady:false,nativeGeneration:'0',
@@ -85,7 +87,7 @@ export class PlaybackService {
    c.error=error;c.readError=true;c.desiredPlaying=false;c.phase='failed';try{if(c.outputReady)this.native.playbackPause()}catch{};this.changed()
   }
   async close():Promise<void>{
-   ++this.operation;this.release(this.current);this.current=null;this.changed();await this.beforeSourceChange?.();await this.native.playbackClose();this.native.replayRelease?.()
+   ++this.operation;const previous=this.current;if(previous)this.closingSources.add(previous);this.release(previous);this.current=null;this.changed();await this.closeOutput(previous);this.native.replayRelease?.()
   }
   private context(id:string):Context{
    const c=this.current;if(!c||c.id!==id)throw Error('STALE_PLAYBACK_SOURCE')
@@ -165,7 +167,7 @@ seek(id:string,positionFrame:string,resume:boolean):void{
    c.selectionAnalysis={id:randomUUID(),takeId:c.source.takeId,role:'source',label:'临时缓存 · 选区',phase:'queued',frames:'0',totalFrames:(end-start).toString(),sampleRate:c.source.sampleRate,channelCount:c.source.channelCount,error:null,selectionRange:{startFrame,endFrame}}
    this.replaySelectionNext=c;void this.drainReplaySelection()
   }else if(changed){
-   if(c.selectionAnalysisId){this.analyses.cancel(c.selectionAnalysisId);this.analyses.release(c.selectionAnalysisId)}
+   if(c.selectionAnalysisId){this.analyses.release(c.selectionAnalysisId,true)}
    c.selectionAnalysisId=this.analyses.start({...c.source,range:{startFrame,endFrame},frames:(end-start).toString(),label:c.source.label+' · 选区'});this.analyses.retain(c.selectionAnalysisId)
   }
      const raw=c.outputReady?this.native.playbackSnapshot():undefined
@@ -176,7 +178,7 @@ seek(id:string,positionFrame:string,resume:boolean):void{
   }
   clearSelection(id:string):void{
    const c=this.context(id)
-   if(c.selectionAnalysisId){this.analyses.cancel(c.selectionAnalysisId);this.analyses.release(c.selectionAnalysisId)}
+   if(c.selectionAnalysisId){this.analyses.release(c.selectionAnalysisId,true)}
    c.selectionAnalysisId=undefined;c.selectionAnalysis=undefined;c.selection=null;c.loop=false
    if(this.replaySelectionNext===c)this.replaySelectionNext=undefined
    const raw=c.outputReady?this.native.playbackSnapshot():undefined

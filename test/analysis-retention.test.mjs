@@ -21,3 +21,7 @@ test('active file analysis survives bounded job-history eviction until released'
  assert(!service.snapshots().some(j=>j.id===pinned));assert.equal(service.snapshots().length,64)
  await service.shutdown()
 })
+
+test('releasing a selection cancels only after every playback/reference consumer is gone',async()=>{
+ let signal;const run=async(_path,_sources,_cache,options)=>{signal=options.signal;await new Promise((_,reject)=>signal.addEventListener('abort',()=>reject(Error('cancelled')),{once:true}))};const service=new AnalysisService('test-only',()=>{},run),id=service.start({takeId:'take',role:'source',label:'range',sources:['unused'],cacheRoot:'unused',sampleRate:48000,channelCount:1,frames:'10'});service.retain(id);service.retain(id);while(!signal)await next();service.release(id,true);assert.equal(signal.aborted,false);service.release(id,true);assert.equal(signal.aborted,true);await service.shutdown()
+})

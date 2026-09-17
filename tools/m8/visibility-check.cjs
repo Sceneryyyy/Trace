@@ -14,7 +14,7 @@ async function main(){
   await delay(1100)
   const after=await c.evaluate('({mutations:window.__mutations,frames:window.__visFrame.recording.writtenFrames})')
   assert.equal(after.mutations,before.mutations,'hidden workspace re-rendered');assert(BigInt(after.frames)>BigInt(before.frames));assert.equal((await c.state()).currentRecord.id,take.id)
-  await c.request('test.window',{mode:'restore'});await wait(async()=>(await c.state()).windowVisible===true,'restore state');await wait(()=>c.evaluate('document.querySelectorAll("[data-instrument]").length===7'),'latest layout')
+  await c.request('test.window',{mode:'restore'});await wait(async()=>(await c.state()).windowVisible===true,'restore state');await wait(()=>c.evaluate('document.querySelectorAll("[data-instrument]").length===8'),'latest layout')
   pass(mode+' freezes UI presentation while recording continues, then restores the latest state')
  }
  await c.request('record.stop');await wait(async()=>!(await c.state()).currentRecord,'record stop');assert.equal((await c.state()).active,false);pass('Original monitoring intention is preserved')

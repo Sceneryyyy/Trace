@@ -61,6 +61,7 @@ export class SourceRetention {
    const existing=files.map((p,i)=>({p,i})).filter(v=>v.p),hashes=existing.length?await hashFiles(existing.map(v=>v.p),{signal}):[]
    if(existing.some((v,i)=>hashes[i]!==candidates[v.i].hash))throw Error('RETENTION_SOURCE_CHANGED')
    if(signal.aborted)throw Error('RETENTION_PAUSED')
+   if(this.usesSource?.(id)||this.playback.view()?.takeId===id&&this.playback.view()?.role!=='export'||this.exporter.usesSource(id))throw Error('RETENTION_PAUSED')
    d.retention={phase:'removing',error:null};for(const asset of candidates)if(asset.state!=='removed')asset.state='removing'
    await take.save()
    // After this persisted commit, finish the small deletion batch before allowing

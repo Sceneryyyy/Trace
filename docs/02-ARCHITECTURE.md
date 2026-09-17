@@ -1,6 +1,6 @@
 # 02 · 架构与模块边界
 
-M12：ImportService 管理只读外部素材、四项准备队列、源变化/取消/重建/归档；AssetRepository 组合录音与导入来源，ExportService/DeliveryService 依赖窄的 ExportOwner。原始录音生命周期保持独立，源解析后复用既有文件分析/回放/仪器/报告。拖放通过 File 对象与专用 preload 通道，接口和验证见 53；参考数据与调度设计见 54，尚未接入。
+M12：ImportService 管理只读外部素材、四项准备队列、源变化/取消/重建/归档；AssetRepository 组合录音与导入来源，ExportService/DeliveryService 依赖窄的 ExportOwner。原始录音生命周期保持独立，源解析后复用既有文件分析/回放/仪器/报告。拖放通过 File 对象与专用 preload 通道，接口和验证见 53；参考数据与调度设计见 54；ReferenceService、独立数组流和 NativeAnalysisQueue 已接入，验证见 55。两项 native 执行/四项等待只用于分析，采集与写盘不进入队列。
 
 M11：ReportService 管理独立进程、有界任务队列、源引用、取消/重试及报告导出；report-worker 按页读原分析缓存并分块写 CSV/HTML。目标设置独立于布局/分析，目标比较不改变基础测量。应用清理/删除来源前等待报告释放；REC 优先。实现与待验范围见 [51](51-M11-INTEGRATION.md)。
 

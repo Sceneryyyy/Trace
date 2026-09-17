@@ -5,14 +5,15 @@ export const instruments = [
   {id:'history',title:'响度历史',unit:'LUFS',help:'M、S、I 与波形共享时间范围和游标；线型用于区分曲线。'},
   {id:'spectrum',title:'频谱',unit:'dBFS · Hz',help:'频率分布与固定时间平均/保持；跟随同一来源和游标。'},
   {id:'soundfield',title:'声场',unit:'L / R',help:'声像平衡、相关度与示波轨迹。单声道不显示虚构的立体声读数。'},
-  {id:'loudness',title:'响度',unit:'LUFS',help:'I 的累计范围显示在读数旁；文件 LRA 和 MAX TP 为整段统计。'}
+  {id:'loudness',title:'响度',unit:'LUFS',help:'I 的累计范围显示在读数旁；文件 LRA 和 MAX TP 为整段统计。'},
+  {id:'comparison',title:'参考比较',unit:'A − B',help:'独立范围统计与当前游标频谱对照；A/B 串行试听，监听音量不参与测量。'}
 ] as const
 export type InstrumentId = typeof instruments[number]['id']
 export type LayoutNode = InstrumentId | {axis:'row'|'column';ratio:number;first:LayoutNode;second:LayoutNode}
 export type PanelOptions = {loudness:'auto'|'compact'|'meters';levelReadout:'both'|'peak'|'rms';historyTraces:('m'|'s'|'i')[]}
 export type InstrumentLayout = {tree:LayoutNode;hidden:InstrumentId[];options:PanelOptions}
 export type WorkspacePreset = {id:string;name:string;layout:InstrumentLayout}
-export type WorkspaceState = {version:3;layout:InstrumentLayout;presets:WorkspacePreset[];activePreset:string|null;locked:boolean}
+export type WorkspaceState = {version:4;layout:InstrumentLayout;presets:WorkspacePreset[];activePreset:string|null;locked:boolean}
 const ids=instruments.map(i=>i.id)
 const options=():PanelOptions=>({loudness:'auto',levelReadout:'both',historyTraces:['m','s','i']})
 export const factoryLayouts:WorkspacePreset[]=[
@@ -27,8 +28,9 @@ function complete(tree:LayoutNode,hidden:InstrumentId[],optionsValue:PanelOption
 for(const preset of factoryLayouts)preset.layout=complete(preset.layout.tree,preset.layout.hidden,preset.layout.options)
 factoryLayouts.push({id:'time-frequency',name:'时频检查',layout:complete({axis:'column',ratio:.7,first:'spectrogram',second:{axis:'row',ratio:.65,first:'waveform',second:'history'}},[],options())})
 factoryLayouts.push({id:'spectral',name:'频率与声像',layout:complete({axis:'column',ratio:.65,first:{axis:'row',ratio:.65,first:'spectrum',second:'soundfield'},second:'waveform'},[],options())})
+factoryLayouts.push({id:'comparison',name:'参考比较',layout:complete({axis:'column',ratio:.62,first:'comparison',second:'waveform'},[],options())})
 const clone=<T,>(v:T):T=>structuredClone(v)
-export function defaultWorkspace():WorkspaceState{return {version:3,layout:clone(factoryLayouts[0].layout),presets:[],activePreset:'recorder',locked:true}}
+export function defaultWorkspace():WorkspaceState{return {version:4,layout:clone(factoryLayouts[0].layout),presets:[],activePreset:'recorder',locked:true}}
 function object(v:unknown):v is Record<string,unknown>{return Boolean(v)&&typeof v==='object'&&!Array.isArray(v)&&(Object.getPrototypeOf(v)===Object.prototype||Object.getPrototypeOf(v)===null)}
 function keys(v:Record<string,unknown>,expected:string):void{if(Object.keys(v).sort().join(',')!==expected)throw Error('INVALID_WORKSPACE')}
 export function validateLayout(value:unknown,expected:readonly InstrumentId[]=ids):InstrumentLayout{
@@ -50,7 +52,7 @@ export function validateLayout(value:unknown,expected:readonly InstrumentId[]=id
 }
 export function validateWorkspace(value:unknown):WorkspaceState{
  if(!object(value))throw Error('INVALID_WORKSPACE');keys(value,'activePreset,layout,locked,presets,version')
- if(value.version!==3||typeof value.locked!=='boolean'||!Array.isArray(value.presets)||value.presets.length>20)throw Error('INVALID_WORKSPACE')
+ if(value.version!==4||typeof value.locked!=='boolean'||!Array.isArray(value.presets)||value.presets.length>20)throw Error('INVALID_WORKSPACE')
  const layout=validateLayout(value.layout),seen=new Set<string>(),names=new Set<string>()
  const presets=value.presets.map(p=>{
   if(!object(p))throw Error('INVALID_WORKSPACE');keys(p,'id,layout,name')
@@ -60,10 +62,10 @@ export function validateWorkspace(value:unknown):WorkspaceState{
  })
  if(value.activePreset!==null&&!(typeof value.activePreset==='string'&&[...factoryLayouts,...presets].some(p=>p.id===value.activePreset)))throw Error('INVALID_WORKSPACE')
  if(JSON.stringify(value).length>65536)throw Error('INVALID_WORKSPACE')
- return {version:3,layout,presets,activePreset:value.activePreset as string|null,locked:value.locked}
+ return {version:4,layout,presets,activePreset:value.activePreset as string|null,locked:value.locked}
 }
 export function restoreWorkspace(value:unknown):WorkspaceState{try{
- if(object(value)&&(value.version===1||value.version===2)){const old=value.version===1?['levels','waveform','history','loudness'] as const:['levels','waveform','history','spectrum','soundfield','loudness'] as const;const migrate=(v:unknown)=>{const l=validateLayout(v,old);return complete(l.tree,l.hidden,l.options)};value={...value,version:3,layout:migrate(value.layout),presets:Array.isArray(value.presets)?value.presets.map(p=>{if(!object(p))throw Error('INVALID_WORKSPACE');return {...p,layout:migrate(p.layout)}}):value.presets}}
+ if(object(value)&&(value.version===1||value.version===2||value.version===3)){const old=value.version===1?['levels','waveform','history','loudness'] as const:value.version===2?['levels','waveform','history','spectrum','soundfield','loudness'] as const:['spectrogram','levels','waveform','history','spectrum','soundfield','loudness'] as const;const migrate=(v:unknown)=>{const l=validateLayout(v,old);return complete(l.tree,l.hidden,l.options)};value={...value,version:4,layout:migrate(value.layout),presets:Array.isArray(value.presets)?value.presets.map(p=>{if(!object(p))throw Error('INVALID_WORKSPACE');return {...p,layout:migrate(p.layout)}}):value.presets}}
  return validateWorkspace(value)
  }catch{return defaultWorkspace()}}
 export function visibleTree(tree:LayoutNode,hidden:InstrumentId[]):LayoutNode|null{

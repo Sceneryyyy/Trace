@@ -59,6 +59,13 @@ test('imports expose owned identifiers and native picking, never a path-bearing 
  assert.throws(()=>validateRequest(request('imports.add',{path:'C:/arbitrary.wav'})));assert.equal(isMutation('imports.cancel'),false);assert.equal(isMutation('imports.refresh'),false)
 })
 
+test('reference commands bound slots, ranges, offsets and source identifiers',()=>{
+ validateRequest(request('reference.set',{takeId:'take',role:'source'}));assert.throws(()=>validateRequest(request('reference.set',{takeId:'take',role:'source',path:'C:/any.wav'})))
+ validateRequest(request('reference.activate',{slot:'b',atStart:true}));assert.throws(()=>validateRequest(request('reference.activate',{slot:'c'})))
+ validateRequest(request('reference.configure',{offsetNs:'-500000000',linked:true}));assert.throws(()=>validateRequest(request('reference.configure',{offsetNs:'86400000000001',linked:true})))
+ validateRequest(request('reference.range',{slot:'a',startFrame:'1',endFrame:'2'}));assert.throws(()=>validateRequest(request('reference.range',{slot:'a',startFrame:'2',endFrame:'1'})))
+})
+
 const timeOutput = resolve('artifacts/m1/time-test.mjs')
 await build({ entryPoints: ['src/trace/renderer/time.ts'], outfile: timeOutput, bundle: true, platform: 'node', format: 'esm' })
 const { timecode, relativeFrame } = await import(pathToFileURL(timeOutput))

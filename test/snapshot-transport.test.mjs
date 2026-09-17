@@ -22,7 +22,7 @@ test('duplicate subscriber functions have independent removals and late subscrib
 })
 test('transport only forwards the already-whitelisted host controls',async()=>{
  let request,files;const api=createSnapshotTransport({request:async v=>{request=v;return 7},onState:()=>()=>{},importFiles:async v=>{files=v;return {accepted:[],errors:[]}}},()=>{})
- assert.deepEqual(Object.keys(api).sort(),['importFiles','onSnapshot','onSpectrogram','onState','request'])
+ assert.deepEqual(Object.keys(api).sort(),['importFiles','onReference','onSnapshot','onSpectrogram','onState','request'])
  const value={command:'state.get'};assert.equal(await api.request(value),7);assert.strictEqual(request,value)
  const input=[{testOnly:'disk-File reference is validated in preload'}];await api.importFiles(input);assert.strictEqual(files,input)
 })

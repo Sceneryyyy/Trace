@@ -24,7 +24,7 @@ class Native {
  playbackVolume(value){this.gain=value}
 }
 class Analysis {
- retained=new Set();retain(id){this.retained.add(id)}release(id){this.retained.delete(id)}
+ retained=new Set();retain(id){this.retained.add(id)}release(id,cancelUnused){this.retained.delete(id);if(cancelUnused)this.cancel(id)}
  jobs=[];sources=[];cancelled=[];read=async position=>metrics(position)
  start(source){const id=String(this.jobs.length+1);this.sources.push(source);this.jobs.push({id,phase:'ready',summary:metrics('0')});return id}
  snapshots(){return this.jobs}
@@ -33,6 +33,10 @@ class Analysis {
  async timeline(){return {waveform:[],loudnessHistory:[]}}
 }
 async function setup(){const native=new Native(),analysis=new Analysis(),service=new PlaybackService(native,analysis,()=>{});await service.open(source,'device');return {native,analysis,service,id:service.view().id}}
+
+test('closing source ownership lasts until the native output has actually released the file',async()=>{
+ const {service,native}=await setup();let finish;native.playbackClose=()=>new Promise(resolve=>finish=()=>resolve({phase:'idle'}));const closing=service.close();await new Promise(r=>setImmediate(r));assert.equal(service.view(),null);assert.equal(service.usesSource('take'),true);finish();await closing;assert.equal(service.usesSource('take'),false)
+})
 test('FILE prefix and whole-file values remain separate from output gain',async()=>{
  const {service,native,id}=await setup();service.seek(id,'144000',false)
  const before=await service.sample();assert.equal(before.integratedToCursor.value,-25);assert.equal(before.loudnessRange.value,4);assert.equal(before.maxTruePeak.value,-1);assert.equal(before.fileView.wholeFileIntegrated.value,-18)

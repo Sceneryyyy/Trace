@@ -1,3 +1,8 @@
+import {ReferenceService} from './referenceService'
+import {ReferenceSpectrumService} from './referenceSpectrum'
+import {NativeAnalysisQueue} from './nativeAnalysisQueue'
+import {hashFiles} from './fileJobs'
+import type {ReferenceSlot} from './referenceTypes'
 import {ImportService} from './importService'
 import {AssetRepository} from './assetRepository'
 import {realpath as realpathAsync} from 'node:fs/promises'
@@ -75,6 +80,9 @@ let preferencesWriter:PreferencesWriter|undefined
 let reports:ReportService
 let imports:ImportService
 let assets:AssetRepository
+let references:ReferenceService
+let referenceSpectrum:ReferenceSpectrumService
+const nativeAnalysisQueue=new NativeAnalysisQueue()
 let displayTick=0,snapshotSequence=0,pollFailurePending=false,lastPollError=''
 let state:TraceState={targetSettings:structuredClone(defaultTargetSettings),spectrogramSettings:{...defaultSpectrogramSettings},revision:0,active:false,monitoringRequested:true,deviceId:'',windowSeconds:30,error:null,displaySettings:{...defaultDisplaySettings},workspace:defaultWorkspace(),instrumentSettings:{...defaultInstrumentSettings}}
 const completed=new Map<string,{signature:string;reply:Reply}>()
@@ -113,7 +121,7 @@ async function prepareMemoryAnalyses():Promise<void>{
   }
  }finally{preparingMemoryAnalysis=false}
 }
-function syncAnalysisState(control:boolean):void{if(!analyses)return;const patch={analysisJobs:analyses.snapshots(),playback:playback?.view()};if(control)update(patch);else{state={...state,...patch};emitState()}void prepareMemoryAnalyses()}
+function syncAnalysisState(control:boolean):void{if(!analyses)return;const patch={analysisJobs:analyses.snapshots(),playback:playback?.view(),reference:references?.view()};if(control)update(patch);else{state={...state,...patch};emitState()}void prepareMemoryAnalyses()}
 function releaseRecordingCapture():void{
   if(!recordingCaptureHeld||recordings.busy()||exiting)return
   try{
@@ -127,15 +135,18 @@ function syncRecordingState():void{
   analyses?.setRecordingBusy(recordings.busy()||managingLibrary)
   reports?.setRecordingBusy(recordings.busy()||managingLibrary)
   imports?.setRecordingBusy(recordings.busy()||managingLibrary)
+  references?.setRecordingBusy(recordings.busy()||managingLibrary)
   if(exporter){if(recordings.busy()||exiting||managingLibrary)void exporter.pauseForRecording();else exporter.resume()}
   if(deliveries){if(recordings.busy()||exiting||managingLibrary)void deliveries.pause();else deliveries.resume()}
   if(retention){if(recordings.busy()||exiting||managingLibrary)void retention.pause();else retention.resume()}
   update({recordSettings:{...recordings.settings},recordDirectory:recordings.directory,currentRecord:recordings.activeSummary(),recordings:library?library.summaries():recordings.summaries()})
 }
 function syncExportState(control=true):void{if(!exporter||!recordings)return;const patch={exportJobs:exporter.views().map(decorateExport),recordings:library?library.summaries():recordings.summaries()};if(control)update(patch);else{state={...state,...patch};emitState()}retention?.schedule();deliveries?.observe();imports?.resume();void prepareMemoryAnalyses()}
-function syncPlaybackState():void{if(playback)update({playback:playback.view()});retention?.schedule()}
+function syncPlaybackState():void{if(playback){references?.observe(playback.view());update({playback:playback.view(),reference:references?.view()})}retention?.schedule()}
 function syncRetentionState():void{if(recordings)update({recordings:library?library.summaries():recordings.summaries()})}
-function instrumentsVisible():boolean{return Boolean(state.workspace&&['spectrum','soundfield'].some(id=>!state.workspace!.layout.hidden.includes(id as never)))}
+function referenceVisible(){return Boolean(!exiting&&!recordings?.busy()&&state.windowVisible!==false&&state.workspace&&!state.workspace.layout.hidden.includes('comparison'))}
+function syncReferenceState(){if(references){state={...state,reference:references.view()};emitState();if(!recordings?.busy()&&!managingLibrary&&!exiting)retention?.resume()}}
+function instrumentsVisible():boolean{const peer=references?.activeSlot?references.peer(references.activeSlot):undefined;return Boolean(state.workspace&&(['spectrum','soundfield'].some(id=>!state.workspace!.layout.hidden.includes(id as never))||referenceVisible()&&peer&&references.peer('b')&&peer.range.startFrame==='0'&&peer.range.endFrame===peer.source.frames))}
 function publishLiveSample(snapshot:MeterSnapshot):void{
  const send=()=>{if(!window||window.isDestroyed()||exiting||playback.active())return;const key=[snapshot.sourceId,snapshot.epochId,snapshot.measurementEpoch,state.currentRecord?snapshot.recording?.id:''].join(':');const frame=BigInt(state.currentRecord?snapshot.recording?.writtenFrames||'0':snapshot.positionFrame);if(lastLivePublication?.key===key&&frame<lastLivePublication.frame)return;lastLivePublication={key,frame};snapshot.eventSequence=++snapshotSequence;snapshot.stateRevision=state.revision;window.webContents.send('trace:snapshot',snapshot)}
  if(!instrumentsVisible()||snapshot.error){send();return}
@@ -161,6 +172,7 @@ function publishInspectionSample():void{
       current.generation!==snapshot.playback.generation||current.startFrame!==snapshot.fileView.startFrame||
       current.endFrame!==snapshot.fileView.endFrame)return
     if(snapshot.instruments&&snapshot.instruments.configKey!==instrumentConfigKey(state.instrumentSettings||defaultInstrumentSettings))return
+    references?.observe({...current,positionFrame:snapshot.positionFrame});if(referenceVisible())referenceSpectrum?.request(snapshot,state.instrumentSettings||defaultInstrumentSettings)
     window.webContents.send('trace:snapshot',{...snapshot,...latestRecordingFrame,eventSequence:++snapshotSequence,stateRevision:state.revision})
     if(playback.outputActive()&&['ended','failed'].includes(current.phase)&&!finishingOutput){
       finishingOutput=true
@@ -276,6 +288,19 @@ async function acceptImportFiles(paths:unknown):Promise<import('./shared').Impor
  for(const path of paths as string[]){try{if(testMode){const actual=await realpathAsync(path);if(!actual.toLowerCase().startsWith((testRoot!+sep).toLowerCase()))throw Error('TEST_DIRECTORY_OUTSIDE_ARTIFACTS')}const id=await imports.add(path);result.accepted.push({id,name:basename(path)})}catch(error){result.errors.push({name:basename(path),message:String(error)})}}
  return result
 }
+async function activateReference(slot:ReferenceSlot,atStart=false):Promise<void>{
+ if(recordings.busy()||managingLibrary)throw Error('RECORDING_ACTIVE')
+ const plan=references.activation(slot,playback.view(),atStart),peer=references.peer(slot)!,manifest=analyses.reportInput(peer.analysisId).manifest
+ if(playback.outputActive())await playback.pause(playback.view()!.id)
+ const source=await assets.analysisSource(plan.ref.takeId,plan.ref.role,plan.ref.regionId,plan.ref.exportId)
+ const hashes=await hashFiles(source.sources);if(source.frames!==plan.source.frames||source.sampleRate!==plan.source.sampleRate||source.mediaIdentity!==plan.source.mediaIdentity||JSON.stringify(hashes)!==JSON.stringify(manifest.sourceSha256)){await references.forgetTake(plan.ref.takeId,plan.ref.exportId);throw Error('REFERENCE_SOURCE_CHANGED')}
+ if(references.version!==plan.version)throw Error('STALE_REFERENCE_SOURCE')
+ inspection=null;await playback.open(source,state.deviceId);const file=playback.view()!
+ if(plan.selection)playback.selection(file.id,plan.selection.startFrame,plan.selection.endFrame,plan.loop)
+ playback.window(file.id,plan.window.startFrame,plan.window.endFrame,900);playback.volume(file.id,plan.gain);playback.seek(file.id,plan.positionFrame,false);playback.follow(file.id,plan.follow);references.activated(slot,playback.view()!)
+ if(plan.resume){engine.stop();update({active:false,error:null});try{await playback.play(file.id)}catch(error){resumeInput();throw error}}else resumeInput()
+}
+async function updateReferenceSelection():Promise<void>{const file=playback.view(),slot=references?.activeSlot;if(slot&&file&&!file.temporary)await references.range(slot,file.selection||undefined,file.selection?file.selectionAnalysis?.id:file.analysisId)}
 async function chooseImportFiles(single=false):Promise<string[]>{
  if(testMode&&process.env.TRACE_TEST_IMPORT_FILES){const paths=JSON.parse(process.env.TRACE_TEST_IMPORT_FILES) as string[];if(!Array.isArray(paths))throw Error('INVALID_TEST_IMPORT_FILES');return single?paths.slice(0,1):paths}
  const selected=await dialog.showOpenDialog(window!,{title:single?'重新定位原文件':'导入音频素材',properties:single?['openFile']:['openFile','multiSelections'],filters:[{name:'音频文件',extensions:['wav','mp3','m4a','aac']}]})
@@ -301,7 +326,7 @@ async function chooseDirectory():Promise<boolean>{
     await retention.pause();await deliveries.pause();await analyses.pauseForRecording();await recordings.settled()
     if(exporter.busy())throw Error('EXPORT_ACTIVE')
     if(playback.active()&&!playback.view()?.temporary&&!imports.has(playback.view()!.takeId))await closeInspection()
-    for(const take of recordings.sessions()){await reports.forgetTake(take.document.sessionId);await analyses.forgetTake(take.document.sessionId);retention.forget(take.document.sessionId);deliveries.forgetTake(take.document.sessionId)}
+    for(const take of recordings.sessions()){await references.forgetTake(take.document.sessionId);await reports.forgetTake(take.document.sessionId);await analyses.forgetTake(take.document.sessionId);retention.forget(take.document.sessionId);deliveries.forgetTake(take.document.sessionId)}
     await recordings.setDirectory(result.filePaths[0]);update({recordDirectoryError:null});savePreferences();return true
   }finally{managingLibrary=false;syncRecordingState();resumeInput()}
 }
@@ -311,6 +336,12 @@ async function dispatch(request:Request):Promise<Reply>{
     if(testMode&&isMutation(request.command))console.log('TRACE_CONTROL',JSON.stringify({command:request.command,revision:state.revision,at:new Date().toISOString()}))
     let data:unknown=null
     switch(request.command){
+      case 'reference.set':{const source=request.payload as ExportSource;assets.session(source.takeId);await retention.pause();try{references.setReference(source,assets.session(source.takeId).document.name)}finally{retention.resume()};const workspace=state.workspace!;if(workspace.layout.hidden.includes('comparison'))update({workspace:{...workspace,activePreset:null,layout:{...workspace.layout,hidden:workspace.layout.hidden.filter(id=>id!=='comparison')}}});savePreferences();break}
+      case 'reference.clear':{await references.clearReference();const file=playback.view();if(file&&!file.temporary)await references.bindPrimary(playback.spectralSource(file.id).source,file);break}
+      case 'reference.activate':await activateReference(request.payload.slot as ReferenceSlot,request.payload.atStart===true);break
+      case 'reference.configure':references.configure(request.payload.offsetNs as string,request.payload.linked as boolean);await referenceSpectrum.cancel();break
+      case 'reference.retry':await imports.refresh();await references.retry();break
+      case 'reference.range':{const slot=request.payload.slot as ReferenceSlot,range={startFrame:request.payload.startFrame as string,endFrame:request.payload.endFrame as string},peer=references.peer(slot);if(!peer)throw Error('REFERENCE_SOURCE_MISSING');await references.range(slot,range);const file=playback.view();if(references.activeSlot===slot&&file){if(range.startFrame==='0'&&range.endFrame===peer.source.frames)playback.clearSelection(file.id);else playback.selection(file.id,range.startFrame,range.endFrame,false)}break}
       case 'imports.choose':{const paths=await chooseImportFiles();data=paths.length?await acceptImportFiles(paths):{accepted:[],errors:[]};break}
       case 'imports.refresh':await imports.refresh();syncImportState();break
       case 'imports.cancel':imports.cancel(request.payload.assetId as string);break
@@ -360,7 +391,7 @@ async function dispatch(request:Request):Promise<Reply>{
         break
       }
       case 'preferences.retry':savePreferences();await preferencesWriter?.flush();break
-      case 'app.info':data={...product,reportUsage:testMode?reports?.diagnostics:undefined,preferencesWrites:testMode?preferencesWriter?.stats:undefined,spectrogramUsage:testMode?spectrogram?.usage:undefined,processMetrics:testMode?app.getAppMetrics().map(({pid,type,cpu,memory})=>({pid,type,cpu,memory})):undefined,packaged:app.isPackaged,appVersion:app.getVersion(),electron:process.versions.electron,nativeModules:engine.runtimeModules(),resourcesPath:process.resourcesPath,userData:app.getPath('userData'),windowVisible:window?.isVisible()&&!window?.isMinimized(),windowBounds:window?.getBounds(),displays:screen.getAllDisplays().map(d=>({id:d.id,scaleFactor:d.scaleFactor,bounds:d.bounds,workArea:d.workArea}))};break
+      case 'app.info':data={...product,captureStatus:testMode?(()=>{const s=engine.snapshot(5,1);return {active:s.active,positionFrame:s.positionFrame,epochId:s.epochId,diagnostics:s.diagnostics,error:s.error}})():undefined,nativeAnalysisQueue:testMode?nativeAnalysisQueue.usage:undefined,reportUsage:testMode?reports?.diagnostics:undefined,preferencesWrites:testMode?preferencesWriter?.stats:undefined,spectrogramUsage:testMode?spectrogram?.usage:undefined,processMetrics:testMode?app.getAppMetrics().map(({pid,type,cpu,memory})=>({pid,type,cpu,memory})):undefined,packaged:app.isPackaged,appVersion:app.getVersion(),electron:process.versions.electron,nativeModules:engine.runtimeModules(),resourcesPath:process.resourcesPath,userData:app.getPath('userData'),windowVisible:window?.isVisible()&&!window?.isMinimized(),windowBounds:window?.getBounds(),displays:screen.getAllDisplays().map(d=>({id:d.id,scaleFactor:d.scaleFactor,bounds:d.bounds,workArea:d.workArea}))};break
       case 'record.capacity':{
         const snapshot=engine.snapshot(5,1),format=snapshot.active&&snapshot.sourceId===state.deviceId?snapshot.format:engine.devices().find(d=>d.id===state.deviceId)?.format||snapshot.format
         update({recordingCapacity:{...recordingCapacity(await freeSpace(recordings.directory),recordings.settings,format.sampleRate,format.channelCount),directory:recordings.directory}});break
@@ -378,7 +409,7 @@ async function dispatch(request:Request):Promise<Reply>{
         const answer=testCacheConfirmation?{response:1}:await dialog.showMessageBox(window!,{type:'question',title:'清理缓存',message:item.name,detail:'清理该录音可重建的分析与解码缓存，录音和成品音频保留。再次查看时会重新准备。',buttons:['取消','清理缓存'],defaultId:0,cancelId:0,noLink:true})
         if(answer.response!==1)break
         managingLibrary=true
-        try{await retention.pause();await analyses.pauseForRecording();await recordings.settled();if(playback.view()?.takeId===takeId)await closeInspection();await reports.forgetTake(takeId);await analyses.forgetTake(takeId);data=await library.clearCache(takeId)}
+        try{await retention.pause();await analyses.pauseForRecording();await recordings.settled();if(playback.view()?.takeId===takeId)await closeInspection();await references.forgetTake(takeId);await reports.forgetTake(takeId);await analyses.forgetTake(takeId);data=await library.clearCache(takeId)}
         finally{managingLibrary=false;syncRecordingState();resumeInput()}
         break
       }
@@ -393,7 +424,7 @@ async function dispatch(request:Request):Promise<Reply>{
           const current=await library.missingEntries();let removed=0
           for(const item of items){if(!current.some(i=>i.takeId===item.takeId&&i.exportId===item.exportId))continue
             const viewing=playback.view();if(viewing?.takeId===item.takeId&&(!item.exportId||viewing.exportId===item.exportId))await closeInspection()
-            deliveries.forgetTake(item.takeId,item.exportId);await reports.forgetTake(item.takeId);await analyses.forgetTake(item.takeId,item.exportId);retention.forget(item.takeId);await library.remove(item.takeId,item.exportId);removed++}
+            deliveries.forgetTake(item.takeId,item.exportId);await references.forgetTake(item.takeId,item.exportId);await reports.forgetTake(item.takeId);await analyses.forgetTake(item.takeId,item.exportId);retention.forget(item.takeId);await library.remove(item.takeId,item.exportId);removed++}
           data={removed}
         }finally{managingLibrary=false;syncRecordingState();resumeInput()}
         break
@@ -414,7 +445,7 @@ async function dispatch(request:Request):Promise<Reply>{
           await retention.pause();await recordings.settled()
           if(exporter.busy())throw Error('LIBRARY_BUSY')
           if(closeFile)await playback.close()
-          deliveries.forgetTake(takeId,exportId);await reports.forgetTake(takeId);await analyses.forgetTake(takeId,exportId);retention.forget(takeId)
+          deliveries.forgetTake(takeId,exportId);await references.forgetTake(takeId,exportId);await reports.forgetTake(takeId);await analyses.forgetTake(takeId,exportId);retention.forget(takeId)
           await library.remove(takeId,exportId)
         }finally{
           managingLibrary=false;syncRecordingState()
@@ -462,7 +493,7 @@ async function dispatch(request:Request):Promise<Reply>{
         engine.reset();update({error:null});break
       case 'retention.retry':await retention.retry(request.payload.takeId as string);break
       case 'instrument.configure':update({instrumentSettings:validateInstrumentSettings(request.payload.settings)});savePreferences();break
-      case 'workspace.configure':update({workspace:validateWorkspace(request.payload.workspace)});if(state.workspace!.layout.hidden.includes('spectrogram'))spectrogram.cancel();savePreferences();break
+      case 'workspace.configure':update({workspace:validateWorkspace(request.payload.workspace)});if(state.workspace!.layout.hidden.includes('spectrogram'))spectrogram.cancel();if(state.workspace!.layout.hidden.includes('comparison'))await referenceSpectrum.cancel();savePreferences();break
       case 'view.settings':update({displaySettings:validateDisplaySettings(request.payload)});savePreferences();break
       case 'view.gain':update({displaySettings:{...(state.displaySettings||defaultDisplaySettings),waveGain:request.payload.gain as number}});schedulePreferences();break
       case 'view.window':
@@ -491,9 +522,9 @@ async function dispatch(request:Request):Promise<Reply>{
       case 'record.stop':spectrogram.cancel();data=await recordings.stop();releaseRecordingCapture();break
       case 'file.open':{
         if(recordings.busy())throw Error('RECORDING_ACTIVE')
-        const source=await assets.analysisSource(request.payload.takeId as string,request.payload.role as import('./shared').AnalysisRole,request.payload.regionId as string|undefined,request.payload.exportId as string|undefined)
+        await retention.pause();try{const source=await assets.analysisSource(request.payload.takeId as string,request.payload.role as import('./shared').AnalysisRole,request.payload.regionId as string|undefined,request.payload.exportId as string|undefined)
         if(playback.outputActive())await playback.pause(playback.view()!.id)
-        inspection=null;resumeInput();await playback.open(source,state.deviceId);break
+        inspection=null;resumeInput();await playback.open(source,state.deviceId);await references.bindPrimary(source,playback.view()!)}finally{retention.resume()}break
       }
       case 'file.close':
         if(!playback.active())throw Error('FILE_MODE_NOT_ACTIVE')
@@ -510,13 +541,13 @@ async function dispatch(request:Request):Promise<Reply>{
         if(playback.outputActive())await playback.pause(request.payload.playbackId as string)
         playback.seek(request.payload.playbackId as string,request.payload.positionFrame as string,false);resumeInput();break
       case 'playback.volume':playback.volume(request.payload.playbackId as string,request.payload.gain as number);break
-      case 'playback.clearSelection':playback.clearSelection(request.payload.playbackId as string);break
+      case 'playback.clearSelection':playback.clearSelection(request.payload.playbackId as string);await updateReferenceSelection();break
       case 'playback.retryAnalysis':
         if(recordings.busy())throw Error('RECORDING_ACTIVE')
         if(playback.view()?.id!==request.payload.playbackId)throw Error('STALE_PLAYBACK_SOURCE')
         if(playback.outputActive()){await playback.pause(request.payload.playbackId as string);resumeInput()}
         playback.retryAnalysis(request.payload.playbackId as string);break
-      case 'playback.selection':playback.selection(request.payload.playbackId as string,request.payload.startFrame as string,request.payload.endFrame as string,request.payload.loop as boolean);break
+      case 'playback.selection':playback.selection(request.payload.playbackId as string,request.payload.startFrame as string,request.payload.endFrame as string,request.payload.loop as boolean);await updateReferenceSelection();break
       case 'playback.follow':playback.follow(request.payload.playbackId as string,request.payload.enabled as boolean);break
       case 'playback.window':playback.window(request.payload.playbackId as string,request.payload.startFrame as string,request.payload.endFrame as string,request.payload.pixelWidth as number);break
       case 'export.start':{
@@ -565,6 +596,7 @@ async function dispatch(request:Request):Promise<Reply>{
   }catch(error){
     const message=error instanceof Error?error.message:String(error)
     if(imports?.has(request.payload.takeId as string)&&['file.open','analysis.start','export.describe','export.start'].includes(request.command)){const viewed=playback.view();if(request.command==='file.open'&&viewed&&viewed.takeId===request.payload.takeId&&viewed.role===request.payload.role&&viewed.exportId===request.payload.exportId)await closeInspection().catch(()=>{});return {requestId:request.requestId,ok:false,state:{...state},error:{code:message.split(':')[0],message}}}
+    if(request.command.startsWith('reference.')){resumeInput();return {requestId:request.requestId,ok:false,state:{...state,reference:references.view()},error:{code:message.split(':')[0],message}}}
     if(request.command.startsWith('imports.'))return {requestId:request.requestId,ok:false,state:{...state},error:{code:message.split(':')[0],message}}
     if(request.command.startsWith('report.')){if(!recordings.busy()&&!managingLibrary&&!exiting)retention?.resume();return {requestId:request.requestId,ok:false,state:{...state},error:{code:message.split(':')[0],message}}}
     if(request.command.startsWith('spectrogram.')||request.command==='preferences.retry')return {requestId:request.requestId,ok:false,state:{...state},error:{code:message.split(':')[0],message}}
@@ -630,23 +662,27 @@ app.whenReady().then(()=>{
   const segment=testMode&&process.env.TRACE_TEST_SEGMENT_BYTES?Number(process.env.TRACE_TEST_SEGMENT_BYTES):2147483648
   recordings=new RecordingService(engine,join(ffroot,'ffmpeg.exe'),join(ffroot,'ffprobe.exe'),app.isPackaged?join(process.resourcesPath,'native/trace_engine.node'):join(root,'build/trace-engine/Release/trace_engine.node'),syncRecordingState,segment)
   analyses=new AnalysisService(app.isPackaged?join(process.resourcesPath,'native/trace_engine.node'):join(root,'build/trace-engine/Release/trace_engine.node'),syncAnalysisState)
-  instruments=new InstrumentService(engine)
-  spectrogram=new SpectrogramPresenter(engine,resolveSpectrogram,packet=>{if(window&&!window.isDestroyed())window.webContents.send('trace:spectrogram',packet)})
+  const analysisNative:InstrumentNative&SpectrogramNative={instrumentAnalyze:request=>nativeAnalysisQueue.run(()=>engine.instrumentAnalyze(request),String(request.identity||'').startsWith('reference:')?1:0),spectrogramTile:request=>nativeAnalysisQueue.run(()=>engine.spectrogramTile(request))}
+  instruments=new InstrumentService(analysisNative)
+  spectrogram=new SpectrogramPresenter(analysisNative,resolveSpectrogram,packet=>{if(window&&!window.isDestroyed())window.webContents.send('trace:spectrogram',packet)})
   playback=new PlaybackService(engine,analyses,syncPlaybackState)
   reports=new ReportService(join(app.getPath('userData'),'report-drafts'),()=>{state={...state,reportJobs:reports.views()};emitState();if(!recordings.busy()&&!managingLibrary&&!exiting)retention?.resume()})
   playback.beforeSourceChange=()=>spectrogram.release()
   playback.instrumentQuery=request=>instrumentsVisible()?instruments.query(request,state.instrumentSettings||defaultInstrumentSettings):Promise.resolve(undefined)
   const encoderLock=JSON.parse(readFileSync(app.isPackaged?join(process.resourcesPath,'ffmpeg.lock.json'):join(root,'ffmpeg.lock.json'),'utf8'))
   const mediaTools={ffmpeg:join(ffroot,'ffmpeg.exe'),ffprobe:join(ffroot,'ffprobe.exe'),nativePath:app.isPackaged?join(process.resourcesPath,'native/trace_engine.node'):join(root,'build/trace-engine/Release/trace_engine.node'),ffmpegSha256:encoderLock.ffmpegSha256,ffprobeSha256:encoderLock.ffprobeSha256}
-  imports=new ImportService(join(app.getPath('userData'),'imports'),mediaTools,syncImportState,async id=>{if(playback.view()?.takeId===id)await closeInspection();await reports.forgetTake(id);await analyses.forgetTake(id)},()=>!recordings.busy()&&!exporter?.busy()&&!deliveries?.busy()&&!exiting&&!managingLibrary)
+  imports=new ImportService(join(app.getPath('userData'),'imports'),mediaTools,syncImportState,async id=>{if(playback.view()?.takeId===id)await closeInspection();await references?.forgetTake(id);await reports.forgetTake(id);await analyses.forgetTake(id)},()=>!recordings.busy()&&!exporter?.busy()&&!deliveries?.busy()&&!exiting&&!managingLibrary)
   assets=new AssetRepository(recordings,imports)
   exporter=new ExportService(assets,mediaTools,syncExportState)
   assets.setExportResolver((id,exportId)=>exporter.resolve(id,exportId))
+  references=new ReferenceService(analyses,source=>assets.analysisSource(source.takeId,source.role,source.regionId,source.exportId),syncReferenceState)
+  referenceSpectrum=new ReferenceSpectrumService(references,(request,settings)=>instruments.query(request,settings),packet=>{if(window&&!window.isDestroyed()&&!exiting&&referenceVisible())window.webContents.send('trace:reference',packet)})
+  references.stopQueries=()=>referenceSpectrum.cancel()
   deliveries=new DeliveryService(assets,exporter,()=>syncExportState(),()=>!recordings.busy()&&!exiting&&!managingLibrary)
   library=new LibraryService(recordings,path=>shell.trashItem(path),()=>{if(recordings)update({recordings:library.summaries(),exportJobs:exporter.views().map(decorateExport)})},()=>exporter.busy()||deliveries.busy())
   recordings.setExportResolver((takeId,exportId)=>exporter.resolve(takeId,exportId))
   retention=new SourceRetention(recordings,exporter,playback,analyses,app.isPackaged?join(process.resourcesPath,'native/trace_engine.node'):join(root,'build/trace-engine/Release/trace_engine.node'),syncRetentionState)
-  retention.usesSource=id=>reports.usesTake(id)
+  retention.usesSource=id=>reports.usesTake(id)||references.usesTake(id)||playback.usesSource(id)
   recordings.setFinalizedHandler(async id=>{
     const take=recordings.session(id),preset=take.document.preset
     if(!preset.format){retention.schedule();return}
@@ -724,10 +760,12 @@ app.on('before-quit',event=>{
   const finish=(async()=>{
     if(importWatchTimer)clearInterval(importWatchTimer)
     await imports?.shutdown()
+    await references?.shutdown()
     await reports?.shutdown()
     await Promise.all([spectrogram?.close(),instruments?.shutdown(),deliveries?.shutdown(),retention?.shutdown(),exporter?.pauseForRecording(),analyses?.shutdown(),playback?.close()])
     if(final&&recordings)await recordings.finish(final)
     await exporter?.shutdown()
+    await nativeAnalysisQueue.close()
     await preferencesWriter?.flush()
   })()
   finish.catch(error=>console.error('Trace finalization:',error)).finally(()=>{readyToQuit=true;app.quit()})
