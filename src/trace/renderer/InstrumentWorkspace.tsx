@@ -18,12 +18,14 @@ export function useWorkspace(server:WorkspaceState|undefined,save:(state:Workspa
  useEffect(()=>()=>{void flush()},[])
  return {value,change,error,retry:()=>void flush()}
 }
-export function InstrumentIcon({kind}:{kind:'settings'|'maximize'|'restore'|'hide'|'edit'|'lock'|'layout'}){
+export function InstrumentIcon({kind}:{kind:'settings'|'maximize'|'restore'|'hide'|'edit'|'lock'|'layout'|'done'|'grip'}){
  return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
   {kind==='settings'?<><path d="M4 7h16M4 17h16M8 4v6M16 14v6"/></>:
    kind==='maximize'?<><path d="M8 4H4v4M16 4h4v4M4 16v4h4M20 16v4h-4"/></>:
    kind==='restore'?<><path d="M4 9h5V4M20 9h-5V4M4 15h5v5M20 15h-5v5"/></>:
    kind==='hide'?<path d="m6 6 12 12M18 6 6 18"/>:
+   kind==='done'?<path d="m5 12 4 4L19 6"/>:
+   kind==='grip'?<><circle cx="9" cy="5" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="19" r="1"/></>:
    kind==='lock'?<><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></>:
    kind==='edit'?<><path d="m5 15 10-10 4 4L9 19l-5 1Z"/><path d="m13 7 4 4"/></>:
    <><rect x="3" y="4" width="18" height="16" rx="1"/><path d="M9 4v16M9 13h12"/></>}
@@ -39,17 +41,18 @@ export function WorkspaceToolbar({value,change,error,retry}:{error:string;retry:
  return <div className="workspace-toolbar" ref={container} onKeyDown={e=>{if(e.key==='Escape'){setMenu(null);e.stopPropagation()}else if(e.key===' '&&(e.target as HTMLElement).closest('button,input,select'))e.stopPropagation()}}>
   <button className="instrument-chooser" aria-expanded={menu==='instruments'} onClick={()=>setMenu(menu==='instruments'?null:'instruments')}><InstrumentIcon kind="layout"/>仪器</button>
   <select aria-label="工作台布局" value={value.activePreset||''} onChange={e=>{if(e.target.value){change(loadWorkspacePreset(value,e.target.value));setMenu(null)}}}>
-   <option value="" disabled>自定义 · 未保存</option>
+   <option value="" disabled>自定义布局</option>
    {[...factoryLayouts,...value.presets].map(p=><option key={p.id} value={p.id}>{p.name}</option>)}
   </select>
   <button className="manage-layouts" aria-label="管理布局" title="保存与管理布局" onClick={()=>{setMenu(menu==='presets'?null:'presets');const selected=value.presets.find(p=>p.id===value.activePreset)||value.presets[0];setManagedId(selected?.id||'');setName(selected?.name||'');setMessage('')}}><InstrumentIcon kind="settings"/></button>
-  <button className="edit-layout" aria-pressed={!value.locked} title={value.locked?'编辑布局：拖动标题停靠，拖动分隔线调整尺寸':'锁定布局'} onClick={()=>change({...value,locked:!value.locked})}><InstrumentIcon kind={value.locked?'lock':'edit'}/>{value.locked?'已锁定':'编辑布局'}</button>
+  <button className="edit-layout" aria-pressed={!value.locked} title={value.locked?'编辑布局：移动仪器、调整大小':'完成布局编辑，锁定位置与大小；布局自动保存'} onClick={()=>{setMenu(null);change({...value,locked:!value.locked})}}><InstrumentIcon kind={value.locked?'edit':'done'}/>{value.locked?'编辑布局':'完成布局'}</button>
   {error&&<button className="layout-save-error" onClick={retry} title={error}>重试保存</button>}
   {menu==='instruments'&&<div className="workspace-popover" role="group" aria-label="显示仪器">
    {instruments.map(i=><label key={i.id}><input type="checkbox" checked={!value.layout.hidden.includes(i.id)} onChange={()=>change(toggleInstrument(value,i.id))}/><span>{i.title}</span><small>{i.unit}</small></label>)}
    <button onClick={()=>{change({...value,layout:{...value.layout,hidden:[]},activePreset:null});setMenu(null)}}>显示全部</button>
   </div>}
   {menu==='presets'&&<div className="workspace-popover layout-presets" role="dialog" aria-label="管理布局">
+   <p className="layout-save-hint">当前布局会自动保存。另存为命名预设，方便以后切换。</p>
    {value.presets.length>0&&<label>已保存布局<select aria-label="已保存布局" value={managedId} onChange={e=>{setManagedId(e.target.value);setName(value.presets.find(p=>p.id===e.target.value)?.name||'')}}><option value="">选择布局</option>{value.presets.map(p=><option value={p.id} key={p.id}>{p.name}</option>)}</select></label>}
    <label>布局名称<input aria-label="布局名称" value={name} maxLength={40} onChange={e=>setName(e.target.value)}/></label>
    <div className="layout-actions">
@@ -70,7 +73,7 @@ function Splitter({node,path,value,change}:{node:Exclude<LayoutNode,string>;path
  const drag=useRef<{rect:DOMRect;pointer:number;ratio:number}|null>(null)
  function display(e:React.PointerEvent,ratio:number){const host=e.currentTarget.parentElement!;const a=minimum(visibleTree(node.first,value.layout.hidden)!),b=minimum(visibleTree(node.second,value.layout.hidden)!);const tracks='minmax('+(node.axis==='row'?a.w:a.h)+'px,'+(ratio*100)+'fr) 7px minmax('+(node.axis==='row'?b.w:b.h)+'px,'+((1-ratio)*100)+'fr)';if(node.axis==='row')host.style.gridTemplateColumns=tracks;else host.style.gridTemplateRows=tracks}
  function move(e:React.PointerEvent){if(!drag.current||value.locked)return;const r=drag.current.rect;const ratio=Math.max(.15,Math.min(.85,node.axis==='row'?(e.clientX-r.left)/r.width:(e.clientY-r.top)/r.height));drag.current.ratio=ratio;display(e,ratio)}
- return <div className={'instrument-divider '+node.axis} role="separator" tabIndex={value.locked?-1:0} aria-label={node.axis==='row'?'调整左右面板比例':'调整上下仪器比例'} aria-orientation={node.axis==='row'?'vertical':'horizontal'} aria-valuemin={15} aria-valuemax={85} aria-valuenow={Math.round(node.ratio*100)}
+ return <div className={'instrument-divider '+node.axis} role="separator" tabIndex={value.locked?-1:0} title={value.locked?'点击“编辑布局”后可调整大小':'拖动调整大小，也可聚焦后使用方向键'} aria-label={node.axis==='row'?'调整左右面板比例':'调整上下仪器比例'} aria-orientation={node.axis==='row'?'vertical':'horizontal'} aria-valuemin={15} aria-valuemax={85} aria-valuenow={Math.round(node.ratio*100)}
   onPointerDown={e=>{if(value.locked||e.button!==0)return;e.preventDefault();e.currentTarget.setPointerCapture(e.pointerId);drag.current={rect:e.currentTarget.parentElement!.getBoundingClientRect(),pointer:e.pointerId,ratio:node.ratio}}}
   onPointerMove={move} onPointerUp={e=>{if(drag.current){move(e);change(resizeSplit(value,path,drag.current.ratio));drag.current=null;e.currentTarget.releasePointerCapture(e.pointerId)}}} onPointerCancel={e=>{display(e,node.ratio);drag.current=null}}
   onKeyDown={e=>{if(value.locked)return;const minus=node.axis==='row'?'ArrowLeft':'ArrowUp',plus=node.axis==='row'?'ArrowRight':'ArrowDown';if(![minus,plus,'Home','End'].includes(e.key))return;e.preventDefault();e.stopPropagation();change(resizeSplit(value,path,e.key==='Home'?.15:e.key==='End'?.85:node.ratio+(e.key===minus?-1:1)*(e.shiftKey?.05:.02)))}}/>
@@ -87,12 +90,12 @@ export function InstrumentWorkspace({value,change,contents,settingsContent}:{con
    onDragOver={e=>{if(value.locked||!e.dataTransfer.types.includes('application/x-trace-instrument'))return;e.preventDefault();e.stopPropagation();setDrop({id,side:dropSide(e)})}}
    onDragLeave={e=>{if(!e.currentTarget.contains(e.relatedTarget as Node|null))setDrop(null)}}
    onDrop={e=>{e.preventDefault();e.stopPropagation();const source=e.dataTransfer.getData('application/x-trace-instrument') as InstrumentId;if(instruments.some(i=>i.id===source))change(dockInstrument(value,source,id,dropSide(e)));setDrop(null)}}>
-   <header className="instrument-heading" onKeyDown={e=>{if(e.key===' '&&(e.target as HTMLElement).closest('button'))e.stopPropagation()}} draggable={!value.locked&&!maximized}
+   <header className="instrument-heading" title={!value.locked&&!maximized?'拖动标题到另一仪器的边缘；也可在设置中选择“移动仪器”':undefined} onKeyDown={e=>{if(e.key===' '&&(e.target as HTMLElement).closest('button'))e.stopPropagation()}} draggable={!value.locked&&!maximized}
     onDragStart={e=>{if((e.target as Element).closest('button')){e.preventDefault();return}e.dataTransfer.setData('application/x-trace-instrument',id);e.dataTransfer.effectAllowed='move'}} onDragEnd={()=>setDrop(null)}>
-    <h2>{info.title}<small>{info.unit}</small></h2>
+    <h2>{!value.locked&&!maximized&&<span className="instrument-drag-grip"><InstrumentIcon kind="grip"/></span>}{info.title}<small>{info.unit}</small></h2>
     {id==='history'&&<div className="legend">{value.layout.options.historyTraces.map(k=><span key={k} className={'legend-'+k}>{k.toUpperCase()}</span>)}</div>}
     <div>
-     <button aria-label={info.title+'设置'} title={info.title+'设置与说明'} onClick={()=>{focusOrigin.current=document.activeElement as HTMLElement;setSettings(id);setTarget(instruments.find(i=>i.id!==id)!.id)}}><InstrumentIcon kind="settings"/></button>
+     <button aria-label={info.title+'设置'} title={info.title+(value.locked?'设置与说明':'设置与移动')} onClick={()=>{focusOrigin.current=document.activeElement as HTMLElement;setSettings(id);setTarget(instruments.find(i=>i.id!==id)!.id)}}><InstrumentIcon kind="settings"/></button>
      <button aria-label={maximized===id?'恢复'+info.title:'最大化'+info.title} title={maximized===id?'恢复布局':'最大化仪器'} onClick={()=>setMaximized(maximized===id?null:id)}><InstrumentIcon kind={maximized===id?'restore':'maximize'}/></button>
      <button aria-label={'隐藏'+info.title} title={'隐藏'+info.title} onClick={()=>change(toggleInstrument(value,id))}><InstrumentIcon kind="hide"/></button>
     </div>

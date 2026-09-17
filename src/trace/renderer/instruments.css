@@ -17,6 +17,7 @@
 .workspace-toolbar>select {width:136px}
 .workspace-toolbar>button.manage-layouts {width:28px;padding:0}
 .edit-layout[aria-pressed=true] {color:var(--cyan);border-color:#528b96}
+.layout-edit-hint {display:flex;flex:0 0 auto;flex-wrap:wrap;gap:4px 20px;padding:7px 14px;border-bottom:1px solid var(--border);background:var(--panel);color:var(--secondary);font-size:12px;line-height:1.5}
 .workspace-popover {position:absolute;right:14px;top:38px;width:290px;padding:14px;background:#202831;border:1px solid #546170;box-shadow:0 10px 32px #0008;border-radius:6px;display:flex;flex-direction:column;gap:12px;max-height:calc(100vh - 175px);overflow:auto;z-index:30}
 .workspace-popover label {display:flex;align-items:center;gap:10px;font-size:13px}
 .workspace-popover input[type=checkbox] {accent-color:var(--cyan);width:16px;height:16px}
@@ -26,6 +27,7 @@
 .layout-actions {display:flex;flex-wrap:wrap;gap:7px}
 .workspace-popover button,.layout-actions button {font-size:12px;min-height:30px;background:#29343f}
 .workspace-popover p {margin:0;color:var(--amber);font-size:12px}
+.workspace-popover .layout-save-hint {color:var(--secondary);line-height:1.6}
 .trace-app .workspace.modular-workspace {display:flex;padding:10px 12px;gap:0;min-width:0}
 .instrument-workspace {flex:1;display:flex;overflow:auto;min-width:0;min-height:0;position:relative}
 .instrument-split {display:grid;min-height:0;min-width:0;flex:1;width:100%;height:100%;overflow:hidden}
@@ -39,11 +41,16 @@
 .instrument-heading button {width:25px;height:25px;min-height:25px;padding:0;background:transparent;border:1px solid transparent;border-radius:3px;color:#acbac8}
 .instrument-heading button:hover {color:#fff;background:#34424f!important}
 .instrument-heading[draggable=true] {cursor:grab;background:#21313a}
+.instrument-drag-grip {display:inline-flex;margin-right:5px;vertical-align:middle;color:var(--cyan);pointer-events:none}
+.instrument-drag-grip svg {width:12px;height:16px}
 .instrument-divider {position:relative;touch-action:none;min-width:0;min-height:0;outline-offset:-2px!important}
 .instrument-divider.row {cursor:default}
 .instrument-divider.column {cursor:default}
 .editing .instrument-divider.row {cursor:col-resize}
 .editing .instrument-divider.column {cursor:row-resize}
+.editing .instrument-divider:before {content:'';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border-radius:2px;background:var(--secondary);pointer-events:none}
+.editing .instrument-divider.row:before {width:3px;height:24px;max-height:70%}
+.editing .instrument-divider.column:before {width:24px;height:3px;max-width:70%}
 .instrument-divider:after {content:'';position:absolute;inset:0;opacity:0;background:#58d4da55}
 .editing .instrument-divider:hover:after,.instrument-divider:focus-visible:after {opacity:1}
 .instrument-content {display:flex;flex:1;min-height:0;min-width:0;overflow:hidden;container-type:size}

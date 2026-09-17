@@ -10,6 +10,8 @@
 
 依据：用户要求将 [Insight 2 调研建议](37-INSIGHT2-COMPARISON.md) 落地为后续计划。
 
+后续用户反馈：preview.26 已交付布局编辑入口与保存语义改进，见 [58](58-LAYOUT-EDIT-FEEDBACK.md)。下方 preview.25 是 M12 结项与专家复评基线，当前运行入口以 13 为准。
+
 当前工程交付：Trace 0.1.0-preview.25，M12 完成，审计与评分见 [56](56-M12-COMPLETION-AUDIT.md)/[57](57-M12-FINAL-REVIEW.md)。上一工程交付 Trace 0.1.0-preview.22，M11 目标/报告的 31 阶段短门禁与完整资源流程通过，见 [51](51-M11-INTEGRATION.md)。M10 已交付的 preview.20 保留，见 [49](49-M10-3D-INTEGRATION.md)。M9 已交付的 preview.17 保留，见 47。M8 已工程交付的 preview.14 保留，记录见 [42](42-M8-ACCEPTANCE.md)/[45](45-VISIBILITY-AND-RESOURCE-GATE.md)；已有专项继续见 36。
 
 ## 1. 产品目标与执行口径
