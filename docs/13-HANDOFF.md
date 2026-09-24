@@ -1,5 +1,9 @@
 # 13 · 当前状态与下一会话
 
+## Mac 运行时路径先行拆分
+
+2026-09-24：继续在 `feature/macos-port` 推进可在 Windows 复验的工作。新增 `src/trace/runtimeArtifacts.ts`，统一主进程加载的原生模块、FFmpeg/ffprobe 与媒体锁路径；Mac arm64 使用独立的计划路径和 `darwin-arm64` 锁身份，Windows x64 原路径保持一致；不支持的平台/架构明确拒绝。媒体子进程的测试读取限速识别无 `.exe` 后缀的 `ffmpeg`。新增 portable 测试并登记到套件清单：路径、锁身份、真实 Windows 锁和套件覆盖检查 6/6 通过；TypeScript 类型检查与 Trace 构建通过；隔离测试用户目录下当前 Windows 开发构建启动、原生模块加载和退出通过。Mac 原生模块、编码器锁/二进制、包和运行均未准备或验证；M-MAC0 真机门槛仍开放。下一步是完成 Mac 平台资源构建前置条件与真实采集验证，或继续做有独立 Windows 验证的控制层拆分。
+
 ## Mac M-MAC1 先行切片：WAV 文件 I/O 平台边界
 
 2026-09-24：用户明确同意在没有 Mac 时先推进后续工作。临时分支从 `feature/macos-coreaudio-probe` 改名为 `feature/macos-port`。`WavFile.cpp` 的 Win32 文件创建、写入、定位、刷新和无覆盖发布已抽到 `WavFileIO.*`，提供 Windows 与 POSIX 两套实现；文件名拼接改用原生 `filesystem::path` 字符类型，保留 Windows Unicode 路径。`Recorder.cpp` 的帧时长计算改用平台无关的 `FrameTime.h`。CMake 新增 `trace_shared_core` 与跨平台 WAV 测试目标，Windows `trace_core` 留给 WASAPI 采集/回放；Mac 路径目前只能尝试共用库和便携测试，不提供正式引擎。Windows Release 原生引擎构建通过，完整 CTest 最终 16/16 通过；WAV 原有套件新增无覆盖发布用例后 8/8 通过。新增便携测试初跑因测试自身仍持有读取句柄而清理失败，缩短句柄生命周期后通过；其余 15 项未失败。TypeScript 类型检查与 Win32/POSIX 同名目标提示检查通过。POSIX 路径、Mac 编译、Core Audio 采集和 Mac 完整包仍未验证；M-MAC0 真机来源/权限/时钟结论仍须补齐。下一步取得 Apple silicon Mac 后按 71 完成 M-MAC0、共用库和便携测试实测，再决定采集/回放集成细节。

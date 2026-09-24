@@ -43,6 +43,7 @@ import {defaultWorkspace,restoreWorkspace,validateWorkspace} from './workspace'
 import {defaultDisplaySettings,validateDisplaySettings,restoreDisplaySettings,displaySettingsVersion,validWindowSeconds} from './displaySettings'
 import {restoreWindowBounds} from './windowGeometry'
 import {product} from './product'
+import {runtimeArtifacts,encoderLockHashes} from './runtimeArtifacts'
 import type {PlaybackNative} from './playbackService'
 import type { Device, NativeMeterSnapshot, MeterSnapshot, NativeRecordSnapshot, Reply, Request, SourceFormat, TraceState } from './shared'
 const requireNative=createRequire(__filename)
@@ -699,11 +700,11 @@ app.whenReady().then(async()=>{
   supportRuntime=await SupportRuntime.create(product.version,__filename,()=>state,diagnosticSnapshot,()=>{if(supportRuntime){state={...state,support:supportRuntime.status};emitState()}},testRoot)
   state={...state,support:supportRuntime.status}
   if(testMode&&process.env.TRACE_TEST_STARTUP_FAILURE==='1')throw Error('TEST_ONLY_STARTUP_FAILURE')
-  engine=requireNative(app.isPackaged?join(process.resourcesPath,'native/trace_engine.node'):join(root,'build/trace-engine/Release/trace_engine.node')) as NativeEngine
-  const ffroot=app.isPackaged?join(process.resourcesPath,'ffmpeg'):join(root,'.tools/ffmpeg/bin')
+  const runtime=runtimeArtifacts(process.platform,process.arch,app.isPackaged,root,process.resourcesPath)
+  engine=requireNative(runtime.nativePath) as NativeEngine
   const segment=testMode&&process.env.TRACE_TEST_SEGMENT_BYTES?Number(process.env.TRACE_TEST_SEGMENT_BYTES):2147483648
-  recordings=new RecordingService(engine,join(ffroot,'ffmpeg.exe'),join(ffroot,'ffprobe.exe'),app.isPackaged?join(process.resourcesPath,'native/trace_engine.node'):join(root,'build/trace-engine/Release/trace_engine.node'),syncRecordingState,segment)
-  analyses=new AnalysisService(app.isPackaged?join(process.resourcesPath,'native/trace_engine.node'):join(root,'build/trace-engine/Release/trace_engine.node'),syncAnalysisState)
+  recordings=new RecordingService(engine,runtime.ffmpeg,runtime.ffprobe,runtime.nativePath,syncRecordingState,segment)
+  analyses=new AnalysisService(runtime.nativePath,syncAnalysisState)
   const analysisNative:InstrumentNative&SpectrogramNative={instrumentAnalyze:request=>nativeAnalysisQueue.run(()=>engine.instrumentAnalyze(request),String(request.identity||'').startsWith('reference:')?1:0),spectrogramTile:request=>nativeAnalysisQueue.run(()=>engine.spectrogramTile(request))}
   instruments=new InstrumentService(analysisNative)
   spectrogram=new SpectrogramPresenter(analysisNative,resolveSpectrogram,packet=>{if(window&&!window.isDestroyed())sendRenderer('trace:spectrogram',packet)})
@@ -711,8 +712,8 @@ app.whenReady().then(async()=>{
   reports=new ReportService(join(app.getPath('userData'),'report-drafts'),()=>{state={...state,reportJobs:reports.views()};emitState();if(!recordings.busy()&&!managingLibrary&&!exiting)retention?.resume()})
   playback.beforeSourceChange=()=>spectrogram.release()
   playback.instrumentQuery=request=>instrumentsVisible()?instruments.query(request,state.instrumentSettings||defaultInstrumentSettings):Promise.resolve(undefined)
-  const encoderLock=JSON.parse(readFileSync(app.isPackaged?join(process.resourcesPath,'ffmpeg.lock.json'):join(root,'ffmpeg.lock.json'),'utf8'))
-  const mediaTools={ffmpeg:join(ffroot,'ffmpeg.exe'),ffprobe:join(ffroot,'ffprobe.exe'),nativePath:app.isPackaged?join(process.resourcesPath,'native/trace_engine.node'):join(root,'build/trace-engine/Release/trace_engine.node'),ffmpegSha256:encoderLock.ffmpegSha256,ffprobeSha256:encoderLock.ffprobeSha256}
+  const encoderLock=encoderLockHashes(JSON.parse(readFileSync(runtime.encoderLockPath,'utf8')),runtime.platformBuild)
+  const mediaTools={ffmpeg:runtime.ffmpeg,ffprobe:runtime.ffprobe,nativePath:runtime.nativePath,ffmpegSha256:encoderLock.ffmpegSha256,ffprobeSha256:encoderLock.ffprobeSha256}
   imports=new ImportService(join(app.getPath('userData'),'imports'),mediaTools,syncImportState,async id=>{if(playback.view()?.takeId===id)await closeInspection();await references?.forgetTake(id);await reports.forgetTake(id);await analyses.forgetTake(id)},()=>!recordings.busy()&&!exporter?.busy()&&!deliveries?.busy()&&!exiting&&!managingLibrary)
   assets=new AssetRepository(recordings,imports)
   exporter=new ExportService(assets,mediaTools,syncExportState)
@@ -723,7 +724,7 @@ app.whenReady().then(async()=>{
   deliveries=new DeliveryService(assets,exporter,()=>syncExportState(),()=>!recordings.busy()&&!exiting&&!managingLibrary)
   library=new LibraryService(recordings,path=>shell.trashItem(path),()=>{if(recordings)update({recordings:library.summaries(),exportJobs:exporter.views().map(decorateExport)})},()=>exporter.busy()||deliveries.busy())
   recordings.setExportResolver((takeId,exportId)=>exporter.resolve(takeId,exportId))
-  retention=new SourceRetention(recordings,exporter,playback,analyses,app.isPackaged?join(process.resourcesPath,'native/trace_engine.node'):join(root,'build/trace-engine/Release/trace_engine.node'),syncRetentionState)
+  retention=new SourceRetention(recordings,exporter,playback,analyses,runtime.nativePath,syncRetentionState)
   retention.usesSource=id=>reports.usesTake(id)||references.usesTake(id)||playback.usesSource(id)
   recordings.setFinalizedHandler(async id=>{
     const take=recordings.session(id),preset=take.document.preset

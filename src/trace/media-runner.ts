@@ -15,7 +15,7 @@ process.on('message',(message:unknown)=>{
   if(!isAbsolute(value.program)||!Array.isArray(value.args)||value.args.length>256||value.args.some(a=>typeof a!=='string'||a.includes('\0')))throw Error('INVALID_MEDIA_PROCESS')
   const args=[...value.args]
   const rate=value.testReadRate??0
-  if(Number.isFinite(rate)&&rate>0&&rate<=1000&&basename(value.program).toLowerCase()==='ffmpeg.exe'&&args.some(a=>a==='libmp3lame'||a==='aac')){
+  if(Number.isFinite(rate)&&rate>0&&rate<=1000&&['ffmpeg.exe','ffmpeg'].includes(basename(value.program).toLowerCase())&&args.some(a=>a==='libmp3lame'||a==='aac')){
    const index=args.indexOf('-i');if(index>=0)args.splice(index,0,'-readrate',String(value.testReadRate))
   }
   child=spawn(value.program,args,{windowsHide:true,stdio:['ignore','pipe','pipe']})

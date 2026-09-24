@@ -74,6 +74,8 @@ M-MAC0 独立探针源码与真机操作清单见 [71-MACOS-M0-RUNBOOK](71-MACOS
 
 提前开展的 M-MAC1 切片：将 WAV 写入/定位/刷新/不覆盖发布的 OS 调用隔离到 `native/src/recorder/WavFileIO.*`，将帧时长计算从 Windows 采集故障头文件移至平台无关的 `FrameTime.h`；CMake 将计量、WAV、录音、文件分析等放入 `trace_shared_core`，Windows `trace_core` 只含当前 WASAPI 采集/回放。Mac 配置目前只构建共用库与便携 WAV 测试，不包含可运行的 Trace 引擎。Windows Release 原生构建、16/16 CTest 和 TypeScript 类型检查通过。POSIX 分支尚未在 Mac 编译或运行；其无覆盖发布目前使用同卷硬链接加删除临时名，必须在 Mac 的目标文件系统上检验支持性、权限、故障后残留和恢复。未来若改用 Apple 的独占重命名，也需验证目标卷能力，不能回退到可覆盖的普通 `rename`。
 
+后续切片已将 Trace 主进程散落的 `.exe`、`.node`、FFmpeg 锁路径集中到 `src/trace/runtimeArtifacts.ts`：Windows x64 保留现有目录，Mac arm64 仅定义将来的本地/包内目标位置并要求独立 `darwin-arm64` 媒体锁。路径定义和 Windows 上的测试**不表示** Mac 原生模块、FFmpeg 二进制或安装包已存在；这些资源须由后续 Mac 构建和哈希/许可验证提供。
+
 ## 官方依据
 
 - Apple：[Capturing system audio with Core Audio taps](https://developer.apple.com/documentation/coreaudio/capturing-system-audio-with-core-audio-taps)（示例平台要求、使用说明与权限键）。

@@ -38,6 +38,7 @@ export const portable = [
   'reference-spectrum.test.mjs',
   'report-service.test.mjs',
   'report-targets.test.mjs',
+  'runtime-artifacts.test.mjs',
   'session-timeline.test.mjs',
   'snapshot-transport.test.mjs',
   'source-continuity.test.mjs',
