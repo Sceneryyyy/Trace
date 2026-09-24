@@ -18,9 +18,12 @@ function message(packet:InstrumentPacket|undefined,s:InstrumentSettings,field=fa
 }
 export function SpectrumPanel({packet,settings,change}:{packet?:InstrumentPacket;settings:InstrumentSettings;change:(s:InstrumentSettings)=>void}){
  const canvas=useRef<HTMLCanvasElement>(null),box=useRef<HTMLDivElement>(null),drag=useRef<{x:number;y:number;settings:InstrumentSettings;axis:'frequency'|'level'}|null>(null),[hover,setHover]=useState('')
+ const paintRef=useRef<()=>void>(()=>{}),hoverAt=useRef(0)
  const data=available(packet,settings),nyquist=(data?.sampleRate||48000)/2
  const lo=Math.min(settings.minFrequency,nyquist*.9),hi=Math.max(lo+1,Math.min(settings.maxFrequency,nyquist))
  useEffect(()=>{const element=canvas.current;if(!element)return;const prevent=(e:WheelEvent)=>e.preventDefault();element.addEventListener('wheel',prevent,{passive:false});return()=>element.removeEventListener('wheel',prevent)},[])
+ // ResizeObserver is registered once; data changes only repaint through paintRef.
+ useEffect(()=>{const observer=new ResizeObserver(()=>paintRef.current());if(box.current)observer.observe(box.current);return()=>observer.disconnect()},[])
  useEffect(()=>{
   const el=canvas.current;if(!el)return
   const paint=()=>{const surface=canvasSurface(el);if(!surface)return;const {rect:r,context:c}=surface
@@ -35,7 +38,7 @@ export function SpectrumPanel({packet,settings,change}:{packet?:InstrumentPacket
     if(!enabled)continue;c.strokeStyle=color;c.lineWidth=1.25;c.setLineDash([...dash]);c.beginPath();let started=false
     for(let k=1;k<values.length;k++){const f=k*data.binHz;if(f<lo||f>hi)continue;const py=y(Math.max(settings.minDecibels,db(values[k])));if(started)c.lineTo(x(f),py);else c.moveTo(x(f),py);started=true}c.stroke()
    }c.restore()
-  };paint();const observer=new ResizeObserver(paint);if(box.current)observer.observe(box.current);return()=>observer.disconnect()
+  };paintRef.current=paint;paint()
  },[data,settings,lo,hi])
  function reset(){change({...settings,minFrequency:20,maxFrequency:Math.min(20000,nyquist),minDecibels:-100,maxDecibels:6})}
  function wheel(e:React.WheelEvent){e.stopPropagation();const rect=e.currentTarget.getBoundingClientRect(),delta=Math.max(-200,Math.min(200,e.deltaY)),factor=Math.exp(delta*.002)
@@ -48,7 +51,9 @@ export function SpectrumPanel({packet,settings,change}:{packet?:InstrumentPacket
    else{const span=d.settings.maxDecibels-d.settings.minDecibels,top=Math.max(-180+span,Math.min(24,d.settings.maxDecibels+dy*span));change({...settings,minDecibels:top-span,maxDecibels:top})}return
   }
   if(!data||!data.current.length)return;const ratio=Math.max(0,Math.min(1,(e.clientX-rect.left-44)/Math.max(1,rect.width-56))),f=lo*Math.pow(hi/lo,ratio),bin=Math.max(0,Math.min(data.current.length-1,Math.round(f/data.binHz)))
-  if(bin<0)return;setHover((bin*data.binHz).toFixed(1)+' Hz · 当前 '+reading(data.current[bin])+' · 平均 '+reading(data.average[bin])+' dBFS')
+  if(bin<0)return
+  const now=Date.now();if(now-hoverAt.current<60)return;hoverAt.current=now
+  setHover((bin*data.binHz).toFixed(1)+' Hz · 当前 '+reading(data.current[bin])+' · 平均 '+reading(data.average[bin])+' dBFS')
  }
  return <div className="spectrum-instrument" ref={box} data-instrument-frame={data?.positionFrame}>
   <div className="analysis-legend"><button className="curve-current" aria-pressed={settings.showCurrent} onClick={()=>change({...settings,showCurrent:!settings.showCurrent})}>当前</button><button className="curve-average" aria-pressed={settings.showAverage} onClick={()=>change({...settings,showAverage:!settings.showAverage})}>平均</button><button className="curve-hold" aria-pressed={settings.showPeakHold} onClick={()=>change({...settings,showPeakHold:!settings.showPeakHold})}>保持</button><button title="复位频率与电平坐标" onClick={reset}>复位</button></div>
@@ -59,6 +64,8 @@ export function SpectrumPanel({packet,settings,change}:{packet?:InstrumentPacket
 }
 export function SoundFieldPanel({packet,settings,change}:{packet?:InstrumentPacket;settings:InstrumentSettings;change:(s:InstrumentSettings)=>void}){
  const canvas=useRef<HTMLCanvasElement>(null),box=useRef<HTMLDivElement>(null),data=available(packet,settings),error=message(packet,settings,true)
+ const paintRef=useRef<()=>void>(()=>{})
+ useEffect(()=>{const observer=new ResizeObserver(()=>paintRef.current());if(box.current)observer.observe(box.current);return()=>observer.disconnect()},[])
  useEffect(()=>{const el=canvas.current;if(!el)return;const paint=()=>{const surface=canvasSurface(el);if(!surface)return;const {rect:r,context:c}=surface
   const polar=settings.fieldMode!=='lissajous',radius=Math.max(10,Math.min(r.width*.42,polar?r.height*.76:r.height*.42)),cx=r.width/2,cy=polar?r.height-18:r.height/2
   c.strokeStyle='#41505c';c.lineWidth=1;c.beginPath()
@@ -69,12 +76,12 @@ export function SoundFieldPanel({packet,settings,change}:{packet?:InstrumentPack
   if(settings.fieldMode==='polarLevel'){const values=settings.polarDetection==='peak'?data.field.polarPeak:settings.polarDetection==='envelope'?data.field.polarEnvelope:data.field.polarRms
    for(let i=0;i<values.length;i++){const a=(i-90)*Math.PI/180,v=Math.min(1,values[i]*settings.fieldGain);c.strokeStyle=Math.abs(i-90)>45?'#e5b463':'#91e65c';c.beginPath();c.moveTo(cx,cy);c.lineTo(cx+Math.sin(a)*v*radius,cy-Math.cos(a)*v*radius);c.stroke()}
   }else for(let i=0;i<data.field.points.length;i+=4){let x=data.field.points[i]*settings.fieldGain,y=data.field.points[i+1]*settings.fieldGain;const age=data.field.points[i+2];if(polar){x*=y<0?-1:1;y=Math.abs(y)}c.globalAlpha=Math.max(.12,1-age/(settings.fieldMs/1000));c.fillStyle=data.field.points[i+3]?'#ff5e66':'#acdcca';c.fillRect(cx+Math.max(-1,Math.min(1,x))*radius,cy-Math.max(-1,Math.min(1,y))*radius,1.5,1.5)}c.globalAlpha=1
- };paint();const observer=new ResizeObserver(paint);if(box.current)observer.observe(box.current);return()=>observer.disconnect()},[data,settings,error])
+ };paintRef.current=paint;paint()},[data,settings,error])
  const correlation=data?.field.correlation,balance=data?.field.balance,value=(v:typeof correlation)=>v?.status==='ready'&&v.value!==null?v.value.toFixed(2):'—'
  return <div className="soundfield-instrument" ref={box} data-instrument-frame={data?.positionFrame}>
   <canvas ref={canvas} aria-label="立体声声场示波图"/>
   {error&&<div className="instrument-empty" role="status">{error}</div>}
-  <div className="field-readings"><div><span>相关度</span><strong style={{color:correlation?.status==='ready'&&correlation.value!<0?'var(--amber)':undefined}} title="持续负相关可能在合并单声道时相消，短暂低于零不一定是问题">{value(correlation)}</strong><div className="correlation-scale" role="meter" aria-label="左右声道相关度" aria-valuemin={-1} aria-valuemax={1} aria-valuenow={correlation?.status==='ready'?correlation.value??undefined:undefined}>{correlation?.status==='ready'&&<i style={{left:((correlation.value!+1)*50)+'%'}}/>}</div></div><div><span>功率平衡</span><strong>{value(balance)}</strong><small>−1 左 · 0 居中 · +1 右</small></div></div>
+  <div className="field-readings"><div><span>相关度</span><strong style={{color:correlation?.status==='ready'&&correlation.value!<0?'var(--amber)':undefined}} title="持续负相关可能在合并单声道时相消，短暂低于零不一定是问题">{value(correlation)}</strong><div className="correlation-scale" role="meter" aria-label="左右声道相关度" aria-valuemin={-1} aria-valuemax={1} aria-valuenow={correlation?.status==='ready'?correlation.value??undefined:undefined}>{correlation?.status==='ready'&&<span className="correlation-cursor" style={{transform:'translateX('+((correlation.value!+1)*50)+'%)'}}><i/></span>}</div></div><div><span>功率平衡</span><strong>{value(balance)}</strong><small>−1 左 · 0 居中 · +1 右</small></div></div>
   <div className="field-modes" role="group" aria-label="声场显示模式"><small title="示波显示倍率，不改变相关度和平衡读数">×{settings.fieldGain}</small>{data?.field.partial&&<span title="可用音频尚不足完整声场时间窗">暂估</span>}{(['lissajous','polarSample','polarLevel'] as const).map((v,i)=><button key={v} aria-pressed={settings.fieldMode===v} onClick={()=>change({...settings,fieldMode:v})}>{['示波','极坐标','能量'][i]}</button>)}</div>
  </div>
 }

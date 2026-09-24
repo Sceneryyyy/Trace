@@ -434,7 +434,23 @@ export default function ScopeModule({
     : 'off'
   const captureSpectrumPeakInfo = scopeKind === 'spectrum' && spectrumPeakMode !== 'off'
   const handleSpectrumPeakInfo = useCallback((nextPeakInfo: SpectrumPeakInfo | null): void => {
-    setSpectrumPeakInfo(nextPeakInfo)
+    // buildPeakInfoAt allocates a fresh object per frame; bail out unless a
+    // displayed value actually changed so the overlay does not re-render at fps.
+    setSpectrumPeakInfo((previousPeakInfo) => {
+      if (previousPeakInfo === null || nextPeakInfo === null) {
+        return previousPeakInfo === nextPeakInfo ? previousPeakInfo : nextPeakInfo
+      }
+      if (
+        previousPeakInfo.dbfs === nextPeakInfo.dbfs
+        && previousPeakInfo.frequencyHz === nextPeakInfo.frequencyHz
+        && previousPeakInfo.normalizedX === nextPeakInfo.normalizedX
+        && previousPeakInfo.normalizedY === nextPeakInfo.normalizedY
+        && previousPeakInfo.key === nextPeakInfo.key
+      ) {
+        return previousPeakInfo
+      }
+      return nextPeakInfo
+    })
   }, [])
   const measurementEnabled = scopeKind === 'spectrum'
     || scopeKind === 'spectrogram'
@@ -635,8 +651,24 @@ export default function ScopeModule({
     })
     observer.observe(container)
 
+    // Container size does not change when the window moves across monitors with
+    // a different devicePixelRatio; re-measure through the same path on dpr change.
+    let dprMediaQueryList: MediaQueryList | null = null
+    const handleDprChange = (): void => {
+      scheduleResize()
+      registerDprListener()
+    }
+    const registerDprListener = (): void => {
+      dprMediaQueryList?.removeEventListener('change', handleDprChange)
+      dprMediaQueryList = window.matchMedia(`(resolution: ${window.devicePixelRatio || 1}dppx)`)
+      dprMediaQueryList.addEventListener('change', handleDprChange)
+    }
+    registerDprListener()
+
     return () => {
       observer.disconnect()
+      dprMediaQueryList?.removeEventListener('change', handleDprChange)
+      dprMediaQueryList = null
       if (resizeFrameRef.current !== null) {
         window.cancelAnimationFrame(resizeFrameRef.current)
         resizeFrameRef.current = null

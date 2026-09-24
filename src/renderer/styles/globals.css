@@ -2516,6 +2516,18 @@ button.toolbar__version:hover {
   .toolbar__brand:hover .toolbar__brand-heart {
     animation: none !important;
   }
+
+  .toolbar__clip-chip.is-filling:not(:disabled),
+  button.toolbar__version,
+  .toolbar__chip,
+  .toolbar__icon-button,
+  .scope-strip__reorder-controls,
+  .scope-strip__reorder-button,
+  .scope-strip__popout-button,
+  .scope-popout__button,
+  .now-playing-config__provider-chevron {
+    transition: none !important;
+  }
 }
 
 .scope-popout__settings-panel {

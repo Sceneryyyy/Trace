@@ -1,4 +1,4 @@
-import {useEffect,useState} from 'react'
+import {useEffect,useMemo,useState} from 'react'
 import {userError} from '../userErrors'
 const phases={queued:'等待处理',running:'正在生成',ready:'已生成',failed:'失败',cancelled:'已取消'}
 const integrityLabels={complete:'完整',estimated:'含估计区间',gaps:'存在中断',unknown:'待核实'}
@@ -18,7 +18,7 @@ export function ReportPanel({file,targets,jobs,recording,request,onNavigate}:{fi
  useEffect(()=>{setResult(null);setPage(0);if(!job||job.phase!=='ready')return;let active=true;request('report.get',{reportId:job.id}).then(v=>{if(active)setResult(v as ReportResult)}).catch(e=>{if(active)setError(userError(e))});return()=>{active=false}},[job?.id,job?.phase])
  const action=(name:Command,payload:Record<string,unknown>)=>{setError('');void request(name,payload).then(v=>{const value=v as {reportId?:string};if(value?.reportId)setSelected(value.reportId);if(name==='report.jump')onNavigate()}).catch(e=>setError(userError(e)))}
  const sameSource=Boolean(file&&result&&file.takeId===result.source.takeId&&file.role===result.source.role&&file.regionId===result.source.regionId&&file.exportId===result.source.exportId)
- const events=result?.eventPreview.map((event,index)=>({event,index})).sort((a,b)=>BigInt(a.event.startFrame)<BigInt(b.event.startFrame)?-1:BigInt(a.event.startFrame)>BigInt(b.event.startFrame)?1:0)||[]
+ const events=useMemo(()=>result?.eventPreview.map((event,index)=>({event,index})).sort((a,b)=>BigInt(a.event.startFrame)<BigInt(b.event.startFrame)?-1:BigInt(a.event.startFrame)>BigInt(b.event.startFrame)?1:0)||[],[result])
  return <div className="report-panel">
   <div className="report-create"><div><strong>{file?.label||'选择已保存的文件'}</strong><small>{file?.temporary?'请先保存缓存，再生成报告。':'报告不会改写音频。临时预览请通过“导出报告”保存。'}</small></div><select aria-label="报告范围" value={scope} onChange={e=>setScope(e.target.value as typeof scope)}><option value="whole">整段</option><option value="selection" disabled={!file?.selection}>选区独立分析</option></select><button disabled={!ready} onClick={()=>file&&action('report.prepare',{playbackId:file.id,scope})}>生成报告</button></div>
   {!ready&&file&&!file.temporary&&<small>{recording?'结束录音后可生成报告。':'等待所选范围的分析完成。'}</small>}

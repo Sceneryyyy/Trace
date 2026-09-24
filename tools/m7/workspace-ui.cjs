@@ -28,7 +28,7 @@ async function main(){
  assert.equal((await c.state()).playback.id,before.id);assert.equal((await c.state()).playback.positionFrame,before.positionFrame)
  assert.deepEqual((await c.state()).playback.selection,before.selection)
  assert.equal(await c.evaluate("document.querySelectorAll('.wave-panel canvas').length"),0);pass('Hiding a canvas keeps file, cursor and selection unchanged')
- await c.click('.instrument-chooser');await c.click('[aria-label="显示仪器"] label:nth-child(2) input');await c.click('.instrument-chooser')
+ await c.click('.instrument-chooser');await c.click('[data-instrument-choice="waveform"] input');await c.click('.instrument-chooser')
  await c.click('[aria-label="最大化响度"]');assert.equal(await c.evaluate("document.querySelectorAll('[data-instrument]').length"),1)
  await c.click('[aria-label="响度设置"]')
  await c.evaluate("(()=>{const e=document.querySelector('[aria-label=\"响度显示方式\"]');e.value='meters';e.dispatchEvent(new Event('change',{bubbles:true}))})()")
@@ -43,18 +43,18 @@ async function main(){
  await c.click('[aria-label="关闭仪器设置"]');pass('Meter accessibility follows the visible RMS or peak mode')
  await c.click('.edit-layout')
  await wait(async()=>!(await c.state()).workspace.locked,'edit')
- const oldRatio=(await c.state()).workspace.layout.tree.ratio
+ const oldRatio=await c.evaluate("Number(document.querySelector('[role=separator]').getAttribute('aria-valuenow'))")
  await c.evaluate("document.querySelector('[role=separator]').focus()");await c.key('ArrowRight','ArrowRight',39)
- await wait(async()=>(await c.state()).workspace.layout.tree.ratio>oldRatio,'keyboard resize')
+ await wait(async()=>Number(await c.evaluate("document.querySelector('[role=separator]').getAttribute('aria-valuenow')"))>oldRatio,'keyboard resize')
  const grip=await c.evaluate("(()=>{const r=document.querySelector('[role=separator]').getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2}})()")
  await c.evaluate('window.__pointerEvents=[];for(const k of ["pointerdown","pointermove","pointerup","pointercancel","lostpointercapture"])document.addEventListener(k,e=>{window.__lastPointerTarget=e.target;window.__lastPointerId=e.pointerId;window.__pointerEvents.push({type:k,target:e.target.className,x:e.clientX,y:e.clientY,buttons:e.buttons,button:e.button,pointerId:e.pointerId})},true);true')
- const ratioBefore=(await c.state()).workspace.layout.tree.ratio
+ const ratioBefore=await c.evaluate("Number(document.querySelector('[role=separator]').getAttribute('aria-valuenow'))")
  await c.send('Input.dispatchMouseEvent',{type:'mousePressed',button:'left',clickCount:1,...grip})
  report.captureAfterDown=await c.evaluate('({id:window.__lastPointerId,connected:window.__lastPointerTarget?.isConnected,captured:window.__lastPointerTarget?.hasPointerCapture(window.__lastPointerId),same:window.__lastPointerTarget===document.querySelector("[role=separator]"),html:window.__lastPointerTarget?.outerHTML})');
  await c.send('Input.dispatchMouseEvent',{type:'mouseMoved',button:'left',buttons:1,x:grip.x+45,y:grip.y})
  await c.send('Input.dispatchMouseEvent',{type:'mouseReleased',button:'left',clickCount:1,x:grip.x+45,y:grip.y})
  await delay(100);report.pointer={grip,before:ratioBefore,workspace:(await c.state()).workspace,events:await c.evaluate('window.__pointerEvents'),errors:c.events.filter(e=>e.method==='Runtime.exceptionThrown')};
- await wait(async()=>(await c.state()).workspace.layout.tree.ratio>ratioBefore,'pointer resize')
+ await wait(async()=>Number(await c.evaluate("document.querySelector('[role=separator]').getAttribute('aria-valuenow')"))>ratioBefore,'pointer resize')
  const treeBefore=JSON.stringify((await c.state()).workspace.layout.tree)
  const target=await c.evaluate("(()=>{const r=document.querySelector('[data-instrument=loudness]').getBoundingClientRect();return {x:r.x+r.width/2,y:r.bottom-12}})()")
  const data={items:[{mimeType:'application/x-trace-instrument',data:'levels'}],dragOperationsMask:1}
@@ -76,7 +76,10 @@ async function main(){
  assert.deepEqual((await c.state()).workspace.layout,saved.layout);pass('Custom preset saves and recalls independently of built-in layouts')
  for(const id of ['levels','waveform','history','loudness'])await c.click('[data-instrument="'+id+'"] .instrument-heading button:last-child')
  await wait(()=>c.evaluate("!!document.querySelector('.empty-workspace')"),'empty')
- await c.click('.empty-workspace button');await wait(()=>c.evaluate("document.querySelectorAll('[data-instrument]').length===4"),'restore all')
+ await c.click('.empty-workspace button');await wait(async()=>{
+  const state=await c.state()
+  return state.workspace.layout.hidden.length===0&&c.evaluate("document.querySelectorAll('[data-instrument]').length===8")
+ },'restore all')
  pass('All instruments can be hidden and recovered with a visible action')
  await c.evaluate("(()=>{const e=document.querySelector('[aria-label=工作台布局]');e.value='recorder';e.dispatchEvent(new Event('change',{bubbles:true}))})()")
  await wait(async()=>(await c.state()).workspace.activePreset==='recorder','default restored')

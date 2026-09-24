@@ -86,6 +86,7 @@ export class Oscilloscope {
   private nativeAnalyzer: OscilloscopeNativeAnalyzer
   private frameLoop: VisualizerFrameLoop
   private nativeInitialized = false
+  private nativeDspMissingLogged = false
   private samplesReceived = 0
   private lastSampleRate = 0
   private unsubscribeSessionChange: (() => void) | null = null
@@ -248,9 +249,13 @@ export class Oscilloscope {
     this.renderStaticLayer()
 
     if (!this.nativeReady()) {
-      console.error('Oscilloscope: Native DSP required')
+      if (!this.nativeDspMissingLogged) {
+        this.nativeDspMissingLogged = true
+        console.error('Oscilloscope: Native DSP required')
+      }
       return
     }
+    this.nativeDspMissingLogged = false
 
     this.updateSampleRateIfNeeded()
 

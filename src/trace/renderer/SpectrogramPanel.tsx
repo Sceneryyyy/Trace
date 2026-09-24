@@ -64,31 +64,39 @@ export function SpectrogramPanel({settings,change,isVisible,...timeline}:Timelin
  },[view,settings.minDecibels,settings.maxDecibels,settings.palette,show3d])
  const nyquist=(view?.sampleRate||snapshot?.format.sampleRate||48000)/2,lo=Math.min(settings.minFrequency,nyquist*.9),hi=Math.min(settings.maxFrequency,nyquist)
  const reset=()=>change({...settings,minFrequency:20,maxFrequency:Math.min(20000,nyquist),minDecibels:-100,maxDecibels:0})
- const layer:TimelineLayer={draw:(ctx,g)=>{
-   ctx.save();ctx.beginPath();ctx.rect(g.left,g.top,g.right-g.left,g.bottom-g.top);ctx.clip()
-   if(image&&visiblePacket?.axisStartFrame&&visiblePacket.axisEndFrame){ctx.imageSmoothingEnabled=false;const a=g.x(visiblePacket.axisStartFrame),b=g.x(visiblePacket.axisEndFrame);ctx.drawImage(image,a,g.top,b-a,g.bottom-g.top)}
-   const painted=image?displayKey:'';if(ctx.canvas.dataset.spectrogramDrawnContext!==painted)ctx.canvas.dataset.spectrogramDrawnContext=painted
-   if(image&&visiblePacket?.requestId===requestStarted.current.id){
-    const key=visiblePacket.requestId+':'+visiblePacket.phase
-    if(ctx.canvas.dataset.spectrogramPaintKey!==key){ctx.canvas.dataset.spectrogramPaintKey=key;ctx.canvas.dataset.spectrogramPaintMs=String(performance.now()-requestStarted.current.at)}
-   }
-   ctx.strokeStyle='#43536366';ctx.lineWidth=1
-   for(let n=0;n<=6;n++){const x=g.left+(g.right-g.left)*n/6;ctx.beginPath();ctx.moveTo(x,g.top);ctx.lineTo(x,g.bottom);ctx.stroke()}
-   ctx.restore();ctx.font='10px "JetBrains Mono",monospace';ctx.fillStyle='#bdcbd7';ctx.textAlign='right'
-   for(const f of [20,100,500,2000,10000,20000,40000])if(f>=lo&&f<=hi){const y=g.bottom-Math.log(f/lo)/Math.log(hi/lo)*(g.bottom-g.top);ctx.fillText(f>=1000?f/1000+'k':String(f),g.left-5,y+3)}
-   ctx.textAlign='left'
-  },hover:(position,ratio)=>{
-   if(!visiblePacket?.view||mono||Date.now()-hoverTime.current<60)return;hoverTime.current=Date.now();const generation=++hoverGeneration.current,id=active.current
-   void query('spectrogram.point',{queryId:id,positionFrame:position,frequency:lo*Math.pow(hi/lo,ratio)}).then(raw=>{
-    if(generation!==hoverGeneration.current||id!==active.current)return
-    const p=raw as {frequency:number;frame:string;status:string;decibels:number|null},rate=snapshot?.timelineRate||snapshot?.format.sampleRate||48000
-    const value=p.status==='ready'?p.decibels!.toFixed(1)+' dBFS':p.status==='silence'?'−∞ dBFS · 静音':p.status==='gap'?'数据缺口':p.status==='error'?'数据错误':'未覆盖'
-    setReadout({context:displayKey,text:(Number(p.frame)/rate+(snapshot?.fileView?.timeOffsetSeconds||0)).toFixed(3)+' s · '+p.frequency.toFixed(1)+' Hz · '+value})
-   }).catch(()=>{})
-  },wheel:(ratio,delta)=>{
-   const center=lo*Math.pow(hi/lo,ratio),span=Math.max(Math.log(1.1),Math.min(Math.log(nyquist),Math.log(hi/lo)*Math.exp(Math.max(-200,Math.min(200,delta))*.002)))
-   let a=center/Math.exp(span*ratio),b=a*Math.exp(span);if(a<1){a=1;b=Math.exp(span)}if(b>nyquist){b=nyquist;a=b/Math.exp(span)}change({...settings,minFrequency:a,maxFrequency:b})
-  }}
+ // Keep the layer referentially stable so Timeline does not rebuild its paint
+ // pipeline on every snapshot frame; volatile inputs are read through a ref.
+ const volatile=useRef({image,visiblePacket,displayKey,lo,hi,nyquist,mono,snapshot,settings})
+ volatile.current={image,visiblePacket,displayKey,lo,hi,nyquist,mono,snapshot,settings}
+ const changeRef=useRef(change);changeRef.current=change
+ const layer=useMemo<TimelineLayer>(()=>({draw:(ctx,g)=>{
+  const v=volatile.current
+  ctx.save();ctx.beginPath();ctx.rect(g.left,g.top,g.right-g.left,g.bottom-g.top);ctx.clip()
+  if(v.image&&v.visiblePacket?.axisStartFrame&&v.visiblePacket.axisEndFrame){ctx.imageSmoothingEnabled=false;const a=g.x(v.visiblePacket.axisStartFrame),b=g.x(v.visiblePacket.axisEndFrame);ctx.drawImage(v.image,a,g.top,b-a,g.bottom-g.top)}
+  const painted=v.image?v.displayKey:'';if(ctx.canvas.dataset.spectrogramDrawnContext!==painted)ctx.canvas.dataset.spectrogramDrawnContext=painted
+  if(v.image&&v.visiblePacket?.requestId===requestStarted.current.id){
+   const key=v.visiblePacket.requestId+':'+v.visiblePacket.phase
+   if(ctx.canvas.dataset.spectrogramPaintKey!==key){ctx.canvas.dataset.spectrogramPaintKey=key;ctx.canvas.dataset.spectrogramPaintMs=String(performance.now()-requestStarted.current.at)}
+  }
+  ctx.strokeStyle='#43536366';ctx.lineWidth=1
+  for(let n=0;n<=6;n++){const x=g.left+(g.right-g.left)*n/6;ctx.beginPath();ctx.moveTo(x,g.top);ctx.lineTo(x,g.bottom);ctx.stroke()}
+  ctx.restore();ctx.font='10px "JetBrains Mono",monospace';ctx.fillStyle='#bdcbd7';ctx.textAlign='right'
+  for(const f of [20,100,500,2000,10000,20000,40000])if(f>=v.lo&&f<=v.hi){const y=g.bottom-Math.log(f/v.lo)/Math.log(v.hi/v.lo)*(g.bottom-g.top);ctx.fillText(f>=1000?f/1000+'k':String(f),g.left-5,y+3)}
+  ctx.textAlign='left'
+ },hover:(position,ratio)=>{
+  const v=volatile.current
+  if(!v.visiblePacket?.view||v.mono||Date.now()-hoverTime.current<60)return;hoverTime.current=Date.now();const generation=++hoverGeneration.current,id=active.current
+  void query('spectrogram.point',{queryId:id,positionFrame:position,frequency:v.lo*Math.pow(v.hi/v.lo,ratio)}).then(raw=>{
+   if(generation!==hoverGeneration.current||id!==active.current)return
+   const p=raw as {frequency:number;frame:string;status:string;decibels:number|null},rate=v.snapshot?.timelineRate||v.snapshot?.format.sampleRate||48000
+   const value=p.status==='ready'?p.decibels!.toFixed(1)+' dBFS':p.status==='silence'?'−∞ dBFS · 静音':p.status==='gap'?'数据缺口':p.status==='error'?'数据错误':'未覆盖'
+   setReadout({context:v.displayKey,text:(Number(p.frame)/rate+(v.snapshot?.fileView?.timeOffsetSeconds||0)).toFixed(3)+' s · '+p.frequency.toFixed(1)+' Hz · '+value})
+  }).catch(()=>{})
+ },wheel:(ratio,delta)=>{
+  const v=volatile.current
+  const center=v.lo*Math.pow(v.hi/v.lo,ratio),span=Math.max(Math.log(1.1),Math.min(Math.log(v.nyquist),Math.log(v.hi/v.lo)*Math.exp(Math.max(-200,Math.min(200,delta))*.002)))
+  let a=center/Math.exp(span*ratio),b=a*Math.exp(span);if(a<1){a=1;b=Math.exp(span)}if(b>v.nyquist){b=v.nyquist;a=b/Math.exp(span)}changeRef.current({...v.settings,minFrequency:a,maxFrequency:b})
+ }}),[])
  const status=mono?'此声道模式需要双声道':error?/UNAVAILABLE|OUTSIDE|NOT_READY/.test(error)?'此处音频暂不可用':'声谱图准备失败':!visiblePacket?'准备声谱图…':visiblePacket.phase==='partial'?'正在准备 '+Math.round((view?.progress||0)*100)+'%':''
  return <div className="spectrogram-instrument" ref={box} data-surface-mode={show3d?'3d':'2d'} data-spectrogram-context={displayKey} data-spectrogram-phase={mono?'unavailable':error?'error':visiblePacket?.phase||'preparing'} data-spectrogram-request={visiblePacket?.requestId} onPointerLeave={()=>{hoverGeneration.current++;setReadout(null)}}>
   <div className="spectrogram-toolbar"><div role="group" aria-label="声谱图维度"><button aria-pressed={!wants3d} onClick={()=>changeSurface({...surface,mode:'2d'})}>2D</button><button aria-pressed={wants3d} onClick={()=>changeSurface({...surface,mode:'3d'})}>3D</button></div><span className={'spectral-colors '+settings.palette}/><span>{settings.minDecibels} → {settings.maxDecibels} dBFS</span>{error&&<button onClick={()=>setRetry(n=>n+1)} aria-label="重试声谱图">重试</button>}{mono&&<button onClick={()=>change({...settings,channel:'stereo'})}>使用单声道</button>}<button onClick={reset} title="复位频率和色阶范围">复位</button></div>

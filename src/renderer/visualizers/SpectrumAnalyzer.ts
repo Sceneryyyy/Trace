@@ -259,6 +259,7 @@ export class SpectrumAnalyzer {
   private primaryPointFrequency = new Float32Array(0)
   private lastSelectedPeakInfo: SpectrumPeakInfo | null = null
   private measurementActive = false
+  private nativeDspMissingLogged = false
 
   constructor(canvas: HTMLCanvasElement, options: SpectrumAnalyzerOptions = {}) {
     this.canvas = canvas
@@ -1057,11 +1058,15 @@ export class SpectrumAnalyzer {
 
     if (!this.isNativeAvailable()) {
       this.clearPendingSpectrumQueues()
-      console.error('SpectrumAnalyzer: Native DSP required')
+      if (!this.nativeDspMissingLogged) {
+        this.nativeDspMissingLogged = true
+        console.error('SpectrumAnalyzer: Native DSP required')
+      }
       this.renderStaticLayer(minFrequency, maxFrequency)
       this.emitPeakInfo(null)
       return
     }
+    this.nativeDspMissingLogged = false
 
     const receivedNativeSamples = options.showSideLine || options.capturePeakInfo
       ? this.pushPendingSpectrumStereoChunks(this.dataSource.getPendingSpectrumStereoSamples())

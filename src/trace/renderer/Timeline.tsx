@@ -29,6 +29,11 @@ export function Timeline({layer,kind='both',traces=['m','s','i'],feedback,select
  const wave=useRef<HTMLCanvasElement>(null),loud=useRef<HTMLCanvasElement>(null),box=useRef<HTMLDivElement>(null)
  const shared=useContext(TimelinePreview),[ownPreview,ownSetPreview]=useState<Drag|null>(null)
  const drag=useRef<Drag|null>(null),preview=shared?.preview??ownPreview,setPreview=shared?.setPreview??ownSetPreview
+ // Drag previews broadcast through context; coalesce pointermove updates to one per frame.
+ const previewFrame=useRef(0)
+ const queuePreview=()=>{if(previewFrame.current)return;previewFrame.current=requestAnimationFrame(()=>{previewFrame.current=0;if(drag.current)setPreview({...drag.current})})}
+ const cancelQueuedPreview=()=>{if(previewFrame.current){cancelAnimationFrame(previewFrame.current);previewFrame.current=0}}
+ useEffect(()=>()=>cancelQueuedPreview(),[])
  const file=snapshot?.sourceKind==='file',take=snapshot?.sourceKind==='take',interactive=Boolean(snapshot)
  const axis=snapshot?.fileView||snapshot?.timelineWindow
  const start=BigInt(axis?.startFrame||'0'),end=BigInt(axis?.endFrame||'0')
@@ -40,6 +45,7 @@ export function Timeline({layer,kind='both',traces=['m','s','i'],feedback,select
   ?{startFrame:(preview.mode==='start'?preview.position:preview.mode==='end'?preview.fixed:preview.position<preview.anchor?preview.position:preview.anchor).toString(),
     endFrame:(preview.mode==='end'?preview.position:preview.mode==='start'?preview.fixed:preview.position>preview.anchor?preview.position:preview.anchor).toString()}
   :snapshot?.fileView?.selection
+ const drawRef=useRef<()=>void>(()=>{})
  useLayoutEffect(()=>{
   function paint(canvas:HTMLCanvasElement,kind:'wave'|'loud'|'spectral'){
    const surface=canvasSurface(canvas);if(!surface)return
@@ -111,8 +117,15 @@ export function Timeline({layer,kind='both',traces=['m','s','i'],feedback,select
    if(head>=left&&head<=right){ctx.beginPath();ctx.moveTo(head,top);ctx.lineTo(head,bottom);ctx.stroke()}
   }
   function draw(){if(wave.current)paint(wave.current,kind==='spectrogram'?'spectral':'wave');if(loud.current)paint(loud.current,'loud')}
-  draw();const observer=new ResizeObserver(draw);if(box.current)observer.observe(box.current);return()=>observer.disconnect()
+  drawRef.current=draw
+  draw()
  },[snapshot,seconds,gain,target,targets,preview,selected?.startFrame,selected?.endFrame,traces,kind,layer])
+ // ResizeObserver is stable across frames; only repaints are data-driven.
+ useEffect(()=>{
+  const observer=new ResizeObserver(()=>drawRef.current())
+  if(box.current)observer.observe(box.current)
+  return()=>observer.disconnect()
+ },[])
  useEffect(()=>{if(!drag.current)setPreview(null)},[snapshot?.sourceId])
  useEffect(()=>{
   const target=wave.current,prevent=(event:WheelEvent)=>event.preventDefault()
@@ -152,12 +165,12 @@ export function Timeline({layer,kind='both',traces=['m','s','i'],feedback,select
    if(available)point=point<BigInt(available.startFrame)?BigInt(available.startFrame):point>BigInt(available.endFrame)?BigInt(available.endFrame):point
   if(current.mode==='start'&&point>=current.fixed)point=current.fixed-1n
   if(current.mode==='end'&&point<=current.fixed)point=current.fixed+1n
-  current.position=point;if(current.mode!=='seek')setPreview({...current})
+  current.position=point;if(current.mode!=='seek')queuePreview()
   if(current.mode==='seek')onSeek?.(point.toString(),false,drag.current?.source||snapshot)
  }
  function up(event:React.PointerEvent<HTMLElement>){
   const current=drag.current;if(!current)return
-  move(event);drag.current=null;setPreview(null);event.currentTarget.releasePointerCapture(event.pointerId)
+  move(event);cancelQueuedPreview();drag.current=null;setPreview(null);event.currentTarget.releasePointerCapture(event.pointerId)
   if(current.mode==='seek')onSeek?.(current.position.toString(),false,current.source)
   else{
    const a=current.mode==='start'?current.position:current.mode==='end'?current.fixed:current.position<current.anchor?current.position:current.anchor
@@ -193,7 +206,7 @@ export function Timeline({layer,kind='both',traces=['m','s','i'],feedback,select
   if(next.start===a.toString()&&next.end===b.toString())return
   wheelWindow.current={sourceId:snapshot?.sourceId||'',...next};onWindow?.(next.start,next.end)
  }
- const handlers={onPointerDown:down,onPointerMove:move,onPointerUp:up,onPointerCancel:()=>{const current=drag.current;drag.current=null;setPreview(null);if(current?.mode==='seek')onSeek?.(current.position.toString(),false,current.source)}}
+ const handlers={onPointerDown:down,onPointerMove:move,onPointerUp:up,onPointerCancel:()=>{const current=drag.current;cancelQueuedPreview();drag.current=null;setPreview(null);if(current?.mode==='seek')onSeek?.(current.position.toString(),false,current.source)}}
  const ruler=Array.from({length:7},(_,i)=>{
   if(interactive)return (Number(start+(end-start)*BigInt(i)/6n)/(snapshot?.timelineRate||snapshot?.format.sampleRate||48000)+(snapshot?.fileView?.timeOffsetSeconds||0)).toFixed(2)+'s'
   if(snapshot?.sourceKind==='take')return (Math.max(1,Number(snapshot.positionFrame)/(snapshot.timelineRate||snapshot.format.sampleRate||48000))*i/6).toFixed(1)+'s'

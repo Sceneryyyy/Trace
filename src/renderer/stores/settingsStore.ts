@@ -266,10 +266,45 @@ function saveToStorage(
   }
 }
 
+const PERSIST_DEBOUNCE_MS = 300
+
+type PendingPersistedState = WorkingSettingsState & Pick<SettingsState, 'activeProfileId' | 'savedProfileBaseline'>
+
+let pendingPersistedState: PendingPersistedState | null = null
+let persistTimer: ReturnType<typeof setTimeout> | null = null
+
+function flushPersistedWorkingState(): void {
+  if (persistTimer !== null) {
+    clearTimeout(persistTimer)
+    persistTimer = null
+  }
+  if (pendingPersistedState !== null) {
+    const stateToWrite = pendingPersistedState
+    pendingPersistedState = null
+    saveToStorage(stateToWrite)
+  }
+}
+
+// Writes are debounced: drag/resize gestures commit at pointer frequency and
+// must not stringify + hit localStorage on every event.
 function persistWorkingState(
   state: WorkingSettingsState & Pick<SettingsState, 'activeProfileId' | 'savedProfileBaseline'>,
 ): void {
-  saveToStorage(state)
+  pendingPersistedState = state
+  if (persistTimer !== null) {
+    clearTimeout(persistTimer)
+  }
+  persistTimer = setTimeout(flushPersistedWorkingState, PERSIST_DEBOUNCE_MS)
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('pagehide', flushPersistedWorkingState)
+  window.addEventListener('beforeunload', flushPersistedWorkingState)
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') {
+      flushPersistedWorkingState()
+    }
+  })
 }
 
 function hasPersistedWorkingState(state: Partial<PersistedSettingsState>): boolean {

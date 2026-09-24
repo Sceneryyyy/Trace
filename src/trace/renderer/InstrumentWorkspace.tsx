@@ -1,4 +1,4 @@
-import {useEffect,useRef,useState,type ReactNode} from 'react'
+import {memo,useCallback,useEffect,useRef,useState,type ReactNode} from 'react'
 import {createPortal} from 'react-dom'
 import {defaultWorkspace,instruments,factoryLayouts,visibleTree,toggleInstrument,loadWorkspacePreset,saveWorkspacePreset,renameWorkspacePreset,deleteWorkspacePreset,dockInstrument,resizeSplit,type WorkspaceState,type InstrumentId,type LayoutNode,type PanelOptions} from '../workspace'
 
@@ -7,16 +7,17 @@ export function useWorkspace(server:WorkspaceState|undefined,save:(state:Workspa
  const latest=useRef(value),pending=useRef<WorkspaceState|null>(null),running=useRef(false),saveRef=useRef(save)
  saveRef.current=save
  useEffect(()=>{if(server&&!pending.current&&!running.current){latest.current=server;setValue(server)}},[server])
- async function flush(){
+ const flush=useCallback(async()=>{
   if(running.current)return
   running.current=true
   try{while(pending.current){const next=pending.current;pending.current=null;await saveRef.current(next)}setError('')}
   catch(e){setError('布局未保存，请重试。');pending.current=latest.current}
   finally{running.current=false}
- }
- function change(next:WorkspaceState){latest.current=next;setValue(next);pending.current=next;queueMicrotask(()=>void flush())}
- useEffect(()=>()=>{void flush()},[])
- return {value,change,error,retry:()=>void flush()}
+ },[])
+ const change=useCallback((next:WorkspaceState)=>{latest.current=next;setValue(next);pending.current=next;queueMicrotask(()=>void flush())},[flush])
+ useEffect(()=>()=>{void flush()},[flush])
+ const retry=useCallback(()=>void flush(),[flush])
+ return {value,change,error,retry}
 }
 export function InstrumentIcon({kind}:{kind:'settings'|'maximize'|'restore'|'hide'|'edit'|'lock'|'layout'|'done'|'grip'}){
  return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -48,7 +49,7 @@ export function WorkspaceToolbar({value,change,error,retry}:{error:string;retry:
   <button className="edit-layout" aria-pressed={!value.locked} title={value.locked?'编辑布局：移动仪器、调整大小':'完成布局编辑，锁定位置与大小；布局自动保存'} onClick={()=>{setMenu(null);change({...value,locked:!value.locked})}}><InstrumentIcon kind={value.locked?'edit':'done'}/>{value.locked?'编辑布局':'完成布局'}</button>
   {error&&<button className="layout-save-error" onClick={retry} title={error}>重试保存</button>}
   {menu==='instruments'&&<div className="workspace-popover" role="group" aria-label="显示仪器">
-   {instruments.map(i=><label key={i.id}><input type="checkbox" checked={!value.layout.hidden.includes(i.id)} onChange={()=>change(toggleInstrument(value,i.id))}/><span>{i.title}</span><small>{i.unit}</small></label>)}
+   {instruments.map(i=><label key={i.id} data-instrument-choice={i.id}><input type="checkbox" checked={!value.layout.hidden.includes(i.id)} onChange={()=>change(toggleInstrument(value,i.id))}/><span>{i.title}</span><small>{i.unit}</small></label>)}
    <button onClick={()=>{change({...value,layout:{...value.layout,hidden:[]},activePreset:null});setMenu(null)}}>显示全部</button>
   </div>}
   {menu==='presets'&&<div className="workspace-popover layout-presets" role="dialog" aria-label="管理布局">
@@ -78,7 +79,7 @@ function Splitter({node,path,value,change}:{node:Exclude<LayoutNode,string>;path
   onPointerMove={move} onPointerUp={e=>{if(drag.current){move(e);change(resizeSplit(value,path,drag.current.ratio));drag.current=null;e.currentTarget.releasePointerCapture(e.pointerId)}}} onPointerCancel={e=>{display(e,node.ratio);drag.current=null}}
   onKeyDown={e=>{if(value.locked)return;const minus=node.axis==='row'?'ArrowLeft':'ArrowUp',plus=node.axis==='row'?'ArrowRight':'ArrowDown';if(![minus,plus,'Home','End'].includes(e.key))return;e.preventDefault();e.stopPropagation();change(resizeSplit(value,path,e.key==='Home'?.15:e.key==='End'?.85:node.ratio+(e.key===minus?-1:1)*(e.shiftKey?.05:.02)))}}/>
 }
-export function InstrumentWorkspace({value,change,contents,settingsContent}:{contents:Record<InstrumentId,ReactNode>;settingsContent?:Partial<Record<InstrumentId,ReactNode>>}&Controls){
+export const InstrumentWorkspace=memo(function InstrumentWorkspace({value,change,contents,settingsContent}:{contents:Record<InstrumentId,ReactNode>;settingsContent?:Partial<Record<InstrumentId,ReactNode>>}&Controls){
  const focusOrigin=useRef<HTMLElement|null>(null)
  const [maximized,setMaximized]=useState<InstrumentId|null>(null),[settings,setSettings]=useState<InstrumentId|null>(null),[drop,setDrop]=useState<{id:InstrumentId;side:Side}|null>(null),[target,setTarget]=useState<InstrumentId>('waveform')
  useEffect(()=>{if(settings)return()=>{if(focusOrigin.current?.isConnected)focusOrigin.current.focus()}},[settings])
@@ -130,4 +131,4 @@ export function InstrumentWorkspace({value,change,contents,settingsContent}:{con
    </section>
   </div>,document.body)}
  </>
-}
+})

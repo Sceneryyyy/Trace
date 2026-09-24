@@ -1,6 +1,10 @@
 :root {
  color-scheme:dark;
+ /* Single design-token source for the Trace renderer; styles.css no longer redefines these. */
  --bg:#11151a;--panel:#191f26;--border:#333d48;--text:#e8edf2;--secondary:#abb7c4;
+ --green:#91e65c;--cyan:#58d4da;--red:#ff5e66;--amber:#efb65b;
+ --control-bg:#242d27;--control-hover:#303b32;--control-border-strong:#64715e;
+ --input-bg:#202823;--input-border:#435047;
 }
 .trace-app .topbar {height:42px;flex-basis:42px;padding:0 16px;background:#171d24}
 .trace-app .brand {gap:9px}
@@ -107,7 +111,7 @@
 .loudness-readings,.loudness-summary {flex:0 0 auto}
 .loudness-column {display:none;position:relative;min-height:100px;margin-top:10px;padding-right:24px;flex:1;max-width:220px;width:100%;align-self:center}
 .loudness-bar-track {width:100%;flex:1;background:repeating-linear-gradient(to top,#ffffff0a 0 1px,transparent 1px 33.33%),#10171e;position:relative;border:1px solid #36434c}
-.loudness-bar-track i {position:absolute;bottom:0;width:100%;background:linear-gradient(to top,#65aa45,#a0ed6e);display:block}
+.loudness-bar-track i {position:absolute;bottom:0;width:100%;height:100%;transform-origin:bottom;background:linear-gradient(to top,#65aa45,#a0ed6e);display:block;will-change:transform}
 .loudness-bar-scale {position:absolute;right:0;top:0;bottom:0;display:flex;flex-direction:column;justify-content:space-between;color:var(--secondary);font:10px 'JetBrains Mono',monospace}
 .instrument-heading .legend {margin-left:auto;gap:8px;font-size:10px}
 

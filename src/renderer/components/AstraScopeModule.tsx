@@ -354,7 +354,11 @@ export default function AstraScopeModule({
                   <div className="astra-scope__progress" aria-hidden="true">
                     <div
                       className="astra-scope__progress-fill"
-                      style={{ width: `${Math.max(0, Math.min(100, liveProgress.progress * 100))}%` }}
+                      style={{
+                        width: '100%',
+                        transform: `scaleX(${Math.max(0, Math.min(1, liveProgress.progress))})`,
+                        transformOrigin: 'left',
+                      }}
                     />
                   </div>
                 )}

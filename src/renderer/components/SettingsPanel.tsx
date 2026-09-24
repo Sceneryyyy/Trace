@@ -9,7 +9,12 @@ interface SettingsPanelProps {
 }
 
 export default function SettingsPanel({ onHeightChange }: SettingsPanelProps): JSX.Element {
-  const { scopeSettings, updateScopeSettings, hiddenScopes, scopeOrder, widthWeights, scopePopouts } = useSettingsStore()
+  const scopeSettings = useSettingsStore((s) => s.scopeSettings)
+  const updateScopeSettings = useSettingsStore((s) => s.updateScopeSettings)
+  const hiddenScopes = useSettingsStore((s) => s.hiddenScopes)
+  const scopeOrder = useSettingsStore((s) => s.scopeOrder)
+  const widthWeights = useSettingsStore((s) => s.widthWeights)
+  const scopePopouts = useSettingsStore((s) => s.scopePopouts)
   const panelRef = useRef<HTMLDivElement | null>(null)
   const scopeTrackRef = useRef<HTMLDivElement | null>(null)
 

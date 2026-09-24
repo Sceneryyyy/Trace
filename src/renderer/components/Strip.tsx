@@ -162,8 +162,14 @@ export default function Strip({ onMeasurementActiveChange }: StripProps): JSX.El
     const totalWeight = startLeftWeight + startRightWeight
     const minWeight = 0.15
 
-    const onMouseMove = (ev: MouseEvent): void => {
-      const delta = ev.clientX - startX
+    // Coalesce mousemove to one store commit per frame; the drag fires at
+    // pointer frequency and each commit re-renders the strip + persists settings.
+    let dragFrameId: number | null = null
+    let latestClientX = startX
+    let hasUnappliedDragPosition = false
+
+    const applyDragPosition = (clientX: number): void => {
+      const delta = clientX - startX
       const weightDelta = (delta / pairWidth) * totalWeight
       let newLeft = startLeftWeight + weightDelta
       let newRight = startRightWeight - weightDelta
@@ -182,11 +188,32 @@ export default function Strip({ onMeasurementActiveChange }: StripProps): JSX.El
       setScopeWidthWeight(rightKind, newRight)
     }
 
-    const onMouseUp = (): void => {
+    const onMouseMove = (ev: MouseEvent): void => {
+      latestClientX = ev.clientX
+      hasUnappliedDragPosition = true
+      if (dragFrameId !== null) return
+      dragFrameId = window.requestAnimationFrame(() => {
+        dragFrameId = null
+        if (hasUnappliedDragPosition) {
+          hasUnappliedDragPosition = false
+          applyDragPosition(latestClientX)
+        }
+      })
+    }
+
+    const onMouseUp = (ev: MouseEvent): void => {
       document.removeEventListener('mousemove', onMouseMove)
       document.removeEventListener('mouseup', onMouseUp)
       document.body.style.cursor = ''
       document.body.style.userSelect = ''
+      if (dragFrameId !== null) {
+        window.cancelAnimationFrame(dragFrameId)
+        dragFrameId = null
+      }
+      if (hasUnappliedDragPosition) {
+        hasUnappliedDragPosition = false
+        applyDragPosition(ev.clientX)
+      }
     }
 
     document.body.style.cursor = 'col-resize'
