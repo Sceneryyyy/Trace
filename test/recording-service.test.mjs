@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { build } from 'esbuild'
-import { mkdir, writeFile, mkdtemp } from 'node:fs/promises'
+import { mkdir, writeFile, readFile, mkdtemp } from 'node:fs/promises'
 import { resolve, join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 await mkdir(resolve('artifacts/m2'),{recursive:true})
@@ -32,11 +32,43 @@ test('corrupt sessions cannot stop a valid directory from loading',async()=>{
  const service=new RecordingService(native,'unused','unused','unused',()=>{})
  await service.setDirectory(root)
  const summaries=service.summaries()
- assert.equal(summaries.length,3)
  const result=summaries.find(s=>s.id==='good')
  assert.equal(result.frames,'44100')
  assert.equal(result.sampleRate,44100)
  assert.equal(summaries.find(s=>s.id==='interrupted').status,'recoverable')
  assert.equal(summaries.find(s=>s.id==='mixed').durationNs,'2000000000')
  assert.equal(summaries.find(s=>s.id==='mixed').mixedSampleRate,true)
+ // The three parsable manifests are the only ones that yield usable takes.
+ const usable=summaries.filter(s=>s.status!=='unreadable')
+ assert.deepEqual(usable.map(s=>s.id).sort(),['good','interrupted','mixed'])
+ // The three rejected manifests must still be reported: their audio is on disk,
+ // so dropping them silently would be indistinguishable from never recording.
+ const unreadable=summaries.filter(s=>s.status==='unreadable')
+ assert.deepEqual(unreadable.map(s=>s.name).sort(),['badSegment','escaped','invalid'])
+ for(const entry of unreadable){
+  assert(entry.error,'an unreadable take must carry a reason')
+  assert.equal(entry.availability,'unavailable')
+  assert.deepEqual(entry.roles,[],'no analysis role may be offered for an unparsed manifest')
+ }
+})
+
+test('a restarted library exposes a surviving source left in removing',async()=>{
+ const root=await mkdtemp(resolve('artifacts/m2/retention-restart-')),folder=join(root,'take')
+ await mkdir(join(folder,'audio'),{recursive:true});await writeFile(join(folder,'audio','source.wav'),'PCM')
+ const document={schemaVersion:1,product:'Trace',sessionId:'stuck',name:'Still here',createdAt:'2026-09-23T00:00:00Z',status:'ready',frames:'48000',
+  preset:{encoding:'pcm24',sampleRate:'source',namePrefix:'Trace',keepOriginal:false},sourceFormat:{sampleRate:48000,channelCount:2},error:null,
+  retention:{phase:'removing',error:null},
+  assets:[{assetId:'source',role:'source',relativePath:'audio/source.wav',sampleRate:48000,channelCount:2,encoding:'pcm24',frameCount:'48000',hash:null,state:'removing'}],
+  segments:[{segmentId:'segment-1',assetId:'source',frameCount:'48000',captureStartFrame:null,timelineStartFrame:'0'}]}
+ await writeFile(join(folder,'session.json'),JSON.stringify(document))
+ const native={recordStart(){throw Error('not used')},recordStop(){throw Error('not used')},recordStatus(){throw Error('not used')}}
+ const service=new RecordingService(native,'unused','unused','unused',()=>{})
+ await service.setDirectory(root)
+ const visible=service.summaries().find(item=>item.id==='stuck')
+ assert(visible,'a surviving recording must remain in the library')
+ assert(visible.roles.includes('source'),'the original source must be selectable')
+ assert.equal(visible.retention.phase,'error')
+ const disk=JSON.parse(await readFile(join(folder,'session.json'),'utf8'))
+ assert.notEqual(disk.assets[0].state,'removing','the repair must persist across further restarts')
+ assert.equal(disk.retention.phase,'error')
 })

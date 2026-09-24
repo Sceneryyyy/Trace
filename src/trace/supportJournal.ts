@@ -3,7 +3,7 @@ import {writeFileSync} from 'node:fs'
 import {join} from 'node:path'
 import {PreferencesWriter} from './preferencesWriter'
 
-const kinds=['started','clean-exit','command-failed','recording','capture','jobs','renderer-react','renderer-script','renderer-promise','renderer-gone','renderer-reload','child-gone','file-worker-exit','startup-failed','main-uncaught','main-rejection','diagnostic-exported'] as const
+const kinds=['started','clean-exit','command-failed','recording','capture','jobs','renderer-react','renderer-script','renderer-promise','renderer-gone','renderer-reload','child-gone','file-worker-exit','file-worker-timeout','shutdown-timeout','startup-failed','main-uncaught','main-rejection','diagnostic-exported'] as const
 export type SupportEventKind=typeof kinds[number]
 export type SupportEvent={at:string;kind:SupportEventKind;count:number;detail?:number}
 export type SupportStatus={previousInterrupted:boolean;loggingAvailable:boolean;lastFault:SupportEvent|null}

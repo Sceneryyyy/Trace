@@ -4,6 +4,7 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import {build} from 'esbuild'
 import {pathToFileURL} from 'node:url'
+import {assertSamePath} from './path-equal.mjs'
 await fs.mkdir('artifacts/iteration',{recursive:true})
 await build({entryPoints:['src/trace/deliveryService.ts'],outfile:'artifacts/iteration/delivery.cjs',bundle:true,platform:'node',format:'cjs'})
 const {DeliveryService}=(await import(pathToFileURL(path.resolve('artifacts/iteration/delivery.cjs')))).default
@@ -23,7 +24,7 @@ test('automatic delivery allocates a new name and never overwrites existing user
  await t.service.plan('export-id',t.directory);await wait(()=>t.record.delivery.phase==='ready');await t.service.pause()
  assert.equal(await fs.readFile(path.join(t.directory,'Saved Sound.mp3'),'utf8'),'existing')
  assert.equal(await fs.readFile(path.join(t.directory,'Saved Sound (2).mp3'),'utf8'),'verified audio')
- assert.equal(await t.service.folder('export-id'),t.directory);await t.service.shutdown()
+ assertSamePath(await t.service.folder('export-id'),t.directory);await t.service.shutdown()
 })
 test('recording can pause delivery and resume the same owned target',async()=>{
  const t=await setup();let entered

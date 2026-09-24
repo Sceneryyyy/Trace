@@ -1,5 +1,69 @@
 # 13 · 当前状态与下一会话
 
+## 当前状态：三项 P1 已修复，本地验证通过；等待实际 Windows CI
+
+2026-09-24：针对 [68](68-INDEPENDENT-CHANGE-REVIEW.md) 的三个 P1 完成修正：保留策略在中断/保存失败后恢复幸存源文件可见性；Windows CI 显式准备 Electron SDK 和上游 DSP；文件 worker 使用事件循环心跳避免健康长任务被 180 秒空闲计时误杀。反例已纳入测试。`tools/trace.cjs check` 全过（portable 208、native 49，另有采集支持 3、响度原生 6）；原生 DSP 重建成功，Trace 引擎 15/15 CTest 通过；M7 完整界面检查在 1×、1.5×、2× 缩放各 11/11 通过。仍须在可写 GitHub 仓库上实际触发 Windows CI，不能把本机结果写成远程 CI 结果。68 中另列的估计静音界面提示与 60 秒退出看门狗专项验证尚未包含在本次三个 P1 修复内；原生同步量化/恢复不能发送事件循环心跳，保留显式取消与退出界限。
+
+原先位于仓库外 `TraceDev/docs/` 的两份审计报告已纳入 [66](66-FRONTEND-AUDIT.md) 和 [67](67-CODE-AUDIT-PREVIEW29.md)。按批次提交后，以 Git 历史和此节为当前状态；以下旧段落仅留作历史。
+
+## 以下为阶段历史
+
+## 当前状态：65 号交接已做独立复核，暂不合并当前工作树
+
+2026-09-23：复核结论见 [68](68-INDEPENDENT-CHANGE-REVIEW.md)。portable 202 项、native 49 项、当前源码 TypeScript/Trace 构建和短 UI/WASAPI 流程通过；M7 陈旧失败在旧 preview.28 与当前源码同位置出现。隔离复现了 retention 的两个残留反例：幸存文件仍可被 `removing` 隐藏。另发现新 Windows CI 缺 SDK/DSP 构建前置条件、180 s worker 超时对无进度长任务会误杀、估计静音虽传到文件快照但界面未提示；60 s 退出看门狗的触发与日志落盘也未验证。当前工作树混合三批未提交改动；本次仅新增复核文档并更新接力入口，未修业务代码、提交或重打包。建议先处理三个 P1，再补端到端验证与 CI 实跑。
+
+## 以下为阶段历史
+
+## 当前焦点：测试接入 CI 与 P0 修复已完成（全部改动未提交）
+
+2026-09-22：按 `docs/15-CODE-AUDIT-PREVIEW29.md`（仓库根 docs/）的方向一 + P0 清单落地，**改动未提交**。
+
+**测试基础设施**：新增 `test/trace-suites.mjs` 分层清单（portable 43 / native 8）、`scripts/run-trace-tests.mjs` 运行器、`test/suite-coverage.test.mjs` 孤儿检测元测试。`tools/trace.cjs check` 由只跑 4 个测试文件扩展到两层全量；CI `main.yml` 新增 `test:trace` + `build:trace`，并新增 windows-2022 的 `trace-engine` job 跑 15 个原生 CTest 与 native 层（带 `TRACE_REQUIRE_NATIVE=1` 防空跑）。审计指出的 6 个孤儿测试中有 4 处已腐化（Windows 盘符大小写），新增 `test/path-equal.mjs` 修正。
+
+**P0 修复**（各附回归测试）：A 回听 continuity 恒报完整 → `AnalysisSource.continuity` + 新导出 `sourceContinuity()`；B 清单不可读致录音静默消失 → `unreadable` 条目 + 库内显示与"打开目录"；C 退出序列改为 drain 原生后再 shutdown + 60s 看门狗 + worker 180s 空闲超时；F 保留策略删除中途失败回滚幸存资产状态；G `reference.set` 补录音互斥守卫；D 原生 `setFFTSize` 2 的幂校验、`getSamplesInterpolated` isfinite+fmod、`getSamples` count 上限。P0-E（上游 `windows_capture.cpp` 合成静音无标识）**未做**，属上游 Prism 独有路径，Trace 包内只有 `trace_engine.node`。
+
+**验证**：check 全绿（202 + 49 项）；15 个原生 CTest 全过；上游 22 项原生测试全过；Trace 构建与 `m0 electron` 冒烟 pass；`m7/workspace-ui.cjs` 停在与干净基线相同的第 36 行断言，无新增回归。P0-F 与 P0-D 的回归测试均经"回退修复→测试失败"双向验证。
+
+`recording-service.test.mjs` 因 P0-B 有意变更行为，断言由"3 个有效项"改写为"3 可用 + 3 不可读"的更强形式（详见 15 号文档 6.4）。
+
+下一步：方向二剩余的 `sessionStore.ts`/`wavPostprocess.ts` 单测，或按用户指示提交。
+
+## 以下为阶段历史
+
+## 当前状态：preview.29 同事内测 R2 包已交付（代码仍未提交）
+
+2026-09-20：前端迭代（见下条）经用户目视验收通过后，打包为 InternalTest-r2。交付 `dist-trace/internal-test/LeoMoon-Trace-preview.29-InternalTest-r2-Windows-x64.zip`，210,506,908 bytes，SHA256 `421e1cdd3c17e0d7af59daba85f5c0c27e42663c57d0bc3f96728eb2d7fc88f1`，105 文件。版本升至 0.1.0-preview.29（`src/trace/product.ts`、`electron-builder.trace.cjs`，输出 `dist-trace/preview.29`）。package-audit / 解压逐文件哈希 / package-smoke / single-instance 全过；详见 [64](64-INTERNAL-TEST-R2.md)。内测 TXT 文档已更新为 r2 口径；PDF 手册沿用 preview.28。
+
+注意：全部改动（前端迭代 + 版本号 + r2 文档/脚本）**仍未提交**；用户授权后一并提交。新增文件：`src/trace/renderer/snapshotStore.ts`、`viewModel.ts`、`LiveInstruments.tsx`、`tools/package-internal-test-r2.cjs`、`docs/64-INTERNAL-TEST-R2.md`。本轮 M7 workspace-ui 基线失败（见下条）仍未修。
+
+## 以下为阶段历史
+
+## 当前焦点：前端性能与视觉一致性迭代（未提交）
+
+2026-09-20：按 `docs/14-FRONTEND-AUDIT.md`（仓库根 docs/，非本目录）审计报告落地一版前端优化，**改动未提交**，待用户在有 Node 的环境验证。
+
+- Trace 渲染层（`app/src/trace/renderer/`）：
+  - 新增 `snapshotStore.ts`（30 Hz 快照移出 React state，`useSyncExternalStore` + selector）与 `viewModel.ts`（`deriveView` 纯函数从 App.tsx 逐字迁出；`useChromeFlags` 仅在 recordBusy/finalizing/replayAvailable/error/continuity/format 变化时重渲染 App chrome）。
+  - 新增 `LiveInstruments.tsx`：9 个 memo 化容器（Timeline×3、Loudness、Levels、Spectrum、SoundField、TargetStrip、WorkbenchSourceBar、TransportElapsed、ContinuityBar、SelectionStatsRow、WorkspaceFrame），各自订阅快照，App 不再 30 Hz 全树协调。`data-history-position`/`data-history-generation` 由 WorkspaceFrame 维持更新（m7/scrub 工具依赖）。
+  - `Timeline.tsx`/`AnalysisInstruments.tsx`：ResizeObserver 与逐帧重绘解耦（drawRef/paintRef 模式）；拖拽选区预览 rAF 合并；频谱 hover 60 ms 节流（与声谱一致）。
+  - `SpectrogramPanel.tsx`：`layer` 经 volatile ref + `useMemo([])` 稳定引用，不再每帧触发 Timeline effect 重建。
+  - `InstrumentWorkspace.tsx`：`InstrumentWorkspace` 包 `memo`，`useWorkspace` 的 flush/change/retry 稳定化。
+  - 逐帧 layout 动画消除：`LoudnessBar` height%→`transform:scaleY`（instruments.css 的 `.loudness-bar-track i` 加 height:100%/transform-origin:bottom）；相关度游标 left%→全宽 `.correlation-cursor` 的 `translateX%`（analysis-instruments.css）。
+  - CSS token 单源化：基础色与强调色全部归入 `instruments.css :root`（新增 `--control-bg/--control-hover/--control-border-strong/--input-bg/--input-border`），`styles.css :root` 只留字体；按钮/下拉/输入底色改走变量；滚动条 thin 统一到 trace-modal/instrument-workspace/report-event-scroll/workspace-popover。全部为零视觉变化改写。
+  - App.tsx：回调全部 useCallback 化；删除不可达 Space 死分支；模态打开聚焦首个非关闭控件、关闭后焦点归还触发控件；`ReportPanel` 排序与 `RecordingLibrary` 过滤移入 useMemo。
+  - 声谱 partial 增量着色本轮未做：`SpectrogramRaster.add` 对旧列做 max 累积（spectrogramView.ts:81），前序列可能被后续 tile 改写，增量方案需先证明追加序，另立任务。
+- Prism 渲染层（`app/src/renderer/`）：
+  - `ScopeModule.tsx` peak info 函数式 setState 字段去重（消灭静止画面每帧重渲染）；resize 管线加 `matchMedia(resolution)` 链式 DPR 监听，跨屏拖动不再模糊。
+  - `settingsStore.ts`：`persistWorkingState` 300 ms trailing 防抖 + pagehide/beforeunload/hidden 立即 flush（拖拽调宽不再每次 mousemove 全量序列化+同步写盘）。
+  - `SettingsPanel.tsx` 整库订阅改 6 个字段 selector；`Strip.tsx` 调宽拖拽 rAF 合并、mouseup 补交最终值。
+  - `SpectrumAnalyzer.ts`/`Oscilloscope.ts` 原生 DSP 缺失日志只打一次（恢复后可再打印）；`AstraScopeModule.tsx` 进度条 width%→scaleX；`globals.css` reduced-motion 补 9 类过渡覆盖。
+- 验证状态（2026-09-20 补）：已通过项目自带工具链（Codex runtime Node 24.19.0 + .tools 本地 npm 10.9.2）完成 `trace.cjs setup`（npm ci + Electron/esbuild + 原生 addon 重建，0 错误）与 `trace.cjs check`——typecheck 通过，capture-support 3 + lufsmeter-native 6 + trace-report 7 + trace-contracts 11 + recording/recovery 6 全过；workspace-layout/session-timeline 过；`m0 run.cjs electron` 冒烟 pass（240000 帧 0 覆盖）。
+- **基线失败（非本次引入）**：`tools/m7/workspace-ui.cjs` 第 36 行断言在干净 HEAD 上同样失败（恢复最大化后 2 !== 4 面板）；原因疑似 M7 后 instruments 顺序变化使 `label:nth-child(2)` 从波形变成电平，门禁脚本未同步。已在两侧各跑一次对比确认。另 `tools/m7/verify.cjs` 的 package-audit 需要完整 `dist-trace` 打包产物，本次未跑打包。
+- 待人工：目视验收三种模式（监测/录音/文件回听）的仪表动画、波形/声谱绘制、拖拽缩放、模态焦点；确认后提交。
+- 下一任务：验证后提交；随后按报告第二梯队余项（VU 静态层、Spectrum 热力 ImageData 化、渐变缓存）与第三梯队（时间轴键盘等价物、aria-live 读数、遮挡停帧）推进。
+
+## 以下为阶段历史
+
 ## 当前状态：preview.28 同事内测分发修订 r1 已就绪
 
 2026-09-17：按用户要求准备同事内测 ZIP，程序沿用 preview.28，补入 PDF 快速上手、最新 README、首次使用说明、试用清单、已知限制、反馈模板、许可/来源和校验信息。详情见 [63](63-INTERNAL-TEST-DISTRIBUTION.md)。未更改业务代码、重编译或覆盖旧包，未代发/上传。

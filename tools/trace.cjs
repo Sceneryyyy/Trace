@@ -59,7 +59,9 @@ async function main() {
   if (action === 'setup' || action === 'native') {
     run(process.execPath, [npm, 'run', 'rebuild:native'])
   } else if (action === 'check') {
-    for (const script of ['typecheck', 'test:capture-support', 'test:lufsmeter-native', 'test:trace-report', 'test:trace-contracts', 'test:trace-recording']) {
+    // test:trace covers the whole portable tier, which subsumes the individual
+    // report/contracts/recording scripts that used to be listed here.
+    for (const script of ['typecheck', 'test:capture-support', 'test:lufsmeter-native', 'test:trace', 'test:trace-native']) {
       run(process.execPath, [npm, 'run', script])
     }
   } else if (action === 'build') {

@@ -1,4 +1,4 @@
-import {useEffect,useState} from 'react'
+import {useEffect,useMemo,useState} from 'react'
 import {ImportedLibrary} from './ImportedLibrary'
 import {timecode,timecodeNs} from './time'
 import {ExportItems} from './ExportPanel'
@@ -47,7 +47,7 @@ export function preferredSource(take:TakeSummary):ExportSource|undefined{
  const region=(take.regionCount||0)>1&&['source','recovered'].includes(role)?take.analysisRegions?.find(r=>r.role===role):undefined
  return {takeId:take.id,role,...(region?{regionId:region.id}:{})}
 }
-const needsAttention=(take:TakeSummary)=>['failed','recoverable'].includes(take.status)||take.availability&&take.availability!=='present'||take.exports?.some(e=>e.phase==='failed'||e.delivery?.phase==='failed')
+const needsAttention=(take:TakeSummary)=>['failed','recoverable','unreadable'].includes(take.status)||take.availability&&take.availability!=='present'||take.exports?.some(e=>e.phase==='failed'||e.delivery?.phase==='failed')
 const localDay=(at:string)=>{const date=new Date(at);return date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0')}
 
 export function RecordingLibrary({initialStatus='all',state,busy,run,request,onExport}:{initialStatus?:string;state:TraceState;busy:boolean;run:(name:Command,payload?:Record<string,unknown>)=>void;request:(name:Command,payload?:Record<string,unknown>)=>Promise<unknown>;onExport:(source:ExportSource)=>void}):React.JSX.Element{
@@ -68,11 +68,11 @@ export function RecordingLibrary({initialStatus='all',state,busy,run,request,onE
    if(command!=='library.rename')await refreshUsage()
   }catch(error){setError(userError(error))}
  }
- const takes=(state.recordings||[]).filter(t=>{
+ const takes=useMemo(()=>(state.recordings||[]).filter(t=>{
   const date=localDay(t.createdAt)
   return t.name.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase())&&(!from||date>=from)&&(!to||date<=to)&&
    (status==='all'||status==='attention'&&needsAttention(t)||status==='ready'&&['ready','recovered'].includes(t.status)||status==='processing'&&(!['ready','recovered','failed','recoverable'].includes(t.status)||t.exports?.some(e=>!['ready','failed','cancelled'].includes(e.phase))))
- })
+ }),[state.recordings,query,from,to,status])
  return <div className="recording-list">
   <div className="library-import-bar"><button onClick={()=>void act('imports.choose')}>导入素材</button><small>WAV · MP3 · M4A · AAC，支持拖放；原文件保持不变。</small><button onClick={()=>void act('imports.refresh')}>刷新素材</button></div>
   <div className="library-directory"><span title="此列表显示当前目录中的 Trace 录音；切换目录保留原目录的全部文件。">录音目录</span><strong>{state.recordDirectory||'尚未选择'}</strong><button disabled={busy||recording} onClick={()=>run('record.chooseDirectory')}>切换目录</button></div>
@@ -89,11 +89,13 @@ export function RecordingLibrary({initialStatus='all',state,busy,run,request,onE
   {takes.slice(0,limit).map(take=>{
    const source=preferredSource(take),available=source&&['ready','recovered','failed'].includes(take.status)
    const processing=take.exports?.some(e=>!['ready','failed','cancelled'].includes(e.phase))
-   const label=take.status==='recovered'?'已恢复':take.status==='ready'?(take.hasDiscontinuities?'已保存 · 含设备中断':processing?'正在生成成品':'已保存'):take.status==='processing'?'正在生成文件':take.status==='recoverable'?'可恢复的未完成录音':take.status==='failed'?'录音未完整完成：'+userError(take.error):'正在录音'
+   const label=take.status==='unreadable'?'录音记录无法读取：音频文件仍在目录中，可打开目录查看':take.status==='recovered'?'已恢复':take.status==='ready'?(take.hasDiscontinuities?'已保存 · 含设备中断':processing?'正在生成成品':'已保存'):take.status==='processing'?'正在生成文件':take.status==='recoverable'?'可恢复的未完成录音':take.status==='failed'?'录音未完整完成：'+userError(take.error):'正在录音'
    return <article key={take.id} className="take-row library-take" data-take-id={take.id}>
-    <div className="take-header"><div className="take-identity"><strong>{take.name}</strong><span>{new Date(take.createdAt).toLocaleString('zh-CN',{hour12:false})} · {take.durationNs?timecodeNs(take.durationNs):timecode(take.frames,take.sampleRate)} · {take.encoding==='mp3'?'MP3':take.encoding==='aac'?'AAC':take.encoding==='float32'?'WAV 32f':take.encoding==='pcm24'?'WAV 24-bit':'WAV 16-bit'}</span><small className={needsAttention(take)?'take-error':''}>{label}</small></div>
-     <button data-take-open disabled={busy||recording||!available} onClick={()=>source&&run('file.open',{...source})}>查看</button><button disabled={busy||recording||!available} onClick={()=>source&&run('reference.set',{...source})}>设为参考</button><button data-take-export disabled={busy||recording||!available} onClick={()=>source&&onExport(source)}>导出</button>
+    <div className="take-header"><div className="take-identity"><strong>{take.name}</strong>{take.status==='unreadable'?<span>记录文件损坏或不兼容 · {take.error||'未知原因'}</span>:<span>{new Date(take.createdAt).toLocaleString('zh-CN',{hour12:false})} · {take.durationNs?timecodeNs(take.durationNs):timecode(take.frames,take.sampleRate)} · {take.encoding==='mp3'?'MP3':take.encoding==='aac'?'AAC':take.encoding==='float32'?'WAV 32f':take.encoding==='pcm24'?'WAV 24-bit':'WAV 16-bit'}</span>}<small className={needsAttention(take)?'take-error':''}>{label}</small></div>
+     {take.status==='unreadable'?<button onClick={()=>run('record.openFolder',{takeId:take.id})}>打开目录</button>:<>
+     <button data-take-open disabled={busy||recording||!available} onClick={()=>source&&run('file.open',{...source})}>查看</button><button disabled={busy||recording||!available} onClick={()=>source&&run('reference.set',{...source})}>设为参考</button><button data-take-export disabled={busy||recording||!available} onClick={()=>source&&onExport(source)}>导出</button></>}
     </div>
+    {take.status==='unreadable'?null:<>
     {take.availability&&take.availability!=='present'&&<small className="take-error">磁盘文件{take.availability==='missing'?'已移除或移动':'暂不可访问'} · {take.missingFiles||0} 个文件不可用</small>}
     {take.clippedSamples&&BigInt(take.clippedSamples)>0n&&<small className="take-error">保存文件发生削波：{take.clippedSamples} 个采样值</small>}
     {take.status==='recoverable'&&<button disabled={busy||recording} onClick={()=>void act('record.recover',{takeId:take.id})}>恢复录音</button>}
@@ -105,7 +107,7 @@ export function RecordingLibrary({initialStatus='all',state,busy,run,request,onE
      {take.retention?.phase==='error'&&<button onClick={()=>void act('retention.retry',{takeId:take.id})}>重试整理</button>}
      {editing===take.id?<form className="take-rename" onKeyDown={e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();setEditing(null)}}} onSubmit={e=>{e.preventDefault();void act('library.rename',{takeId:take.id,name})}}><input autoFocus aria-label="录音名称" value={name} maxLength={120} onChange={e=>setName(e.target.value)}/><button disabled={busy}>保存名称</button><button type="button" onClick={()=>setEditing(null)}>取消</button></form>:null}
      <div className="take-actions"><button disabled={busy||recording} onClick={()=>{setEditing(take.id);setName(take.name)}}>重命名</button><button onClick={()=>run('record.openFolder',{takeId:take.id})}>打开目录</button><button disabled={busy||recording} onClick={()=>void act('library.clearCache',{takeId:take.id})}>仅清理缓存</button><button data-remove-take disabled={busy||recording||!['ready','failed','recovered','recoverable'].includes(take.status)} onClick={()=>void act('library.remove',{takeId:take.id})}>移除录音</button></div>
-    </details>
+    </details></>}
    </article>
   })}
   {takes.length>limit&&<button onClick={()=>setLimit(limit+50)}>显示更多录音</button>}

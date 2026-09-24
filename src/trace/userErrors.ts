@@ -1,5 +1,6 @@
 export function userError(error:unknown):string{
  const text=String(error||'')
+ if(/RETENTION_INTERRUPTED_REVIEW_SOURCE|RETENTION_RECOVERY_SAVE_FAILED|RETENTION_REPAIR_PERSIST_FAILED/.test(text))return '原始录音整理被中断，请检查文件与保存目录；可在确认后重试整理。'
  if(/REFERENCE_POSITION_OUTSIDE_RANGE/.test(text))return '游标不在比较范围内，请查看范围起点或调整偏移。'
  if(/REFERENCE_SOURCE_MISSING/.test(text))return '请先选择主素材 A 和参考 B。'
  if(/REFERENCE_SOURCE_CHANGED|REFERENCE_SOURCE_UNAVAILABLE|STALE_REFERENCE_SOURCE/.test(text))return '参考来源已变化或不可用，请重新选择。'

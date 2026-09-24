@@ -5,6 +5,10 @@ import type {RecordingService} from './recording'
 import type {ExportService} from './exportService'
 import type {PlaybackService} from './playbackService'
 import type {AnalysisService} from './analysisService'
+const stillPresent=async(file:string):Promise<boolean>=>{
+ try{const info=await lstat(file);if(!info.isFile()||info.isSymbolicLink())throw Error('INVALID_RETENTION_SOURCE');return true}
+ catch(error){if(['ENOENT','ENOTDIR'].includes((error as NodeJS.ErrnoException).code||''))return false;throw error}
+}
 export class SourceRetention {
  usesSource?:(takeId:string)=>boolean
  private pending=new Set<string>()
@@ -62,13 +66,37 @@ export class SourceRetention {
    if(existing.some((v,i)=>hashes[i]!==candidates[v.i].hash))throw Error('RETENTION_SOURCE_CHANGED')
    if(signal.aborted)throw Error('RETENTION_PAUSED')
    if(this.usesSource?.(id)||this.playback.view()?.takeId===id&&this.playback.view()?.role!=='export'||this.exporter.usesSource(id))throw Error('RETENTION_PAUSED')
+   const previous=candidates.map(a=>a.state)
    d.retention={phase:'removing',error:null};for(const asset of candidates)if(asset.state!=='removed')asset.state='removing'
    await take.save()
    // After this persisted commit, finish the small deletion batch before allowing
    // a new recording. No unique source is removed before output validation.
-   for(let i=0;i<files.length;i++){if(files[i])await unlink(files[i]);candidates[i].state='removed'}
+   let removalError:unknown
+   for(let i=0;i<files.length;i++){
+    try{if(files[i])await unlink(files[i]);candidates[i].state='removed'}
+    catch(error){removalError=error;break}
+   }
+   if(removalError){
+    // The intent was committed for the whole batch, so a file that survived the
+    // failure would stay hidden behind 'removing' forever — it is filtered out
+    // of the library, analysis and recovery. Give survivors their state back.
+    let inspectionError:unknown
+    for(let i=0;i<candidates.length;i++){
+     if(candidates[i].state!=='removing')continue
+     let present=true
+     try{if(files[i])present=await stillPresent(files[i])}catch(error){inspectionError=error}
+     candidates[i].state=present?(previous[i]==='removing'?undefined:previous[i]):'removed'
+    }
+    try{await take.save()}catch{throw Error('RETENTION_REPAIR_PERSIST_FAILED')}
+    if(inspectionError)throw inspectionError
+    throw removalError
+   }
    d.retention={phase:'removed',error:null};await take.event('source.retention.completed',{assetIds:candidates.map(a=>a.assetId),outputAnalysisKey:analyzed.manifest.cacheKey});await take.save()
   }catch(error){
+   // Any unconfirmed 'removing' entry must stay discoverable, even if the
+   // initial intent save or the rollback save failed. Missing files are still
+   // reported by LibraryService rather than silently treated as complete.
+   for(const asset of d.assets)if(asset.state==='removing')delete asset.state
    if(signal.aborted||String(error).includes('RETENTION_PAUSED')){d.retention={phase:'pending',error:null};this.pending.add(id)}
    else d.retention={phase:'error',error:String(error)}
    await take.save().catch(()=>{})

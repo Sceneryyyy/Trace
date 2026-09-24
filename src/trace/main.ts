@@ -359,7 +359,11 @@ async function dispatch(request:Request):Promise<Reply>{
     if(testMode&&isMutation(request.command))console.log('TRACE_CONTROL',JSON.stringify({command:request.command,revision:state.revision,at:new Date().toISOString()}))
     let data:unknown=null
     switch(request.command){
-      case 'reference.set':{const source=request.payload as ExportSource;assets.session(source.takeId);await retention.pause();try{references.setReference(source,assets.session(source.takeId).document.name)}finally{retention.resume()};const workspace=state.workspace!;if(workspace.layout.hidden.includes('comparison'))update({workspace:{...workspace,activePreset:null,layout:{...workspace.layout,hidden:workspace.layout.hidden.filter(id=>id!=='comparison')}}});savePreferences();break}
+      case 'reference.set':{const source=request.payload as ExportSource;const session=assets.session(source.takeId);await retention.pause();
+       // Resuming unconditionally would let source hashing and deletion run
+       // during a recording; match the rule applied in syncRetentionState.
+       try{references.setReference(source,session.document.name)}finally{if(!recordings.busy()&&!managingLibrary&&!exiting)retention.resume()}
+       const workspace=state.workspace!;if(workspace.layout.hidden.includes('comparison'))update({workspace:{...workspace,activePreset:null,layout:{...workspace.layout,hidden:workspace.layout.hidden.filter(id=>id!=='comparison')}}});savePreferences();break}
       case 'reference.clear':{await references.clearReference();const file=playback.view();if(file&&!file.temporary)await references.bindPrimary(playback.spectralSource(file.id).source,file);break}
       case 'reference.activate':await activateReference(request.payload.slot as ReferenceSlot,request.payload.atStart===true);break
       case 'reference.configure':references.configure(request.payload.offsetNs as string,request.payload.linked as boolean);await referenceSpectrum.cancel();break
@@ -799,20 +803,29 @@ app.on('before-quit',event=>{
   if(timer)clearInterval(timer)
   if(preferencesTimer)clearTimeout(preferencesTimer)
   recordings?.prepareShutdown()
-  let final:NativeRecordSnapshot|undefined
-  try{final=engine?.shutdown()}catch(error){console.error('Trace shutdown:',error)}
   const finish=(async()=>{
     if(importWatchTimer)clearInterval(importWatchTimer)
     await imports?.shutdown()
     await references?.shutdown()
     await reports?.shutdown()
+    // Drain everything that can still reach the native engine before the engine
+    // itself is torn down, otherwise an in-flight request runs against freed state.
     await Promise.all([spectrogram?.close(),instruments?.shutdown(),deliveries?.shutdown(),retention?.shutdown(),exporter?.pauseForRecording(),analyses?.shutdown(),playback?.close()])
+    await nativeAnalysisQueue.close()
+    let final:NativeRecordSnapshot|undefined
+    try{final=engine?.shutdown()}catch(error){console.error('Trace shutdown:',error)}
     if(final&&recordings)await recordings.finish(final)
     await exporter?.shutdown()
-    await nativeAnalysisQueue.close()
     await preferencesWriter?.flush()
     await supportRuntime?.finish()
   })()
-  finish.catch(error=>console.error('Trace finalization:',error)).finally(()=>{readyToQuit=true;app.quit()})
+  // A wedged worker, encoder or disk write must not leave a window-less process
+  // that can never quit; the recording finaliser above is the only step that
+  // still needs time, and it has its own internal deadline.
+  const deadlineMs=Number(process.env.TRACE_SHUTDOWN_TIMEOUT_MS??60000)
+  let done=false
+  const settle=()=>{if(done)return;done=true;readyToQuit=true;app.quit()}
+  if(deadlineMs>0)setTimeout(()=>{if(done)return;console.error('Trace finalization: timed out after',deadlineMs,'ms');try{supportRuntime?.recordShutdownTimeout()}catch{}settle()},deadlineMs).unref?.()
+  finish.catch(error=>console.error('Trace finalization:',error)).finally(settle)
 })
 app.on('window-all-closed',()=>app.quit())

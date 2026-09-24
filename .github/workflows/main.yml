@@ -80,14 +80,71 @@ jobs:
       - name: Test
         run: npm test
 
+      # The Trace product has its own service layer and test suite. The portable
+      # tier needs no compiled engine, ffmpeg or packaged app, so it runs here;
+      # the native tier runs in the Windows job that has those artifacts.
+      - name: Test Trace services (portable tier)
+        run: npm run test:trace
+
       - name: Build and test Prism TUI
         run: npm run test:tui
 
       - name: Build desktop application
         run: npm run build
 
+      - name: Build Trace application
+        run: npm run build:trace
+
       - name: Build plugin webview bundle
         run: npm run plugin-ui:build
+
+  trace-engine:
+    name: Trace Engine (Windows x64)
+    needs: quality-gate
+    runs-on: windows-2022
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        env:
+          PRISM_SKIP_NATIVE_POSTINSTALL: '1'
+        run: npm ci
+
+      # Builds the upstream DSP and obtains the pinned Electron headers/node.lib
+      # in the exact SDK directory expected by tools/build-engine.cjs.
+      - name: Prepare pinned Electron SDK and native DSP
+        env:
+          npm_config_devdir: ${{ github.workspace }}/.tools/node-gyp
+        run: npm run rebuild:native
+
+      - name: Verify native build prerequisites
+        shell: pwsh
+        run: |
+          if (-not (Test-Path '.tools/node-gyp/40.8.3/include/node/node_api.h')) { throw 'Electron header missing' }
+          if (-not (Test-Path '.tools/node-gyp/40.8.3/x64/node.lib')) { throw 'Electron import library missing' }
+          if (-not (Test-Path 'native/build/Release/visualizer_dsp.node')) { throw 'Prism native DSP missing' }
+
+      # Builds trace_engine.node and runs the 15 CTest targets that cover the
+      # recorder, WAV precision, EBU reference values and true-peak timing.
+      - name: Build Trace engine and run native tests
+        run: npm run build:trace-engine
+
+      - name: Fetch pinned ffmpeg
+        run: node tools/prefetch-ffmpeg.mjs
+
+      # TRACE_REQUIRE_NATIVE turns a missing artifact into a failure instead of
+      # a skip, so this job cannot silently degrade into running nothing.
+      - name: Test Trace services (native tier)
+        env:
+          TRACE_REQUIRE_NATIVE: '1'
+        run: npm run test:trace-native
 
   build-smoke:
     name: Build Smoke (${{ matrix.os }})

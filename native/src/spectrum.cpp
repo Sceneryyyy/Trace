@@ -28,9 +28,16 @@ Spectrum::Spectrum(size_t fftSize)
 }
 
 void Spectrum::setFFTSize(size_t size) {
+    // The radix-2 FFT indexes assuming a power of two; anything else walks past
+    // the end of the buffers. Clamp to the same range the spectrogram accepts.
+    if (size < 2 || (size & (size - 1)) != 0) size = 2048;
+    size = std::clamp(size, static_cast<size_t>(128), static_cast<size_t>(16384));
     if (size != fftSize_) {
+        // Build the transform first: if allocation fails, fftSize_ must not be
+        // left describing buffers that were never resized.
+        auto transform = std::make_unique<DSP::FFT>(size);
         fftSize_ = size;
-        fft_ = std::make_unique<DSP::FFT>(size);
+        fft_ = std::move(transform);
         historyBuffer_.assign(size, 0.0f);
         sideHistoryBuffer_.assign(size, 0.0f);
         windowedInput_.resize(size);

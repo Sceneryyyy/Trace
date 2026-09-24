@@ -5,6 +5,7 @@ import path from 'node:path'
 import {randomUUID,createHash} from 'node:crypto'
 import {build} from 'esbuild'
 import {pathToFileURL} from 'node:url'
+import {assertSamePath} from './path-equal.mjs'
 await fs.mkdir('artifacts/m12',{recursive:true});await build({entryPoints:['src/trace/importService.ts'],outfile:'artifacts/m12/import-service.cjs',platform:'node',format:'cjs',bundle:true})
 const {ImportService}=(await import(pathToFileURL(path.resolve('artifacts/m12/import-service.cjs')))).default
 const tick=()=>new Promise(r=>setImmediate(r)),sha=b=>createHash('sha256').update(b).digest('hex')
@@ -46,14 +47,14 @@ test('removing a reference archives owned metadata and preserves original and ge
 })
 test('relocation requires the original content and cannot bind a managed cache as an external source',async()=>{
  const t=await setup(),id=await t.svc.add(t.files[0]);await wait(()=>t.svc.views()[0].status==='ready');await assert.rejects(t.svc.relocate(id,t.files[1]),/CONTENT_CHANGED/)
- const copy=path.join(t.root,'relocated.wav');await fs.copyFile(t.files[0],copy);await fs.unlink(t.files[0]);await t.svc.refresh();assert.equal(t.svc.views()[0].status,'missing');await t.svc.relocate(id,copy);assert.equal(t.svc.views()[0].status,'ready');assert.equal(t.svc.session(id).document.sourcePath,copy)
+ const copy=path.join(t.root,'relocated.wav');await fs.copyFile(t.files[0],copy);await fs.unlink(t.files[0]);await t.svc.refresh();assert.equal(t.svc.views()[0].status,'missing');await t.svc.relocate(id,copy);assert.equal(t.svc.views()[0].status,'ready');assertSamePath(t.svc.session(id).document.sourcePath,copy)
  const inside=path.join(t.svc.store.root,'illegal.wav');await fs.copyFile(copy,inside);await assert.rejects(t.svc.relocate(id,inside),/INSIDE_CACHE/);await t.svc.shutdown()
 })
 
 test('generated-export removal verifies its owner, recycles only that directory and preserves the external source',async()=>{
  const t=await setup(),id=await t.svc.add(t.files[0]);await wait(()=>t.svc.views()[0].status==='ready');const a=t.svc.session(id),exportId=randomUUID(),record={version:1,id:exportId,createdAt:new Date().toISOString(),source:{takeId:id,role:'source'},preset:{format:'mp3',sampleRate:48000,bitrate:192},automatic:false,phase:'failed',fraction:0,error:'TEST_ONLY'};a.document.exports.push(record);await a.save()
  const dir=path.join(a.directory,'exports',exportId),retained=path.join(t.root,'test-recycle-'+exportId);await fs.mkdir(dir,{recursive:true});await fs.writeFile(path.join(dir,'export.json'),JSON.stringify(record));await fs.writeFile(path.join(dir,'media-0.mp3'),'generated')
- await t.svc.removeExport(id,exportId,async target=>{assert.equal(target,dir);assert(path.resolve(retained).startsWith(t.root+path.sep));await fs.rename(target,retained)});assert.equal(a.document.exports.length,0);assert.equal(await fs.readFile(path.join(retained,'media-0.mp3'),'utf8'),'generated');assert.equal(await fs.readFile(t.files[0],'utf8'),'TEST_ONLY 0');await t.svc.shutdown()
+ await t.svc.removeExport(id,exportId,async target=>{assertSamePath(target,dir);assert(path.resolve(retained).startsWith(t.root+path.sep));await fs.rename(target,retained)});assert.equal(a.document.exports.length,0);assert.equal(await fs.readFile(path.join(retained,'media-0.mp3'),'utf8'),'generated');assert.equal(await fs.readFile(t.files[0],'utf8'),'TEST_ONLY 0');await t.svc.shutdown()
 })
 
 test('a generated-export junction cannot redirect removal into an unrelated directory',async()=>{

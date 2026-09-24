@@ -18,30 +18,51 @@ async function cleanupPending(root:string,id:string):Promise<void>{
     await rm(target,{recursive:true})
   }
 }
+// This watchdog is for the child event loop. Async I/O sends heartbeats even
+// when byte progress is temporarily unavailable; synchronous native conversions
+// cannot do so and instead rely on explicit cancellation and shutdown bounds.
+const workerIdleTimeoutMs=Number(process.env.TRACE_FILE_WORKER_TIMEOUT_MS??180000)
 async function runJob<T>(job:Record<string,unknown>,options:JobOptions={}):Promise<T>{
   if(options.signal?.aborted)throw Error('ANALYSIS_CANCELLED')
   try{
     return await new Promise<T>((resolve,reject)=>{
       const child=spawn(process.execPath,[join(__dirname,'file-worker.js')],{env:{...process.env,ELECTRON_RUN_AS_NODE:'1'},stdio:['ignore','ignore','pipe','ipc'],windowsHide:true})
-      let settled=false,stderr='',cancelled=false
+      let settled=false,stderr='',cancelled=false,timedOut=false
       let result:{ok:boolean;results:T;error:string}|undefined
+      let idle:ReturnType<typeof setTimeout>|undefined
+      const nativeWithoutHeartbeat=job.kind==='quantize'||job.kind==='recover'
+      const rearm=()=>{
+        if(idle)clearTimeout(idle)
+        if(nativeWithoutHeartbeat||!(workerIdleTimeoutMs>0))return
+        idle=setTimeout(()=>{if(settled)return;timedOut=true;supportEvent('file-worker-timeout',1);child.kill()},workerIdleTimeoutMs)
+      }
+      const suspendIdle=()=>{if(idle)clearTimeout(idle);idle=undefined}
+      const done=()=>{if(idle)clearTimeout(idle);options.signal?.removeEventListener('abort',abort)}
       const abort=()=>{cancelled=true;child.kill()}
       options.signal?.addEventListener('abort',abort,{once:true})
-      child.stderr?.on('data',data=>{stderr=(stderr+data).slice(-8000)})
-      child.on('error',error=>{if(!settled){settled=true;options.signal?.removeEventListener('abort',abort);reject(error)}})
+      child.stderr?.on('data',data=>{stderr=(stderr+data).slice(-8000);rearm()})
+      child.on('error',error=>{if(!settled){settled=true;done();reject(error)}})
       child.on('message',(value:unknown)=>{
         if(settled)return
         const message=value as {type?:string;progress:AnalysisProgress;ok:boolean;results:T;error:string}
-        if(message.type==='progress'){try{options.progress?.(message.progress)}catch{}}
-        else result=message
+        if(message.type==='heartbeat'){rearm();return}
+        if(message.type==='progress'){
+          // analyzeWaves runs synchronously in native code. Its progress callback
+          // may be silent for a long, valid file, so a fixed 180 s deadline is
+          // not evidence that it is stuck.
+          if(message.progress.phase==='analyzing')suspendIdle();else rearm()
+          try{options.progress?.(message.progress)}catch{}
+        }else{result=message;rearm()}
       })
       child.on('close',code=>{
-        if(!cancelled&&code!==0)supportEvent('file-worker-exit',code??-1)
-        if(settled)return;settled=true;options.signal?.removeEventListener('abort',abort)
+        if(!cancelled&&!timedOut&&code!==0)supportEvent('file-worker-exit',code??-1)
+        if(settled)return;settled=true;done()
         if(cancelled)reject(Error('ANALYSIS_CANCELLED'))
+        else if(timedOut)reject(Error('FILE_WORKER_TIMEOUT: worker stopped reporting progress'))
         else if(code===0&&result?.ok)resolve(result.results)
         else reject(Error(result?.error||'FILE_WORKER_EXIT '+code+': '+stderr))
       })
+      rearm()
       child.send(job,error=>{if(error&&!settled){result={ok:false,results:undefined as T,error:String(error)};child.kill()}})
       if(options.signal?.aborted)abort()
     })

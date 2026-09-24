@@ -268,12 +268,20 @@ void Oscilloscope::getSamples(float* output, size_t startPos, size_t count) cons
 // Uses Catmull-Rom spline for smooth rendering at sub-pixel precision
 // This preserves the high-precision trigger position from zero-crossing detection
 void Oscilloscope::getSamplesInterpolated(float* output, float startPos, size_t count) const {
+    // A non-finite start position would make the wrap loops below spin forever,
+    // so reject it here rather than relying on every caller to pre-validate.
+    if (!std::isfinite(startPos)) {
+        std::fill_n(output, count, 0.0f);
+        return;
+    }
     for (size_t i = 0; i < count; i++) {
         float pos = startPos + static_cast<float>(i);
 
-        // Wrap position to buffer bounds
-        while (pos < 0) pos += OSCILLOSCOPE_BUFFER_SIZE;
-        while (pos >= OSCILLOSCOPE_BUFFER_SIZE) pos -= OSCILLOSCOPE_BUFFER_SIZE;
+        // Wrap position to buffer bounds. fmod keeps this O(1) for positions far
+        // outside the buffer instead of iterating once per buffer length.
+        pos = std::fmod(pos, static_cast<float>(OSCILLOSCOPE_BUFFER_SIZE));
+        if (pos < 0) pos += OSCILLOSCOPE_BUFFER_SIZE;
+        if (pos >= OSCILLOSCOPE_BUFFER_SIZE) pos = 0.0f;
 
         size_t idx = static_cast<size_t>(pos) % OSCILLOSCOPE_BUFFER_SIZE;
         float frac = pos - std::floor(pos);

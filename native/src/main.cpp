@@ -103,7 +103,13 @@ Napi::Value OscilloscopeGetSamples(const Napi::CallbackInfo& info) {
         return env.Null();
     }
     float startPos = info[0].As<Napi::Number>().FloatValue();
-    size_t count = static_cast<size_t>(info[1].As<Napi::Number>().Uint32Value());
+    // Bound the allocation: an unchecked uint32 count asks for up to 17 GB.
+    const uint32_t requested = info[1].As<Napi::Number>().Uint32Value();
+    if (requested > Visualizer::OSCILLOSCOPE_BUFFER_SIZE) {
+        Napi::RangeError::New(env, "count exceeds oscilloscope buffer").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    const size_t count = static_cast<size_t>(requested);
     Napi::Float32Array output = Napi::Float32Array::New(env, count);
     oscilloscope.getSamplesInterpolated(output.Data(), startPos, count);
     return output;

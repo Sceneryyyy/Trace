@@ -5,13 +5,14 @@ import {resolve,join} from 'node:path'
 import {pathToFileURL} from 'node:url'
 import {randomUUID} from 'node:crypto'
 import {build} from 'esbuild'
+import {assertSamePath} from './path-equal.mjs'
 await mkdir('artifacts/m12',{recursive:true});await build({entryPoints:['src/trace/importStore.ts'],outfile:'artifacts/m12/import-store.cjs',platform:'node',format:'cjs',bundle:true})
 const {ImportStore,validateImportedDocument}=(await import(pathToFileURL(resolve('artifacts/m12/import-store.cjs')))).default
 async function setup(){const root=await mkdtemp(resolve('artifacts/m12/store-')),source=join(root,'external.wav');await writeFile(source,'test-only external contents');const store=new ImportStore(join(root,'owned'));await store.initialize();return {root,source,store}}
 test('import persistence keeps source references separate and serial saves retain the final owned metadata',async()=>{
  const {source,store}=await setup(),asset=await store.create(source),saves=[];assert.equal(asset.document.kind,'imported');assert.equal(asset.document.status,'unprepared');assert(!('regions' in asset.document));assert(!('captureEpochId' in asset.document))
  for(let i=0;i<20;i++){asset.document.name='素材 '+i;saves.push(asset.save())}await Promise.all(saves);await asset.event('label.changed',{name:asset.document.name});await asset.save()
- const loaded=await store.initialize();assert.equal(loaded.issues.length,0);assert.equal(loaded.assets[0].document.name,'素材 19');assert.equal(loaded.assets[0].document.sourcePath,source);assert.equal(loaded.assets[0].document.eventSequence,1);assert.equal(await readFile(source,'utf8'),'test-only external contents');assert(!(await readdir(asset.directory)).some(n=>n.endsWith('.tmp')))
+ const loaded=await store.initialize();assert.equal(loaded.issues.length,0);assert.equal(loaded.assets[0].document.name,'素材 19');assertSamePath(loaded.assets[0].document.sourcePath,source);assert.equal(loaded.assets[0].document.eventSequence,1);assert.equal(await readFile(source,'utf8'),'test-only external contents');assert(!(await readdir(asset.directory)).some(n=>n.endsWith('.tmp')))
 })
 test('interrupted import/export preparation becomes an explicit retryable failure after restart',async()=>{
  const {source,store}=await setup(),asset=await store.create(source);asset.document.status='preparing';asset.document.exports.push({version:1,id:randomUUID(),createdAt:new Date().toISOString(),source:{takeId:asset.document.sessionId,role:'source'},preset:{format:'mp3',sampleRate:48000,bitrate:192},automatic:false,phase:'encoding',fraction:.5,error:null,delivery:{phase:'copying',directory:resolve('artifacts/m12/destination'),name:'copy',error:null}});await asset.save()

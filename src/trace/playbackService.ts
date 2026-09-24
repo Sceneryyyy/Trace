@@ -254,7 +254,7 @@ if(c.follow&&native.playing&&(BigInt(native.positionFrame)<BigInt(c.startFrame)|
      playingIntent:c.desiredPlaying,analysisId:c.analysisId,analysisError:job?.error||null,analysisPhase:c.temporary?'ready':job?.phase||'queued',selectionAnalysis:c.selectionAnalysis||this.analyses.snapshots().find(job=>job.id===c.selectionAnalysisId),wholeFileIntegrated:metrics.wholeFileIntegrated}
    return {instruments,protocolVersion:1,sourceKind:'file',sourceId:c.id,epochId:'0',measurementEpoch:'0',measurementConfigId,active:native.playing,error:native.error,
     format:native.format,positionFrame:native.positionFrame,measurementFrames:native.positionFrame,levelIndexFrame:metrics.levelIndexFrame,loudnessIndexFrame:metrics.loudnessIndexFrame,
-    continuity:native.error?'unknown':'complete',channels:metrics.channels,momentary:metrics.momentary,shortTerm:metrics.shortTerm,integratedToCursor:metrics.integratedToCursor,
+    continuity:native.error?'unknown':c.source.continuity||'complete',channels:metrics.channels,momentary:metrics.momentary,shortTerm:metrics.shortTerm,integratedToCursor:metrics.integratedToCursor,
     loudnessRange:c.temporary?metrics.loudnessRange:metrics.wholeFileLoudnessRange,maxTruePeak:c.temporary?metrics.maxTruePeak:metrics.wholeFileMaxTruePeak,lraProvisional:(c.temporary?BigInt(c.replayInfo?.originFrame||0)+BigInt(native.positionFrame):BigInt(c.source.frames))<BigInt(c.source.sampleRate)*60n,
     waveform:c.timeline?.waveform||[],loudnessHistory:c.timeline?.loudnessHistory||[],
     diagnostics:{outputReady:c.outputReady,nativeGeneration:c.nativeGeneration,rawModeApplied:native.rawModeApplied,clockAccurate:native.clockAccurate,paddingFrames:native.paddingFrames,queueDepth:native.queueDepth},playback:native,fileView}

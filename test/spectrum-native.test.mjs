@@ -99,6 +99,33 @@ test('spectrum channel-max dBFS is calibrated for bin-centered amplitudes', () =
   }
 })
 
+// setFFTSize feeds a radix-2 transform that indexes assuming a power of two,
+// and getSamples used to allocate straight from an unchecked uint32 while the
+// interpolator wrapped its position in an unbounded while loop. All three are
+// reachable from the renderer, so malformed input must be rejected or clamped
+// rather than corrupting the heap or spinning forever.
+test('malformed analyzer parameters cannot corrupt or hang the native DSP', () => {
+  for (const size of [1000, 3, 0, 1, 12345, 2 ** 31]) {
+    spectrum.setFFTSize(size)
+    const applied = spectrum.getFFTSize()
+    assert.ok(applied >= 128 && applied <= 16384, `FFT size must stay in range, got ${applied}`)
+    assert.equal(applied & (applied - 1), 0, `FFT size must remain a power of two, got ${applied}`)
+    configure(applied)
+    spectrum.pushSamples(createTone(1000, applied))
+    assert.equal(spectrum.getMagnitudes().length, applied / 2)
+  }
+
+  const { oscilloscope } = nativeAddon
+  oscilloscope.reset()
+  oscilloscope.pushSamples(createTone(1000, 2048))
+  for (const startPos of [Infinity, -Infinity, NaN, 1e30, -1e30]) {
+    const samples = oscilloscope.getSamples(startPos, 64)
+    assert.equal(samples.length, 64)
+    for (const value of samples) assert.ok(Number.isFinite(value), 'sample must stay finite')
+  }
+  assert.throws(() => oscilloscope.getSamples(0, 4294967295), /count/)
+})
+
 test('spectrum off-bin dBFS interpolation stays within 0.3 dB across FFT sizes', () => {
   for (const fftSize of [1024, 2048, 4096, 8192, 16384]) {
     configure(fftSize)

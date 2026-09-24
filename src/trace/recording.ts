@@ -12,11 +12,13 @@ import {mediaDurationNs,u64} from './sessionTimeline'
 import {StoredSession,readSession} from './sessionStore'
 import {exportView} from './exportTypes'
 import {defaultRecordSettings,validateRecordSettings,recordingEncoding} from './recordSettings'
+import {errorCode} from './diagnostics'
 export {defaultRecordSettings,validateRecordSettings} from './recordSettings'
 import type {SessionDocument,CaptureRegion,SessionAsset,SessionSegment} from './sessionStore'
 import {postprocessWav} from './wavPostprocess'
 import {RecordingDisplay} from './recordingDisplay'
-import type {AnalysisSource} from './analysisService'
+import {restoreInterruptedRetention} from './retentionState'
+import type {AnalysisSource,SourceContinuity} from './analysisService'
 import type {NativeRecordSnapshot,RecordSettings,TakeSummary,AnalysisRole,RecordingView} from './shared'
 
 export interface RecordNative {
@@ -36,10 +38,26 @@ async function hashFile(path:string):Promise<string>{
  const after=await stat(path);if(before.size!==after.size||before.mtimeMs!==after.mtimeMs)throw Error('SOURCE_CHANGED_DURING_FINALIZE')
  return value.digest('hex')
 }
+/**
+ * Continuity finding for material opened from a take. A single interrupted or
+ * recovered region, several stitched regions, or device-failure frames that
+ * were filled in must not read as complete during playback.
+ */
+export function sourceContinuity(d:SessionDocument,regionId?:string):SourceContinuity{
+ const regions=regionId?d.regions.filter(r=>r.id===regionId):d.regions
+ const covered=regions.filter(r=>r.status!=='cancelled'&&BigInt(r.frames||'0')>0n)
+ if(covered.some(r=>r.status==='interrupted'||r.error))return 'gaps'
+ if(!regionId&&covered.length>1)return 'gaps'
+ if(!regionId&&d.hasDiscontinuities)return 'gaps'
+ if(covered.some(r=>BigInt(r.estimatedFrames||'0')>0n))return 'estimated-silence'
+ return 'complete'
+}
 export class RecordingService {
  directory=''
  settings:RecordSettings={...defaultRecordSettings}
  private takes=new Map<string,StoredSession>()
+ /** Directories whose manifest could not be read, keyed by absolute path. */
+ private unreadable=new Map<string,{name:string;error:string|null}>()
  private active:Active|null=null
  private closed=new Set<string>()
  private jobs:Promise<void>=Promise.resolve()
@@ -61,7 +79,7 @@ export class RecordingService {
  setReconnectHandler(handler:ReconnectHandler):void{this.reconnect=handler}
  busy():boolean{return this.active!==null||this.recovering||Boolean(this.cacheSaving)}
  summaries():TakeSummary[]{
-  return [...this.takes.values()].map(({document:d})=>{
+  return [...this.takes.values()].map(({document:d}):TakeSummary=>{
    const preferred=(['deliverable','session','recovered','source'] as AnalysisRole[]).map(role=>d.assets.filter(a=>a.role===role&&!['superseded','removed','removing'].includes(a.state||''))).find(items=>items.length)||[]
    const rates=[...new Set(preferred.map(a=>a.sampleRate))]
    const exported=[...(d.exports||[])].reverse().find(r=>r.automatic&&r.phase==='ready'&&r.result)
@@ -70,7 +88,14 @@ export class RecordingService {
     durationNs:preferred.length?mediaDurationNs(preferred.map(a=>({frames:a.frameCount,sampleRate:a.sampleRate}))):d.durationNs,
     mixedSampleRate:rates.length>1,sourceClippedSamples:d.regions.reduce((n,r)=>n+BigInt(r.clippedSamples),0n).toString(),clippedSamples:preferred.length&&preferred.every(a=>a.clippedSamples!==undefined)?preferred.reduce((n,a)=>n+BigInt(a.clippedSamples!),0n).toString():undefined,analysisRegions:d.regions.flatMap(r=>(['source','recovered'] as AnalysisRole[]).filter(role=>d.assets.some(a=>a.regionId===r.id&&a.role===role&&!['superseded','removed','removing'].includes(a.state||''))).map(role=>({id:r.id,role,ordinal:r.ordinal,sampleRate:r.format.sampleRate,channelCount:r.format.channelCount,frames:r.frames}))),roles:[...new Set(d.assets.filter(a=>!['superseded','removed','removing'].includes(a.state||'')).map(a=>a.role))],regionCount:d.regions.length,hasDiscontinuities:d.hasDiscontinuities,
     ...(exported?.result?{preferredExportId:exported.id,encoding:exported.result.codec==='mp3'?'mp3':exported.result.codec==='aac'?'aac':'float32',sampleRate:exported.result.sampleRate,frames:exported.result.frames,segmentCount:exported.result.files.length,durationNs:mediaDurationNs([{frames:exported.result.frames,sampleRate:exported.result.sampleRate}]),container:exported.result.container,bitrate:exported.preset.format!=='wav'?exported.preset.bitrate:undefined}:{} )}
-  }).sort((a,b)=>b.createdAt.localeCompare(a.createdAt))
+  }).concat([...this.unreadable].map(([directory,{name,error}]):TakeSummary=>({
+   id:'unreadable:'+directory,name,createdAt:'',status:'unreadable',frames:'0',sampleRate:0,encoding:'',segmentCount:0,
+   error,availability:'unavailable',roles:[],regionCount:0,
+  }))).sort((a,b)=>b.createdAt.localeCompare(a.createdAt))
+ }
+ /** Directories whose manifest failed to parse; the audio files are untouched. */
+ unreadableDirectories():{directory:string;name:string;error:string|null}[]{
+  return [...this.unreadable].map(([directory,value])=>({directory,...value}))
  }
  activeSummary():{id:string;phase:string;durationNs:string;regionCount:number;retryError:string|null}|null{
   const a=this.active;if(!a)return null
@@ -83,10 +108,20 @@ export class RecordingService {
  async setDirectory(directory:string):Promise<void>{
   if(this.busy())throw Error('RECORDING_ACTIVE')
   if(!(await stat(directory)).isDirectory())throw Error('INVALID_DIRECTORY')
-  this.directory=directory;this.takes.clear()
+  this.directory=directory;this.takes.clear();this.unreadable.clear()
   for(const entry of await readdir(directory,{withFileTypes:true})){
    if(!entry.isDirectory()||entry.isSymbolicLink())continue
-   try{const take=await readSession(join(directory,entry.name));take.document.preset=validateRecordSettings(take.document.preset);this.takes.set(take.document.sessionId,take)}catch{}
+   // A manifest we cannot parse must stay visible: the audio is still on disk,
+   // and silently dropping the entry would look identical to the take never
+   // having existed.
+   try{const take=await readSession(join(directory,entry.name));take.document.preset=validateRecordSettings(take.document.preset)
+    if(restoreInterruptedRetention(take.document)){
+     // A prior process may have stopped after persisting 'removing' but before
+     // confirming every unlink. Make the surviving source visible for review.
+     try{await take.save()}catch{take.document.retention={phase:'error',error:'RETENTION_RECOVERY_SAVE_FAILED'}}
+    }
+    this.takes.set(take.document.sessionId,take)}
+   catch(error){this.unreadable.set(join(directory,entry.name),{name:entry.name,error:errorCode(error)})}
   }
   this.changed()
  }
@@ -345,9 +380,13 @@ export class RecordingService {
   }
   const cacheRoot=join(base,'cache');try{const details=await lstat(cacheRoot);if(!details.isDirectory()||details.isSymbolicLink())throw Error('INVALID_CACHE_DIRECTORY')}catch(error){if((error as NodeJS.ErrnoException).code!=='ENOENT')throw error}
   return {assetFormat:{format:'wav',sampleRate:assets[0].sampleRate,channelCount:assets[0].channelCount,encoding:assets.every(a=>a.encoding===assets[0].encoding)?assets[0].encoding:undefined},takeId:id,role,regionId,label:take.document.name+(regionId?' · 第 '+take.document.regions.find(r=>r.id===regionId)?.ordinal+' 段':'')+' · '+({source:'原始文件',deliverable:'成品文件',recovered:'恢复文件',session:'会话视图'}[role]),sources,cacheRoot,
-   sampleRate:assets[0].sampleRate,channelCount:assets[0].channelCount,frames:assets.reduce((n,a)=>n+BigInt(a.frameCount),0n).toString()}
+   sampleRate:assets[0].sampleRate,channelCount:assets[0].channelCount,frames:assets.reduce((n,a)=>n+BigInt(a.frameCount),0n).toString(),
+   continuity:sourceContinuity(take.document,regionId)}
  }
- folder(id:string):string{const take=this.takes.get(id);if(!take)throw Error('UNKNOWN_TAKE');return take.directory}
+ folder(id:string):string{
+  if(id.startsWith('unreadable:')){const directory=id.slice('unreadable:'.length);if(!this.unreadable.has(directory))throw Error('UNKNOWN_TAKE');return directory}
+  const take=this.takes.get(id);if(!take)throw Error('UNKNOWN_TAKE');return take.directory
+ }
  prepareShutdown():void{this.closing=true;const a=this.active;if(a){a.wanted=false;a.generation++;if(a.timer)clearTimeout(a.timer)}}
  async finish(snapshot:NativeRecordSnapshot):Promise<void>{
   this.prepareShutdown();const a=this.active
