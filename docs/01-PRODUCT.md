@@ -1,5 +1,7 @@
 # 01 · 产品需求与范围
 
+2026-09-24 平台扩展：用户选择在保留 Windows 产品的基础上，为 Trace 增加 macOS 原生后端。下方“Windows 首版”条目是历史基线；Mac 首发范围、真实采集/96 kHz 验收边界和未验证状态以 [70-MACOS-PORT-PLAN](70-MACOS-PORT-PLAN.md) 为准。
+
 2026-09-17 品牌确认：LeoMoon 为系列品牌，Trace/声迹为个体产品。顶部使用原狮子月牙识别形状的绿—青配色、LeoMoon 字标及下方 TRACE。产品与文件身份仍为 Trace，详见 [61](61-LEOMOON-TRACE-BRANDING.md)。
 
 ## 后续产品目标（2026-09-17）

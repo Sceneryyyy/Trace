@@ -1,5 +1,7 @@
 # 02 · 架构与模块边界
 
+2026-09-24：原 Windows/WASAPI 架构保持现状；已选定的 Mac 扩展按 [ADR-012](11-DECISIONS.md) 与 [70-MACOS-PORT-PLAN](70-MACOS-PORT-PLAN.md) 在采集、输出、文件操作和打包处增加平台后端。下方 Windows 图和原始默认路线不表示 Mac 实现已完成。
+
 PB1/PB2：userData 规范化后、引擎/录音库初始化前取得 Electron 单实例锁。SupportJournal/SupportRuntime 在主进程管理有界诊断与故障恢复入口；React RecoveryBoundary 提供最小可操作界面。录音仍使用原生线程与既有恢复日志，界面重载不重启引擎。见 [60](60-PB1-PB2-SUPPORT.md)。
 
 M12：ImportService 管理只读外部素材、四项准备队列、源变化/取消/重建/归档；AssetRepository 组合录音与导入来源，ExportService/DeliveryService 依赖窄的 ExportOwner。原始录音生命周期保持独立，源解析后复用既有文件分析/回放/仪器/报告。拖放通过 File 对象与专用 preload 通道，接口和验证见 53；参考数据与调度设计见 54；ReferenceService、独立数组流和 NativeAnalysisQueue 已接入，验证见 55。两项 native 执行/四项等待只用于分析，采集与写盘不进入队列。

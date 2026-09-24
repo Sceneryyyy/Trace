@@ -1,5 +1,9 @@
 # 13 · 当前状态与下一会话
 
+## 新方向：Mac 移植方案一已写入文档，尚未实施
+
+2026-09-24：用户选择保留 Electron/React/Trace C++ 核心，并增加 macOS 原生后端。执行方案、代码切口、M-MAC0–4 阶段、MAC-A01–08 验收和官方依据见 [70-MACOS-PORT-PLAN](70-MACOS-PORT-PLAN.md)；工程决定见 [ADR-012](11-DECISIONS.md)。本次只更新文档，没有修改产品代码、构建或测试。Mac 真机采集、96 kHz、签名/公证均未验证。下一任务是 M-MAC0/T00：在 Apple silicon Mac 上验证 Core Audio taps 的真实系统音频、权限、来源选择及帧时钟，再进入引擎拆分。Windows preview.30 / InternalTest-r3 状态保持如下，远程 CI 仍暂缓。
+
 ## 当前状态：preview.30 / InternalTest-r3 已打包，可交同事内测
 
 2026-09-24：以干净本地提交 `9c1ee21` 为来源重新构建 preview.30，生成新的 R3 内测 ZIP，未覆盖 preview.29 R2。大小、SHA256、解压验证和 M7 新包 10 阶段结果见 [69](69-INTERNAL-TEST-R3.md)。独立程序与同事内测包均在 `dist-trace/`；建议分发带 PDF、说明和校验文件的 R3 内测包。远程 CI 按用户决定暂缓，独立干净 Windows 与声卡矩阵仍需同事实测。
