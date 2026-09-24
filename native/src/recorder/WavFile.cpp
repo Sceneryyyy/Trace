@@ -1,44 +1,15 @@
 #include "WavFile.h"
+#include "WavFileIO.h"
 #include "Decode.h"
-#include <windows.h>
 #include <algorithm>
 #include <array>
 #include <cmath>
 #include <cstring>
 #include <fstream>
 #include <limits>
-#include <sstream>
 #include <stdexcept>
 namespace Trace {
 namespace {
-void ioError(const char* operation) {
-    throw std::runtime_error(std::string(operation) + " (Win32 " + std::to_string(GetLastError()) + ")");
-}
-struct File {
-    HANDLE value = INVALID_HANDLE_VALUE;
-    ~File() { if (value != INVALID_HANDLE_VALUE) CloseHandle(value); }
-    void open(const std::filesystem::path& path) {
-        value = CreateFileW(path.c_str(), GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ,
-                            nullptr, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr);
-        if (value == INVALID_HANDLE_VALUE) ioError("WAV_CREATE_FAILED");
-    }
-    void position(uint64_t offset) {
-        LARGE_INTEGER distance; distance.QuadPart = static_cast<LONGLONG>(offset);
-        if (!SetFilePointerEx(value, distance, nullptr, FILE_BEGIN)) ioError("WAV_SEEK_FAILED");
-    }
-    void write(const void* bytes, uint32_t count) {
-        uint32_t offset = 0;
-        while (offset < count) {
-            DWORD written = 0;
-            if (!WriteFile(value, static_cast<const uint8_t*>(bytes) + offset, count - offset, &written, nullptr))
-                ioError("WAV_WRITE_FAILED");
-            if (!written) throw std::runtime_error("WAV_WRITE_NO_PROGRESS");
-            offset += written;
-        }
-    }
-    void flush() { if (!FlushFileBuffers(value)) ioError("WAV_FLUSH_FAILED"); }
-    void close() { if (value != INVALID_HANDLE_VALUE) { CloseHandle(value); value = INVALID_HANDLE_VALUE; } }
-};
 void put16(std::vector<uint8_t>& out, uint16_t value) {
     out.push_back(static_cast<uint8_t>(value)); out.push_back(static_cast<uint8_t>(value >> 8));
 }
@@ -72,7 +43,7 @@ struct WavWriter::Impl {
     uint32_t rate, channels, align, bits, dataOffset;
     WavEncoding encoding;
     WavOptions options;
-    File file;
+    WavFileIO file;
     std::vector<uint8_t> buffer;
     std::vector<WavSegment> segments;
     uint64_t currentBytes = 0, totalBytes = 0, completeFrames = 0, clips = 0;
@@ -90,9 +61,10 @@ struct WavWriter::Impl {
     }
     void openSegment() {
         const auto index = segments.size() + 1;
-        std::wostringstream suffix; suffix << L"-" << index << L".wav";
-        auto output = base.parent_path() / (base.stem().wstring() + suffix.str());
-        file.open(output);
+        auto filename = base.stem();
+        filename += std::filesystem::path("-" + std::to_string(index) + ".wav").native();
+        auto output = base.parent_path() / filename;
+        file.openNew(output);
         segments.push_back({output, 0, 0}); currentBytes = 0;
         const auto initial = header(rate, channels, encoding, 0, false);
         file.write(initial.data(), static_cast<uint32_t>(initial.size()));
@@ -106,7 +78,7 @@ struct WavWriter::Impl {
         segments.back().bytes = goodBytes;
     }
     void closeSegment() {
-        if (file.value == INVALID_HANDLE_VALUE) return;
+        if (!file.isOpen()) return;
         const auto goodBytes = currentBytes - currentBytes % align;
         if (!failed && goodBytes % 2) {
             file.position(dataOffset + goodBytes);
@@ -150,11 +122,10 @@ struct WavWriter::Impl {
                 try { while (done < bytes) {
                     if (totalBytes >= options.failAfterPayloadBytes) throw std::runtime_error("TEST_DISK_WRITE_FAILURE");
                     const auto writable = static_cast<uint32_t>(std::min<uint64_t>(bytes - done, options.failAfterPayloadBytes - totalBytes));
-                    DWORD written = 0;
-                    const BOOL ok = WriteFile(file.value, buffer.data() + done, writable, &written, nullptr);
-                    if (written) { done += written; currentBytes += written; totalBytes += written; }
-                    if (!ok) ioError("WAV_WRITE_FAILED");
-                    if (!written) throw std::runtime_error("WAV_WRITE_NO_PROGRESS");
+                    const auto result = file.writeSome(buffer.data() + done, writable);
+                    if (result.written) { done += result.written; currentBytes += result.written; totalBytes += result.written; }
+                    if (result.error) WavFileIO::writeFailure(result.error);
+                    if (!result.written) throw std::runtime_error("WAV_WRITE_NO_PROGRESS");
                 }
                 } catch (...) { countClips(input + static_cast<size_t>(offset)*channels, done/align); throw; }
                 countClips(input + static_cast<size_t>(offset)*channels, count);
@@ -257,7 +228,7 @@ void WavReader::seek(uint64_t frame) {
     if (!impl_->input) throw std::runtime_error("WAV_SEEK_FAILED"); impl_->position=frame;
 }
 void publishNewFile(const std::filesystem::path& source,const std::filesystem::path& target){
-    if(!MoveFileW(source.c_str(),target.c_str()))ioError("PUBLISH_NEW_FILE_FAILED");
+    publishNewFileAtomic(source,target);
 }
 WavInfo recoverWav(const std::filesystem::path& source,const std::filesystem::path& target) {
     if (std::filesystem::exists(target)) throw std::runtime_error("RECOVERY_REQUIRES_NEW_FILE");
@@ -265,7 +236,7 @@ WavInfo recoverWav(const std::filesystem::path& source,const std::filesystem::pa
     if (info.dataBytes > 2ULL*1024*1024*1024) throw std::runtime_error("RECOVERY_SEGMENT_TOO_LARGE");
     const auto encoding=info.format.floatingPoint?WavEncoding::Float32:info.format.containerBits==24?WavEncoding::Pcm24:WavEncoding::Pcm16;
     if (!info.format.floatingPoint && info.format.containerBits==32) throw std::runtime_error("RECOVERY_UNSUPPORTED_ENCODING");
-    File output; output.open(target);
+    WavFileIO output; output.openNew(target);
     const auto h=header(info.format.sampleRate,info.format.channels,encoding,static_cast<uint32_t>(info.dataBytes),true);
     output.write(h.data(),static_cast<uint32_t>(h.size()));
     std::ifstream input(source,std::ios::binary); input.seekg(static_cast<std::streamoff>(info.dataOffset));

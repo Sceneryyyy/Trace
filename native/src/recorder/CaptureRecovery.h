@@ -8,7 +8,4 @@ inline bool recoverableCaptureFailure(long error,uint32_t site) noexcept {
     return error==AUDCLNT_E_DEVICE_INVALIDATED||error==AUDCLNT_E_RESOURCES_INVALIDATED||
            error==AUDCLNT_E_SERVICE_NOT_RUNNING||error==AUDCLNT_E_BUFFER_OPERATION_PENDING;
 }
-inline uint64_t frameDuration100ns(uint64_t frames,uint32_t rate) noexcept {
-    return (frames/rate)*10000000ULL+(frames%rate)*10000000ULL/rate;
-}
 }

@@ -1,6 +1,6 @@
 # 07 · 开发里程碑与任务单
 
-Mac 平台新主线：用户已选方案一，M-MAC0–4 任务、MAC-A01–08 验收和下一项 M-MAC0/T00 见 [70-MACOS-PORT-PLAN](70-MACOS-PORT-PLAN.md)。2026-09-24 仅完成方案文档，Mac 实施与实机验收尚未开始；下方 Windows/M7–M12 记录保留原阶段状态。
+Mac 平台新主线：用户已选方案一，M-MAC0–4 任务、MAC-A01–08 验收见 [70-MACOS-PORT-PLAN](70-MACOS-PORT-PLAN.md)。M-MAC0 探针已备、真机待测；经用户同意，M-MAC1 中可独立验证的平台拆分先行开发。Mac 编译与系统采集均未验证；下方 Windows/M7–M12 记录保留原阶段状态。
 
 同事内测分发：当前 preview.30 / InternalTest-r3 已就绪，内容与本机打包验证见 [69](69-INTERNAL-TEST-R3.md)；preview.28 R1 历史记录见 [63](63-INTERNAL-TEST-DISTRIBUTION.md)。下一步收集同事环境证据；不据此将 PB3–PB5 标为全部完成。
 

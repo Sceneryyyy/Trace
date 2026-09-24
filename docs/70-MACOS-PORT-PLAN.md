@@ -1,6 +1,6 @@
 # 70 · Trace macOS 移植实施方案
 
-状态：**用户已选择方案一；M-MAC0 探针源码已开始，Mac 实机验证尚未开始。** 记录日期：2026-09-24。对应 [ADR-012](11-DECISIONS.md)。本文件是后续工作的执行入口，不把计划中的命令、构建或验收写成已完成。
+状态：**用户已选择方案一；M-MAC0 探针源码已备，Mac 实机验证尚未开始；经用户同意，先开展可独立验证的 M-MAC1 平台拆分。** 记录日期：2026-09-24。对应 [ADR-012](11-DECISIONS.md)。本文件是后续工作的执行入口，不把计划中的命令、构建或验收写成已完成。
 
 ## 目标、范围与首发基线
 
@@ -42,7 +42,9 @@ Mac 首发功能目标与 Windows 当前 Trace 对齐：选择系统输出来源
 | **M-MAC3：FILE、导入与三格式** | 接入 Mac 输出与呈现时钟；文件定位、循环、暂停和独立历史；提供锁定的 macOS FFmpeg/ffprobe arm64 构建与哈希、许可、能力校验；修正 `.exe` 假设。 | 同一文件同一帧读数重复；旧 seek 不能覆盖新游标；WAV/MP3/AAC 的录制、转码、重开、回放和成品独立分析通过；取消/失败不删除唯一源。 |
 | **M-MAC4：界面与交付** | 权限说明、来源名称、错误/恢复、Mac 菜单和快捷键、窗口/缩放、文件选择；独立 Mac 打包配置、图标、应用内原生模块和媒体二进制。分发前完成 Developer ID 签名、hardened runtime 与 notarization。 | 新装 Mac 在普通用户权限下能启动、授权、监测、录音、回听和导出；包内架构/依赖/许可清单正确；签名、公证和实际安装证据单独记录。开发预览可单列未签名状态，不称正式发布。 |
 
-每阶段先完成实现与针对性检查，再更新本文件中的阶段结果和 `13-HANDOFF.md`。实际工作票使用 `07-BACKLOG.md` 的格式。阶段可按实测细分，但不得跨过 M-MAC0 的系统采集证据，仅因 Electron 窗口能在 Mac 打开就标“兼容”。
+2026-09-24 用户同意先推进后续工作：M-MAC1 中与 Core Audio 实测无关的文件 I/O、计量核心、构建边界和便携测试可提前实施；M-MAC2 的真实采集集成、Mac 支持声明及发布验收仍需 M-MAC0 的来源/权限/时钟证据。提前完成的 Windows 或 POSIX 代码不自动关闭 M-MAC1 的“Mac 编译/模块加载”出口。
+
+每阶段先完成实现与针对性检查，再更新本文件中的阶段结果和 `13-HANDOFF.md`。实际工作票使用 `07-BACKLOG.md` 的格式。阶段可按实测细分；不能仅因 Electron 窗口能在 Mac 打开就标“兼容”。
 
 ## 验收矩阵与不可替代证据
 
@@ -66,13 +68,16 @@ Mac 首发功能目标与 Windows 当前 Trace 对齐：选择系统输出来源
 - **构建供应链**：Mac 的 FFmpeg/ffprobe 不复用 Windows Gyan 包；分别锁定来源、版本、架构、配置、编码器、SHA-256 和许可。当前 `ffmpeg.lock.json` 是 Windows 清单，实施时应按平台拆分或扩展 schema，不覆盖其已验证记录。
 - **发布范围**：首次可先交内部 arm64 开发包。Intel/Universal、旧系统、公网下载和 App Store 不自动纳入。对外分发时保留 Prism/FFmpeg/libebur128 等许可证与来源，并单独完成 Mac 签名/公证。
 
-**下一任务 M-MAC0/T00**：在 Mac 真机上做只采集、不录盘的 Core Audio tap 探针；先填写机器/系统/SDK、权限、来源枚举和播放→静音→播放的实际帧时钟报告，再据此确定平台接口实现顺序。当前尚未获得上述 Mac 实测，所有 MAC-A 项均为未验证。
+**待执行的真机任务 M-MAC0/T00**：在 Mac 上运行只采集、不录盘的 Core Audio tap 探针；填写机器/系统/SDK、权限、来源枚举和播放→静音→播放的实际帧时钟报告，再据此确定采集接口及集成行为。当前尚未获得上述 Mac 实测，所有 MAC-A 项均为未验证。
 
 M-MAC0 独立探针源码与真机操作清单见 [71-MACOS-M0-RUNBOOK](71-MACOS-M0-RUNBOOK.md)。该入口的提交不构成 Mac 编译、采集或阶段退出证据。
+
+提前开展的 M-MAC1 切片：将 WAV 写入/定位/刷新/不覆盖发布的 OS 调用隔离到 `native/src/recorder/WavFileIO.*`，将帧时长计算从 Windows 采集故障头文件移至平台无关的 `FrameTime.h`；CMake 将计量、WAV、录音、文件分析等放入 `trace_shared_core`，Windows `trace_core` 只含当前 WASAPI 采集/回放。Mac 配置目前只构建共用库与便携 WAV 测试，不包含可运行的 Trace 引擎。Windows Release 原生构建、16/16 CTest 和 TypeScript 类型检查通过。POSIX 分支尚未在 Mac 编译或运行；其无覆盖发布目前使用同卷硬链接加删除临时名，必须在 Mac 的目标文件系统上检验支持性、权限、故障后残留和恢复。未来若改用 Apple 的独占重命名，也需验证目标卷能力，不能回退到可覆盖的普通 `rename`。
 
 ## 官方依据
 
 - Apple：[Capturing system audio with Core Audio taps](https://developer.apple.com/documentation/coreaudio/capturing-system-audio-with-core-audio-taps)（示例平台要求、使用说明与权限键）。
 - Apple：[ScreenCaptureKit](https://developer.apple.com/documentation/screencapturekit)（仅作为主路径不满足时的备选评估入口）。
 - Apple：[Notarizing macOS software before distribution](https://developer.apple.com/documentation/security/notarizing-macos-software-before-distribution)（分发签名、公证与 hardened runtime）。
+- Apple：[Exclusive renaming volume capability](https://developer.apple.com/documentation/foundation/urlresourcekey/volumesupportsexclusiverenamingkey)（目标卷是否支持 `renamex_np` 的 `RENAME_EXCL`）。
 - Electron Builder：[macOS configuration](https://www.electron.build/mac/)（后续打包配置与架构目标以实施时锁定版本为准）。

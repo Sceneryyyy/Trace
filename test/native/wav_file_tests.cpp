@@ -70,6 +70,17 @@ int main(){
             bool failed=false;try{Trace::WavWriter second(root/"collision",48000,1,Trace::WavEncoding::Pcm16);}catch(...){failed=true;}
             REQUIRE(failed);REQUIRE(bytes(path)==original);
         }},
+        {"publishing a file never replaces an existing target",[&]{
+            const auto source=root/"publish-source.wav",target=root/"publish-target.wav";
+            {std::ofstream out(source,std::ios::binary);out<<"new audio";}
+            {std::ofstream out(target,std::ios::binary);out<<"old audio";}
+            bool failed=false;try{Trace::publishNewFile(source,target);}catch(...){failed=true;}
+            REQUIRE(failed);REQUIRE(bytes(source)==std::vector<uint8_t>({'n','e','w',' ','a','u','d','i','o'}));
+            REQUIRE(bytes(target)==std::vector<uint8_t>({'o','l','d',' ','a','u','d','i','o'}));
+            fs::remove(target);Trace::publishNewFile(source,target);
+            REQUIRE(!fs::exists(source));
+            REQUIRE(bytes(target)==std::vector<uint8_t>({'n','e','w',' ','a','u','d','i','o'}));
+        }},
         {"failed partial frame is excluded and recovery preserves the original",[&]{
             Trace::WavOptions options;options.failAfterPayloadBytes=1501;
             Trace::WavWriter writer(root/"partial",48000,1,Trace::WavEncoding::Pcm24,options);

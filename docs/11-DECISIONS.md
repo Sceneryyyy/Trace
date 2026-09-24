@@ -15,7 +15,7 @@
 | ADR-009 | 前缀缓存默认 100 ms，电平 10 ms，波形多分辨率 | 工程默认 | 足够交互起点且可逐步优化，不把 UI FPS 当 DSP 输入频率 |
 | ADR-010 | vstdev 先只读核查，只移植有证据的约定/模块 | 已只读对齐，2026-09-15；见 10 | 不凭项目名猜技术栈或改动旧项目 |
 | ADR-011 | 产品命名 Trace／声迹；界面品牌 TRACE；英文副标题 Audio Recorder & Analyzer | 用户确认，2026-09-15 | 正文使用 Trace，中文完整展示为 Trace 声迹 · 音频分析录音机；保留上游名称和许可记录 |
-| ADR-012 | Mac 采用共享 Electron/React 与 Trace C++ 核心、增加原生 macOS 音频/文件/打包后端 | 用户选择方案一，2026-09-24；实施与验收未开始 | 先按 [70](70-MACOS-PORT-PLAN.md) 做 Core Audio taps 真机原型，再移植；Windows 验收仍独立 |
+| ADR-012 | Mac 采用共享 Electron/React 与 Trace C++ 核心、增加原生 macOS 音频/文件/打包后端 | 用户选择方案一，2026-09-24；先行开发可移植模块，Mac 实测待执行 | [70](70-MACOS-PORT-PLAN.md) 记录阶段与验收；M-MAC0 真机结论仍是采集集成和发布门槛，Windows 验收独立 |
 
 命名更新对应开工包 v1.1，不改变会话/接口 schema 版本、音频格式要求或技术路线。现有开工包文件名与目录保持可续接。
 

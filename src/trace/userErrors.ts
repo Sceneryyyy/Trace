@@ -35,7 +35,7 @@ export function userError(error:unknown):string{
  if(/LIBRARY_IDENTITY_CHANGED|INVALID_LIBRARY_PATH/.test(text))return '该目录的会话身份或位置已变化，已取消移除，请打开目录核对。'
  if(/LIBRARY_BUSY/.test(text))return '请先结束录音、文件处理或导出，再管理文件。'
  if(/ENOENT|ENOTDIR/.test(text))return '文件已移除或移动，请刷新录音文件列表。'
- if(/PUBLISH_NEW_FILE_FAILED.*(?:183|80)\)/.test(text))return '目标位置已有同名文件，请使用其他文件名。'
+ if(/PUBLISH_NEW_FILE_FAILED.*(?:Win32 (?:183|80)\)|EEXIST)/.test(text))return '目标位置已有同名文件，请使用其他文件名。'
  if(/DISK_BACKPRESSURE/.test(text))return '录音已停止：磁盘未能及时写入，已保留可用录音。'
  if(/DISK_|WAV_WRITE|WAV_FLUSH|ENOSPC/.test(text))return '文件写入未完成，请检查磁盘空间和保存目录。'
  if(/DEVICE_UNAVAILABLE|DEVICE_INVALIDATED|PLAYBACK_ACTIVATE|PLAYBACK_INITIALIZE/.test(text))return '音频设备暂不可用，请重新连接或选择其他设备。'
