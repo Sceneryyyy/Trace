@@ -1,7 +1,7 @@
 收件人：472841772@qq.com
-建议邮件主题：[Trace preview.29 内测] 简短问题描述
-软件版本：0.1.0-preview.29
-分发修订：InternalTest-r2
+建议邮件主题：[Trace preview.30 内测] 简短问题描述
+软件版本：0.1.0-preview.30
+分发修订：InternalTest-r3
 
 问题描述：
 

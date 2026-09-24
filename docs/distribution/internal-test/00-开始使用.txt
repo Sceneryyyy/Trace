@@ -1,6 +1,6 @@
 LeoMoon / Trace 声迹 - 同事内测包
-软件版本：0.1.0-preview.29
-分发修订：InternalTest-r2
+软件版本：0.1.0-preview.30
+分发修订：InternalTest-r3
 
 一、第一次打开
 1. 将整个 ZIP 完整解压到一个可写的本地文件夹。

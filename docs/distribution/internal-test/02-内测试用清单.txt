@@ -1,4 +1,4 @@
-Trace preview.29 / InternalTest-r2 - 内测试用清单
+Trace preview.30 / InternalTest-r3 - 内测试用清单
 
 建议先用测试素材完成以下日常流程。每项记录：通过 / 有问题 / 未测试。
 不要把“未测试”记为通过；不需要一次测完全部功能。
