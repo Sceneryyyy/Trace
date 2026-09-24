@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleIdentifier</key><string>local.trace.mac0.capture-probe</string>
+  <key>CFBundleName</key><string>Trace Core Audio Probe</string>
+  <key>CFBundleDisplayName</key><string>Trace Core Audio Probe</string>
+  <key>CFBundleExecutable</key><string>TraceCoreAudioProbe</string>
+  <key>CFBundlePackageType</key><string>APPL</string>
+  <key>CFBundleVersion</key><string>1</string>
+  <key>CFBundleShortVersionString</key><string>0.1.0</string>
+  <key>LSMinimumSystemVersion</key><string>14.2</string>
+  <key>NSAudioCaptureUsageDescription</key>
+  <string>Trace needs to inspect system audio capture timing and format for macOS compatibility testing. This probe never saves audio.</string>
+</dict>
+</plist>

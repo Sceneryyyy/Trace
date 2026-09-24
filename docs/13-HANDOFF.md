@@ -1,6 +1,10 @@
 # 13 · 当前状态与下一会话
 
-## 新方向：Mac 移植方案一已写入文档，尚未实施
+## Mac M-MAC0 已开始：探针源码已备，真机验证待执行
+
+2026-09-24：Mac 方案文档以 `8b63b76` 提交到 `recorder/dev`，随后从该提交建立临时分支 `feature/macos-coreaudio-probe`。本分支增加独立 Core Audio tap 探针 `tools/mac0/` 与 [71-MACOS-M0-RUNBOOK](71-MACOS-M0-RUNBOOK.md)，用于枚举输出设备和统计真实 PCM 帧/时间，不写音频文件，不接入正式 Trace 引擎。本机只完成 Info.plist XML、文档链接/空白检查和非 Mac 构建拒绝路径检查；未运行产品音频测试。用户目前没有可供运行的 Mac；探针未在 macOS 编译、签名或运行，MAC-A01–08 均未验证。下一步取得 Apple silicon Mac 后按 71 完成 M-MAC0 实测；在证实来源/权限/时钟前不进入 M-MAC1。Windows preview.30 状态与远程 CI 暂缓决定保持如下。
+
+## 方案基线记录：Mac 移植方案一
 
 2026-09-24：用户选择保留 Electron/React/Trace C++ 核心，并增加 macOS 原生后端。执行方案、代码切口、M-MAC0–4 阶段、MAC-A01–08 验收和官方依据见 [70-MACOS-PORT-PLAN](70-MACOS-PORT-PLAN.md)；工程决定见 [ADR-012](11-DECISIONS.md)。本次只更新文档，没有修改产品代码、构建或测试。Mac 真机采集、96 kHz、签名/公证均未验证。下一任务是 M-MAC0/T00：在 Apple silicon Mac 上验证 Core Audio taps 的真实系统音频、权限、来源选择及帧时钟，再进入引擎拆分。Windows preview.30 / InternalTest-r3 状态保持如下，远程 CI 仍暂缓。
 
