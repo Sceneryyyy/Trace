@@ -4,7 +4,7 @@
 
 2026-09-24：针对 [68](68-INDEPENDENT-CHANGE-REVIEW.md) 的三个 P1 完成修正：保留策略在中断/保存失败后恢复幸存源文件可见性；Windows CI 显式准备 Electron SDK 和上游 DSP；文件 worker 使用事件循环心跳避免健康长任务被 180 秒空闲计时误杀。反例已纳入测试。`tools/trace.cjs check` 全过（portable 208、native 49，另有采集支持 3、响度原生 6）；原生 DSP 重建成功，Trace 引擎 15/15 CTest 通过；M7 完整界面检查在 1×、1.5×、2× 缩放各 11/11 通过。仍须在可写 GitHub 仓库上实际触发 Windows CI，不能把本机结果写成远程 CI 结果。68 中另列的估计静音界面提示与 60 秒退出看门狗专项验证尚未包含在本次三个 P1 修复内；原生同步量化/恢复不能发送事件循环心跳，保留显式取消与退出界限。
 
-原先位于仓库外 `TraceDev/docs/` 的两份审计报告已纳入 [66](66-FRONTEND-AUDIT.md) 和 [67](67-CODE-AUDIT-PREVIEW29.md)。按批次提交后，以 Git 历史和此节为当前状态；以下旧段落仅留作历史。
+原先位于仓库外 `TraceDev/docs/` 的两份审计报告已纳入 [66](66-FRONTEND-AUDIT.md) 和 [67](67-CODE-AUDIT-PREVIEW29.md)。三批已分别提交：R2 `25aa347`、前端/M7 `e797f39`、测试与 P1 `e97f96d`。当前唯一远程 `Boof2015/prism` 为上游只读（连接账号 `push: false`），尚无可写仓库可推送并触发 CI；需要可写 GitHub 目标。以下旧段落仅留作历史。
 
 ## 以下为阶段历史
 
