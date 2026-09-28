@@ -32,6 +32,8 @@ Windows 系统声音录音、常驻电平/响度/波形、可重复文件历史�
 
 实际源码在 src/trace 和 native/src/recorder；主接力文档为 [13-HANDOFF](docs/13-HANDOFF.md)。录音/截图/cache 在 artifacts；构建在 build/out-trace/dist-trace；本地工具在 .tools，均不提交。
 
+项目文档只维护本仓库的 `docs/`（外层路径为 `TraceDev/app/docs/`）。外层原始开工包的 `TraceDev/docs/` 已按用户要求删除，开发和上传 GitHub 时以本仓库为入口。
+
 M1 605.405 秒未录音监测和 M2 1800.84 秒 / 86440320 帧实录已有证据。当前格式、独立文件历史、选区、编码与恢复检查见 docs/20–27。自动检查不等于用户人工验收。
 
 ## 版本和来源
