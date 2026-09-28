@@ -1,5 +1,9 @@
 # 13 · 当前状态与下一会话
 
+## 仓库首页：已改为 Trace 产品说明
+
+2026-09-28：根目录 `README.md` 原为 Prism 上游介绍，GitHub 首页因此未展示 Trace。本次改为 LeoMoon / Trace 品牌、实际工作台截图、当前功能、用户指南、Windows 开发入口、内测与 macOS 验证边界；原 README 按字节完整保存在 `README-Prism.md`，许可和来源保留。`TRACE-README.md` 改为统一首页的兼容入口，移除 preview.8 的陈旧副本。仅文档变更，执行相对链接/图片存在性、上游归档一致性与 Git 空白检查，不重复音频或应用测试。首页改动已同步至 `recorder/dev` 和 `feature/macos-port` 两个本地分支。本次正常推送因命令行缺少 GitHub 凭据失败（`Cannot prompt` / `unable to get password`），没有确认远程生效；需通过已登录的 GitHub Desktop 对两个分支分别 Push origin。本地缓存的 `origin/HEAD` 指向 `recorder/dev`，远程默认分支和页面仍需单独核实。下一开发任务沿用下方分支记录。
+
 ## Trace 远程仓库配置（2026-09-28）
 
 用户提供 `https://github.com/Sceneryyyy/Trace` 作为 Trace 仓库。已将本地原 `origin` 重命名为 `upstream`（Prism 来源 `Boof2015/prism`），新增 `origin` 指向 `Sceneryyyy/Trace.git`；本地 `main` 仍跟踪 `upstream/main`，Trace Windows 基线为 `recorder/dev`，当前开发分支为 `feature/macos-port`。连接器读取新仓库返回 404，命令行凭据管理器没有已登录账号；截至此记录尚未读取到新仓库的分支、未成功上传任何提交，也未触发远程 CI。下一步完成 Sceneryyyy 账号授权，确认目标分支后正常推送两个 Trace 分支。
