@@ -1,5 +1,9 @@
 # 13 · 当前状态与下一会话
 
+## Trace 远程仓库配置（2026-09-28）
+
+用户提供 `https://github.com/Sceneryyyy/Trace` 作为 Trace 仓库。已将本地原 `origin` 重命名为 `upstream`（Prism 来源 `Boof2015/prism`），新增 `origin` 指向 `Sceneryyyy/Trace.git`；本地 `main` 仍跟踪 `upstream/main`，Trace Windows 基线为 `recorder/dev`，当前开发分支为 `feature/macos-port`。连接器读取新仓库返回 404，命令行凭据管理器没有已登录账号；截至此记录尚未读取到新仓库的分支、未成功上传任何提交，也未触发远程 CI。下一步完成 Sceneryyyy 账号授权，确认目标分支后正常推送两个 Trace 分支。
+
 ## 文档目录统一（2026-09-28）
 
 按用户要求删除仓库外 `TraceDev/docs/` 的 17 份原始开工包/重复审计文档，仅维护本仓库 `app/docs/`。删除前后逐文件 SHA256 核对，81 个现有文档/素材均保持一致；随后仅更新本文、仓库入口与项目规则，指明唯一文档位置。外层 README 与 AGENTS 的路径也已修正，但它们及已删外层目录均在 Git 仓库之外；本地提交记录仓库内的规则、入口和接力说明。没有修改产品代码或运行产品测试；本次验证为目录、文件哈希、入口链接和 Git 空白检查。Mac 开发焦点仍以以下最新阶段为准。
