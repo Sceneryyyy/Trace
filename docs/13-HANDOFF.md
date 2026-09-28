@@ -1,5 +1,9 @@
 # 13 · 当前状态与下一会话
 
+## 仓库首页：已改为 Trace 产品说明
+
+2026-09-28：根目录 `README.md` 原为 Prism 上游介绍，GitHub 首页因此未展示 Trace。本次改为 LeoMoon / Trace 品牌、实际工作台截图、当前功能、用户指南、Windows 开发入口、内测与 macOS 验证边界；原 README 按字节完整保存在 `README-Prism.md`，许可和来源保留。`TRACE-README.md` 改为统一首页的兼容入口，移除 preview.8 的陈旧副本。仅文档变更，执行相对链接/图片存在性、上游归档一致性与 Git 空白检查，不重复音频或应用测试。首页改动已同步至 `recorder/dev` 和 `feature/macos-port` 两个本地分支。本次正常推送因命令行缺少 GitHub 凭据失败（`Cannot prompt` / `unable to get password`），没有确认远程生效；需通过已登录的 GitHub Desktop 对两个分支分别 Push origin。本地缓存的 `origin/HEAD` 指向 `recorder/dev`，远程默认分支和页面仍需单独核实。下一开发任务沿用下方分支记录。
+
 ## 新方向：Mac 移植方案一已写入文档，尚未实施
 
 2026-09-24：用户选择保留 Electron/React/Trace C++ 核心，并增加 macOS 原生后端。执行方案、代码切口、M-MAC0–4 阶段、MAC-A01–08 验收和官方依据见 [70-MACOS-PORT-PLAN](70-MACOS-PORT-PLAN.md)；工程决定见 [ADR-012](11-DECISIONS.md)。本次只更新文档，没有修改产品代码、构建或测试。Mac 真机采集、96 kHz、签名/公证均未验证。下一任务是 M-MAC0/T00：在 Apple silicon Mac 上验证 Core Audio taps 的真实系统音频、权限、来源选择及帧时钟，再进入引擎拆分。Windows preview.30 / InternalTest-r3 状态保持如下，远程 CI 仍暂缓。
