@@ -6,6 +6,7 @@ import type {TargetSettings} from '../targetSettings'
 import type {MeterSnapshot} from '../shared'
 import {relativeFrame} from './time'
 import {SelectionStats} from './FileControls'
+import {useRendererTheme} from './themeRuntime'
 export type TimelineLayer={draw:(ctx:CanvasRenderingContext2D,g:{left:number;right:number;top:number;bottom:number;x:(frame:string)=>number})=>void;hover?:(frame:string,vertical:number)=>void;wheel?:(vertical:number,delta:number)=>void}
 export type TimelineProps={
  layer?:TimelineLayer;
@@ -46,7 +47,9 @@ export function Timeline({layer,kind='both',traces=['m','s','i'],feedback,select
     endFrame:(preview.mode==='end'?preview.position:preview.mode==='start'?preview.fixed:preview.position>preview.anchor?preview.position:preview.anchor).toString()}
   :snapshot?.fileView?.selection
  const drawRef=useRef<()=>void>(()=>{})
+ const theme=useRendererTheme()
  useLayoutEffect(()=>{
+  const t=theme.tokens
   function paint(canvas:HTMLCanvasElement,kind:'wave'|'loud'|'spectral'){
    const surface=canvasSurface(canvas);if(!surface)return
    const {rect,context:ctx}=surface
@@ -58,30 +61,30 @@ export function Timeline({layer,kind='both',traces=['m','s','i'],feedback,select
    const start=ranged?(snapshot?.fileView||snapshot?.timelineWindow)?.startFrame||'0':'0',finish=ranged?(snapshot?.fileView||snapshot?.timelineWindow)?.endFrame||'0':cursor
    const span=ranged?Math.max(1,relativeFrame(finish,start)):take?Math.max(rate,Number(cursor)):seconds*rate
    const x=(frame:string)=>left+(ranged?relativeFrame(frame,start):take?Number(frame):relativeFrame(frame,cursor)+span)/span*(right-left)
-   ctx.strokeStyle='#303a34';ctx.lineWidth=1
+   ctx.strokeStyle=t['timeline-grid'];ctx.lineWidth=1
    for(let i=0;i<=6;i++){const px=left+(right-left)*i/6;ctx.beginPath();ctx.moveTo(px,top);ctx.lineTo(px,bottom);ctx.stroke()}
-   ctx.font='10px "JetBrains Mono", monospace';ctx.fillStyle='#a8b5ac'
+   ctx.font='10px "JetBrains Mono", monospace';ctx.fillStyle=t['timeline-axis']
    if(kind==='spectral'){layer?.draw(ctx,{left,right,top,bottom,x})}else if(kind==='wave'){
     const channels=snapshot?.format.channelCount||2
     for(let c=0;c<channels;c++){
      const center=top+(bottom-top)*(c+.5)/channels,scale=(bottom-top)/channels*.42
-     ctx.strokeStyle='#39443d';ctx.beginPath();ctx.moveTo(left,center);ctx.lineTo(right,center);ctx.stroke()
+     ctx.strokeStyle=t['timeline-center'];ctx.beginPath();ctx.moveTo(left,center);ctx.lineTo(right,center);ctx.stroke()
      ctx.fillText(channels===1?'M':c===0?'L':'R',9,center+4)
      ctx.save();ctx.beginPath();ctx.rect(left,top+(bottom-top)*c/channels,right-left,(bottom-top)/channels);ctx.clip()
      ctx.lineWidth=1.2
      for(const point of snapshot?.waveform||[]){
       const px=x(point.frame);if(px<left||px>right)continue
-      ctx.strokeStyle=point.flags&4?'#efb65b':c===0?'#91e65c':'#70bc4d'
+      ctx.strokeStyle=point.flags&4?t['attention']:c===0?t['signal']:t['signal-alt']
       const a=center-(point.max[c]??0)*scale*gain,b=center-(point.min[c]??0)*scale*gain
       ctx.beginPath();ctx.moveTo(px,a);ctx.lineTo(px,Math.max(a+.75,b));ctx.stroke()
      }ctx.restore()
     }
    }else{
     const y=(v:number)=>bottom-(Math.max(-60,Math.min(0,v))+60)/60*(bottom-top)
-    for(const db of (bottom-top<80?[-60,-30,0]:[-60,-48,-36,-24,-12,0])){ctx.strokeStyle='#303a34';ctx.beginPath();ctx.moveTo(left,y(db));ctx.lineTo(right,y(db));ctx.stroke();ctx.fillStyle='#a8b5ac';ctx.fillText(String(db),5,y(db)+4)}
+    for(const db of (bottom-top<80?[-60,-30,0]:[-60,-48,-36,-24,-12,0])){ctx.strokeStyle=t['timeline-grid'];ctx.beginPath();ctx.moveTo(left,y(db));ctx.lineTo(right,y(db));ctx.stroke();ctx.fillStyle=t['timeline-axis'];ctx.fillText(String(db),5,y(db)+4)}
     const goal=targets?(targets.enabled?targets.integrated:null):target?.targetEnabled?{target:target.targetLufs,tolerance:0}:null
-    if(goal){const high=y(goal.target+goal.tolerance),low=y(goal.target-goal.tolerance);ctx.fillStyle='#efb65b14';ctx.fillRect(left,high,right-left,Math.max(1,low-high));const py=y(goal.target);ctx.strokeStyle='#efb65b';ctx.setLineDash([7,5]);ctx.beginPath();ctx.moveTo(left,py);ctx.lineTo(right,py);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#efb65b';ctx.textAlign='right';ctx.fillText('I '+goal.target.toFixed(1)+' LUFS ±'+goal.tolerance+' LU',right-3,Math.max(top+9,py-5));ctx.textAlign='left'}
-    for(const [key,color,dash] of [['m','#91e65c',[]],['s','#58d4da',[5,3]],['i','#efb65b',[2,3]]] as const){
+    if(goal){const high=y(goal.target+goal.tolerance),low=y(goal.target-goal.tolerance);ctx.fillStyle=t['target-fill'];ctx.fillRect(left,high,right-left,Math.max(1,low-high));const py=y(goal.target);ctx.strokeStyle=t['target'];ctx.setLineDash([7,5]);ctx.beginPath();ctx.moveTo(left,py);ctx.lineTo(right,py);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle=t['target'];ctx.textAlign='right';ctx.fillText('I '+goal.target.toFixed(1)+' LUFS ±'+goal.tolerance+' LU',right-3,Math.max(top+9,py-5));ctx.textAlign='left'}
+    for(const [key,color,dash] of [['m',t['series-m'],[]],['s',t['series-s'],[5,3]],['i',t['series-i'],[2,3]]] as const){
      if(!traces.includes(key))continue
      ctx.strokeStyle=color;ctx.lineWidth=1.5;ctx.setLineDash([...dash]);ctx.beginPath();let connected=false
      for(const point of snapshot?.loudnessHistory||[]){
@@ -91,7 +94,7 @@ export function Timeline({layer,kind='both',traces=['m','s','i'],feedback,select
      }ctx.stroke()
      const limit=targets?.enabled?(key==='m'?targets.momentaryMax:key==='s'?targets.shortTermMax:null):null
      const bounds=targets?.enabled&&key==='i'?targets.integrated:null
-     if(limit!==null||bounds){ctx.setLineDash([]);ctx.strokeStyle='#ff7e83';ctx.lineWidth=1.25;let previous=-Infinity
+     if(limit!==null||bounds){ctx.setLineDash([]);ctx.strokeStyle=t['danger-marker'];ctx.lineWidth=1.25;let previous=-Infinity
       for(const point of snapshot?.loudnessHistory||[]){const metric=point[key],px=x(point.frame);if(metric.status!=='ready'||metric.value===null||point.flags&4||px<left||px>right||px-previous<7)continue
        if(limit!==null?metric.value>limit:bounds&&(metric.value<bounds.target-bounds.tolerance||metric.value>bounds.target+bounds.tolerance)){const py=y(metric.value);ctx.beginPath();ctx.moveTo(px-2,py-2);ctx.lineTo(px+2,py+2);ctx.moveTo(px+2,py-2);ctx.lineTo(px-2,py+2);ctx.stroke();previous=px;targetMarkers++}}
      }
@@ -100,26 +103,28 @@ export function Timeline({layer,kind='both',traces=['m','s','i'],feedback,select
    }
    if(selected){
     const a=Math.max(left,Math.min(right,x(selected.startFrame))),b=Math.max(left,Math.min(right,x(selected.endFrame)))
-    ctx.fillStyle='#58d4da1f';ctx.fillRect(a,top,Math.max(0,b-a),bottom-top)
-    ctx.strokeStyle='#58d4da';ctx.lineWidth=1
-    for(const p of [a,b]){ctx.beginPath();ctx.moveTo(p,top);ctx.lineTo(p,bottom);ctx.stroke();ctx.fillStyle='#58d4da';ctx.fillRect(p-2,top,4,9)}
+    ctx.fillStyle=t['selection-fill'];ctx.fillRect(a,top,Math.max(0,b-a),bottom-top)
+    ctx.strokeStyle=t['selection-edge'];ctx.lineWidth=1
+    for(const p of [a,b]){ctx.beginPath();ctx.moveTo(p,top);ctx.lineTo(p,bottom);ctx.stroke();ctx.fillStyle=t['selection-edge'];ctx.fillRect(p-2,top,4,9)}
    }
    const available=snapshot?.timelineAvailableRange
     if(available&&!file){
      const a=Math.max(left,Math.min(right,x(available.startFrame))),b=Math.max(left,Math.min(right,x(available.endFrame)))
-     ctx.fillStyle='rgba(9,13,11,.58)';ctx.fillRect(left,top,a-left,bottom-top);ctx.fillRect(b,top,right-b,bottom-top)
-     ctx.strokeStyle='#687166';ctx.setLineDash([2,3]);for(const p of [a,b])if(p>left&&p<right){ctx.beginPath();ctx.moveTo(p,top);ctx.lineTo(p,bottom);ctx.stroke()}
+     ctx.fillStyle=t['timeline-mask'];ctx.fillRect(left,top,a-left,bottom-top);ctx.fillRect(b,top,right-b,bottom-top)
+     ctx.strokeStyle=t['timeline-edge'];ctx.setLineDash([2,3]);for(const p of [a,b])if(p>left&&p<right){ctx.beginPath();ctx.moveTo(p,top);ctx.lineTo(p,bottom);ctx.stroke()}
     }
-    ctx.strokeStyle='#efb65b';ctx.setLineDash([3,3])
+    ctx.strokeStyle=t['attention'];ctx.setLineDash([3,3])
    for(const gap of snapshot?.recordingView?.gapFrames||[]){const px=x(gap);ctx.beginPath();ctx.moveTo(px,top);ctx.lineTo(px,bottom);ctx.stroke()}
-   ctx.setLineDash([]);ctx.strokeStyle='#58d4da';ctx.lineWidth=1
+   // Cursor: 2 px line plus a 6 px head triangle so it differs in shape from labels and curves (docs/71 §3.3 rule 5).
+   ctx.setLineDash([]);ctx.strokeStyle=t['cursor'];ctx.lineWidth=2
    const head=ranged?x(cursor):right
-   if(head>=left&&head<=right){ctx.beginPath();ctx.moveTo(head,top);ctx.lineTo(head,bottom);ctx.stroke()}
+   if(head>=left&&head<=right){ctx.beginPath();ctx.moveTo(head,top);ctx.lineTo(head,bottom);ctx.stroke();ctx.fillStyle=t['cursor'];ctx.beginPath();ctx.moveTo(head-4,top-6);ctx.lineTo(head+4,top-6);ctx.lineTo(head,top);ctx.closePath();ctx.fill()}
+   ctx.lineWidth=1
   }
   function draw(){if(wave.current)paint(wave.current,kind==='spectrogram'?'spectral':'wave');if(loud.current)paint(loud.current,'loud')}
   drawRef.current=draw
   draw()
- },[snapshot,seconds,gain,target,targets,preview,selected?.startFrame,selected?.endFrame,traces,kind,layer])
+ },[snapshot,seconds,gain,target,targets,preview,selected?.startFrame,selected?.endFrame,traces,kind,layer,theme])
  // ResizeObserver is stable across frames; only repaints are data-driven.
  useEffect(()=>{
   const observer=new ResizeObserver(()=>drawRef.current())

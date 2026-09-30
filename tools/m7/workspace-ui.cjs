@@ -4,7 +4,7 @@ const scale=Number(process.env.TRACE_UI_SCALE||1)
 const root=path.resolve(__dirname,'../..'),folder=path.join(root,'artifacts/m7/ui-'+Date.now())
 fs.mkdirSync(folder,{recursive:true});const takes=path.join(folder,'takes');fs.mkdirSync(takes)
 const fixture=require('../m4/fixture.cjs')(takes),userData=path.join(folder,'user-data');fs.mkdirSync(userData)
-fs.writeFileSync(path.join(userData,'trace-settings.json'),JSON.stringify({monitoringRequested:false,confirmExitWhileRecording:false,windowSeconds:30}))
+fs.writeFileSync(path.join(userData,'trace-settings.json'),JSON.stringify({monitoringRequested:false,confirmExitWhileRecording:false,windowSeconds:30,...(process.env.TRACE_UI_THEME?{instrumentTheme:process.env.TRACE_UI_THEME,instrumentThemeVersion:1}:{})}))
 const sources=fixture.document.assets.map(a=>path.join(fixture.folder,a.relativePath)),hash=f=>crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex'),original=sources.map(hash)
 const report={folder,status:'running',checks:[],scale,kind:'Actual isolated Electron renderer; generated file and WASAPI recording'}
 let session

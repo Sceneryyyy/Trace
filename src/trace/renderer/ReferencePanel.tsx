@@ -6,6 +6,7 @@ import type {Command,Metric,PlaybackView} from '../shared'
 import {assetFormatLabel} from '../assetFormat'
 import {userError} from '../userErrors'
 import './reference.css'
+import {useRendererTheme} from './themeRuntime'
 const metric=(m?:Metric)=>m?.status==='silence'?'−∞':m?.status==='ready'&&m.value!==null?m.value.toFixed(1):'—'
 function RangeEditor({peer,slot,apply}:{peer:ReferencePeerView;slot:ReferenceSlot;apply:(slot:ReferenceSlot,a:string,b:string)=>void}){
  const [a,setA]=useState(''),[b,setB]=useState('')
@@ -13,22 +14,22 @@ function RangeEditor({peer,slot,apply}:{peer:ReferencePeerView;slot:ReferenceSlo
  return <div className="reference-range"><b>{slot.toUpperCase()} 范围 · s</b><input aria-label={slot.toUpperCase()+' 比较起点'} type="number" min="0" step=".001" value={a} onChange={e=>setA(e.target.value)}/><span>～</span><input aria-label={slot.toUpperCase()+' 比较终点'} type="number" min="0" step=".001" value={b} onChange={e=>setB(e.target.value)}/><button onClick={()=>{const x=Number(a)*peer.sampleRate,y=Number(b)*peer.sampleRate;if(Number.isFinite(x)&&Number.isFinite(y))apply(slot,String(Math.round(x)),String(Math.round(y)))}}>应用</button><button onClick={()=>apply(slot,'0',peer.frames)}>整段</button></div>
 }
 export function ReferencePanel({value,settings,recording,file,request,choose}:{value?:ReferenceView;settings:InstrumentSettings;recording:boolean;file?:PlaybackView|null;request:(name:Command,payload?:Record<string,unknown>)=>Promise<unknown>;choose:()=>void}){
- const [packet,setPacket]=useState<ReferencePacket>(),[error,setError]=useState(''),[offset,setOffset]=useState('0'),[hoverHz,setHoverHz]=useState<number|null>(null),canvas=useRef<HTMLCanvasElement>(null)
+ const [packet,setPacket]=useState<ReferencePacket>(),[error,setError]=useState(''),[offset,setOffset]=useState('0'),[hoverHz,setHoverHz]=useState<number|null>(null),canvas=useRef<HTMLCanvasElement>(null),theme=useRendererTheme()
  useEffect(()=>window.trace.onReference(setPacket),[]);useEffect(()=>setOffset(String(Number(value?.offsetNs||0)/1e9)),[value?.offsetNs])
  const current=packet&&packet.version===value?.version&&packet.configKey===instrumentConfigKey(settings)?packet:undefined
  useLayoutEffect(()=>setHoverHz(null),[value?.version,settings.channel,settings.fftSize])
  const hover=hoverHz!==null&&current?.phase==='ready'?[current.a,current.b].map(p=>{if(!p||!['ready','silence'].includes(p.status))return '';const bin=Math.round(hoverHz/p.binHz);if(bin>=p.powers.length)return p.slot.toUpperCase()+'：超出频率范围';const power=p.powers[bin];return p.slot.toUpperCase()+' '+(bin*p.binHz).toFixed(1)+' Hz / '+(power>0?(10*Math.log10(power)).toFixed(2):'−∞')+' dBFS'}).filter(Boolean).join(' · '):''
  const act=(name:Command,payload:Record<string,unknown>={})=>{setError('');void request(name,payload).catch(e=>setError(userError(e)))}
  const configure=(linked=value?.linked!==false,text=offset)=>{const n=Number(text);if(!Number.isFinite(n)||Math.abs(n)>86400){setError('偏移范围为 ±86400 秒。');return}act('reference.configure',{offsetNs:String(Math.round(n*1e9)),linked})}
- useLayoutEffect(()=>{const el=canvas.current;if(!el)return;const paint=()=>{const surface=canvasSurface(el);if(!surface)return;const {context:c,rect}=surface,l=42,r=rect.width-12,t=12,b=rect.height-25,lo=settings.minFrequency,hi=settings.maxFrequency
+ useLayoutEffect(()=>{const el=canvas.current;if(!el)return;const tk=theme.tokens;const paint=()=>{const surface=canvasSurface(el);if(!surface)return;const {context:c,rect}=surface,l=42,r=rect.width-12,t=12,b=rect.height-25,lo=settings.minFrequency,hi=settings.maxFrequency
   const x=(f:number)=>l+Math.log(f/lo)/Math.log(hi/lo)*(r-l),y=(d:number)=>b-(d-settings.minDecibels)/(settings.maxDecibels-settings.minDecibels)*(b-t);c.font='10px "JetBrains Mono",monospace';c.lineWidth=1
-  for(const f of [20,100,1000,10000,20000,40000])if(f>=lo&&f<=hi){c.strokeStyle='#303e4a';c.beginPath();c.moveTo(x(f),t);c.lineTo(x(f),b);c.stroke();c.fillStyle='#aebccb';c.textAlign='center';c.fillText(f>=1000?f/1000+'k':String(f),x(f),rect.height-8)}
-  for(let d=Math.ceil(settings.minDecibels/24)*24;d<=settings.maxDecibels;d+=24){c.strokeStyle='#303e4a';c.beginPath();c.moveTo(l,y(d));c.lineTo(r,y(d));c.stroke();c.fillStyle='#aebccb';c.textAlign='right';c.fillText(String(d),l-5,y(d)+3)}
+  for(const f of [20,100,1000,10000,20000,40000])if(f>=lo&&f<=hi){c.strokeStyle=tk['grid'];c.beginPath();c.moveTo(x(f),t);c.lineTo(x(f),b);c.stroke();c.fillStyle=tk['axis-text'];c.textAlign='center';c.fillText(f>=1000?f/1000+'k':String(f),x(f),rect.height-8)}
+  for(let d=Math.ceil(settings.minDecibels/24)*24;d<=settings.maxDecibels;d+=24){c.strokeStyle=tk['grid'];c.beginPath();c.moveTo(l,y(d));c.lineTo(r,y(d));c.stroke();c.fillStyle=tk['axis-text'];c.textAlign='right';c.fillText(String(d),l-5,y(d)+3)}
   c.save();c.beginPath();c.rect(l,t,Math.max(1,r-l),Math.max(1,b-t));c.clip()
-  if(current?.phase==='ready')for(const [data,color,dash]of [[current.a,'#91e65c',[]],[current.b,'#58d4da',[5,3]]] as const){if(!data||!['ready','silence'].includes(data.status)||!(data.powers instanceof Float64Array)||data.powers.length>8193)continue;c.strokeStyle=color;c.setLineDash([...dash]);c.lineWidth=1.4;c.beginPath();let connected=false
+  if(current?.phase==='ready')for(const [data,color,dash]of [[current.a,tk['ref-a'],[]],[current.b,tk['ref-b'],[5,3]]] as const){if(!data||!['ready','silence'].includes(data.status)||!(data.powers instanceof Float64Array)||data.powers.length>8193)continue;c.strokeStyle=color;c.setLineDash([...dash]);c.lineWidth=1.4;c.beginPath();let connected=false
    for(let i=1;i<data.powers.length;i++){const f=i*data.binHz;if(f<lo||f>hi)continue;const d=data.powers[i]>0?10*Math.log10(data.powers[i]):settings.minDecibels,py=y(Math.max(settings.minDecibels,d));if(connected)c.lineTo(x(f),py);else c.moveTo(x(f),py);connected=true}c.stroke()}
   c.restore();el.dataset.referenceVersion=String(value?.version||0);el.dataset.referencePhase=current?.phase||'waiting'
- };paint();const resize=new ResizeObserver(paint);resize.observe(el);return()=>resize.disconnect()},[current,settings,value?.version])
+ };paint();const resize=new ResizeObserver(paint);resize.observe(el);return()=>resize.disconnect()},[current,settings,value?.version,theme])
  const summary=(slot:ReferenceSlot)=>value?.[slot]?.analysis?.summary
  const status=recording?'录音中暂停频谱对照':!value?.a?'打开主素材 A':value.pending?'正在准备参考：'+value.pending:!value.b?'从音频文件中设置参考 B':!value.active?'点击 A 或 B 查看':current?.phase==='error'?'频谱暂不可用':current?.phase==='unavailable'?'当前游标不在比较范围内':!current?'等待频谱':!['stereo','left'].includes(settings.channel)&&(value.a.channelCount===1||value.b.channelCount===1)?'单声道素材不支持当前声道模式，请选择声道能量或左声道':current.a?.status==='silence'&&current.b?.status==='silence'?'当前两个窗口均为静音':current.a?.status==='silence'?'A 当前窗口为静音':current.b?.status==='silence'?'B 当前窗口为静音':current.a?.status==='insufficient'||current.b?.status==='insufficient'?'将游标移到有完整频谱窗口的位置':''
  return <div className="reference-panel">

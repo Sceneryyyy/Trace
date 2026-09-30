@@ -1,36 +1,32 @@
 :root {
  color-scheme:dark;
- /* Single design-token source for the Trace renderer; styles.css no longer redefines these. */
- --bg:#11151a;--panel:#191f26;--border:#333d48;--text:#e8edf2;--secondary:#abb7c4;
- --green:#91e65c;--cyan:#58d4da;--red:#ff5e66;--amber:#efb65b;
- --control-bg:#242d27;--control-hover:#303b32;--control-border-strong:#64715e;
- --input-bg:#202823;--input-border:#435047;
+ /* Colour tokens come from src/trace/instrumentThemes.ts and are written to :root by renderer/themeRuntime.ts before first render (docs/71). */
 }
-.trace-app .topbar {height:42px;flex-basis:42px;padding:0 16px;background:#171d24}
+.trace-app .topbar {height:42px;flex-basis:42px;padding:0 16px;background:var(--topbar-bg)}
 .trace-app .brand {gap:9px}
 .trace-app .brand-mark {width:36px;height:36px}
-.trace-app .sourcebar {height:43px;flex-basis:43px;background:#151b21;padding:0 14px}
-.trace-app .sourcebar button,.trace-app .sourcebar select {background:#202831;border-color:#3b4653}
-.trace-app .workbench-heading {height:47px;flex:0 0 47px;display:flex;align-items:center;border-bottom:1px solid var(--border);background:#151b21}
+.trace-app .sourcebar {height:43px;flex-basis:43px;background:var(--bar-bg);padding:0 14px}
+.trace-app .sourcebar button,.trace-app .sourcebar select {background:var(--bar-control-bg);border-color:var(--bar-control-border)}
+.trace-app .workbench-heading {height:47px;flex:0 0 47px;display:flex;align-items:center;border-bottom:1px solid var(--border);background:var(--bar-bg)}
 .trace-app .file-sourcebar {flex:1;min-width:0;border-bottom:0}
 .trace-app .file-sourcebar .file-title {max-width:310px;flex:1}
 .trace-app .file-sourcebar .file-title span {font-size:11px}
 .trace-app .timeline-actions {margin-left:auto}
 .workspace-toolbar {position:relative;display:flex;align-items:center;gap:5px;padding:0 14px 0 8px;flex-shrink:0;z-index:20}
-.workspace-toolbar>button,.workspace-toolbar>select {height:30px;min-height:30px;background:#202831;font-size:11px;padding:0 8px}
+.workspace-toolbar>button,.workspace-toolbar>select {height:30px;min-height:30px;background:var(--bar-control-bg);font-size:11px;padding:0 8px}
 .workspace-toolbar>select {width:136px}
 .workspace-toolbar>button.manage-layouts {width:28px;padding:0}
-.edit-layout[aria-pressed=true] {color:var(--cyan);border-color:#528b96}
+.edit-layout[aria-pressed=true] {color:var(--accent);border-color:var(--accent-border)}
 .layout-edit-hint {display:flex;flex:0 0 auto;flex-wrap:wrap;gap:4px 20px;padding:7px 14px;border-bottom:1px solid var(--border);background:var(--panel);color:var(--secondary);font-size:12px;line-height:1.5}
-.workspace-popover {position:absolute;right:14px;top:38px;width:290px;padding:14px;background:#202831;border:1px solid #546170;box-shadow:0 10px 32px #0008;border-radius:6px;display:flex;flex-direction:column;gap:12px;max-height:calc(100vh - 175px);overflow:auto;z-index:30}
+.workspace-popover {position:absolute;right:14px;top:38px;width:290px;padding:14px;background:var(--bar-control-bg);border:1px solid var(--popover-border);box-shadow:0 10px 32px var(--shadow);border-radius:6px;display:flex;flex-direction:column;gap:12px;max-height:calc(100vh - 175px);overflow:auto;z-index:30}
 .workspace-popover label {display:flex;align-items:center;gap:10px;font-size:13px}
-.workspace-popover input[type=checkbox] {accent-color:var(--cyan);width:16px;height:16px}
+.workspace-popover input[type=checkbox] {accent-color:var(--accent);width:16px;height:16px}
 .workspace-popover label small {margin-left:auto;color:var(--secondary);font-size:11px}
 .workspace-popover.layout-presets {width:355px}
-.workspace-popover input:not([type=checkbox]) {min-width:0;flex:1;width:100%;background:#141b22;border:1px solid #4c5d6d;color:var(--text);border-radius:4px;padding:7px;font:inherit}
+.workspace-popover input:not([type=checkbox]) {min-width:0;flex:1;width:100%;background:var(--popover-input-bg);border:1px solid var(--popover-input-border);color:var(--text);border-radius:4px;padding:7px;font:inherit}
 .layout-actions {display:flex;flex-wrap:wrap;gap:7px}
-.workspace-popover button,.layout-actions button {font-size:12px;min-height:30px;background:#29343f}
-.workspace-popover p {margin:0;color:var(--amber);font-size:12px}
+.workspace-popover button,.layout-actions button {font-size:12px;min-height:30px;background:var(--popover-button-bg)}
+.workspace-popover p {margin:0;color:var(--attention);font-size:12px}
 .workspace-popover .layout-save-hint {color:var(--secondary);line-height:1.6}
 .trace-app .workspace.modular-workspace {display:flex;padding:10px 12px;gap:0;min-width:0}
 .instrument-workspace {flex:1;display:flex;overflow:auto;min-width:0;min-height:0;position:relative}
@@ -38,14 +34,14 @@
 .instrument-split.row {grid-template-rows:minmax(0,1fr)}
 .instrument-split.column {grid-template-columns:minmax(0,1fr)}
 .instrument-panel {display:flex;flex:1;flex-direction:column;min-width:0;min-height:0;width:100%;height:100%;background:var(--panel);border:1px solid var(--border);border-radius:4px;position:relative;overflow:hidden;container-type:size}
-.instrument-heading {display:flex;align-items:center;justify-content:space-between;gap:5px;min-height:33px;height:33px;flex:0 0 33px;padding:0 7px 0 11px;border-bottom:1px solid #303944;background:#1c242d}
+.instrument-heading {display:flex;align-items:center;justify-content:space-between;gap:5px;min-height:33px;height:33px;flex:0 0 33px;padding:0 7px 0 11px;border-bottom:1px solid var(--heading-border);background:var(--heading-bg)}
 .instrument-heading h2 {min-width:0;overflow:hidden;text-overflow:ellipsis;font-size:12px;letter-spacing:.1px}
 .instrument-heading h2 small {font-size:11px;margin-left:8px;color:var(--secondary)}
 .instrument-heading>div {display:flex;gap:1px;flex-shrink:0}
-.instrument-heading button {width:25px;height:25px;min-height:25px;padding:0;background:transparent;border:1px solid transparent;border-radius:3px;color:#acbac8}
-.instrument-heading button:hover {color:#fff;background:#34424f!important}
-.instrument-heading[draggable=true] {cursor:grab;background:#21313a}
-.instrument-drag-grip {display:inline-flex;margin-right:5px;vertical-align:middle;color:var(--cyan);pointer-events:none}
+.instrument-heading button {width:25px;height:25px;min-height:25px;padding:0;background:transparent;border:1px solid transparent;border-radius:3px;color:var(--heading-icon)}
+.instrument-heading button:hover {color:var(--heading-icon-hover);background:var(--heading-hover-bg)!important}
+.instrument-heading[draggable=true] {cursor:grab;background:var(--heading-drag-bg)}
+.instrument-drag-grip {display:inline-flex;margin-right:5px;vertical-align:middle;color:var(--accent);pointer-events:none}
 .instrument-drag-grip svg {width:12px;height:16px}
 .instrument-divider {position:relative;touch-action:none;min-width:0;min-height:0;outline-offset:-2px!important}
 .instrument-divider.row {cursor:default}
@@ -55,7 +51,7 @@
 .editing .instrument-divider:before {content:'';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border-radius:2px;background:var(--secondary);pointer-events:none}
 .editing .instrument-divider.row:before {width:3px;height:24px;max-height:70%}
 .editing .instrument-divider.column:before {width:24px;height:3px;max-width:70%}
-.instrument-divider:after {content:'';position:absolute;inset:0;opacity:0;background:#58d4da55}
+.instrument-divider:after {content:'';position:absolute;inset:0;opacity:0;background:var(--divider-glow)}
 .editing .instrument-divider:hover:after,.instrument-divider:focus-visible:after {opacity:1}
 .instrument-content {display:flex;flex:1;min-height:0;min-width:0;overflow:hidden;container-type:size}
 .instrument-content>.level-panel,.instrument-content>.loudness-values {width:100%;height:100%;flex:1;min-height:0;border:0;border-radius:0;background:transparent}
@@ -91,13 +87,13 @@
 .instrument-content .summary-metric small {font-size:11px}
 .workspace-selection {flex:0 0 auto;padding:0 12px 8px}
 .workspace-selection:empty {display:none}
-.workspace-selection .selection-statistics {padding:8px 12px;background:#19222b;border-color:var(--border)}
+.workspace-selection .selection-statistics {padding:8px 12px;background:var(--selection-panel-bg);border-color:var(--border)}
 .workspace-selection .selection-statistics dt,.workspace-selection .selection-statistics small {font-size:11px}
-.trace-app .transport {background:#171e25;flex-basis:64px;height:64px;padding:0 14px}
-.trace-app .transport button {background:#252f38}
-.trace-app .transport .live-follow[aria-pressed=true] {background:#253925}
-.trace-app .empty-wave {background:#191f26e8}
-.instrument-panel.dock-left:after,.instrument-panel.dock-right:after,.instrument-panel.dock-top:after,.instrument-panel.dock-bottom:after {content:'';position:absolute;background:#58d4da22;border:2px solid var(--cyan);pointer-events:none;z-index:5}
+.trace-app .transport {background:var(--transport-bg);flex-basis:64px;height:64px;padding:0 14px}
+.trace-app .transport button {background:var(--transport-button-bg)}
+.trace-app .transport .live-follow[aria-pressed=true] {background:var(--signal-bg-strong)}
+.trace-app .empty-wave {background:var(--empty-overlay)}
+.instrument-panel.dock-left:after,.instrument-panel.dock-right:after,.instrument-panel.dock-top:after,.instrument-panel.dock-bottom:after {content:'';position:absolute;background:var(--dock-fill);border:2px solid var(--accent);pointer-events:none;z-index:5}
 .dock-left:after {inset:0 50% 0 0}.dock-right:after {inset:0 0 0 50%}.dock-top:after {inset:0 0 50%}.dock-bottom:after {inset:50% 0 0}
 .empty-workspace {flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--secondary);gap:12px;border:1px dashed var(--border);border-radius:5px}
 .empty-workspace p {margin:0}
@@ -110,8 +106,8 @@
 
 .loudness-readings,.loudness-summary {flex:0 0 auto}
 .loudness-column {display:none;position:relative;min-height:100px;margin-top:10px;padding-right:24px;flex:1;max-width:220px;width:100%;align-self:center}
-.loudness-bar-track {width:100%;flex:1;background:repeating-linear-gradient(to top,#ffffff0a 0 1px,transparent 1px 33.33%),#10171e;position:relative;border:1px solid #36434c}
-.loudness-bar-track i {position:absolute;bottom:0;width:100%;height:100%;transform-origin:bottom;background:linear-gradient(to top,#65aa45,#a0ed6e);display:block;will-change:transform}
+.loudness-bar-track {width:100%;flex:1;background:repeating-linear-gradient(to top,var(--loud-track-rule) 0 1px,transparent 1px 33.33%),var(--loud-track-bg);position:relative;border:1px solid var(--loud-track-border)}
+.loudness-bar-track i {position:absolute;bottom:0;width:100%;height:100%;transform-origin:bottom;background:linear-gradient(to top,var(--loud-lo),var(--loud-hi));display:block;will-change:transform}
 .loudness-bar-scale {position:absolute;right:0;top:0;bottom:0;display:flex;flex-direction:column;justify-content:space-between;color:var(--secondary);font:10px 'JetBrains Mono',monospace}
 .instrument-heading .legend {margin-left:auto;gap:8px;font-size:10px}
 

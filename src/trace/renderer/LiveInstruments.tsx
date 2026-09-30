@@ -1,4 +1,5 @@
-import {memo} from 'react'
+import {memo,useEffect,useState} from 'react'
+import {METER_NEAR_DB,METER_OVER_DB,OVER_HOLD_MS,meterFraction,meterZone} from './meterZones'
 import {Timeline} from './Timeline'
 import {SpectrogramPanel} from './SpectrogramPanel'
 import {SpectrumPanel,SoundFieldPanel} from './AnalysisInstruments'
@@ -24,9 +25,25 @@ function value(metric?:Metric):string{
  if(metric.status!=='ready'||metric.value===null)return '—'
  return metric.value.toFixed(1).replace('-','−')
 }
+/** Non-colour state label (docs/71 §3.3): measuring and unavailable no longer look identical. */
+function StateNote({metric}:{metric?:Metric}):React.JSX.Element|null{
+ const status=(metric??empty).status
+ if(status==='insufficient')return <small className="metric-state">测量中</small>
+ if(status==='error'||status==='gap')return <small className="metric-state is-fault"><span aria-hidden="true">⊘ </span>无数据</small>
+ return null
+}
 function MetricNumber({metric,large=false}:{metric?:Metric;large?:boolean}):React.JSX.Element{
  const current=metric??empty
- return <span className={'metric-number '+(large?'large ':'')+(current.status==='ready'?'ready':'muted')} title={current.status==='insufficient'?'测量中，尚未形成完整时间窗':current.status==='error'?'音频数据不可用':undefined}>{value(current)}</span>
+ return <span className={'metric-number '+(large?'large ':'')+(current.status==='ready'?'ready':'muted')} title={current.status==='insufficient'?'测量中，尚未形成完整时间窗':current.status==='error'?'音频数据不可用':undefined}>{value(current)}<StateNote metric={current}/></span>
+}
+/** Shows OVER while the sample peak is in the over zone and for OVER_HOLD_MS afterwards. Sample peak only; never labelled TP. */
+function useOverHold(over:boolean):boolean{
+ const [held,setHeld]=useState(false)
+ useEffect(()=>{if(over){setHeld(true);return}const timer=setTimeout(()=>setHeld(false),OVER_HOLD_MS);return()=>clearTimeout(timer)},[over])
+ return over||held
+}
+function OverFlag({over}:{over:boolean}):React.JSX.Element|null{
+ return useOverHold(over)?<span className="over-flag" title={'样本峰值进入 '+METER_OVER_DB+' dBFS 以上的过载区'}>OVER</span>:null
 }
 
 function LoudnessBar({metric,label}:{metric?:Metric;label:string}):React.JSX.Element{
@@ -43,18 +60,22 @@ function LevelPanel({snapshot,readout='both'}:{snapshot:MeterSnapshot|null;reado
    <div className="channel-bars">{Array.from({length:channels},(_,c)=>{
     const levels=snapshot?.channels[c],meter=readout==='rms'?levels?.rms:levels?.samplePeak
     const clip=levels?.samplePeak.status==='ready'&&(levels.samplePeak.value??-Infinity)>=0
+    const over=levels?.samplePeak.status==='ready'&&meterZone(levels.samplePeak.value)==='over'
     return <div className="channel" key={c}>
      <div className={'clip-indicator '+(clip?'clipped':'')} title={clip?'样本峰值达到或超过 0 dBFS':'未检测到样本削波'}/>
-     <div className="meter-track" role="meter" aria-label={(channels===1?'单声道':c===0?'左声道':'右声道')+(readout==='rms'?' RMS':'样本峰值')} aria-valuemin={-60} aria-valuemax={0} aria-valuenow={meter?.status==='ready'?Math.max(-60,Math.min(0,meter.value!)):undefined} aria-valuetext={value(meter)+' dBFS'}>
+     <div className="meter-track" data-over={over||undefined} role="meter" aria-label={(channels===1?'单声道':c===0?'左声道':'右声道')+(readout==='rms'?' RMS':'样本峰值')} aria-valuemin={-60} aria-valuemax={0} aria-valuenow={meter?.status==='ready'?Math.max(-60,Math.min(0,meter.value!)):undefined} aria-valuetext={value(meter)+' dBFS'}>
       <div className="peak-fill" style={{clipPath:'inset('+((1-scale(levels?.samplePeak))*100)+'% 0 0)'}}/>
       <div className="rms-fill" style={{transform:'scaleY('+scale(levels?.rms)+')'}}/>
+      {[METER_NEAR_DB,METER_OVER_DB].map(db=><i key={db} className="meter-mark" style={{bottom:meterFraction(db)*100+'%'}} aria-hidden="true"/>)}
+      <OverFlag over={Boolean(over)}/>
      </div>
      <b>{channels===1?'MONO':c===0?'L':'R'}</b>
     </div>
    })}</div>
   </div>
   <div className="channel-readings">
-   {['Peak','RMS','TP'].map((name,i)=><div className="level-reading" key={name}><span>{name}{name==='TP'&&<small className="level-unit"> dBTP</small>}</span>{Array.from({length:channels},(_,c)=><strong key={c}>{value(snapshot?.channels[c]?.[(['samplePeak','rms','truePeak'] as const)[i]])}</strong>)}</div>)}
+   {['Peak','RMS','TP'].map((name,i)=><div className="level-reading" key={name}><span>{name}{name==='TP'&&<small className="level-unit"> dBTP</small>}</span>{Array.from({length:channels},(_,c)=>{const m=snapshot?.channels[c]?.[(['samplePeak','rms','truePeak'] as const)[i]],over=i===0&&m?.status==='ready'&&meterZone(m.value)==='over'
+    return <strong key={c} className={over?'is-over':undefined}>{m?.status==='error'||m?.status==='gap'?'无数据':value(m)}</strong>})}</div>)}
   </div>
  </section>
 }

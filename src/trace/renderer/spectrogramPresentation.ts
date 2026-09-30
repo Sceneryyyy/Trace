@@ -1,22 +1,30 @@
 import {spectrogramConfigKey,type SpectrogramSettings,type SpectrogramPacket,type SpectrogramSourceRef} from '../spectrogramProtocol'
 import type {SpectrogramView} from '../spectrogramView'
+import {defaultThemeId,heatStops,instrumentTheme,themeIds,type SpectrogramStops} from '../instrumentThemes'
 const size=4096
-const stops={trace:[[14,21,28],[34,65,83],[45,143,149],[145,230,92],[246,225,125]],heat:[[14,20,33],[51,62,132],[170,63,101],[244,141,60],[253,233,156]]} as const
-function palette(name:SpectrogramSettings['palette']):Uint8Array {
- const values=new Uint8Array(size*3),colors=stops[name]
+function palette(colors:SpectrogramStops):Uint8Array {
+ const values=new Uint8Array(size*3)
  for(let n=0;n<size;n++){const x=n/(size-1)*4,i=Math.min(3,Math.floor(x)),f=x-i;for(let c=0;c<3;c++)values[n*3+c]=Math.round(colors[i][c]*(1-f)+colors[i+1][c]*f)}
  return values
 }
-const palettes={trace:palette('trace'),heat:palette('heat')}
+// Bounded: one lookup per theme spectrogram palette plus 'heat'.
+const lutLimit=themeIds.length+1,luts=new Map<string,Uint8Array>()
+function lookup(stops:SpectrogramStops):Uint8Array {
+ const key=stops.flat().join(',');let lut=luts.get(key)
+ if(!lut){if(luts.size>=lutLimit)luts.delete(luts.keys().next().value!);lut=palette(stops);luts.set(key,lut)}
+ return lut
+}
+export function spectrogramLutCount():number{return luts.size}
 export function spectrogramPacketMatches(packet:SpectrogramPacket|null,source:SpectrogramSourceRef|undefined,settings:SpectrogramSettings):boolean {
  const p=packet?.source
  return Boolean(p&&source&&p.kind===source.kind&&p.sourceId===source.sourceId&&p.epochId===source.epochId&&p.measurementEpoch===source.measurementEpoch&&
   (p.analysisId||'')===(source.analysisId||'')&&packet!.configKey===spectrogramConfigKey(settings))
 }
 export function spectrogramContextKey(source:SpectrogramSourceRef|undefined,settings:SpectrogramSettings):string {return JSON.stringify(source||null)+spectrogramConfigKey(settings)}
-/** Bounded RGBA output. The palette lookup changes only display colour, not raw dB/bin data. */
-export function colorizeSpectrogram(view:SpectrogramView,settings:SpectrogramSettings):Uint8ClampedArray<ArrayBuffer> {
- const out=new Uint8ClampedArray(view.width*view.height*4),colors=palettes[settings.palette],scale=(size-1)/(settings.maxDecibels-settings.minDecibels)
+/** Bounded RGBA output. The palette lookup changes only display colour, not raw dB/bin data.
+ * `themeStops` is the active theme's colour scale used by the 'trace' (follow theme) palette. */
+export function colorizeSpectrogram(view:SpectrogramView,settings:SpectrogramSettings,themeStops:SpectrogramStops=instrumentTheme(defaultThemeId).spectrogram):Uint8ClampedArray<ArrayBuffer> {
+ const out=new Uint8ClampedArray(view.width*view.height*4),colors=lookup(settings.palette==='heat'?heatStops:themeStops),scale=(size-1)/(settings.maxDecibels-settings.minDecibels)
  for(let y=0;y<view.height;y++)for(let x=0;x<view.width;x++){
   const index=((view.height-1-y)*view.width+x)*4,flags=view.status[x],hatch=(x+y)%8<2
   let r:number,g:number,b:number

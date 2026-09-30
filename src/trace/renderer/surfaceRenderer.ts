@@ -1,5 +1,9 @@
 import {cameraMatrix,type SurfaceMesh,type SurfaceOptions} from './spectralSurface'
-export type SurfaceScene={mesh:SurfaceMesh|null;options:SurfaceOptions;palette:'trace'|'heat';cursor:number|null;selection:[number,number]|null}
+import {parseHex,type SpectrogramStops} from '../instrumentThemes'
+/** Display colours only; `stops` is the same five-stop scale used by the 2D lookup. */
+export type SurfaceColours={stops:SpectrogramStops;background:string;wire:string;cursor:string;selection:string}
+export type SurfaceScene={mesh:SurfaceMesh|null;options:SurfaceOptions;colours:SurfaceColours;cursor:number|null;selection:[number,number]|null}
+const unit=(hex:string):[number,number,number]=>{const [r,g,b]=parseHex(hex);return [r/255,g/255,b/255]}
 const vertex=`#version 300 es
 precision highp float;
 in vec3 position;
@@ -18,19 +22,21 @@ uniform vec3 colors[5];
 uniform vec4 selection;
 uniform float cursor;
 uniform bool wire;
+uniform vec3 wireColor;
+uniform vec3 cursorColor;
+uniform vec3 selectionColor;
 out vec4 outputColor;
 vec3 color(float t){float a=clamp(t,0.0,1.0)*4.0;int i=min(3,int(floor(a)));return mix(colors[i],colors[i+1],a-float(i));}
 void main(){
- if(wire){outputColor=vec4(.24,.30,.36,1.0);return;}
+ if(wire){outputColor=vec4(wireColor,1.0);return;}
  if(world.x< -1.0||world.x>1.0)discard;
  vec3 normal=normalize(cross(dFdx(world),dFdy(world)));
  float light=.8+.2*abs(dot(normal,normalize(vec3(.3,1.0,.5))));
  vec3 base=color(intensity)*light;
- if(selection.z>0.0&&world.x>=selection.x&&world.x<=selection.y)base=mix(base,vec3(.34,.83,.86),.22);
- if(cursor>=-1.0&&abs(world.x-cursor)<.008)base=vec3(.45,.94,.96);
+ if(selection.z>0.0&&world.x>=selection.x&&world.x<=selection.y)base=mix(base,selectionColor,.22);
+ if(cursor>=-1.0&&abs(world.x-cursor)<.008)base=cursorColor;
  outputColor=vec4(base,1.0);
 }`
-const palettes={trace:new Float32Array([14,21,28,34,65,83,45,143,149,145,230,92,246,225,125].map(v=>v/255)),heat:new Float32Array([14,20,33,51,62,132,170,63,101,244,141,60,253,233,156].map(v=>v/255))}
 /** One owned GL context and a fixed set of buffers. Source data never passes through GL for measurement. */
 export class SurfaceRenderer {
  private gl:WebGL2RenderingContext
@@ -77,10 +83,12 @@ export class SurfaceRenderer {
   const gl=this.gl,r=this.canvas.getBoundingClientRect(),dpr=Math.min(3,window.devicePixelRatio||1),limit=gl.getParameter(gl.MAX_RENDERBUFFER_SIZE) as number
   const scale=Math.min(dpr,Math.sqrt(4*1024*1024/Math.max(1,r.width*r.height)),limit/Math.max(1,r.width),limit/Math.max(1,r.height)),w=Math.max(1,Math.floor(r.width*scale)),h=Math.max(1,Math.floor(r.height*scale))
   if(this.canvas.width!==w)this.canvas.width=w;if(this.canvas.height!==h)this.canvas.height=h
-  gl.viewport(0,0,w,h);gl.clearColor(14/255,21/255,28/255,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);gl.disable(gl.CULL_FACE);gl.useProgram(this.program)
+  const [br,bg,bb]=unit(scene.colours.background)
+  gl.viewport(0,0,w,h);gl.clearColor(br,bg,bb,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);gl.disable(gl.CULL_FACE);gl.useProgram(this.program)
   gl.uniformMatrix4fv(gl.getUniformLocation(this.program!,'matrix'),false,new Float32Array(cameraMatrix(scene.options,w/h)))
   gl.uniform1f(gl.getUniformLocation(this.program!,'gridHeight'),scene.options.height)
-  gl.uniform3fv(gl.getUniformLocation(this.program!,'colors[0]'),palettes[scene.palette]);gl.uniform1f(gl.getUniformLocation(this.program!,'cursor'),scene.cursor===null?-10:scene.cursor*2-1)
+  gl.uniform3fv(gl.getUniformLocation(this.program!,'colors[0]'),new Float32Array(scene.colours.stops.flat().map(v=>v/255)))
+  gl.uniform3fv(gl.getUniformLocation(this.program!,'wireColor'),unit(scene.colours.wire));gl.uniform3fv(gl.getUniformLocation(this.program!,'cursorColor'),unit(scene.colours.cursor));gl.uniform3fv(gl.getUniformLocation(this.program!,'selectionColor'),unit(scene.colours.selection));gl.uniform1f(gl.getUniformLocation(this.program!,'cursor'),scene.cursor===null?-10:scene.cursor*2-1)
   gl.uniform4f(gl.getUniformLocation(this.program!,'selection'),(scene.selection?.[0]||0)*2-1,(scene.selection?.[1]||0)*2-1,scene.selection?1:0,0)
   const mesh=scene.mesh
   if(mesh?.indices.length){

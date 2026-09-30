@@ -2,8 +2,9 @@ import {useLayoutEffect,useMemo,useRef,useState} from 'react'
 import {buildSurface,cameraMatrix,transform,pickSurface,type SurfaceOptions} from './spectralSurface'
 import {SurfaceRenderer,type SurfaceScene} from './surfaceRenderer'
 import type {SpectrogramView} from '../spectrogramView'
+import type {SpectrogramStops} from '../instrumentThemes'
 import './surface.css'
-type Props={view?:SpectrogramView;context:string;dataStart?:string;dataEnd?:string;start:string;end:string;cursor:string;selection?:{startFrame:string;endFrame:string}|null;rate:number;timeOffset:number;options:SurfaceOptions;palette:'trace'|'heat';minDb:number;maxDb:number;minFrequency:number;maxFrequency:number;hidden:boolean;isVisible:()=>boolean;change:(options:SurfaceOptions)=>void;hover:(frame:string,frequency:number)=>void;failure:(message:string|null)=>void}
+type Props={view?:SpectrogramView;context:string;dataStart?:string;dataEnd?:string;start:string;end:string;cursor:string;selection?:{startFrame:string;endFrame:string}|null;rate:number;timeOffset:number;options:SurfaceOptions;palette:'trace'|'heat';stops:SpectrogramStops;themeTokens:Readonly<Record<string,string>>;minDb:number;maxDb:number;minFrequency:number;maxFrequency:number;hidden:boolean;isVisible:()=>boolean;change:(options:SurfaceOptions)=>void;hover:(frame:string,frequency:number)=>void;failure:(message:string|null)=>void}
 export function SurfaceCanvas(props:Props){
  const glCanvas=useRef<HTMLCanvasElement>(null),labels=useRef<HTMLCanvasElement>(null),renderer=useRef<SurfaceRenderer|null>(null),latest=useRef(props),drag=useRef<{x:number;y:number;options:SurfaceOptions}|null>(null),hoverAt=useRef(0)
  const [camera,setCamera]=useState(props.options),cameraRef=useRef(camera);latest.current=props;cameraRef.current=camera
@@ -20,7 +21,8 @@ export function SurfaceCanvas(props:Props){
  function draw(){
   const p=latest.current,r=renderer.current,canvas=glCanvas.current,overlay=labels.current;if(!r||!canvas||!overlay||!p.isVisible())return
   const a=BigInt(p.start),span=BigInt(p.end)-a,fraction=(frame:string)=>span>0n?Number(BigInt(frame)-a)/Number(span):0
-  const scene:SurfaceScene={mesh:meshRef.current,options:cameraRef.current,palette:p.palette,cursor:span>0n?fraction(p.cursor):null,selection:p.selection?[fraction(p.selection.startFrame),fraction(p.selection.endFrame)]:null}
+  const tk=p.themeTokens
+  const scene:SurfaceScene={mesh:meshRef.current,options:cameraRef.current,colours:{stops:p.stops,background:tk['surface-bg'],wire:tk['surface-wire'],cursor:tk['surface-cursor'],selection:tk['surface-selection']},cursor:span>0n?fraction(p.cursor):null,selection:p.selection?[fraction(p.selection.startFrame),fraction(p.selection.endFrame)]:null}
   try{r.draw(scene)}catch(error){p.failure(String(error));return}
   const rect=canvas.getBoundingClientRect();if(rect.width<=0||rect.height<=0)return
   if(overlay.width!==canvas.width)overlay.width=canvas.width;if(overlay.height!==canvas.height)overlay.height=canvas.height
@@ -28,20 +30,21 @@ export function SurfaceCanvas(props:Props){
   const matrix=cameraMatrix(cameraRef.current,rect.width/rect.height)
   const occupied:Array<{x:number;y:number;w:number;h:number}>=[]
   ctx.font='11px "JetBrains Mono",monospace';ctx.textBaseline='middle'
-  const label=(point:[number,number,number],text:string,color='#b8c7d3',dx=0,dy=0,align:CanvasTextAlign='center')=>{
+  const labelColour=tk['surface-label'],axisColour=tk['cursor']
+  const label=(point:[number,number,number],text:string,color=labelColour,dx=0,dy=0,align:CanvasTextAlign='center')=>{
    const q=transform(matrix,point),x=(q[0]+1)*rect.width/2+dx,y=(1-q[1])*rect.height/2+dy,w=ctx.measureText(text).width,left=x-(align==='center'?w/2:align==='right'?w:0),box={x:left-3,y:y-7,w:w+6,h:14}
    if(box.x<3||box.x+box.w>rect.width-3||box.y<3||box.y+box.h>rect.height-3||occupied.some(b=>box.x<b.x+b.w&&box.x+box.w>b.x&&box.y<b.y+b.h&&box.y+box.h>b.y))return
    occupied.push(box);ctx.fillStyle=color;ctx.textAlign=align;ctx.fillText(text,x,y)
   }
-  label([0,-.09,1.15],'时间','#58d4da',0,10);label([-1.16,0,0],'频率','#58d4da',-8,0,'right')
-  label([-1.08,cameraRef.current.height,1],p.maxDb.toFixed(0)+' dBFS','#b8c7d3',-8,0,'right')
+  label([0,-.09,1.15],'时间',axisColour,0,10);label([-1.16,0,0],'频率',axisColour,-8,0,'right')
+  label([-1.08,cameraRef.current.height,1],p.maxDb.toFixed(0)+' dBFS',labelColour,-8,0,'right')
   const steps=rect.height<220?2:4
   for(const i of [0,steps,...Array.from({length:steps-1},(_,n)=>n+1)]){
    const ratio=i/steps,seconds=(Number(a)+Number(span)*ratio)/p.rate+p.timeOffset
-   label([-1+2*ratio,-.05,1.06],seconds.toFixed(seconds<100?2:1)+'s','#b8c7d3',0,10)
-   const hz=p.minFrequency*Math.pow(p.maxFrequency/p.minFrequency,ratio);label([-1.08,0,1-2*ratio],hz>=1000?(hz/1000).toFixed(1)+'k':Math.round(hz)+' Hz','#b8c7d3',-8,0,'right')
+   label([-1+2*ratio,-.05,1.06],seconds.toFixed(seconds<100?2:1)+'s',labelColour,0,10)
+   const hz=p.minFrequency*Math.pow(p.maxFrequency/p.minFrequency,ratio);label([-1.08,0,1-2*ratio],hz>=1000?(hz/1000).toFixed(1)+'k':Math.round(hz)+' Hz',labelColour,-8,0,'right')
   }
-  label([-1.08,cameraRef.current.height*.5,1],((p.minDb+p.maxDb)/2).toFixed(0)+' dBFS','#b8c7d3',-8,0,'right')
+  label([-1.08,cameraRef.current.height*.5,1],((p.minDb+p.maxDb)/2).toFixed(0)+' dBFS',labelColour,-8,0,'right')
 
   canvas.dataset.surfaceContext=p.view?p.context:'';canvas.dataset.surfaceVertices=String((meshRef.current?.vertices.length||0)/4);canvas.dataset.surfaceBuffers=JSON.stringify(r.resources)
  }
@@ -53,7 +56,7 @@ export function SurfaceCanvas(props:Props){
   const observer=new ResizeObserver(()=>drawRef.current());observer.observe(canvas);drawRef.current()
   return()=>{observer.disconnect();canvas.removeEventListener('wheel',prevent);renderer.current?.dispose();renderer.current=null}
  },[])
- useLayoutEffect(()=>draw(),[mesh,camera,props.cursor,props.selection?.startFrame,props.selection?.endFrame,props.palette,props.context,props.hidden])
+ useLayoutEffect(()=>draw(),[mesh,camera,props.cursor,props.selection?.startFrame,props.selection?.endFrame,props.palette,props.stops,props.themeTokens,props.context,props.hidden])
  function move(e:React.PointerEvent<HTMLCanvasElement>){
   const d=drag.current
   if(d){let yaw=d.options.yaw-(e.clientX-d.x)*.3;while(yaw>180)yaw-=360;while(yaw< -180)yaw+=360;const next={...d.options,yaw,pitch:Math.max(10,Math.min(85,d.options.pitch-(e.clientY-d.y)*.25))};cameraRef.current=next;setCamera(next);return}

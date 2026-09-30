@@ -6,6 +6,7 @@ import {colorizeSpectrogram,spectrogramPacketMatches,spectrogramContextKey} from
 import {defaultSpectrogramSettings,spectrogramConfigKey,validateSpectrogramSettings,type SpectrogramSettings,type SpectrogramPacket,type SpectrogramQuery,type SpectrogramSourceRef} from '../spectrogramProtocol'
 import type {Command,MeterSnapshot} from '../shared'
 import './spectrogram.css'
+import {useRendererTheme,spectrogramStops} from './themeRuntime'
 async function query(command:Command,payload:Record<string,unknown>,id=crypto.randomUUID()):Promise<unknown>{
  const r=await window.trace.request({protocolVersion:1,requestId:id,expectedStateRevision:0,command,payload})
  if(!r.ok)throw Error(r.error?.message||'查询未完成');return r.data
@@ -54,20 +55,20 @@ export function SpectrogramPanel({settings,change,isVisible,...timeline}:Timelin
   return()=>{clearInterval(timer);effectContext.current='';const id=active.current;active.current='';if(id)void query('spectrogram.cancel',{queryId:id}).catch(()=>{})}
  },[sourceKey,phase,fileRange,configKey,size.width,size.height,retry,mono])
  useLayoutEffect(()=>{if(snapshot?.sourceKind!=='file'&&effectContext.current===displayKey)refreshRef.current()},[axis?.startFrame,axis?.endFrame,displayKey])
- const view=visiblePacket?.view
+ const view=visiblePacket?.view,theme=useRendererTheme()
  const image=useMemo(()=>{
   if(!view||show3d)return null
   const canvas=document.createElement('canvas');canvas.width=view.width;canvas.height=view.height
   const ctx=canvas.getContext('2d');if(!ctx)return null
-  const bytes=new ImageData(colorizeSpectrogram(view,settings),view.width,view.height)
+  const bytes=new ImageData(colorizeSpectrogram(view,settings,theme.spectrogram),view.width,view.height)
   ctx.putImageData(bytes,0,0);return canvas
- },[view,settings.minDecibels,settings.maxDecibels,settings.palette,show3d])
+ },[view,settings.minDecibels,settings.maxDecibels,settings.palette,show3d,theme])
  const nyquist=(view?.sampleRate||snapshot?.format.sampleRate||48000)/2,lo=Math.min(settings.minFrequency,nyquist*.9),hi=Math.min(settings.maxFrequency,nyquist)
  const reset=()=>change({...settings,minFrequency:20,maxFrequency:Math.min(20000,nyquist),minDecibels:-100,maxDecibels:0})
  // Keep the layer referentially stable so Timeline does not rebuild its paint
  // pipeline on every snapshot frame; volatile inputs are read through a ref.
- const volatile=useRef({image,visiblePacket,displayKey,lo,hi,nyquist,mono,snapshot,settings})
- volatile.current={image,visiblePacket,displayKey,lo,hi,nyquist,mono,snapshot,settings}
+ const volatile=useRef({image,visiblePacket,displayKey,lo,hi,nyquist,mono,snapshot,settings,tokens:theme.tokens})
+ volatile.current={image,visiblePacket,displayKey,lo,hi,nyquist,mono,snapshot,settings,tokens:theme.tokens}
  const changeRef=useRef(change);changeRef.current=change
  const layer=useMemo<TimelineLayer>(()=>({draw:(ctx,g)=>{
   const v=volatile.current
@@ -78,9 +79,9 @@ export function SpectrogramPanel({settings,change,isVisible,...timeline}:Timelin
    const key=v.visiblePacket.requestId+':'+v.visiblePacket.phase
    if(ctx.canvas.dataset.spectrogramPaintKey!==key){ctx.canvas.dataset.spectrogramPaintKey=key;ctx.canvas.dataset.spectrogramPaintMs=String(performance.now()-requestStarted.current.at)}
   }
-  ctx.strokeStyle='#43536366';ctx.lineWidth=1
+  ctx.strokeStyle=v.tokens['spectro-grid'];ctx.lineWidth=1
   for(let n=0;n<=6;n++){const x=g.left+(g.right-g.left)*n/6;ctx.beginPath();ctx.moveTo(x,g.top);ctx.lineTo(x,g.bottom);ctx.stroke()}
-  ctx.restore();ctx.font='10px "JetBrains Mono",monospace';ctx.fillStyle='#bdcbd7';ctx.textAlign='right'
+  ctx.restore();ctx.font='10px "JetBrains Mono",monospace';ctx.fillStyle=v.tokens['spectro-axis'];ctx.textAlign='right'
   for(const f of [20,100,500,2000,10000,20000,40000])if(f>=v.lo&&f<=v.hi){const y=g.bottom-Math.log(f/v.lo)/Math.log(v.hi/v.lo)*(g.bottom-g.top);ctx.fillText(f>=1000?f/1000+'k':String(f),g.left-5,y+3)}
   ctx.textAlign='left'
  },hover:(position,ratio)=>{
@@ -108,7 +109,7 @@ export function SpectrogramPanel({settings,change,isVisible,...timeline}:Timelin
    <label title="与波形和响度历史共用时间范围">时间窗<input aria-label="3D 时间窗" type="range" min="5" max="60" step=".1" value={Math.max(5,Math.min(60,axis?Number(BigInt(axis.endFrame)-BigInt(axis.startFrame))/(snapshot?.timelineRate||snapshot?.format.sampleRate||48000):timeline.seconds))} onChange={e=>timeline.onSeconds?.(Number(e.target.value))}/></label>
    {surfaceError&&<><span className="surface-failure" role="status">3D 暂不可用，已显示 2D</span><button title={surfaceError} onClick={()=>{setSurfaceError(null);setSurfaceRetry(n=>n+1)}}>重试 3D</button></>}
   </div>}
-  {wants3d&&<SurfaceCanvas key={surfaceRetry} view={mono?undefined:view} context={displayKey} dataStart={visiblePacket?.axisStartFrame} dataEnd={visiblePacket?.axisEndFrame} start={axis?.startFrame||'0'} end={axis?.endFrame||'0'} cursor={snapshot?.positionFrame||'0'} selection={selectionPreview||snapshot?.fileView?.selection} rate={snapshot?.timelineRate||snapshot?.format.sampleRate||48000} timeOffset={snapshot?.fileView?.timeOffsetSeconds||0} options={surface} palette={settings.palette} minDb={settings.minDecibels} maxDb={settings.maxDecibels} minFrequency={lo} maxFrequency={hi} hidden={!show3d} isVisible={isVisible} change={changeSurface} failure={setSurfaceError} hover={(frame,frequency)=>layer.hover?.(frame,Math.log(frequency/lo)/Math.log(hi/lo))}/>}
+  {wants3d&&<SurfaceCanvas key={surfaceRetry} view={mono?undefined:view} context={displayKey} dataStart={visiblePacket?.axisStartFrame} dataEnd={visiblePacket?.axisEndFrame} start={axis?.startFrame||'0'} end={axis?.endFrame||'0'} cursor={snapshot?.positionFrame||'0'} selection={selectionPreview||snapshot?.fileView?.selection} rate={snapshot?.timelineRate||snapshot?.format.sampleRate||48000} timeOffset={snapshot?.fileView?.timeOffsetSeconds||0} options={surface} palette={settings.palette} stops={spectrogramStops(theme,settings.palette)} themeTokens={theme.tokens} minDb={settings.minDecibels} maxDb={settings.maxDecibels} minFrequency={lo} maxFrequency={hi} hidden={!show3d} isVisible={isVisible} change={changeSurface} failure={setSurfaceError} hover={(frame,frequency)=>layer.hover?.(frame,Math.log(frequency/lo)/Math.log(hi/lo))}/>}
   <Timeline {...timeline} kind={show3d?'ruler':'spectrogram'} layer={show3d?undefined:layer} feedback={(!visiblePacket||mono)&&status?<div className="spectrogram-empty" role="status">{status}</div>:undefined}/>
 
   <div className="spectrogram-readout" title="原始频点读数；图中色块显示所覆盖频点与时间窗的最大幅度。滚轮缩放频率，Ctrl + 滚轮缩放时间。">{error||mono?status:reading||status||('FFT '+settings.fftSize+' · 悬停查看频点')}<span>斜纹：未覆盖 / 缺口</span></div>
@@ -120,7 +121,7 @@ export function SpectrogramSettingsForm({value,apply}:{value:SpectrogramSettings
   <label>FFT 窗<select aria-label="声谱图 FFT 窗" value={draft.fftSize} onChange={e=>setDraft({...draft,fftSize:Number(e.target.value)})}>{[512,1024,2048,4096,8192,16384].map(n=><option key={n}>{n}</option>)}</select></label>
   <label>声道<select aria-label="声谱图声道" value={draft.channel} onChange={e=>setDraft({...draft,channel:e.target.value as SpectrogramSettings['channel']})}>{['stereo','left','right','mid','side'].map((v,i)=><option key={v} value={v}>{['声道能量','左','右','Mid','Side'][i]}</option>)}</select></label>
   {(['minFrequency','maxFrequency','minDecibels','maxDecibels'] as const).map((k,i)=><label key={k}>{['最低频率 · Hz','最高频率 · Hz','色阶下限 · dBFS','色阶上限 · dBFS'][i]}<input aria-label={k} type="number" value={draft[k]} onChange={e=>setDraft({...draft,[k]:Number(e.target.value)})}/></label>)}
-  <label>配色<select value={draft.palette} onChange={e=>setDraft({...draft,palette:e.target.value as SpectrogramSettings['palette']})}><option value="trace">Trace</option><option value="heat">热度</option></select></label>
+  <label>配色<select value={draft.palette} onChange={e=>setDraft({...draft,palette:e.target.value as SpectrogramSettings['palette']})}><option value="trace">跟随主题</option><option value="heat">热度</option></select></label>
   <p className="small-note">FFT 窗越长，频率区分越细，瞬态时间范围也越宽。色阶与配色仅改变显示。</p>
   {error&&<p role="status">{error}</p>}<div className="layout-actions"><button onClick={()=>{try{apply(validateSpectrogramSettings(draft));setError('')}catch{setError('请检查频率和色阶范围。')}}}>应用</button><button onClick={()=>{setDraft({...defaultSpectrogramSettings});apply({...defaultSpectrogramSettings})}}>恢复默认</button></div>
  </div>

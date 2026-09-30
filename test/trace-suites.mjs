@@ -21,6 +21,7 @@ export const portable = [
   'import-media.test.mjs',
   'import-store.test.mjs',
   'instrument-service.test.mjs',
+  'instrument-themes.test.mjs',
   'interaction-settings.test.mjs',
   'library-service.test.mjs',
   'library-visibility.test.mjs',

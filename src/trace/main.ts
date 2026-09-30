@@ -41,6 +41,7 @@ import {validateExportPreset} from './mediaTypes'
 import {recordSettingsVersion} from './recordSettings'
 import {defaultWorkspace,restoreWorkspace,validateWorkspace} from './workspace'
 import {defaultDisplaySettings,validateDisplaySettings,restoreDisplaySettings,displaySettingsVersion,validWindowSeconds} from './displaySettings'
+import {defaultThemeId,instrumentThemeVersion,isThemeId,type ThemeId} from './instrumentThemes'
 import {restoreWindowBounds} from './windowGeometry'
 import {product} from './product'
 import type {PlaybackNative} from './playbackService'
@@ -87,7 +88,9 @@ let references:ReferenceService
 let referenceSpectrum:ReferenceSpectrumService
 const nativeAnalysisQueue=new NativeAnalysisQueue()
 let displayTick=0,snapshotSequence=0,pollFailurePending=false,lastPollError=''
-let state:TraceState={targetSettings:structuredClone(defaultTargetSettings),spectrogramSettings:{...defaultSpectrogramSettings},revision:0,active:false,monitoringRequested:true,deviceId:'',windowSeconds:30,error:null,displaySettings:{...defaultDisplaySettings},workspace:defaultWorkspace(),instrumentSettings:{...defaultInstrumentSettings}}
+let state:TraceState={targetSettings:structuredClone(defaultTargetSettings),spectrogramSettings:{...defaultSpectrogramSettings},revision:0,active:false,monitoringRequested:true,deviceId:'',windowSeconds:30,error:null,displaySettings:{...defaultDisplaySettings},instrumentTheme:defaultThemeId,workspace:defaultWorkspace(),instrumentSettings:{...defaultInstrumentSettings}}
+/** Theme is a separate top-level preference so older builds that validate displaySettings strictly keep working. */
+function restoreInstrumentTheme(value:unknown):ThemeId{return isThemeId(value)?value:defaultThemeId}
 const completed=new Map<string,{signature:string;reply:Reply}>()
 const pending=new Map<string,{signature:string;promise:Promise<Reply>}>()
 let mutations:Promise<unknown>=Promise.resolve()
@@ -221,7 +224,7 @@ function preferencesPath():string{return join(app.getPath('userData'),'trace-set
 function savePreferences():void{
   if(!preferencesReady)return
   preferencesWriter??=new PreferencesWriter(preferencesPath(),error=>{const message=error?String(error):null;if((state.preferencesError||null)!==message)update({preferencesError:message})})
-  preferencesWriter.save(JSON.stringify({targetSettings:state.targetSettings,spectrogramSettings:state.spectrogramSettings,windowBounds:window&&!window.isDestroyed()?window.getNormalBounds():undefined,maximized:window?.isMaximized(),instrumentSettings:state.instrumentSettings,workspace:state.workspace,displaySettingsVersion,monitoringRequested:state.monitoringRequested,displaySettings:state.displaySettings,settingsVersion:recordSettingsVersion,deviceId:state.deviceId,windowSeconds:state.windowSeconds,recordSettings:recordings.settings,recordDirectory:recordings.directory,exportPreferencesVersion,lastExportPreset:state.lastExportPreset,confirmExitWhileRecording:state.confirmExitWhileRecording!==false,lastExportSaveCopy:state.lastExportSaveCopy===true}))
+  preferencesWriter.save(JSON.stringify({instrumentTheme:state.instrumentTheme||defaultThemeId,instrumentThemeVersion,targetSettings:state.targetSettings,spectrogramSettings:state.spectrogramSettings,windowBounds:window&&!window.isDestroyed()?window.getNormalBounds():undefined,maximized:window?.isMaximized(),instrumentSettings:state.instrumentSettings,workspace:state.workspace,displaySettingsVersion,monitoringRequested:state.monitoringRequested,displaySettings:state.displaySettings,settingsVersion:recordSettingsVersion,deviceId:state.deviceId,windowSeconds:state.windowSeconds,recordSettings:recordings.settings,recordDirectory:recordings.directory,exportPreferencesVersion,lastExportPreset:state.lastExportPreset,confirmExitWhileRecording:state.confirmExitWhileRecording!==false,lastExportSaveCopy:state.lastExportSaveCopy===true}))
 }
 function schedulePreferences():void{if(preferencesTimer)clearTimeout(preferencesTimer);preferencesTimer=setTimeout(()=>{try{savePreferences()}catch(error){console.error("Trace preferences:",error)}},150)}
 function startDevice(id:string):SourceFormat{
@@ -534,6 +537,7 @@ async function dispatch(request:Request):Promise<Reply>{
       case 'workspace.configure':update({workspace:validateWorkspace(request.payload.workspace)});if(state.workspace!.layout.hidden.includes('spectrogram'))spectrogram.cancel();if(state.workspace!.layout.hidden.includes('comparison'))await referenceSpectrum.cancel();savePreferences();break
       case 'view.settings':update({displaySettings:validateDisplaySettings(request.payload)});savePreferences();break
       case 'view.gain':update({displaySettings:{...(state.displaySettings||defaultDisplaySettings),waveGain:request.payload.gain as number}});schedulePreferences();break
+      case 'view.theme':update({instrumentTheme:request.payload.theme as ThemeId});savePreferences();break
       case 'view.window':
         update({windowSeconds:request.payload.seconds as number});schedulePreferences();break
       case 'record.configure':
@@ -668,9 +672,10 @@ function handle(event:Electron.IpcMainInvokeEvent,raw:unknown):Promise<Reply>|Re
   }
 }
 async function initialize():Promise<void>{
-  let preferred:{targetSettings?:unknown;spectrogramSettings?:unknown;instrumentSettings?:unknown;workspace?:unknown;monitoringRequested?:boolean;deviceId?:string;windowSeconds?:number;recordSettings?:unknown;recordDirectory?:string;displaySettings?:unknown;lastExportPreset?:unknown;confirmExitWhileRecording?:boolean;lastExportSaveCopy?:boolean}={}
+  let preferred:{instrumentTheme?:unknown;targetSettings?:unknown;spectrogramSettings?:unknown;instrumentSettings?:unknown;workspace?:unknown;monitoringRequested?:boolean;deviceId?:string;windowSeconds?:number;recordSettings?:unknown;recordDirectory?:string;displaySettings?:unknown;lastExportPreset?:unknown;confirmExitWhileRecording?:boolean;lastExportSaveCopy?:boolean}={}
   try{preferred=JSON.parse(readFileSync(preferencesPath(),'utf8'))}catch{}
   if(validWindowSeconds(preferred.windowSeconds))state.windowSeconds=preferred.windowSeconds
+  state.instrumentTheme=restoreInstrumentTheme(preferred.instrumentTheme)
   state.instrumentSettings=restoreInstrumentSettings(preferred.instrumentSettings)
   state.spectrogramSettings=restoreSpectrogramSettings(preferred.spectrogramSettings)
   state.workspace=restoreWorkspace(preferred.workspace)
@@ -738,12 +743,12 @@ app.whenReady().then(async()=>{
   })
   ipcMain.handle('trace:command',handle)
   ipcMain.handle('trace:import-files',(event,paths:unknown)=>{if(!window||event.sender!==window.webContents||event.senderFrame!==window.webContents.mainFrame)throw Error('UNTRUSTED_FRAME');const task=mutations.then(()=>acceptImportFiles(paths));mutations=task.then(()=>undefined,()=>undefined);return task})
-  let savedWindow:{windowBounds?:unknown;maximized?:boolean}={};try{savedWindow=JSON.parse(readFileSync(preferencesPath(),'utf8'))}catch{}
+  let savedWindow:{windowBounds?:unknown;maximized?:boolean;instrumentTheme?:unknown}={};try{savedWindow=JSON.parse(readFileSync(preferencesPath(),'utf8'))}catch{}
   if(testMode&&process.env.TRACE_TEST_WINDOW_BOUNDS){try{savedWindow.windowBounds=JSON.parse(process.env.TRACE_TEST_WINDOW_BOUNDS)}catch{throw Error('INVALID_TEST_WINDOW_BOUNDS')}}
   const bounds=restoreWindowBounds(savedWindow.windowBounds,screen.getAllDisplays().map(d=>d.workArea))
   window=new BrowserWindow({
     icon:app.isPackaged?join(process.resourcesPath,'icon.png'):join(root,'resources/trace/icon.png'),title:testMode?'Trace — 自动验证':'Trace — Audio Recorder & Analyzer',width:1280,height:800,minWidth:1024,minHeight:700,
-    ...(bounds||{}),backgroundColor:'#121615',autoHideMenuBar:true,show:!testMode||process.argv.includes('--trace-test-visible'),
+    ...(bounds||{}),backgroundColor:'#11151a',autoHideMenuBar:true,show:!testMode||process.argv.includes('--trace-test-visible'),
     webPreferences:{webgl:!(testMode&&process.env.TRACE_TEST_NO_WEBGL==='1'),preload:join(__dirname,'../preload/index.js'),contextIsolation:true,sandbox:true,nodeIntegration:false,backgroundThrottling:!testMode},
   })
   window.webContents.on('did-start-loading',()=>{rendererUsable=false})
@@ -767,7 +772,10 @@ app.whenReady().then(async()=>{
     }
     if(preferencesTimer)clearTimeout(preferencesTimer);try{savePreferences()}catch(error){console.error('Trace preferences:',error)}})
   window.on('closed',()=>{window=null})
-  window.loadFile(join(__dirname,'../renderer/index.html')).then(initialize).catch(()=>supportRuntime!.startupFailure())
+  // Restore before the first state push and pass it in the URL: the renderer applies it before first paint
+  // (whitelisted again there) and no earlier state can carry the default theme, so a saved theme never flashes green.
+  state.instrumentTheme=restoreInstrumentTheme(savedWindow.instrumentTheme)
+  window.loadFile(join(__dirname,'../renderer/index.html'),{query:{theme:state.instrumentTheme}}).then(initialize).catch(()=>supportRuntime!.startupFailure())
   if(activateWhenReady)activateExistingWindow()
   timer=setInterval(()=>{
     if(!window||window.isDestroyed())return
