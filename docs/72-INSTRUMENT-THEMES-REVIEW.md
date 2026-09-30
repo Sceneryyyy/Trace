@@ -68,7 +68,7 @@ flow 运行使用 `artifacts/themes/audit-positive-flow.cjs`：在运行时副�
 
 ## 2026-09-30：R1/R2 修复与复验
 
-用户要求修复第 1、2 项 P2。R1/R2 已修复并通过本机工程复验；R3 的首帧断言与其他审计遗漏保留待办。变更仍在工作区，未提交、推送、合并或打包。
+用户要求修复第 1、2 项 P2。R1/R2 已修复并通过本机工程复验；R3 的首帧断言与其他审计遗漏保留待办。2026-09-30 按用户授权，修复及审计文档已提交为 `c67e9e9` 并成功推送到 `origin/feature/instrument-themes`（`Sceneryyyy/Trace`）；此前主题实现和文档随分支一并推送。本段交付记录单独提交，未合并或打包。
 
 - **R1**：`viewModel.ts` 保留原 `numberMetrics` 清空条件，另传 renderer 专用的 `numberAvailability`。`metricReadout.ts` 统一显示“无数据／分析中／重新连接／测量中”，静音保持 `−∞`、正常数值保持原精度；错误和缺口不会显示旧数字。I/M/S、Peak/RMS/TP、LRA/MAX TP/整段 I 及柱表无障碍文字均接入。后台 LIVE 故障不清空健康文件的历史读数；原声道数在故障状态下保留。没有修改原生音频、计量、协议或缓存。
 - **R2**：显示设置打开时直接聚焦已选中的主题 radio；通用焦点入口和 Tab 边界排除 `tabIndex=-1` 元素。原 `theme-flow.cjs` 的键盘检查移除人工 `.focus()`，改为断言自动聚焦。
