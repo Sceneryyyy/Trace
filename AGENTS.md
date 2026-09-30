@@ -8,6 +8,7 @@
 
 ## 开始与结束
 
+- 2026-09-30 用户确认：`feature/instrument-themes` 已合入 `recorder/dev`；后续开发默认继续在 `recorder/dev`，除非用户另行指定分支。
 - 首次读 `docs/01-PRODUCT.md`、`docs/02-ARCHITECTURE.md`、`docs/07-BACKLOG.md` 和 `docs/13-HANDOFF.md`；音频修改加读 03，存储加读 04，界面加读 05，接口加读 06。
 - 先检查实际目录、Git 状态、适用的项目指令和构建脚本。文档中的拟新增命令不能当成已经存在。
 - 以小而完整的任务推进；完成所选任务的实现、必要验证、文档和接力记录。不要只返回计划，也不要因上下文将满而丢失状态。
