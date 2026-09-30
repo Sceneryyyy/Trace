@@ -6,7 +6,9 @@
 
 用户明确要求复用已有 LeoMoon 的狮子月牙图标形状，仅换色；LeoMoon 继续作为系列品牌，Trace 是个体产品名。此前声波新图形方向已放弃，没有接入软件。
 
-顶部改为绿—青狮子月牙 + LeoMoon 字标，下方 TRACE 产品名；保留 Audio Recorder & Analyzer 副标题。应用名称、进程/文件名、配置目录、录音与数据身份仍为 Trace。帮助中补充“LeoMoon 系列”。
+顶部改为绿—青狮子月牙 + LeoMoon 字标，下方 TRACE 产品名；保留 Audio Recorder & Analyzer 副标题。
+
+2026-09-28 补充（用户确认，见 [71](71-INSTRUMENT-THEMES-PLAN.md) 第 6 节 D1）：引入仪表主题后，狮子月牙 PNG、应用图标和 LeoMoon 字标仍固定为本节样式；TRACE 小字随所选仪表主题变色，默认 Trace 绿主题下与现状一致。preview.31 已在本地实施（`--brand-product`），像素采样确认五个主题的 TRACE 小字分别使用各自主色；顶栏协调性人工复核尚未进行。应用名称、进程/文件名、配置目录、录音与数据身份仍为 Trace。帮助中补充“LeoMoon 系列”。
 
 素材来自用户提供的 LeoMoon 概念图，使用内置 image_gen 提取/换色/清理；仅有位图参考，未声称获得原始矢量文件。最终图复制进入 `resources/trace/branding/leomoon-trace-v1.png`，来源和提示词见该目录 README。另一项目保持只读，未改动其标识或界面。
 

@@ -1,5 +1,19 @@
 # 13 · 当前状态与下一会话
 
+## 当前状态：仪表主题色 M13 已实施并通过用户验收（preview.31），已本地提交
+
+2026-09-30：用户在本机开发构建上验收确认无误，并接受默认主题三处新增差异（71 D5）。改动已在 `feature/instrument-themes` 本地提交，**未推送**、未合并回 `recorder/dev`、未打包。下一任务：用户授权后推送/合并；按需补 3D 声谱游标三角并打包 preview.31 内测包。以下为 2026-09-28 实施记录。
+
+2026-09-28：在 `feature/instrument-themes`（基于 `recorder/dev@7d38357`）完成 TH-T0–T5 工程部分，详见 [71](71-INSTRUMENT-THEMES-PLAN.md) 第 10 节。颜色唯一来源 `src/trace/instrumentThemes.ts`，运行时 `renderer/themeRuntime.ts`；五套主题 `trace-green/graphite/ember/ocean/duo`；顶层偏好 `instrumentTheme` 加白名单命令 `view.theme`；电平 −6/−1 dBFS 分区、OVER、读数三态、游标三角、⚠ 注意；“显示与帮助”中新增色卡组。
+
+已跑：`node tools/trace.cjs check` 全过（portable 214/214，含新增 `test/instrument-themes.test.mjs` 6 项；native 49/49；采集支持 3/3；响度原生 6/6）；T1 与 preview.30 基线 9 个场景逐像素一致；`tools/themes/theme-ui.cjs` 截图矩阵（9 个场景 × 5 个主题 1×，默认主题另跑 1.5×/2×）；`tools/themes/theme-flow.cjs` 9/9（键盘、持久化、五个主题读数一致、声谱不重算、200 次切换堆增长约 0.8 MiB、WASAPI 录音在切换中不断、重启首帧前应用、preview.30 降级读取）；M7 工作台检查（开发构建）默认主题 3 种缩放与四个新主题 1× 均为 11/11。
+
+未跑或未完成：实时监测帧时间的专门测量；3D 声谱游标三角；preview.31 打包与内测包；62 PDF；真实显示器、色弱用户、顶栏协调性的人工验收。默认主题在原定 6 处之外新增 3 处差异（⚠ 前缀、白色焦点环、过载红改为 `#FF5E66`），已于 2026-09-30 由用户接受。
+
+## 历史：仪表主题色 M13 方案
+
+2026-09-28：用户要求在绿色之外增加可选仪表主题（石墨灰、黄橙渐变、海蓝），并基于 `recorder/dev` 开发。已从 `recorder/dev@7d38357` 创建本地分支 `feature/instrument-themes`，方案见 [71](71-INSTRUMENT-THEMES-PLAN.md)。同日按 UI/UX 评审修订为 v1.1：五套主题（新增色弱友好 `duo`）、电平按 dB 分区加 OVER 标记、以线型为第一保障、主题存为顶层偏好并使用新命令 `view.theme`（保证降级兼容）、色值经对比度/ΔE2000/色弱模拟实测。本次只写文档，没有修改代码，也没有运行项目测试；尚未提交或推送。下一任务是 TH-T0（记录基线检查结果和截图），然后做 TH-T1（颜色 token 化，不产生视觉变化）。第 6 节四项决定已由用户确认（方案 v1.2）：TRACE 小字跟随主题；电平阈值 −6/−1 dBFS；默认主题接受 6 处预期差异；ember 下“注意”保持琥珀色加图标。61 和 `AGENTS.md` 的品牌说明已同步。已无待确认项，可以开始 TH-T0。
+
 ## 仓库首页：已改为 Trace 产品说明
 
 2026-09-28：根目录 `README.md` 原为 Prism 上游介绍，GitHub 首页因此未展示 Trace。本次改为 LeoMoon / Trace 品牌、实际工作台截图、当前功能、用户指南、Windows 开发入口、内测与 macOS 验证边界；原 README 按字节完整保存在 `README-Prism.md`，许可和来源保留。`TRACE-README.md` 改为统一首页的兼容入口，移除 preview.8 的陈旧副本。仅文档变更，执行相对链接/图片存在性、上游归档一致性与 Git 空白检查，不重复音频或应用测试。首页改动已同步至 `recorder/dev` 和 `feature/macos-port` 两个本地分支。本次正常推送因命令行缺少 GitHub 凭据失败（`Cannot prompt` / `unable to get password`），没有确认远程生效；需通过已登录的 GitHub Desktop 对两个分支分别 Push origin。本地缓存的 `origin/HEAD` 指向 `recorder/dev`，远程默认分支和页面仍需单独核实。下一开发任务沿用下方分支记录。

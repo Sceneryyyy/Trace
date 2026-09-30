@@ -1,5 +1,7 @@
 # 07 · 开发里程碑与任务单
 
+仪表主题色（M13）：2026-09-28 用户要求在绿色之外增加可选主题（灰、黄橙渐变、蓝等）。方案 v1.1（已按 UI/UX 评审修订，五套主题含色弱友好 `duo`）、TH-T0–T5 任务和 TH-A01–A09 验收见 [71-INSTRUMENT-THEMES-PLAN](71-INSTRUMENT-THEMES-PLAN.md)。开发分支 `feature/instrument-themes` 基于 `recorder/dev@7d38357`。2026-09-28 已实施 TH-T0–T5 工程部分（preview.31），自动验收与偏差见 71 第 10 节；2026-09-30 用户在开发构建上验收通过并本地提交，尚未推送、合并或打包。
+
 Mac 平台新主线：用户已选方案一，M-MAC0–4 任务、MAC-A01–08 验收和下一项 M-MAC0/T00 见 [70-MACOS-PORT-PLAN](70-MACOS-PORT-PLAN.md)。2026-09-24 仅完成方案文档，Mac 实施与实机验收尚未开始；下方 Windows/M7–M12 记录保留原阶段状态。
 
 同事内测分发：当前 preview.30 / InternalTest-r3 已就绪，内容与本机打包验证见 [69](69-INTERNAL-TEST-R3.md)；preview.28 R1 历史记录见 [63](63-INTERNAL-TEST-DISTRIBUTION.md)。下一步收集同事环境证据；不据此将 PB3–PB5 标为全部完成。
