@@ -28,7 +28,7 @@ async function main(){
  await c.click('[aria-label="显示与帮助"]');await wait(()=>c.evaluate("!!document.querySelector('.theme-picker')"),'picker')
  const a11y=await c.evaluate("(()=>{const g=document.querySelector('.theme-picker'),r=[...g.querySelectorAll('[role=radio]')];return {group:g.getAttribute('role'),label:g.getAttribute('aria-label'),count:r.length,checked:r.filter(x=>x.getAttribute('aria-checked')==='true').map(x=>x.dataset.themeChoice),tabbable:r.filter(x=>x.tabIndex===0).length,names:r.map(x=>x.getAttribute('aria-label'))}})()")
  assert.equal(a11y.group,'radiogroup');assert.equal(a11y.count,5);assert.deepEqual(a11y.checked,['trace-green']);assert.equal(a11y.tabbable,1);assert(a11y.names.every(Boolean));report.a11y=a11y
- await c.evaluate("document.querySelector('.theme-card[aria-checked=true]').focus()")
+ await wait(()=>c.evaluate("document.activeElement===document.querySelector('.theme-card[aria-checked=true]')"),'automatic focus on selected theme')
  await c.key('ArrowRight','ArrowRight',39);await wait(async()=>await theme(c)==='graphite','arrow preview')
  const focus=await c.evaluate("(()=>{const e=document.activeElement;return {choice:e.dataset.themeChoice,checked:e.getAttribute('aria-checked'),outline:getComputedStyle(e).outlineColor,style:getComputedStyle(e).outlineStyle}})()")
  assert.equal(focus.choice,'graphite');assert.equal(focus.checked,'true');assert.equal(focus.outline,'rgb(255, 255, 255)');assert.equal(focus.style,'solid')

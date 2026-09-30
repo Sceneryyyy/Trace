@@ -26,6 +26,7 @@ export const portable = [
   'library-service.test.mjs',
   'library-visibility.test.mjs',
   'm6-settings.test.mjs',
+  'metric-readout.test.mjs',
   'native-analysis-queue.test.mjs',
   'operation-feedback.test.mjs',
   'playback-service.test.mjs',

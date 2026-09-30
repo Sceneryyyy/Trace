@@ -1,6 +1,7 @@
 import {useMemo} from 'react'
 import type {Device,MeterSnapshot,PlaybackView,TraceState} from '../shared'
 import {useMeterSnapshot,useSnapshotSelector} from './snapshotStore'
+import type {ReadoutAvailability} from './metricReadout'
 
 export interface WindowDraft{id:string;startFrame:string;endFrame:string}
 export interface RecordWindow{mode:'all'|'follow'|'manual';start:string;end:string}
@@ -41,12 +42,17 @@ export function deriveView({state,devices,windowDraft,recordWindow,seconds,snaps
  const history=Boolean(file?.temporary)
  const replaySeconds=Number(liveSnapshot?.diagnostics.replayFrames||0)/(format?.sampleRate||48000)
  const numberMetrics=file?.error?.startsWith('FILE_SNAPSHOT_FAILED:')||(file?file.analysisPhase!=='ready'||Boolean(displaySnapshot?.error):Boolean(sourceError)||reconnecting)?null:displaySnapshot
+ // Preserve numerical suppression while retaining its cause for readout labels.
+ // Background LIVE errors do not invalidate a healthy file's measurements.
+ const numberAvailability:ReadoutAvailability=file?
+  file.error?.startsWith('FILE_SNAPSHOT_FAILED:')||displaySnapshot?.error||['failed','cancelled'].includes(file.analysisPhase)?'unavailable':file.analysisPhase!=='ready'?'analyzing':displaySnapshot?'available':'measuring':
+  reconnecting?'reconnecting':sourceError?'unavailable':displaySnapshot?'available':'measuring'
  const timelineRate=displaySnapshot?.timelineRate||displaySnapshot?.format.sampleRate||48000
  const workbenchFile:PlaybackView=file?{...file,positionFrame:displaySnapshot?.positionFrame||file.positionFrame}:{
   id:'live',takeId:'',role:'source',label:isRecording?'本次录音':'系统声音',phase:'paused',error:null,
   positionFrame:displaySnapshot?.positionFrame||'0',totalFrames:displaySnapshot?.positionFrame||'0',sampleRate:timelineRate,channelCount:format?.channelCount||2,
   generation:'0',analysisId:'',analysisPhase:'ready',gain:1,loop:false,follow:true,selection:null,startFrame:displaySnapshot?.timelineWindow?.startFrame||'0',endFrame:displaySnapshot?.timelineWindow?.endFrame||'0'}
- return {file,selected,liveSnapshot,format,record,recordBusy,isRecording,finalizing,reconnecting,multiRegion,view,recEnd,recBounds,displaySnapshot,sourceError,snapshotFailure,continuity,history,replaySeconds,numberMetrics,timelineRate,workbenchFile}
+ return {file,selected,liveSnapshot,format,record,recordBusy,isRecording,finalizing,reconnecting,multiRegion,view,recEnd,recBounds,displaySnapshot,sourceError,snapshotFailure,continuity,history,replaySeconds,numberMetrics,numberAvailability,timelineRate,workbenchFile}
 }
 export type DerivedView=ReturnType<typeof deriveView>
 

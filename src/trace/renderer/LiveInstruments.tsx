@@ -9,6 +9,7 @@ import {TargetStrip} from './Targets'
 import {zoomLabel} from './zoom'
 import {timecode,timecodeNs} from './time'
 import {useDerivedView,type DerivedView,type RecordWindow,type ViewInputs} from './viewModel'
+import {metricReadout,type MetricReadout,type ReadoutAvailability} from './metricReadout'
 import type {SpectrogramSettings} from '../spectrogramProtocol'
 import type {InstrumentSettings} from '../instrumentTypes'
 import type {DisplaySettings} from '../displaySettings'
@@ -18,23 +19,17 @@ import type {AnalysisJobView,Command,MeterSnapshot,Metric,NativeRecordSnapshot,P
 // Instrument containers subscribe to the 30 Hz snapshot stream individually via
 // useDerivedView, so App chrome no longer re-renders on every meter frame.
 
-const empty:Metric={value:null,status:'insufficient',unit:'LUFS'}
-function value(metric?:Metric):string{
- if(!metric||metric.status==='insufficient')return '—'
- if(metric.status==='silence')return '−∞'
- if(metric.status!=='ready'||metric.value===null)return '—'
- return metric.value.toFixed(1).replace('-','−')
-}
 /** Non-colour state label (docs/71 §3.3): measuring and unavailable no longer look identical. */
-function StateNote({metric}:{metric?:Metric}):React.JSX.Element|null{
- const status=(metric??empty).status
- if(status==='insufficient')return <small className="metric-state">测量中</small>
- if(status==='error'||status==='gap')return <small className="metric-state is-fault"><span aria-hidden="true">⊘ </span>无数据</small>
- return null
+function StateNote({reading}:{reading:MetricReadout}):React.JSX.Element|null{
+ return reading.note?<small className={'metric-state'+(reading.fault?' is-fault':'')}>{reading.fault&&<span aria-hidden="true">⊘ </span>}{reading.note}</small>:null
 }
-function MetricNumber({metric,large=false}:{metric?:Metric;large?:boolean}):React.JSX.Element{
- const current=metric??empty
- return <span className={'metric-number '+(large?'large ':'')+(current.status==='ready'?'ready':'muted')} title={current.status==='insufficient'?'测量中，尚未形成完整时间窗':current.status==='error'?'音频数据不可用':undefined}>{value(current)}<StateNote metric={current}/></span>
+function MetricNumber({metric,availability,large=false}:{metric?:Metric;availability:ReadoutAvailability;large?:boolean}):React.JSX.Element{
+ const reading=metricReadout(metric,availability)
+ return <span className={'metric-number '+(large?'large ':'')+(reading.ready?'ready':'muted')} title={reading.note||undefined}>{reading.value}<StateNote reading={reading}/></span>
+}
+function SummaryNumber({metric,availability,unit}:{metric?:Metric;availability:ReadoutAvailability;unit:string}):React.JSX.Element{
+ const reading=metricReadout(metric,availability)
+ return <strong>{reading.value}{!reading.note&&<> <small>{unit}</small></>}<StateNote reading={reading}/></strong>
 }
 /** Shows OVER while the sample peak is in the over zone and for OVER_HOLD_MS afterwards. Sample peak only; never labelled TP. */
 function useOverHold(over:boolean):boolean{
@@ -46,24 +41,24 @@ function OverFlag({over}:{over:boolean}):React.JSX.Element|null{
  return useOverHold(over)?<span className="over-flag" title={'样本峰值进入 '+METER_OVER_DB+' dBFS 以上的过载区'}>OVER</span>:null
 }
 
-function LoudnessBar({metric,label}:{metric?:Metric;label:string}):React.JSX.Element{
- const scale=metric?.status==='ready'?Math.max(0,Math.min(1,((metric.value??-60)+60)/60)):0
- return <div className="loudness-column"><div className="loudness-bar-track" role="meter" aria-label={label+' 响度柱表'} aria-valuemin={-60} aria-valuemax={0} aria-valuenow={metric?.status==='ready'?Math.max(-60,Math.min(0,metric.value??-60)):undefined} aria-valuetext={value(metric)+' LUFS'}><i style={{transform:'scaleY('+scale+')'}}/></div><div className="loudness-bar-scale"><span>0</span><span>−20</span><span>−40</span><span>−60</span></div></div>
+function LoudnessBar({metric,label,availability}:{metric?:Metric;label:string;availability:ReadoutAvailability}):React.JSX.Element{
+ const reading=metricReadout(metric,availability),scale=reading.ready?Math.max(0,Math.min(1,((metric!.value??-60)+60)/60)):0
+ return <div className="loudness-column"><div className="loudness-bar-track" role="meter" aria-label={label+' 响度柱表'} aria-valuemin={-60} aria-valuemax={0} aria-valuenow={reading.ready?Math.max(-60,Math.min(0,metric!.value??-60)):undefined} aria-valuetext={reading.note||reading.value+' LUFS'}><i style={{transform:'scaleY('+scale+')'}}/></div><div className="loudness-bar-scale"><span>0</span><span>−20</span><span>−40</span><span>−60</span></div></div>
 }
-function LevelPanel({snapshot,readout='both'}:{snapshot:MeterSnapshot|null;readout?:'both'|'peak'|'rms'}):React.JSX.Element{
- const channels=snapshot?.channels.length||2
+function LevelPanel({snapshot,availability,channelCount,readout='both'}:{snapshot:MeterSnapshot|null;availability:ReadoutAvailability;channelCount?:number;readout?:'both'|'peak'|'rms'}):React.JSX.Element{
+ const channels=snapshot?.channels.length||channelCount||2
  const scale=(metric?:Metric):number=>metric?.status==='ready'&&metric.value!==null?Math.max(0,Math.min(1,(metric.value+60)/60)):0
  return <section className="level-panel panel">
   <div className="panel-heading"><h2>电平</h2><span className="small-note">dBFS</span></div>
   <div className="level-plot">
    <div className="db-scale">{[0,-6,-12,-18,-24,-30,-36,-42,-48,-54,-60].map(n=><span key={n}>{n}</span>)}</div>
    <div className="channel-bars">{Array.from({length:channels},(_,c)=>{
-    const levels=snapshot?.channels[c],meter=readout==='rms'?levels?.rms:levels?.samplePeak
+    const levels=snapshot?.channels[c],meter=readout==='rms'?levels?.rms:levels?.samplePeak,reading=metricReadout(meter,availability)
     const clip=levels?.samplePeak.status==='ready'&&(levels.samplePeak.value??-Infinity)>=0
     const over=levels?.samplePeak.status==='ready'&&meterZone(levels.samplePeak.value)==='over'
     return <div className="channel" key={c}>
      <div className={'clip-indicator '+(clip?'clipped':'')} title={clip?'样本峰值达到或超过 0 dBFS':'未检测到样本削波'}/>
-     <div className="meter-track" data-over={over||undefined} role="meter" aria-label={(channels===1?'单声道':c===0?'左声道':'右声道')+(readout==='rms'?' RMS':'样本峰值')} aria-valuemin={-60} aria-valuemax={0} aria-valuenow={meter?.status==='ready'?Math.max(-60,Math.min(0,meter.value!)):undefined} aria-valuetext={value(meter)+' dBFS'}>
+     <div className="meter-track" data-over={over||undefined} role="meter" aria-label={(channels===1?'单声道':c===0?'左声道':'右声道')+(readout==='rms'?' RMS':'样本峰值')} aria-valuemin={-60} aria-valuemax={0} aria-valuenow={reading.ready?Math.max(-60,Math.min(0,meter!.value!)):undefined} aria-valuetext={reading.note||reading.value+' dBFS'}>
       <div className="peak-fill" style={{clipPath:'inset('+((1-scale(levels?.samplePeak))*100)+'% 0 0)'}}/>
       <div className="rms-fill" style={{transform:'scaleY('+scale(levels?.rms)+')'}}/>
       {[METER_NEAR_DB,METER_OVER_DB].map(db=><i key={db} className="meter-mark" style={{bottom:meterFraction(db)*100+'%'}} aria-hidden="true"/>)}
@@ -74,8 +69,8 @@ function LevelPanel({snapshot,readout='both'}:{snapshot:MeterSnapshot|null;reado
    })}</div>
   </div>
   <div className="channel-readings">
-   {['Peak','RMS','TP'].map((name,i)=><div className="level-reading" key={name}><span>{name}{name==='TP'&&<small className="level-unit"> dBTP</small>}</span>{Array.from({length:channels},(_,c)=>{const m=snapshot?.channels[c]?.[(['samplePeak','rms','truePeak'] as const)[i]],over=i===0&&m?.status==='ready'&&meterZone(m.value)==='over'
-    return <strong key={c} className={over?'is-over':undefined}>{m?.status==='error'||m?.status==='gap'?'无数据':value(m)}</strong>})}</div>)}
+   {['Peak','RMS','TP'].map((name,i)=><div className="level-reading" key={name}><span>{name}{name==='TP'&&<small className="level-unit"> dBTP</small>}</span>{Array.from({length:channels},(_,c)=>{const m=snapshot?.channels[c]?.[(['samplePeak','rms','truePeak'] as const)[i]],over=i===0&&m?.status==='ready'&&meterZone(m.value)==='over',reading=metricReadout(m,availability)
+    return <strong key={c} className={over?'is-over':reading.fault?'is-fault':undefined}>{reading.note||reading.value}</strong>})}</div>)}
   </div>
  </section>
 }
@@ -141,23 +136,23 @@ export const TimelineInstrument=memo(function TimelineInstrument(props:TimelineI
 
 export const LoudnessInstrument=memo(function LoudnessInstrument({inputs,history,file,isRecording,multiRegion}:{inputs:ViewInputs;history:boolean;file:PlaybackView|null|undefined;isRecording:boolean;multiRegion:boolean}){
  const view=useDerivedView(inputs)
- const numberMetrics=view.numberMetrics,displaySnapshot=view.displaySnapshot
+ const numberMetrics=view.numberMetrics,displaySnapshot=view.displaySnapshot,availability=view.numberAvailability
  return <aside className="loudness-values panel">
   <div className="panel-heading"><h2>响度</h2><span className="small-note">LUFS</span></div>
   <div className="loudness-readings">
-  <section className="integrated-card" title={history?'监测起点至当前历史位置的累计响度':file?'文件起点至当前游标的累计响度':isRecording?'本次录音的累计响度':'本轮监测的累计响度'}><div className="metric-label">INTEGRATED <span>{file?'截至游标 I':isRecording?(multiRegion?'当前段 I':'本次录音 I'):'本轮 I'}</span></div><LoudnessBar label="I" metric={numberMetrics?.integratedToCursor}/><MetricNumber metric={numberMetrics?.integratedToCursor} large /></section>
-  <div className="instant-metrics"><section><div className="metric-label">M <span>400 ms</span></div><LoudnessBar label="M" metric={numberMetrics?.momentary}/><MetricNumber metric={numberMetrics?.momentary} /></section><section><div className="metric-label">S <span>3 s</span></div><LoudnessBar label="S" metric={numberMetrics?.shortTerm}/><MetricNumber metric={numberMetrics?.shortTerm} /></section></div>
+  <section className="integrated-card" title={history?'监测起点至当前历史位置的累计响度':file?'文件起点至当前游标的累计响度':isRecording?'本次录音的累计响度':'本轮监测的累计响度'}><div className="metric-label">INTEGRATED <span>{file?'截至游标 I':isRecording?(multiRegion?'当前段 I':'本次录音 I'):'本轮 I'}</span></div><LoudnessBar label="I" metric={numberMetrics?.integratedToCursor} availability={availability}/><MetricNumber metric={numberMetrics?.integratedToCursor} availability={availability} large /></section>
+  <div className="instant-metrics"><section><div className="metric-label">M <span>400 ms</span></div><LoudnessBar label="M" metric={numberMetrics?.momentary} availability={availability}/><MetricNumber metric={numberMetrics?.momentary} availability={availability} /></section><section><div className="metric-label">S <span>3 s</span></div><LoudnessBar label="S" metric={numberMetrics?.shortTerm} availability={availability}/><MetricNumber metric={numberMetrics?.shortTerm} availability={availability} /></section></div>
   </div><div className="loudness-summary">
-  <div className="summary-metric" title={file&&!history?'文件整段响度范围':'截至当前位置的响度范围'}><div><b>LRA {displaySnapshot?.lraProvisional&&numberMetrics?.loudnessRange.status==='ready'&&<small className="provisional-tag" title="时长不足 60 秒，LRA 暂估">暂估</small>}</b></div><strong>{value(numberMetrics?.loudnessRange)} <small>LU</small></strong></div>
-  <div className="summary-metric" title={history?'监测起点至当前历史位置的最大真峰值':file?'文件整段最大真峰值':isRecording?'本次录音最大真峰值':'本轮最大真峰值'}><div><b>MAX TP</b></div><strong>{value(numberMetrics?.maxTruePeak)} <small>dBTP</small></strong></div>
-  {file&&!history&&<div className="summary-metric"><div><b>整段 I</b></div><strong>{value(displaySnapshot?.fileView?.wholeFileIntegrated)} <small>LUFS</small></strong></div>}
+  <div className="summary-metric" title={file&&!history?'文件整段响度范围':'截至当前位置的响度范围'}><div><b>LRA {displaySnapshot?.lraProvisional&&numberMetrics?.loudnessRange.status==='ready'&&<small className="provisional-tag" title="时长不足 60 秒，LRA 暂估">暂估</small>}</b></div><SummaryNumber metric={numberMetrics?.loudnessRange} availability={availability} unit="LU"/></div>
+  <div className="summary-metric" title={history?'监测起点至当前历史位置的最大真峰值':file?'文件整段最大真峰值':isRecording?'本次录音最大真峰值':'本轮最大真峰值'}><div><b>MAX TP</b></div><SummaryNumber metric={numberMetrics?.maxTruePeak} availability={availability} unit="dBTP"/></div>
+  {file&&!history&&<div className="summary-metric"><div><b>整段 I</b></div><SummaryNumber metric={displaySnapshot?.fileView?.wholeFileIntegrated} availability={availability} unit="LUFS"/></div>}
   </div>
  </aside>
 })
 
 export const LevelsInstrument=memo(function LevelsInstrument({inputs,readout}:{inputs:ViewInputs;readout:'both'|'peak'|'rms'}){
  const view=useDerivedView(inputs)
- return <LevelPanel snapshot={view.numberMetrics} readout={readout}/>
+ return <LevelPanel snapshot={view.numberMetrics} availability={view.numberAvailability} channelCount={view.displaySnapshot?.format.channelCount||view.format?.channelCount||view.file?.channelCount} readout={readout}/>
 })
 
 export const SpectrumInstrument=memo(function SpectrumInstrument({inputs,settings,change}:{inputs:ViewInputs;settings:InstrumentSettings;change:(settings:InstrumentSettings)=>void}){

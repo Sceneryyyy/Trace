@@ -83,6 +83,7 @@ canvas { display: block; width: 100%; flex: 1; min-height: 0; }
 .meter-mark { position:absolute; left:0; right:0; height:1px; margin-bottom:-.5px; background:var(--meter-mark); opacity:.55; pointer-events:none; }
 .over-flag { position:absolute; top:2px; left:50%; transform:translateX(-50%); padding:0 3px; border-radius:2px; background:var(--over-bg); color:var(--over-text); font:600 8px "JetBrains Mono", monospace; letter-spacing:.3px; line-height:12px; pointer-events:none; }
 .level-reading strong.is-over { background:var(--over-bg); color:var(--over-text); border-radius:2px; padding:0 3px; }
+.level-reading strong.is-fault { color:var(--danger); }
 .metric-state { display:block; font:10px Inter, "Microsoft YaHei UI", sans-serif; letter-spacing:0; color:var(--secondary); margin-top:2px; }
 .metric-state.is-fault { color:var(--danger); }
 :root[data-trace-theme=graphite] .metric-number.ready { font-weight:600; }
