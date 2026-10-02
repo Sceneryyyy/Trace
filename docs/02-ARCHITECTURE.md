@@ -8,7 +8,7 @@ M12：ImportService 管理只读外部素材、四项准备队列、源变化/�
 
 M11：ReportService 管理独立进程、有界任务队列、源引用、取消/重试及报告导出；report-worker 按页读原分析缓存并分块写 CSV/HTML。目标设置独立于布局/分析，目标比较不改变基础测量。应用清理/删除来源前等待报告释放；REC 优先。实现与待验范围见 [51](51-M11-INTEGRATION.md)。
 
-2026-09-17 当前架构入口：后续目标与完成条件见 [38](38-DEVELOPMENT-PLAN.md)。M7 使用 React 分割树和独立 workspace 配置；M8 已把频谱与声场接入统一来源/呈现/选区，见 [41](41-M8-METERING.md)/[42](42-M8-ACCEPTANCE.md)。显隐与停靠不控制音频生命周期，隐藏窗口的呈现调度见 [45](45-VISIBILITY-AND-RESOURCE-GATE.md)。M9 原生瓦片、有界存储、来源服务/显示聚合及共轴 2D 已接入。大数组采用独立呈现流，来源关闭等待查询释放；设计见 [43](43-M9-SPECTROGRAM.md)，preview.15 接入和待验项目见 [46](46-M9-2D-INTEGRATION.md)。
+2026-09-17 阶段架构入口：后续目标与完成条件见 [38](38-DEVELOPMENT-PLAN.md)。M7 使用 React 分割树和独立 workspace 配置；M8 已把频谱与声场接入统一来源/呈现/选区，见 [41](41-M8-METERING.md)/[42](42-M8-ACCEPTANCE.md)。显隐与停靠不控制音频生命周期，隐藏窗口的呈现调度见 [45](45-VISIBILITY-AND-RESOURCE-GATE.md)。M9 原生瓦片、有界存储、来源服务/显示聚合及共轴 2D 已接入。大数组采用独立呈现流，来源关闭等待查询释放；设计见 [43](43-M9-SPECTROGRAM.md)，preview.15 接入和待验项目见 [46](46-M9-2D-INTEGRATION.md)。
 
 M7 结构、上游复用审计和资源预算见 [39-M7-WORKSPACE](39-M7-WORKSPACE.md)。以下首版设计及历史状态保留追溯；实际包/源码身份和未关闭门禁以 13 为准，不把上游模块或规划接口的存在视为 Trace 已交付功能。
 
@@ -16,11 +16,11 @@ preview.4：PlaybackService 分离只读历史上下文与按需音频输出。�
 
 2026-09-16 更新：M6 已建立 Trace 专用独立包、保留策略与桌面交互收尾；开发预览和验证边界见 27。
 
-状态（2026-09-15）：M0/M1/M2 已过最小工程关口；M2 的录音、会话、转换/恢复及 30 分钟实录/重开通过。当前实际映射为 src/trace 和 native/src/recorder；FILE 播放/历史/选区已接通并通过 M4 最小工程门禁，见 25；Export/有损成品解码已接通，见 26；桌面交付与完整交互待 M6。M3 原始 EBU 素材门禁仍开放。以下架构是完整目标，未接通部分不能按已实现理解。
+状态（2026-09-15）：M0/M1/M2 已过最小工程关口；M2 的录音、会话、转换/恢复及 30 分钟实录/重开通过。当前实际映射为 src/trace 和 native/src/recorder；FILE 播放/历史/选区已接通并通过 M4 最小工程门禁，见 25；Export/有损成品解码已接通，见 26；该日期的桌面交付待 M6，后续已完成开发预览交付，见 27。M3 原始 EBU 素材门禁仍开放。以下架构是完整目标，未接通部分不能按已实现理解。
 
 ## 默认技术路线
 
-先在独立仓库检出 Prism `df0755b8caaaab85157ac51aefffca0526974fc1`，保留可复用的 Windows 设备枚举、WASAPI 接线及 React 面板，增加独立的连续录音和回放领域层。桌面壳沿用 Electron/React/TypeScript，音频路径使用 C++，统一计量使用 libebur128，格式转换使用固定构建的 FFmpeg。不要先升级整套前端或把业务功能嫁接到 vstdev。
+本仓库已基于 Prism `df0755b8caaaab85157ac51aefffca0526974fc1` 完成复用接入，保留 Windows 设备枚举、WASAPI 接线及 React 面板，并实现独立的连续录音和回放领域层。后续直接在当前 checkout 开发，无需重复克隆上游。桌面壳沿用 Electron/React/TypeScript，音频路径使用 C++，统一计量使用 libebur128，格式转换使用固定构建的 FFmpeg。不要先升级整套前端或把业务功能嫁接到 vstdev。
 
 Prism 是优先验证对象，不是“无需改造”的保证。M0 通过条件和 NAudio/WPF 备用路线见 ADR-001。备用路线只在明确证据触发后替换主路线；模块契约、数值定义和测试素材继续复用。
 
@@ -93,8 +93,8 @@ UI 快照允许合并为最新值，显示历史按时间查询；音频和持�
 
 在原生采集处加入 sample frame/epoch/flags，分离显示队列和录音队列，替换历史计量中的墙上时钟，补齐 LRA，并建立流式文件路径。不能只把 60 秒上限改大。M0 要用证据判断这个改造边界是否可控。
 
-## 代码组织建议
+## 实际代码组织
 
-在上游现有结构中增加职责明确的目录，避免首日全仓搬迁：`src/main/recorder/`、`src/main/export/`、`src/renderer/recorder/`、`src/types/recorder/`、`native/src/recorder/`、`test/recorder/`。名称是建议，M0 确认后把真实位置写回 13。
+Trace 主进程、preload、领域服务和 shared/contracts 位于 `src/trace/`，界面位于 `src/trace/renderer/`，原生引擎位于 `native/src/recorder/`，CMake 入口位于 `native/recorder/`；测试位于 `test/`（以 Trace runner 分层），工具位于 `tools/`。上游 Prism 的其他目录继续保留来源与复用边界，不作为 Trace 主入口。
 
 录音设备重设、多采样率分段、成品缓存和恢复细节见 [03](03-AUDIO-METERING.md)、[04](04-DATA-FORMATS.md)、[06](06-CONTRACTS.md)。

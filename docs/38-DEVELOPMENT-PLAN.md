@@ -4,7 +4,9 @@
 
 建立日期：2026-09-16
 
-更新日期：2026-09-17
+更新日期：2026-09-17（阶段计划快照）
+
+2026-10-02 阅读提示：M7–M12 工程交付与复评已完成，本页保留范围、任务 ID 和阶段证据；下方 preview.25 是当时结项版本。当前源码 preview.31、最近已验证包 preview.30，M13 和云端修复状态以 [当前交接](13-HANDOFF.md)、[任务单](07-BACKLOG.md) 为准。
 
 状态：**本轮 M7–M12 开发与专家复评目标已达到；M7/M8 工程交付完成、待人工复验；M9 共轴 2D 已完成工程交付；M10 3D 的 25 阶段短门禁与 1800.335 秒 GPU 长测通过、工程关口关闭；M11 目标/报告的 31 阶段短门禁、1800.325 秒资源流程及录音/报告完整性通过，工程关口关闭；M12 完整功能、40 阶段短门禁、1800.128 秒资源与事后完整性通过；preview.25 界面/包复验通过，加权 8.6500、算术 8.6875，见 57。人工与独立环境专项保留待验状态。**
 
@@ -12,7 +14,7 @@
 
 后续用户反馈：preview.26 已交付布局编辑入口与保存语义改进，见 [58](58-LAYOUT-EDIT-FEEDBACK.md)。下方 preview.25 是 M12 结项与专家复评基线，当前运行入口以 13 为准。
 
-当前工程交付：Trace 0.1.0-preview.25，M12 完成，审计与评分见 [56](56-M12-COMPLETION-AUDIT.md)/[57](57-M12-FINAL-REVIEW.md)。上一工程交付 Trace 0.1.0-preview.22，M11 目标/报告的 31 阶段短门禁与完整资源流程通过，见 [51](51-M11-INTEGRATION.md)。M10 已交付的 preview.20 保留，见 [49](49-M10-3D-INTEGRATION.md)。M9 已交付的 preview.17 保留，见 47。M8 已工程交付的 preview.14 保留，记录见 [42](42-M8-ACCEPTANCE.md)/[45](45-VISIBILITY-AND-RESOURCE-GATE.md)；已有专项继续见 36。
+本计划结项交付：Trace 0.1.0-preview.25，M12 完成，审计与评分见 [56](56-M12-COMPLETION-AUDIT.md)/[57](57-M12-FINAL-REVIEW.md)。上一工程交付 Trace 0.1.0-preview.22，M11 目标/报告的 31 阶段短门禁与完整资源流程通过，见 [51](51-M11-INTEGRATION.md)。M10 已交付的 preview.20 保留，见 [49](49-M10-3D-INTEGRATION.md)。M9 已交付的 preview.17 保留，见 47。M8 已工程交付的 preview.14 保留，记录见 [42](42-M8-ACCEPTANCE.md)/[45](45-VISIBILITY-AND-RESOURCE-GATE.md)；已有专项继续见 36。
 
 ## 1. 产品目标与执行口径
 

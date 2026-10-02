@@ -10,13 +10,13 @@ Audio Recorder & Analyzer
 
 让声音被看见，让灵感有迹可循。
 
-[快速上手](docs/28-USER-GUIDE.md) · [内测版本说明](docs/69-INTERNAL-TEST-R3.md) · [开发进度](docs/13-HANDOFF.md) · [许可与来源](#许可与来源)
+[快速上手](docs/28-USER-GUIDE.md) · [内测版本说明](docs/69-INTERNAL-TEST-R3.md) · [开发进度](docs/13-HANDOFF.md) · [文档索引](docs/README.md) · [许可与来源](#许可与来源)
 
 </div>
 
 Trace 是 LeoMoon 系列的桌面音频录音与分析工作台。它把系统声音采集、录音、历史回听和多种测量仪器放在同一个窗口，让你既能观察正在发生的声音，也能沿时间轴回到刚才的细节。
 
-当前可用版本为 **Windows x64 开发预览版 0.1.0-preview.30**，面向同事内测；macOS 移植正在独立分支推进，尚未完成实机验证。
+当前源码为 **0.1.0-preview.31**，开发分支为 `recorder/dev`。最近完成打包验证的版本仍是 **Windows x64 0.1.0-preview.30 / InternalTest-r3**（来源提交 `9c1ee21`）；preview.31 尚未打包。macOS 移植方案已记录，当前分支的 Trace 音频后端仍为 Windows/WASAPI，Mac 采集实现与实机验收尚未完成。
 
 ![Trace 工作台：波形、电平与响度共享时间轴](docs/assets/quick-start-preview28/workbench.png)
 
@@ -50,7 +50,7 @@ Trace 是 LeoMoon 系列的桌面音频录音与分析工作台。它把系统�
 
 ### 当前验证边界
 
-本版本仍处于开发预览阶段。已有本机自动化及打包验证，独立干净 Windows 环境、不同声卡/驱动、真实 96 kHz 设备等验收仍需补充；Windows 分发包尚未签名。macOS 采集、权限、打包与签名/公证尚未完成实机验证。具体证据与待办以 [当前交接记录](docs/13-HANDOFF.md) 为准。
+本项目仍处于开发预览阶段。preview.30 有历史 Windows 自动化及打包证据；preview.31 的最新修复已通过 Linux 云端类型、可移植测试和应用资源构建，Windows 原生重编译与真实设备复验尚未执行。独立干净 Windows、不同声卡/驱动、真实 96 kHz 等验收仍需补充；Windows 分发包尚未签名。macOS 采集、权限、打包与签名/公证尚未完成实机验证。具体证据与待办以 [当前交接记录](docs/13-HANDOFF.md) 为准。
 
 ## 开发入口
 
@@ -74,10 +74,10 @@ Trace 使用 Electron / React / TypeScript，Windows 音频后端使用原生 C+
 | `src/trace/` | Trace 界面、主进程与业务逻辑 |
 | `native/src/recorder/` | 原生录音、缓存、计量与回放核心 |
 | [产品需求](docs/01-PRODUCT.md) / [架构](docs/02-ARCHITECTURE.md) | 产品范围与技术约定 |
-| [迭代计划](docs/38-DEVELOPMENT-PLAN.md) / [任务单](docs/07-BACKLOG.md) | 迭代目标与阶段状态 |
+| [任务单](docs/07-BACKLOG.md) / [迭代计划历史](docs/38-DEVELOPMENT-PLAN.md) | 当前待办与 M7–M12 原始范围 |
 | [验收标准](docs/08-ACCEPTANCE.md) / [当前交接](docs/13-HANDOFF.md) | 验证证据、限制和下一任务 |
 
-Trace 文档集中维护在 `docs/`。`recorder/dev` 为 Windows 产品基线，`feature/macos-port` 为未完成实机验证的 macOS 移植分支；本地 `main` 保留上游 Prism 基线。
+Trace 文档集中维护在 `docs/`，阅读顺序见 [文档索引](docs/README.md) 与 [开发入门](CODEX-START.md)。`recorder/dev` 为默认开发分支；macOS 路线见 [移植方案](docs/70-MACOS-PORT-PLAN.md)。上游复用起点以提交和来源记录追溯，不依赖本地是否存在 `main` 分支。
 
 ## 反馈
 

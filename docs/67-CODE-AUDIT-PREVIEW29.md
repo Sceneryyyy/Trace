@@ -1,9 +1,11 @@
 # Trace preview.29 全量代码质量审计
 
+阅读提示：本页为 preview.29 的审计与修复建议快照。后续落地及独立反例见 [68](68-INDEPENDENT-CHANGE-REVIEW.md)、[交接历史](archive/13-HANDOFF-HISTORY.md)；当前源码/测试边界见 [13](13-HANDOFF.md)。文中的未修项不能直接当成当前缺陷清单。
+
 审计日期：2026-09-21
-范围：`app/src/trace/`（89 ts，主进程 + 服务层）、`app/src/main/` + `app/src/renderer/`（上游 Prism）、`app/native/`（65 个 C++ 文件，两套原生栈）、`app/test/`（47 mjs + 16 ts + 16 cpp）、`app/tools/`（137 脚本）、构建与 CI 配置。
+范围：`src/trace/`（89 ts，主进程 + 服务层）、`src/main/` + `src/renderer/`（上游 Prism）、`native/`（65 个 C++ 文件，两套原生栈）、`test/`（47 mjs + 16 ts + 16 cpp）、`tools/`（137 脚本）、构建与 CI 配置。
 方法：四个分区并行静态审计 + 关键结论逐条人工核验（本报告只保留已核验或标注为待验证的结论）。
-前置：前端渲染层已于 `14-FRONTEND-AUDIT.md` 单独审计并完成一轮迭代，本报告不重复。
+前置：前端渲染层已于 `66-FRONTEND-AUDIT.md` 单独审计并完成一轮迭代，本报告不重复。
 
 ---
 
@@ -25,7 +27,7 @@
 
 ### P0-A 回听时连续性读数恒为"完整"（数据正确性）
 
-```257:257:app/src/trace/playbackService.ts
+```257:257:src/trace/playbackService.ts
 continuity:native.error?'unknown':'complete',
 ```
 
@@ -38,7 +40,7 @@ continuity:native.error?'unknown':'complete',
 
 ### P0-B 元数据校验失败导致录音从库中静默消失（数据可见性）
 
-```89:89:app/src/trace/recording.ts
+```89:89:src/trace/recording.ts
 try{const take=await readSession(join(directory,entry.name));take.document.preset=validateRecordSettings(take.document.preset);this.takes.set(take.document.sessionId,take)}catch{}
 ```
 
@@ -48,7 +50,7 @@ try{const take=await readSession(join(directory,entry.name));take.document.prese
 
 ### P0-C 退出路径：原生引擎先关，异步收尾后跑；且无看门狗
 
-```803:816:app/src/trace/main.ts
+```803:816:src/trace/main.ts
 try{final=engine?.shutdown()}catch(error){console.error('Trace shutdown:',error)}
 const finish=(async()=>{
   if(importWatchTimer)clearInterval(importWatchTimer)
@@ -71,7 +73,7 @@ finish.catch(error=>console.error('Trace finalization:',error)).finally(()=>{rea
 
 ### P0-D 原生 N-API 入参校验缺失（仅影响上游 Prism 栈，见定级说明）
 
-```132:140:app/native/src/main.cpp
+```132:140:native/src/main.cpp
 Napi::Value SpectrumSetFFTSize(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
     if (info.Length() < 1 || !info[0].IsNumber()) {
@@ -83,7 +85,7 @@ Napi::Value SpectrumSetFFTSize(const Napi::CallbackInfo& info) {
 
 无 2 的幂校验、无上下界。而 `dsp_utils.cpp:45-55` 的 radix-2 FFT 假定 2 的幂：传入 1000 时索引 `512+255+256=1023` > `buffer_.size()-1=999`，**堆越界写**。同文件的 `spectrogram.cpp:76-79` 对同类参数做了完整校验（`isPowerOfTwo` + `clamp(128,16384)`），证明这是缺失而非设计。
 
-```275:276:app/native/src/oscilloscope.cpp
+```275:276:native/src/oscilloscope.cpp
 while (pos < 0) pos += OSCILLOSCOPE_BUFFER_SIZE;
 while (pos >= OSCILLOSCOPE_BUFFER_SIZE) pos -= OSCILLOSCOPE_BUFFER_SIZE;
 ```
@@ -93,7 +95,7 @@ while (pos >= OSCILLOSCOPE_BUFFER_SIZE) pos -= OSCILLOSCOPE_BUFFER_SIZE;
 
 ### P0-E 采集线程合成假静音且不可区分（仅影响上游 Prism 栈）
 
-```944:962:app/native/src/windows_capture.cpp
+```944:962:native/src/windows_capture.cpp
 const UINT32 silenceFrames = std::min<UINT32>(maxSilenceFrames, std::max<UINT32>(1, static_cast<UINT32>(sinceLastChunkMs * format.sampleRate / 1000.0)));
 CapturedChunk silentChunk;
 silentChunk.left.assign(silenceFrames, 0.0f);
@@ -110,7 +112,7 @@ pushChunk(std::move(silentChunk));
 
 ### P0-G `reference.set` 缺少录音互斥守卫
 
-```362:362:app/src/trace/main.ts
+```362:362:src/trace/main.ts
 case 'reference.set':{...await retention.pause();try{...}finally{retention.resume()};...}
 ```
 对比 `main.ts:164` 的统一规则 `if(recordings.busy()||exiting||managingLibrary)void retention.pause();else retention.resume()`——这是**唯一**无条件 `resume()` 的 retention 操作。而 `sourceRetention.ts:32-37` 的 `pump()` 只看 `paused` 不看录音状态 → 录音进行中可能启动源文件哈希与删除。
@@ -201,7 +203,7 @@ case 'reference.set':{...await retention.pause();try{...}finally{retention.resum
 
 - 全部结论基于静态阅读 + 本机 `tools/trace.cjs check` 通过的事实；**未在 Windows 实机验证**任何原生并发窗口、96 kHz 实采、设备拔插路径。
 - 需运行验证的疑点（未纳入上述结论，仅备查）：`Recorder::prepare` 与采集线程 `push` 对 `queue_` 的竞争窗口是否可实际命中（建议 ASan/TSan + start/stop 压测）；`sessionTimeline` 对零长 region 的二分落点；实机 WASAPI 能否协商出非 {44.1k,48k,88.2k,96k} 速率；`file-worker` 挂死概率。
-- 本报告未重复 `14-FRONTEND-AUDIT.md` 已覆盖的渲染层内容。
+- 本报告未重复 `66-FRONTEND-AUDIT.md` 已覆盖的渲染层内容。
 
 ---
 

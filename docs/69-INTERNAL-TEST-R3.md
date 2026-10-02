@@ -2,7 +2,7 @@
 
 2026-09-24：基于已完成的三项 P1 修复、回归测试和 M7 布局验证，重新构建独立的 Windows x64 内测分发包。版本为 `0.1.0-preview.30`，分发修订为 `InternalTest-r3`；保留 preview.29 R2，不覆盖历史包。
 
-R3 对应的修复、审查和本机源码验证见 [13](13-HANDOFF.md) 与 [68](68-INDEPENDENT-CHANGE-REVIEW.md)。快速上手 PDF 沿用 preview.28 手册，分发说明会明确标出当前版本与验证边界。远程 Windows CI 按用户决定暂缓。
+R3 对应的修复、审查和本机源码验证见 [交接历史](archive/13-HANDOFF-HISTORY.md) 与 [68](68-INDEPENDENT-CHANGE-REVIEW.md)。快速上手 PDF 沿用 preview.28 手册，分发说明会明确标出当前版本与验证边界。远程 Windows CI 按用户决定暂缓。
 
 ## 交付
 
@@ -18,3 +18,7 @@ R3 对应的修复、审查和本机源码验证见 [13](13-HANDOFF.md) 与 [68]
 4. 新打包程序执行 `tools/m7/verify.cjs`，10 阶段全过；M7 界面在 1×、1.5×、2× 各 11/11 通过，另含导航回归、包内及解压后录音冒烟、程序 ZIP 完整性与 97 个文件逐项哈希。报告位于 `artifacts/m7/final-latest.json`。
 
 以上是本机 Windows x64 工程验证；远程 CI、独立干净 Windows 与不同声卡矩阵仍待后续内测。R3 未数字签名。
+
+## 后续源码与本包的区别（2026-10-02）
+
+preview.31 新增仪表主题；2995174 修复快照订阅、导出/缓存来源质量、报告定位监听及失败后另存恢复。本 R3 包不包含这些改动，其历史哈希与验收不变。[28](28-USER-GUIDE.md) 现为 preview.31 源码指南，包内 README/PDF 仍是原交付快照。preview.31 尚未重打包，最新边界见 [13](13-HANDOFF.md)。

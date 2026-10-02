@@ -1,7 +1,9 @@
 # Trace 声迹 / Prism 前端代码质量审计报告
 
 审计日期：2026-09-20
-审计范围：`app/src/trace/renderer/`（39 文件）、`app/src/renderer/`（66 文件），全部逐行实读
+
+2026-10-02 勘误：第 6 节的快照订阅优化已接入，但旧 selector 缺陷使相等结果仍触发更新；完整修复与真实 React/Chromium 证据见 [73-R1](73-CLOUD-CODE-REVIEW.md)。该修复位于 2995174，旧 preview.29/30 包不包含它。本文其余 findings/行号/“未运行”保留审计当时语义，当前验证见 [13](13-HANDOFF.md)。
+审计范围：`src/trace/renderer/`（39 文件）、`src/renderer/`（66 文件），全部逐行实读
 技术栈：Electron 40 · React 19 · zustand 5（仅 Prism 侧）· 手写 CSS（Trace 侧）/ 61KB 单文件 CSS（Prism 侧）
 
 ---
@@ -21,7 +23,7 @@
 
 ---
 
-## 1. Trace 声迹主界面（`app/src/trace/renderer/`）
+## 1. Trace 声迹主界面（`src/trace/renderer/`）
 
 ### 1.1 架构摘要
 
@@ -70,7 +72,7 @@
 
 ---
 
-## 2. Prism 分析界面（`app/src/renderer/`）
+## 2. Prism 分析界面（`src/renderer/`）
 
 ### 2.1 架构摘要
 
@@ -142,11 +144,11 @@
 
 ### 已落地
 
-**Trace 侧（`app/src/trace/renderer/`）**
+**Trace 侧（`src/trace/renderer/`）**
 
 | 报告条目 | 状态 | 实现 |
 |---|---|---|
-| T1 快照驱动全树 | ✅ | 新增 `snapshotStore.ts`（`useSyncExternalStore` + selector）与 `viewModel.ts`（`deriveView` 逐字迁出）；新增 `LiveInstruments.tsx` 9 个 memo 容器各自订阅；App chrome 经 `useChromeFlags` 只在标志位翻转时重渲染 |
+| T1 快照驱动全树 | 已接入，后续修正 | 新增 snapshotStore/selector、viewModel 与 9 个 memo 容器；当时 selector 对新快照返回相等值仍产生新引用，顶栏没有实现预期隔离。2995174 修正后真实 React/Chromium 相同快照额外 render 为 0；实机帧时间仍待验（73-R1） |
 | T2 每帧对象重建链 | ✅ | App 回调全部 `useCallback`；`contents`/`settingsContent`/`viewInputs` 走 `useMemo`；`InstrumentWorkspace` 包 memo；`useWorkspace` 回调稳定化 |
 | T3 LoudnessBar height% | ✅ | 改 `transform: scaleY()`（CSS 侧加 height:100%/transform-origin:bottom），视觉一致 |
 | T4 相关度游标 left% | ✅ | 改全宽 `.correlation-cursor` 的 `translateX(%)`，视觉一致 |
@@ -158,7 +160,7 @@
 | 死代码 / 排序过滤 | ✅ | App.tsx 不可达 Space 分支删除；ReportPanel 排序、RecordingLibrary 过滤入 `useMemo` |
 | 模态焦点（P2-14 提前） | ✅ | 打开聚焦首个非关闭控件；关闭归还焦点给触发控件 |
 
-**Prism 侧（`app/src/renderer/`）**
+**Prism 侧（`src/renderer/`）**
 
 | 报告条目 | 状态 | 实现 |
 |---|---|---|

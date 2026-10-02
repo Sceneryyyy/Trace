@@ -27,6 +27,6 @@ preview.8 的逐帧拖动、呈现/播放服务、工作台、走带/EOF、直�
 
 ## 重建与后续迭代
 
-开发入口见 [TRACE-README](../TRACE-README.md) 与 [09-WINDOWS-SETUP](09-WINDOWS-SETUP.md)。当前可运行目录为 dist-trace/preview.8/win-unpacked，目录不进入 Git，需要按项目构建流程生成。
+开发入口见 [Trace 首页](../README.md) 与 [09-WINDOWS-SETUP](09-WINDOWS-SETUP.md)。当时的交付目录为 dist-trace/preview.8/win-unpacked，产物不进入 Git；当前源码和已验证分发包见 [当前交接](13-HANDOFF.md)。
 
 本地查看基线：git show trace-preview.8-baseline。后续修改从该基线向前提交；主观反馈和实际测试证据继续分开记录。此次操作仅创建本地提交和标签，远程发布另行处理。

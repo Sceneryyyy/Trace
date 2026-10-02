@@ -1,46 +1,61 @@
 {
-  "schemaVersion": 1,
   "exampleOnly": true,
+  "schemaVersion": 2,
+  "product": "Trace",
   "sessionId": "example-session-001",
-  "createdAt": "2026-09-14T00:00:00Z",
-  "state": "finalizing",
-  "measurementConfig": {
-    "id": "example-measurement-001",
-    "engine": "libebur128",
-    "engineRevision": null,
-    "rmsWindowMs": 300,
-    "levelIndexStepMs": 10,
-    "loudnessIndexStepMs": 100,
-    "channelMapping": ["L", "R"],
-    "historyOrigin": "asset-start",
-    "boundaryPolicyVersion": 1
+  "name": "Trace-Example",
+  "createdAt": "2026-10-02T00:00:00Z",
+  "status": "recoverable",
+  "deviceId": "example-device-id",
+  "captureEpochId": "example-epoch-001",
+  "preset": {
+    "encoding": "float32",
+    "sampleRate": "source",
+    "namePrefix": "Trace",
+    "keepOriginal": true
   },
-  "takes": [
+  "sourceFormat": {
+    "sampleRate": 96000,
+    "channelCount": 2
+  },
+  "captureStartFrame": "0",
+  "captureEndFrameExclusive": "960000",
+  "frames": "960000",
+  "durationNs": "10000000000",
+  "error": "结构示例：中断录音，无真实媒体文件",
+  "regions": [
     {
-      "takeId": "example-take-001",
-      "sourceDeviceId": "example-device-id",
+      "id": "example-region-001",
+      "ordinal": 1,
+      "nativeId": "example-native-001",
+      "baseName": "Trace-Example",
+      "journalFile": "journal.jsonl",
       "captureEpochId": "example-epoch-001",
+      "format": {
+        "sampleRate": 96000,
+        "channelCount": 2
+      },
+      "frames": "960000",
       "startFrame": "0",
       "endFrameExclusive": "960000",
-      "sourceFormat": {
-        "sampleRate": 96000,
-        "channelCount": 2,
-        "encoding": "ieee-float",
-        "containerBits": 32,
-        "validBits": null,
-        "channelLabels": ["L", "R"]
+      "clock": {
+        "domain": "example-boot",
+        "startQpc100ns": null,
+        "endQpc100ns": null,
+        "startEstimated": false,
+        "endEstimated": false
       },
-      "outputPreset": {
-        "id": "wav-follow-24",
-        "container": "wav",
-        "codec": "pcm_s24le",
-        "sampleRateMode": "source",
-        "resolvedSampleRate": 96000,
-        "channelCount": 2,
-        "dither": false
-      },
-      "measurementConfigId": "example-measurement-001",
-      "continuity": "complete"
+      "encoding": "float32",
+      "status": "interrupted",
+      "error": "结构示例：中断录音",
+      "estimatedFrames": "0",
+      "clippedSamples": "0",
+      "captureQuality": {
+        "version": 1,
+        "estimatedFrames": "0",
+        "gapFrames": "0",
+        "unknown": true
+      }
     }
   ],
   "assets": [
@@ -48,65 +63,39 @@
       "assetId": "example-source-001",
       "role": "source",
       "relativePath": "audio/source-001.wav",
-      "container": "wav",
+      "sampleRate": 96000,
+      "channelCount": 2,
+      "encoding": "float32",
+      "frameCount": "960000",
+      "hash": null,
+      "clippedSamples": "0",
+      "regionId": "example-region-001",
       "codec": "pcm_f32le",
-      "sampleRate": 96000,
-      "channelCount": 2,
-      "sampleFormat": "float32",
-      "decodedFrameCount": "960000",
-      "state": "verifying",
-      "sha256": null,
-      "retainAfterExport": false
-    },
-    {
-      "assetId": "example-deliverable-001",
-      "role": "deliverable",
-      "relativePath": "audio/recording-001.wav",
       "container": "wav",
-      "codec": "pcm_s24le",
-      "sampleRate": 96000,
-      "channelCount": 2,
-      "sampleFormat": "pcm24",
-      "decodedFrameCount": null,
-      "state": "pending",
-      "sha256": null,
-      "sourceAssetId": "example-source-001"
+      "decodedFrameCount": "960000",
+      "state": "pending"
     }
   ],
   "segments": [
     {
       "segmentId": "example-segment-001",
-      "takeId": "example-take-001",
       "assetId": "example-source-001",
-      "captureEpochId": "example-epoch-001",
-      "captureStartFrame": "0",
-      "assetStartFrame": "0",
+      "regionId": "example-region-001",
       "frameCount": "960000",
-      "timelineStartNs": "0",
-      "sampleRate": 96000,
-      "gapBeforeNs": "0"
-    }
-  ],
-  "analysis": [
-    {
-      "assetId": "example-source-001",
-      "analysisVersion": 1,
-      "measurementConfigId": "example-measurement-001",
-      "state": "pending",
-      "availableUntilFrame": "0",
-      "summary": null
-    }
-  ],
-  "events": [
-    {
-      "sequence": 1,
-      "type": "record.stop",
-      "severity": "info",
-      "takeId": "example-take-001",
+      "captureStartFrame": "0",
+      "timelineStartFrame": "0",
+      "regionStartFrame": "0",
       "captureEpochId": "example-epoch-001",
-      "positionFrame": "960000",
-      "timelinePositionNs": "10000000000",
-      "recoverable": true
+      "assetStartFrame": "0",
+      "timelineStartNs": "0",
+      "gapBeforeNs": "0",
+      "overlapBeforeNs": "0",
+      "sampleRate": 96000,
+      "takeId": "example-session-001"
     }
-  ]
+  ],
+  "takes": [],
+  "events": [],
+  "eventSequence": 0,
+  "hasDiscontinuities": true
 }

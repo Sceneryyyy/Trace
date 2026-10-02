@@ -10,6 +10,7 @@
 
 - 2026-09-30 用户确认：`feature/instrument-themes` 已合入 `recorder/dev`；后续开发默认继续在 `recorder/dev`，除非用户另行指定分支。
 - 首次读 `docs/01-PRODUCT.md`、`docs/02-ARCHITECTURE.md`、`docs/07-BACKLOG.md` 和 `docs/13-HANDOFF.md`；音频修改加读 03，存储加读 04，界面加读 05，接口加读 06。
+- 全部文档导航见 `docs/README.md`。当前状态以 `docs/13-HANDOFF.md` 为准；`docs/archive/13-HANDOFF-HISTORY.md` 与带日期的阶段记录仅是历史证据。源码版本与已验证分发包分别记录。
 - 先检查实际目录、Git 状态、适用的项目指令和构建脚本。文档中的拟新增命令不能当成已经存在。
 - 以小而完整的任务推进；完成所选任务的实现、必要验证、文档和接力记录。不要只返回计划，也不要因上下文将满而丢失状态。
 - 结束时写明变更、已跑检查、未跑检查、实际阻塞和下一任务；同步 `docs/13-HANDOFF.md`。提交和远程操作遵循用户已有授权及仓库规则。

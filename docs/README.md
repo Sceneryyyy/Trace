@@ -1,0 +1,156 @@
+# Trace 项目文档索引
+
+更新：2026-10-02。当前源码 **preview.31**，默认分支 `recorder/dev`；最近验证过的 Windows 内测包 **preview.30 / InternalTest-r3（9c1ee21）**，preview.31 尚未打包。
+
+先读 [项目首页](../README.md)、[用户指南](28-USER-GUIDE.md) 或 [开发入门](../CODEX-START.md)。当前状态、未验证项和下一任务统一写在 [13-HANDOFF](13-HANDOFF.md)。带日期的阶段记录只证明当时版本的结果；旧“当前/下一步”不能覆盖 13。
+
+## 常用入口
+
+| 文档 | 用途/状态 |
+| --- | --- |
+| [用户指南](28-USER-GUIDE.md) | 当前源码操作，包含 preview.31 主题和质量提示 |
+| [源码开发入门](../CODEX-START.md) | 从现有仓库准备依赖和开始工作 |
+| [项目约定](../AGENTS.md) | 开发、验证、来源与交接规则 |
+| [Windows 环境](09-WINDOWS-SETUP.md) | 实际构建、测试和分发命令；Linux 可运行范围 |
+| [任务索引](07-BACKLOG.md) | 当前待办与早期任务 ID |
+| [当前交接](13-HANDOFF.md) | 源码/分发身份、最新验证、实机缺口 |
+| [文档清理记录](74-DOCUMENTATION-CLEANUP.md) | 本轮删除、归档、勘误与检查 |
+
+## 现行需求、语义与契约
+
+01–06 含早期设计与后续增量；已知冲突按当前用户要求、源码与注明日期的最新契约处理，不能把草案接口当成已实现。
+
+| 文档 | 用途/状态 |
+| --- | --- |
+| [01 · 产品需求与范围](01-PRODUCT.md) | 当前规范/来源及历史证据边界 |
+| [02 · 架构与模块边界](02-ARCHITECTURE.md) | 当前规范/来源及历史证据边界 |
+| [03 · 音频、计量与时间规范](03-AUDIO-METERING.md) | 当前规范/来源及历史证据边界 |
+| [04 · 会话、音频、缓存与恢复](04-DATA-FORMATS.md) | 当前规范/来源及历史证据边界 |
+| [05 · 布局、状态与交互](05-UI-UX.md) | 当前规范/来源及历史证据边界 |
+| [06 · 模块接口与消息契约](06-CONTRACTS.md) | 当前规范/来源及历史证据边界 |
+| [08 · 验收计划与完成门槛](08-ACCEPTANCE.md) | 当前规范/来源及历史证据边界 |
+| [10 · 与 VSTDev 的只读对齐](10-VSTDEV-ALIGNMENT.md) | 有日期的只读核查/门禁定义，当前结果见 13 |
+| [11 · 架构决定记录](11-DECISIONS.md) | 当前规范/来源及历史证据边界 |
+| [12 · Codex 工作指令](12-CODEX-PROMPTS.md) | 当前规范/来源及历史证据边界 |
+| [14 · 来源、核查范围与证据边界](14-SOURCES.md) | 当前规范/来源及历史证据边界 |
+| [18 · 里程碑最小门禁](18-MILESTONE-GATES.md) | 有日期的只读核查/门禁定义，当前结果见 13 |
+
+## 阶段设计、验收与发布历史
+
+保留数值定义、实现决策、失败反例、版本/哈希、用户反馈和复现方法。已完成的阶段不作为当前开发待办；尚未关闭的硬件/素材专项仍见 13。
+
+### M0–M6：环境、采集、录音、分析、回放与三格式
+
+| 文档 | 用途/状态 |
+| --- | --- |
+| [16 · M0 Windows 底座与采集诊断](16-M0-VALIDATION.md) | 历史设计/实施及本阶段证据 |
+| [17 · M1 实时监测实现与门禁](17-M1-VALIDATION.md) | 历史设计/实施及本阶段证据 |
+| [19 · M2 连续录音实施记录](19-M2-RECORDING.md) | 历史设计/实施及本阶段证据 |
+| [20 · M3 文件分析与确定性历史](20-M3-FILE-ANALYSIS.md) | 历史设计/实施及本阶段证据 |
+| [21 · TP 历史时间归属与 v4 计量](21-M3-TP-TIMING.md) | 历史设计/实施及本阶段证据 |
+| [22 · 设备重设续录：时钟与时间映射基础](22-M2-REGION-TIMELINE.md) | 历史设计/实施及本阶段证据 |
+| [23 · 同会话续录与录音快照一致性](23-M2-CONTINUATION.md) | 历史设计/实施及本阶段证据 |
+| [24 · WAV 成品精度转换与削波报告](24-M2-WAV-PRECISION.md) | 历史设计/实施及本阶段证据 |
+| [25 · 文件回放、呈现时钟与独立选区](25-M4-PLAYBACK.md) | 历史设计/实施及本阶段证据 |
+| [26 · 三格式录音、导出与独立解码](26-M5-EXPORT.md) | 历史设计/实施及本阶段证据 |
+| [27 · M6 桌面开发预览](27-M6-DESKTOP.md) | 历史设计/实施及本阶段证据 |
+
+### preview.2–9：交互、基线与产品评估
+
+| 文档 | 用途/状态 |
+| --- | --- |
+| [29 · preview.2 人工反馈改进](29-PREVIEW2-FEEDBACK.md) | 历史设计/实施及本阶段证据 |
+| [30 · preview.3 缩放、界面精简与直接录音](30-PREVIEW3-INTERACTION.md) | 历史设计/实施及本阶段证据 |
+| [31 · preview.4 统一工作台](31-PREVIEW4-WORKBENCH.md) | 历史设计/实施及本阶段证据 |
+| [32 · preview.8 历史游标连续呈现](32-PREVIEW8-SCRUB.md) | 历史设计/实施及本阶段证据 |
+| [33 · Trace preview.8 Git 基线](33-BASELINE.md) | 历史设计/实施及本阶段证据 |
+| [34 · Trace preview.8 产品功能与易用性复核](34-PRODUCT-REVIEW.md) | 历史设计/实施及本阶段证据 |
+| [35 · 三批产品迭代与人工验收](35-ITERATION-ACCEPTANCE.md) | 历史设计/实施及本阶段证据 |
+| [36 · Trace preview.9 人工验收](36-PREVIEW9-ACCEPTANCE.md) | 历史设计/实施及本阶段证据 |
+| [37 · Insight 2 调研与 Trace 同维度评估](37-INSIGHT2-COMPARISON.md) | 历史设计/实施及本阶段证据 |
+
+### M7–M12：工作台、频谱/声场、声谱、报告、导入与参考
+
+| 文档 | 用途/状态 |
+| --- | --- |
+| [38 · Trace 综合分析工作台迭代计划](38-DEVELOPMENT-PLAN.md) | M7–M12 已结项；保留计划范围和任务 ID |
+| [39 · M7 仪器工作台架构与实施记录](39-M7-WORKSPACE.md) | 历史设计/实施及本阶段证据 |
+| [40 · M7 / preview.10 交付与验收](40-M7-ACCEPTANCE.md) | 历史设计/实施及本阶段证据 |
+| [41 · M8 频谱与声场数值规范](41-M8-METERING.md) | 历史设计/实施及本阶段证据 |
+| [42 · M8 频谱与声场 / preview.14 工程验收](42-M8-ACCEPTANCE.md) | 历史设计/实施及本阶段证据 |
+| [43 · M9 时频缓存与 2D 声谱图设计](43-M9-SPECTROGRAM.md) | 历史设计/实施及本阶段证据 |
+| [44 · M8 资源增长排查](44-M8-RESOURCE-INVESTIGATION.md) | 历史设计/实施及本阶段证据 |
+| [45 · 窗口可见性与资源验证修正](45-VISIBILITY-AND-RESOURCE-GATE.md) | 历史设计/实施及本阶段证据 |
+| [46 · M9 共轴 2D 声谱图接入 / preview.15](46-M9-2D-INTEGRATION.md) | 历史设计/实施及本阶段证据 |
+| [47 · M9 显示一致性与性能 / preview.17](47-M9-PRESENTATION-PERFORMANCE.md) | 历史设计/实施及本阶段证据 |
+| [48 · M10 同数据 3D 声谱图设计](48-M10-3D-DESIGN.md) | 历史设计/实施及本阶段证据 |
+| [49 · M10 3D 接入 / preview.20](49-M10-3D-INTEGRATION.md) | 历史设计/实施及本阶段证据 |
+| [50 · M11 目标、事件与报告设计](50-M11-TARGET-REPORT-DESIGN.md) | 历史设计/实施及本阶段证据 |
+| [51 · M11 目标、事件与报告接入](51-M11-INTEGRATION.md) | 历史设计/实施及本阶段证据 |
+| [52 · M12 外部素材与参考比较设计](52-M12-ASSET-REFERENCE-DESIGN.md) | 历史设计/实施及本阶段证据 |
+| [53 · M12 外部素材接入](53-M12-IMPORT-INTEGRATION.md) | 历史设计/实施及本阶段证据 |
+| [54 · M12 单份参考比较设计](54-M12-REFERENCE-DESIGN.md) | 历史设计/实施及本阶段证据 |
+| [55 · M12 参考比较接入](55-M12-REFERENCE-INTEGRATION.md) | 历史设计/实施及本阶段证据 |
+| [56 · M12 完成审计与复评入口](56-M12-COMPLETION-AUDIT.md) | 历史设计/实施及本阶段证据 |
+| [57 · Trace M12 工程交付与同维度复评](57-M12-FINAL-REVIEW.md) | 历史设计/实施及本阶段证据 |
+
+### 后续反馈、品牌、文档、公测准备、审计与内测包
+
+| 文档 | 用途/状态 |
+| --- | --- |
+| [58 · 布局编辑入口反馈](58-LAYOUT-EDIT-FEEDBACK.md) | 历史设计/实施及本阶段证据 |
+| [59 · 公开测试准备度评估](59-PUBLIC-BETA-READINESS.md) | 历史设计/实施及本阶段证据 |
+| [60 · PB1 单实例与 PB2 故障诊断](60-PB1-PB2-SUPPORT.md) | 历史设计/实施及本阶段证据 |
+| [61 · LeoMoon 系列 / Trace 产品标识接入](61-LEOMOON-TRACE-BRANDING.md) | 历史设计/实施及本阶段证据 |
+| [62 · 用户手册核对与 PDF 快速上手](62-USER-MANUAL.md) | preview.28 PDF 的交付与 QA，非 preview.31 手册 |
+| [63 · 同事内测分发包](63-INTERNAL-TEST-DISTRIBUTION.md) | preview.28 / R1 分发校验快照 |
+| [64 · 同事内测分发包 R2（preview.29）](64-INTERNAL-TEST-R2.md) | preview.29 / R2；逐帧重渲染结论已勘误 |
+| [Trace 声迹 / Prism 前端代码质量审计报告](66-FRONTEND-AUDIT.md) | 2026-09-20 前端审计；selector 性能结论有后续勘误 |
+| [Trace preview.29 全量代码质量审计](67-CODE-AUDIT-PREVIEW29.md) | preview.29 审计建议；后续结果见 68/73 |
+| [68 · 2026-09-23 三批变更的独立复核](68-INDEPENDENT-CHANGE-REVIEW.md) | 独立反例；P1 与估计静音提示已修，CI/看门狗待验 |
+| [69 · 同事内测分发包 R3（preview.30）](69-INTERNAL-TEST-R3.md) | 最近已验证包 preview.30 / R3；不含 preview.31 修复 |
+
+## macOS、M13 与最新云端审核
+
+| 文档 | 用途/状态 |
+| --- | --- |
+| [70 · Trace macOS 移植实施方案](70-MACOS-PORT-PLAN.md) | 待实施方案：需要 Apple silicon 真机完成采集探针 |
+| [71 · 仪表主题色（M13）开发方案](71-INSTRUMENT-THEMES-PLAN.md) | 主题已合入；首次验收范围已勘误，3D 三角/帧时间/PDF/打包待办 |
+| [72 · M13 仪表主题独立审计](72-INSTRUMENT-THEMES-REVIEW.md) | R1/R2 已修；R3 断言已修，完整首帧专项仍待 Windows |
+| [73 · 云环境代码审核（2026-10-02）](73-CLOUD-CODE-REVIEW.md) | 五项问题与两项旧缺口已在 2995174 修复，233 个 portable 回归通过 |
+
+## 素材、示例、随包文案与历史存档
+
+| 文档 | 用途/状态 |
+| --- | --- |
+| [现行数据示例](../examples/README.md) | Session v2 / RecordSettings v3 / ExportPreset；无真实媒体 |
+| [preview.28 PDF](../output/pdf/LeoMoon-Trace-Quick-Start-preview.28-zh-CN.pdf) | 8 页历史快速上手，受版本控制，R3 仍沿用 |
+| [手册截图来源](assets/quick-start-preview28/README.md) | preview.28 演示信号/隔离窗口，非当前实机验收 |
+| [品牌素材来源](../resources/trace/branding/README.md) | 实际 PNG、生成过程、SHA256 与品牌归属 |
+| [初始调研快照](../references/RESEARCH-v0.3.md) | 2026-09-14 方案 v0.3，仅保留历史设计依据 |
+| [会话交接历史](archive/13-HANDOFF-HISTORY.md) | 历史状态/提交/验证证据，当前待办只看 13 |
+
+内测 TXT 输入文案固定 **preview.30 / InternalTest-r3**，不因当前指南更新而成为 preview.31 发布材料；已交付 ZIP 内容与哈希保持历史身份。
+
+| 文档 | 用途/状态 |
+| --- | --- |
+| [00-开始使用.txt](distribution/internal-test/00-开始使用.txt) | R3 的随包说明/反馈/许可文案 |
+| [02-内测试用清单.txt](distribution/internal-test/02-内测试用清单.txt) | R3 的随包说明/反馈/许可文案 |
+| [03-已知限制与版本说明.txt](distribution/internal-test/03-已知限制与版本说明.txt) | R3 的随包说明/反馈/许可文案 |
+| [04-问题反馈模板.txt](distribution/internal-test/04-问题反馈模板.txt) | R3 的随包说明/反馈/许可文案 |
+| [05-许可与来源.txt](distribution/internal-test/05-许可与来源.txt) | R3 的随包说明/反馈/许可文案 |
+
+## 上游与许可
+
+这些材料保留上游身份和署名；Prism 的功能/构建指令不作为 Trace 当前入口。
+
+| 文档 | 用途/状态 |
+| --- | --- |
+| [Trace 项目首页](../README.md) | 产品/源码/分发入口 |
+| [上游 Prism README](../README-Prism.md) | 按字节保留的上游原说明 |
+| [GNU GPL v3](../LICENSE) | 原始许可条款 |
+| [第三方声明](../THIRD_PARTY_NOTICES.md) | 上游与依赖许可/来源 |
+| [上游 DAW 插件说明](../plugin/README.md) | Prism VST/AU/Standalone 的独立目标说明 |
+| [libebur128 本地补丁](../native/vendor/libebur128/TRACE-PATCHES.md) | 1.2.6 锁定来源、数值改动与版本证据 |
+
+15（开工包自检）、65（临时未提交变更交接）和根目录 TRACE-README 兼容入口已被后续内容替代并删除，原件可从 Git 历史追溯；编号不重新排列。删除理由见 74。

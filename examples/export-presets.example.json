@@ -1,65 +1,110 @@
 {
-  "schemaVersion": 1,
   "exampleOnly": true,
-  "presets": [
+  "documentationVersion": 1,
+  "recordSettingsVersion": 3,
+  "recordingSettingsExamples": [
     {
-      "id": "wav-follow-24",
-      "label": "WAV 跟随来源 24-bit",
-      "container": "wav",
-      "codec": "pcm_s24le",
-      "sampleRateMode": "source",
-      "sampleRate": null,
-      "bitDepth": 24,
-      "dither": false,
-      "keepSourceWav": false
+      "label": "WAV 跟随来源 / 24-bit PCM",
+      "settings": {
+        "encoding": "pcm24",
+        "sampleRate": "source",
+        "namePrefix": "Trace",
+        "keepOriginal": true
+      }
     },
     {
-      "id": "wav-96-float",
-      "label": "WAV 96 kHz 32-bit 浮点",
-      "container": "wav",
-      "codec": "pcm_f32le",
-      "sampleRateMode": "fixed",
-      "sampleRate": 96000,
-      "bitDepth": 32,
-      "dither": false,
-      "keepSourceWav": false
+      "label": "WAV 96 kHz / 32-bit float",
+      "settings": {
+        "sampleRate": 96000,
+        "encoding": "float32",
+        "namePrefix": "Trace",
+        "keepOriginal": true
+      }
     },
     {
-      "id": "mp3-48-192",
-      "label": "MP3 48 kHz 192 kbps",
-      "container": "mp3",
-      "codec": "libmp3lame",
-      "sampleRateMode": "fixed",
-      "sampleRate": 48000,
-      "rateControl": "cbr",
-      "bitrateKbps": 192,
-      "keepSourceWav": false
+      "label": "WAV 48 kHz / 24-bit PCM",
+      "settings": {
+        "sampleRate": 48000,
+        "encoding": "pcm24",
+        "namePrefix": "Trace",
+        "keepOriginal": true
+      }
     },
     {
-      "id": "aac-m4a-48-192",
-      "label": "AAC / M4A 48 kHz 192 kbps",
-      "container": "mp4",
-      "extension": "m4a",
-      "codec": "aac",
-      "profile": "aac_low",
-      "sampleRateMode": "fixed",
-      "sampleRate": 48000,
-      "rateControl": "target-bitrate",
-      "bitrateKbps": 192,
-      "keepSourceWav": false
+      "label": "MP3 48 kHz / 192 kbps CBR",
+      "settings": {
+        "format": "mp3",
+        "sampleRate": 48000,
+        "bitrate": 192,
+        "namePrefix": "Trace",
+        "keepOriginal": true
+      }
     },
     {
-      "id": "aac-adts-44-192",
-      "label": "AAC / ADTS 44.1 kHz 192 kbps",
-      "container": "adts",
-      "extension": "aac",
-      "codec": "aac",
-      "profile": "aac_low",
-      "sampleRateMode": "fixed",
-      "sampleRate": 44100,
-      "rateControl": "target-bitrate",
-      "bitrateKbps": 192,
-      "keepSourceWav": false
+      "label": "AAC M4A 48 kHz / 192 kbps",
+      "settings": {
+        "format": "aac",
+        "container": "m4a",
+        "sampleRate": 48000,
+        "bitrate": 192,
+        "namePrefix": "Trace",
+        "keepOriginal": true
+      }
+    },
+    {
+      "label": "AAC ADTS 44.1 kHz / 192 kbps",
+      "settings": {
+        "format": "aac",
+        "container": "adts",
+        "sampleRate": 44100,
+        "bitrate": 192,
+        "namePrefix": "Trace",
+        "keepOriginal": true
+      }
+    }
+  ],
+  "exportPresetExamples": [
+    {
+      "label": "WAV 96 kHz / 32-bit float",
+      "preset": {
+        "format": "wav",
+        "sampleRate": 96000,
+        "encoding": "float32"
+      }
+    },
+    {
+      "label": "WAV 48 kHz / 24-bit PCM",
+      "preset": {
+        "format": "wav",
+        "sampleRate": 48000,
+        "encoding": "pcm24"
+      }
+    },
+    {
+      "label": "MP3 48 kHz / 192 kbps CBR",
+      "preset": {
+        "format": "mp3",
+        "sampleRate": 48000,
+        "bitrate": 192
+      }
+    },
+    {
+      "label": "AAC M4A 48 kHz / 192 kbps",
+      "preset": {
+        "format": "aac",
+        "container": "m4a",
+        "sampleRate": 48000,
+        "bitrate": 192
+      }
+    },
+    {
+      "label": "AAC ADTS 44.1 kHz / 192 kbps",
+      "preset": {
+        "format": "aac",
+        "container": "adts",
+        "sampleRate": 44100,
+        "bitrate": 192
+      }
     }
   ]
 }

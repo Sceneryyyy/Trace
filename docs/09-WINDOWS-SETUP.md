@@ -1,65 +1,66 @@
 # 09 · Windows 开发与交付环境
 
-2026-09-15 已完成 Windows 构建，精确版本、失败恢复和实际命令见 16-M0-VALIDATION.md、toolchain.m0.json 与 Trace.ps1。本文件其余部分保留开工时的设置背景，区分“已经从上游核对的命令”和“后续需要建立的脚本”，不把文档步骤写成已验证环境。
+2026-10-02 更新。所有命令在本仓库根执行。Trace 已有完整源码和专用构建入口；首次接入过程见 [16](16-M0-VALIDATION.md)，当前状态见 [13](13-HANDOFF.md)。
 
-## PC 准备项
+## 工具与锁定记录
 
-| 项目 | 开工选择 | 检查方式 |
-| --- | --- | --- |
-| 系统 | Windows x64；具体 Windows build 在 M0 记录 | 系统信息与 PowerShell |
-| Codex | 使用用户 PC 已有的可工作入口 | 用它打开解压目录并发送 README 的指令 |
-| Git | 可用的 Git for Windows | `git --version` |
-| Node/npm | 首先读取锁文件/engines；Node 22.x、至少 22.12 可作为验证起点 | `node --version`、`npm --version`；最终精确版本由 M0 锁定 |
-| 原生构建 | Visual Studio Build Tools，Desktop development with C++、MSVC x64、Windows SDK | 检查实际安装组件与构建日志；普通 shell 找不到 cl 不等于未安装 |
-| Python | 与 node-gyp 版本兼容；Python 3.12 可作为起点 | `py -0p`、`py -3.12 --version`，不存在就记录而不是伪造路径 |
-| CMake | 使用需要 CMake 的依赖/上游目标时配置；上游文档写 3.22+ | `cmake --version`；桌面 addon 主路径是 node-gyp |
-| FFmpeg/ffprobe | M5 必需，选定可用 Windows x64 构建并保存版本/构建参数/hash | 查询 codecs/encoders，不只检查 exe 存在 |
-| 音频设备 | 至少一个可用系统播放设备；要验收 96 kHz 需实际支持该格式 | 软件读取真实 mix format，手工记录设备配置 |
+| 项目 | 当前要求与证据 |
+| --- | --- |
+| Windows | x64；真实 WASAPI、设备故障、原生 DLL 和分发验证需要 Windows |
+| Node/npm | Windows 基线 Node 24.19.0、项目入口使用本地 npm 10.9.2；精确 M0 环境见 [toolchain.m0.json](../toolchain.m0.json) |
+| MSVC / SDK | Visual Studio 2022 C++ x64 工具链与 Windows SDK；实际构建器见 `tools/build-engine.cjs`，历史版本见 toolchain |
+| Python / CMake | node-gyp 兼容的 Python、CMake；Trace 引擎经 CMake 构建，上游 DSP 经 node-gyp 针对 Electron ABI 构建 |
+| Electron /前端依赖 | 以 [package-lock.json](../package-lock.json) 为准；不能只依据上游 README 的 Node 18+ 说明选环境 |
+| libebur128 | [native/vendor/libebur128](../native/vendor/libebur128) 的锁定源码与 [本地补丁记录](../native/vendor/libebur128/TRACE-PATCHES.md) |
+| FFmpeg / ffprobe | [ffmpeg.lock.json](../ffmpeg.lock.json) 固定 Windows 构建与校验；项目 `Codecs`/`Setup` 入口准备组件 |
+| 声卡与设备 | 软件读取实际 mix format；验收 96 kHz 需要真实支持该格式的系统播放设备 |
 
-Prism README 的 Node 18+ 描述不能单独作为所有当前依赖的最低版本依据；以锁定提交的锁文件和实际依赖 engines 为准。不要在首日无条件换最新 Node/Electron/CMake。不存在的工具可以列出安装缺项，但不能通过关闭安全机制或清空系统目录解决构建。
+`toolchain.m0.json` 是 2026-09-15 的环境快照，其中后续依赖的待定项不代表当前实现缺失。当前依赖与行为以锁文件、构建脚本和源码为准。各机器安装目录不同，普通 shell 找不到 `cl` 不等于未安装工具链。
 
-## 新仓库接入
-
-若本包解压目录中尚无实际代码，在其 `app/` 子目录建立新 clone。以下命令只适用于确认 `app/` 不存在或为空的情形，先检查，不能对已有用户仓库照抄执行：
+## 准备与开发
 
 ```powershell
-git clone --no-checkout https://github.com/Boof2015/prism.git app
-git -C app checkout -b recorder/dev df0755b8caaaab85157ac51aefffca0526974fc1
-git -C app status --short
+.\Trace.ps1 -Action Setup      # 安装锁定依赖、Electron/esbuild、编码组件，构建上游 DSP
+.\Trace.ps1 -Action Engine     # 构建 Trace 引擎/测试目标并自动运行 CTest
+.\Trace.ps1 -Action Check      # 类型、采集能力、上游响度、portable/native Trace 测试
+.\Trace.ps1 -Action AppBuild   # 构建 Trace main/preload/renderer
+.\Trace.ps1 -Action App        # 启动已构建的 Trace 应用
 ```
 
-先读实际仓库的 README、AGENTS/作用域规则、package.json、package-lock.json、native/binding.gyp 和 postinstall 脚本，再运行依赖安装。M0 之后把本包 AGENTS 与上游已有规则合并，docs/examples/references 接入同名位置；遇冲突保留原件并登记映射。以 `app/` 为今后的 Git 根，保留 upstream 地址/提交信息，远程推送仍按用户授权执行。
+`Trace.ps1` 调用 `tools/trace.cjs`；系统编译工具需事先安装。Electron addon 必须匹配锁定 Electron 的架构与 ABI。`Setup` 构建的上游 DSP 与 `Engine` 构建的 Trace 引擎是两个目标。
 
-本包 README 保存为代码仓库的 `CODEX-START.md`，不要覆盖上游 README。完成接入后在 13 记录代码根与文档根，并让用户以后打开代码根继续。
-
-## 已核对的上游脚本
-
-在 `app/` 作为工作目录执行。这里只确认脚本在指定提交存在，没有宣称运行成功。
+`Engine` 已自动运行 CTest。仅需重跑该门禁时可单独执行：
 
 ```powershell
-npm ci
-npm run rebuild:native
+ctest --test-dir build/trace-engine -C Release --output-on-failure
+```
+
+当前 CMake 注册 16 项，包含 preview.31 新增的 `trace-replay-quality`；此数量来自源码，最新 16 项全量 Windows 运行尚未执行，不能沿用旧 15/15 结论。可单独执行 `npm run test:trace`（portable）、`npm run test:trace-native`（Windows 原生）、`npm run test:trace-all`。测试分层以 `scripts/run-trace-tests.mjs` 为准。
+
+默认 `npm run dev`/`build`/`dist:win` 属于 Prism。Trace 使用 `npm run build:trace`、`npm run start:trace` 和项目入口；不要将上游 VST/TUI 安装流程当作 Trace 分发流程。
+
+## Windows 分发
+
+```powershell
+.\Trace.ps1 -Action Codecs
+.\Trace.ps1 -Action Package
+```
+
+`Package` 重建 Trace 引擎及应用，再调用 `tools/package-trace.cjs`。输出目录、产品版本与组件由 [electron-builder.trace.cjs](../electron-builder.trace.cjs) 和 [src/trace/product.ts](../src/trace/product.ts) 定义；应用资源构建成功不等于分发、真实音频或干净系统验证通过。
+
+同事内测 ZIP 的 R3 组装脚本为 `tools/package-internal-test-r3.cjs`，固定 preview.30 / InternalTest-r3；无后缀脚本固定 preview.28 / R1，`-r2` 固定 preview.29 / R2。这些脚本应在匹配的历史来源与素材下使用。preview.31 新分发需新增版本入口并同步来源提交、README/TXT/PDF 和校验，不能直接复用 R3 脚本或只改文件名。最近分发证据见 [69](69-INTERNAL-TEST-R3.md)；历史产物目录被 gitignore 排除，不随源码克隆提供。
+
+## 云端检查与未验证边界
+
+仅有 Linux 环境时，可运行：
+
+```bash
+npm ci --ignore-scripts --no-audit --no-fund
 npm run typecheck
-npm run test:capture-support
-npm run dev
+npm run test:trace
+npm run build:trace
 ```
 
-`npm ci` 可能执行上游 postinstall，先核对该脚本。Electron 的原生模块必须针对对应 Electron 版本和 x64 ABI 构建；系统 Node 下加载成功不等于 Electron 可加载。上游 `rebuild:native` 已带 Electron target，优先核实它而不是随意拼一个不同版本的 rebuild 命令。
+`tools/trace.cjs` 明确限制 Windows x64，不能在 Linux 使用它作为全套验收入口。可移植 C++ 专项可按 [73](73-CLOUD-CODE-REVIEW.md) 的记录单独编译；未运行 Windows 原生加载、真实采集、96 kHz 或打包时须记录未验证。
 
-按任务再执行已存在的 `npm test`、`npm run test:lufsmeter-native`、`npm run test:lufsmeter-ebu -- <素材目录>`。记录上游基线失败，不把全部失败归给本次改动。`npm run build` 只代表应用资源构建，不等于已经通过真实音频或安装验证。
-
-上游 `dist:win` 会涉及 TUI、插件资源和安装器操作。它不能直接作为本产品最终分发流程；M6 建立只含桌面录音机、音频 DLL、所需编码器和许可说明的打包目标。
-
-## 将来需要建立的命令
-
-建议 M0/M1 建立 `test:recorder`，M2 建立 `test:recorder-files`，M4 建立 `test:recorder-playback`，M6 建立 `dist:recorder:win`。这些名称当前只是任务建议，首次执行前必须检查是否已实现，并在 13 填入真实命令。不要让 Codex 运行不存在的 script 后把错误当成环境损坏。
-
-libebur128 采用锁定源码/版本的可重复构建；不要假定已找到可兼容所有运行库的现成 DLL。FFmpeg 的库/子进程、架构、编码器能力同样在 M5 固定。需要编译器设置调整时只影响本项目。
-
-## 构建证据和交付
-
-将依赖精确版本、node/npm/Python/MSVC/SDK、Electron ABI、libebur128 revision 和 FFmpeg build 记录到版本控制的清单；将个人机器绝对路径保留在本机说明或脱敏记录。锁文件、编译选项和测试命令一起维护。
-
-首版先验证便携桌面包，再按需要加入安装器；包在目标机器必须不依赖源码目录、开发环境 PATH 或联网下载。签名、自动更新、公开发布和 VST/AU 安装不属于第一天的任务。
-
-本机没有 96 kHz 设备时，可完成格式与离线样本测试，但 A02 的 96 kHz 实机项保持未运行，后续接实际设备补齐。
+签名/公开发布、干净 Windows、硬件矩阵、官方 EBU 素材和 PDF 更新等剩余工作见 [当前交接](13-HANDOFF.md)。macOS 实施计划见 [70](70-MACOS-PORT-PLAN.md)。

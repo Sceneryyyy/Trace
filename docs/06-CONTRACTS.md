@@ -1,217 +1,127 @@
 # 06 · 模块接口与消息契约
 
-2026-10-02：replayFreeze 元数据升至 v3，新增 quality v1（estimatedFrames、gapFrames 为十进制帧数字符串，unknown 为布尔）。冻结质量覆盖当前不可变缓存；replaySave 的可选 quality 仅覆盖 startFrame/endFrame 半开选区，由原生对象计算，不信任 renderer 提供的计数。缺失旧字段时兼容保存，但标记 unknown。AnalysisSource.continuity 支持 unknown；导出结果保存来源 continuity，旧导出只追溯元数据、不要求原 PCM 仍存在。report.jump 与普通 seek 一致，暂停并关闭输出、恢复监听意图、不自动发声。录音/缓存准备失败通过统一后台状态恢复，退出/库维护/活动录音期间保持暂停。Request v1、Meter v4、Session v2 和分析缓存 key v3 不变；详见 [73](73-CLOUD-CODE-REVIEW.md) 修复节。
+2026-10-02 对照 preview.31 源码更新。唯一类型定义为 [shared.ts](../src/trace/shared.ts)，命令与参数校验为 [contracts.ts](../src/trace/contracts.ts)，状态控制器为 [main.ts](../src/trace/main.ts)。本文列出实际接线；完整类型以源码为准，早期拟定的 `selection.analyze`、`view.returnLive` 等不是现有命令。
 
-PB2：Request v1 增加无参数 app.exportDiagnostics / app.feedback / app.reloadUI，以及仅接受 kind=react/script/promise 的 app.rendererFault；拒绝路径、收件地址与异常原文。TraceState.support 是可选固定字段状态。app.diagnostics 保留原摘要形状，复制/导出使用 SupportReport schemaVersion=1，包含主模块构建 SHA256 与脱敏历史。support.testFault 仅在隔离 testMode 接受 renderer/main/worker，生产模式返回 TEST_ONLY。源目录选择与固定 mailto 构造均在主进程，见 60。
+## 版本与基本类型
 
-M12 参考：reference.set/clear/activate/range/configure/retry 使用来源 ID、A/B 槽、十进制帧范围与有界纳秒偏移，禁止路径参数。TraceState.reference 仅含来源/分析摘要及差值；ReferencePacket 通过 trace:reference → preload 独立转移流发送，带版本/序号/配置键和各自真实查询位置，不保留过期数组。workspace v4、引用释放与原生两槽调度见 54/55。
+| 协议/格式 | 当前版本与定义 |
+| --- | --- |
+| Request / Reply / native meter 的 protocolVersion | 1 |
+| 计量算法 | Meter v4，见 [03](03-AUDIO-METERING.md) |
+| 会话 | Session v2，兼容读取 v1，见 [04](04-DATA-FORMATS.md) |
+| 磁盘分析缓存 | 二进制 schema v1；分析缓存 key v3 |
+| 冻结内存历史 | ReplayFreeze 元数据 v3；quality v1，见 [ReplayBuffer.h](../native/src/recorder/ReplayBuffer.h) 与 [replaySaveTypes.ts](../src/trace/replaySaveTypes.ts) |
+| 布局 / 声谱设置 | workspace v4 / spectrogramSettings v2，分别见 [39](39-M7-WORKSPACE.md)、[49](49-M10-3D-INTEGRATION.md)、[55](55-M12-REFERENCE-INTEGRATION.md) |
 
-M12：新增 imports.choose/refresh/cancel/prepare/relocate/clearCache/remove/removeExport/rename/openSource/openFolder/openRoot；通用命令仅接受 ID/选项/名称。TraceHostAPI/TraceAPI 增加 importFiles(File[])，preload 通过 webUtils 解析磁盘 File，经专用 trace:import-files 通道送入主进程；主窗口/mainFrame 和批量上限同时验证。TraceState 携带有限字段的 imports/importIssues，刷新与取消不等待 mutation 队列，读取回复不进入完成缓存。旧的快照/声谱数组转移语义保持。见 53。
+帧数/位置用十进制非负整数字符串表示，原生为 uint64，TS 校验后转 BigInt。JSON 不使用 NaN/Infinity；Metric 的单位为 dBFS/dBTP/LUFS/LU，状态为 ready/silence/insufficient/gap/error。ready 的 value 必须有限，其他状态按指标语义使用 null。
 
-M11：新增 targets.configure 与 report.prepare/get/cancel/retry/jump/open/export，严格 ID/范围/事件索引白名单，无来源或输出任意路径。TraceState 仅携带目标设置及有限任务摘要，report.get 按需获取结果、不进入命令回复缓存。AnalysisService 引用由 Set 改为计数，报告取消后须等 worker 退出才释放。完整 payload、取消及源清理契约见 [51](51-M11-INTEGRATION.md)。
-
-preview.20：声谱包增加 cancelled，表示应用解析器确证原引用已不适用；前端重试当前来源。结构错误、原生/文件故障仍走 error。取消不以捕获错误字符串替代，见 49。
-
-M10 / preview.19：spectrogram.configure 接受 settings v2，surface 仅影响显示，不改变 configKey。preferences.retry 仅重试当前设置快照，TraceState.preferencesError 单独表示设置持久化失败；不会触发采集恢复。before-quit 等待 PreferencesWriter.flush。测试窗口可明确禁用 WebGL，且仅在 --trace-test 与测试环境变量同时存在时生效。见 49。
-
-M9 内部接口增量：SpectrogramService.query 接收内部来源、FFT/声道配置及可视区，返回有界 SpectrogramView；point 返回实际窗起止/bin/Hz/状态和值；cancel/close 抑制旧视口并等待释放。视图使用独立数组与覆盖掩码，原始点不返回像素汇总值。Native spectrogramTile 一次最多 64 列，与瞬时仪器共享两任务上限。具体类型和语义见 spectrogramSource.ts/spectrogramView.ts/spectrogramService.ts 与 43；renderer 白名单已增加 spectrogram.configure/query/point/cancel，query 只带来源引用与范围，point 绑定 queryId；大数组经独立 trace:spectrogram 流发布，新增 TraceAPI.onSpectrogram，不进入命令回复缓存。SpectrogramPresenter 负责请求/来源释放与旧回包淘汰，见 46/47。preview.17 包增加 configKey，FILE 引用可携 analysisId；绘制前比较来源/epoch/分析 ID/配置。时间范围改变可保留同来源、同配置、有实际坐标的旧分辨率图像。内部路径参数仍不暴露给界面。
-
-M8：新增 instrument.configure，payload 仅为 {settings}，数值/枚举范围见 instrumentTypes.ts；前端不发送文件路径。MeterSnapshot 可携带 instruments（configKey、phase、经校验的 NativeInstrumentResult），文件与实时均按同一呈现上下文发布。旧代次/来源/设置回复不覆盖新状态。native instrumentAnalyze 为内部四来源异步接口，最多两个任务；见 41/42。
-
-M7：协议 v1 白名单新增 workspace.configure，payload 仅允许 {workspace: WorkspaceState}。严格验证树深≤8、仪器叶子唯一/完整、分割比例 0.15–0.85、显示选项、预设 ID/名称/数量与序列化上限；不接收路径、设备、REC 或计算参数。TraceState 增加 workspace；该命令更新/保存布局，避免触发全局 busy 和历史重置。实际接口见 workspace.ts/shared.ts/contracts.ts，迁移规则见 39。
-
-preview.4 实际契约见 shared.ts/contracts.ts 和文末补充。view.inspect/view.live 为协议 v1 白名单扩展；replayFreeze 元数据为 v2。历史来源不等于页面，见 31。
-
-协议 v1 产品目标。实际唯一类型定义为 src/trace/shared.ts，白名单校验为 contracts.ts，状态控制器为 main.ts。M1/M2 已实现部分见文末；FILE/回放/选区/导出表项仍是后续实施契约。
-
-## 基础类型
+实际设备格式字段为：
 
 ```typescript
-type U64Text = string; // JSON 十进制非负整数；原生 uint64，TS 校验后 BigInt
-type ViewMode = 'LIVE' | 'REC' | 'FILE';
-type MetricState = 'ready' | 'silence' | 'insufficient' | 'gap' | 'error';
-type Metric = { value: number | null; unit: 'dBFS' | 'dBTP' | 'LUFS' | 'LU'; status: MetricState };
 type SourceFormat = {
   sampleRate: number;
-  channelCount: 1 | 2;
-  encoding: 'pcm-int' | 'ieee-float';
+  channelCount: number;
   containerBits: number;
-  validBits: number | null;
-  channelLabels: string[];
-};
-type Request<T> = {
-  protocolVersion: 1;
-  requestId: string;
-  command: string;
-  expectedStateRevision: number;
-  payload: T;
-};
-type Reply<T> =
-  | { requestId: string; ok: true; stateRevision: number; data: T }
-  | { requestId: string; ok: false; stateRevision: number; error: RecorderError };
-type RecorderError = {
-  code: string;
-  message: string;
-  recoverable: boolean;
-  affectedTakeId?: string;
-  affectedAssetId?: string;
+  validBits: number;
+  encoding: 'ieee-float' | 'pcm-int';
+  channelMask: number;
+  blockAlign: number;
 };
 ```
 
-`sampleRate` 必须为实际支持的正整数；声道数超过 2 时在进入该类型前返回不支持，不截成双声道。`ready` 数值必须有限；静音和无效状态使用 null。格式能力由引擎提供，前端不可硬编码全部可能组合并假装可用。
+设备枚举可返回 unsupported 的格式信息；采集/文件路径只支持经验证的单/双声道。不能把超出能力的多声道截成双声道后称为完整录音，也不能将设备源编码与成品的 `pcm16/pcm24/float32` 混为同一个字段。
 
-## 命令表
+## 请求与回复
 
-| 命令 | 参数 | 成功返回/约束 |
-| --- | --- | --- |
-| `devices.list` | 无 | 稳定 deviceId、标签、默认标记、实际格式或明确查询失败 |
-| `live.start` | deviceId | epochId、actualFormat；不创建音频文件 |
-| `live.stop` | epochId | 停止常驻监测；REC 中拒绝，先结束录音 |
-| `live.reset` | epochId | 新 live 测量周期；REC 中首版拒绝 |
-| `record.start` | deviceId、outputPresetId、目标目录句柄、命名参数 | takeId、segmentId、actualStartFrame；LIVE 采集不中断 |
-| `record.stop` | takeId | actualEndFrameExclusive、源资产状态、exportJobId 可空 |
-| `file.open` | assetId 或文件对话框授权句柄 | 资产信息、可播放范围、分析状态；仅非 REC |
-| `playback.play` | assetId、positionFrame、generation | 实际起播位置、generation |
-| `playback.pause` | generation | 最后呈现的文件帧；冻结表头 |
-| `playback.seek` | assetId、positionFrame、generation、resume | 新代次定位；仅最新代次有效 |
-| `playback.volume` | gain 0..1 | 不改变文件测量和导出音量 |
-| `timeline.query` | assetId、startFrame、endFrame、pixelWidth、requestGeneration | 指定分辨率波形页、有效范围；不回传整段文件 |
-| `metrics.query` | assetId、positionFrame、requestGeneration | 最近的不晚于该位置的索引和实际索引时间 |
-| `selection.analyze` | assetId、startFrame、endFrameExclusive | 独立 analysisJobId，边界变化取消旧结果 |
-| `export.start` | sourceAssetId、选区可空、outputPreset、目标句柄 | jobId、resolvedOutputFormat |
-| `job.cancel` | jobId | 取消状态；不删除源文件 |
-| `view.returnLive` | deviceId | 停止文件输出、重开 live epoch |
-
-同一 `requestId` 的重试不得重复创建 take 或重复关闭文件。控制器保存最近已完成结果；跨进程重启后由 session/take 状态恢复，不靠内存去重假装恰好一次。连续 stop 返回同一终止边界。非法状态转移返回 `INVALID_STATE`，不能隐式重录。
-
-## 原生音频块契约
-
-音频块仅在音频工作线程内部传递，不作为 renderer IPC 高频载荷。块含：bufferId、epochId、sequence、firstFrame、frameCount、formatId、可空设备位置/QPC、flags、PCM 区域引用。所有权由池和引用计数或等价机制管理；WASAPI ReleaseBuffer 后的数据必须已经复制到本模块拥有的区域。
-
-队列消费者归还块后才可复用；清空/停止时等待受控回收，不让播放线程继续引用销毁的 decoder 缓冲。队列只保留索引/引用，不能在 capture thread 无界扩容。异常路径须覆盖停止时仍有块、设备拔出、写盘线程退出和重复关闭。
-
-## 事件
+以下形状与 shared.ts 一致；`Command` 和 `TraceState` 为该文件的类型：
 
 ```typescript
-type MeterSnapshot = {
+type Request = {
   protocolVersion: 1;
-  eventSequence: number;
-  sourceKind: 'live' | 'take' | 'file';
-  sourceId: string;
-  epochId: string;
-  playbackGeneration: number | null;
-  positionFrame: U64Text;
-  sampleRate: number;
-  levelIndexFrame: U64Text;
-  loudnessIndexFrame: U64Text;
-  channels: Array<{ samplePeak: Metric; rms: Metric; truePeak: Metric }>;
-  momentary: Metric;
-  shortTerm: Metric;
-  integratedToCursor: Metric;
-  wholeFileIntegrated: Metric | null;
-  loudnessRange: Metric;
-  continuity: 'complete' | 'estimated-silence' | 'gaps' | 'unknown';
+  requestId: string;
+  expectedStateRevision: number;
+  command: Command;
+  payload: Record<string, unknown>;
+};
+type Reply = {
+  requestId: string;
+  ok: boolean;
+  state: TraceState;
+  data?: unknown;
+  error?: { code: string; message: string };
 };
 ```
 
-`positionFrame` 表示当前上下文的位置；`levelIndexFrame` 和 `loudnessIndexFrame` 分别公开 10 ms 电平与 100 ms 响度的实际索引位置，不能用一个索引字段混合两种步长，也不能误称每个采样点都有独立 LUFS。文件事件还需资产版本/hash 关联；新文件的事件不能写入上个文件的面板。
+回复始终带 state，控制版本在 `state.revision`；没有独立的 Reply.stateRevision、recoverable 或 affectedAssetId 字段。requestId 长 1–100，revision 为非负安全整数，payload 必须是普通对象且只含相应白名单字段。变更命令检查 expectedStateRevision；读取及部分取消/诊断命令的分类见 `isMutation()`，不能假定所有命令都串行或都检查 revision。
 
-其他事件：`state.changed`、`source.formatChanged`、`source.discontinuity`、`record.segmentClosed`、`record.failed`、`asset.ready`、`analysis.progress`、`export.progress`。事件带状态版本、来源 ID 和有序序号。`stateRevision` 只在控制状态或配置改变时递增，不因每次音频快照递增；否则正常查询会不断被误判为过期。UI 丢掉过期快照；控制器状态是权威，不让三个 React 组件各自推断录音状态。
+主进程记录运行中请求及最近 256 个完成结果，同一 requestId/签名重试不会重复创建 take，改签名会拒绝。只读声谱/报告/导入回复不进入完成缓存。跨进程重启依赖持久化会话和任务恢复，不承诺内存去重跨重启有效。
 
-## 错误与生命周期
+## 核心命令
 
-稳定错误码至少包括 `DEVICE_UNAVAILABLE`、`UNSUPPORTED_FORMAT`、`ENCODER_UNAVAILABLE`、`DISK_FULL`、`DISK_BACKPRESSURE`、`CAPTURE_GAP`、`ANALYSIS_GAP`、`CORRUPT_CACHE`、`STALE_REQUEST`、`INVALID_STATE`。技术细节写日志，用户文案见 05。
+`无`表示空 payload `{}`；下表的可选字段仍须遵守源码校验。
 
-打开文件、定位、查询波形与分析均可取消。generation 只在相应上下文递增，不用系统时间拼伪序号。开始新 REC 不复用旧 takeId；关闭窗口先结束录音并落实文件状态，后台编码的退出策略要显示给用户。
+| 命令 | 实际 payload | 行为/约束 |
+| --- | --- | --- |
+| `state.get` / `devices.list` | 无 | 获取状态/设备；Device 为 id、label、isDefault、supported、format、error |
+| `devices.select` / `live.start` | `{deviceId}` | 选择设备/启动监测；监测不写音频 |
+| `live.stop` / `live.reset` | 无 | 停止/重置监测；活动录音期间拒绝 |
+| `view.window` / `view.gain` | `{seconds}` / `{gain}` | 时间窗 5–60 秒，波形倍率 1–4，只改变显示 |
+| `view.settings` / `view.theme` | DisplaySettings / `{theme}` | 显示设置/五套主题，不改变计算数据；主题见 [71](71-INSTRUMENT-THEMES-PLAN.md) |
+| `view.live` / `live.replay` | 无 | 跟随最新/固定实时缓存；健康采集不会因只读历史而重启 |
+| `view.inspect` | 来源、epoch、measurementEpoch、位置/范围，可带 selectionEndFrame | 固定并定位已发布的 live/take 内存范围；完整字段见 contracts.ts |
+| `record.configure` | RecordSettings | 配置录音格式/保留意图；录音进行时拒绝修改 |
+| `record.chooseDirectory` / `record.capacity` | 无 | 主进程选择目录/查询容量；renderer 不提交路径 |
+| `record.start` / `record.stop` | 无 | 使用已选设备、目录及设置；起止边界由引擎确认 |
+| `record.openFolder` / `record.recover` / `retention.retry` | `{takeId}` | 打开所属目录/恢复录音/重试原件整理 |
+| `cache.save` | `{playbackId,useSelection}` | 保存当前固定缓存或选区为新录音；范围质量由原生计算 |
+| `analysis.start` / `file.open` / `export.describe` | `{takeId,role,regionId?,exportId?}` | role=source/deliverable/recovered/session/export；regionId 仅 source/recovered，export 需 exportId；路径由主进程解析 |
+| `file.close` | 无 | 关闭文件上下文，恢复原监测意图 |
+| `playback.play` / `pause` / `clearSelection` / `retryAnalysis` | `{playbackId}` | 绑定当前来源，旧播放 ID 拒绝；清选区同时清循环/独立分析 |
+| `playback.seek` | `{playbackId,positionFrame,resume}` | 校验范围/代次；当前主进程使用静默定位，先释放输出再恢复监听 |
+| `playback.volume` / `playback.follow` | `{playbackId,gain}` / `{playbackId,enabled}` | 输出增益 0–1 / 跟随；不改变测量值 |
+| `playback.selection` | `{playbackId,startFrame,endFrame,loop}` | 半开帧范围，触发独立选区分析；REC 不发声回听 |
+| `playback.window` | `{playbackId,startFrame,endFrame,pixelWidth}` | 共轴视窗，像素宽 1–2400；手动调整关闭跟随 |
+| `metrics.query` | `{analysisId,positionFrame,requestGeneration}` | 返回实际电平/响度索引及整段统计 |
+| `timeline.query` | `{analysisId,startFrame,endFrame,pixelWidth,requestGeneration}` | 有界波形与响度页；不是 assetId 查询，不回传整文件 |
+| `export.start` | 来源字段 + `{preset,range?,saveCopy?}` | 严格 ExportPreset，半开选区；交付目录来自主进程对话框 |
+| `export.configure` | ExportPreset | 保存最近导出参数 |
+| `export.retry` / `openFolder` / `saveCopy` / `openDeliveryFolder` | `{exportId}` | 重试/打开成品目录/另存/打开已交付目录 |
+| `job.cancel` | `{jobId}` | 按任务所有者路由分析或导出取消，保留源音频 |
 
-参数校验和状态机测试属于 M1/M4；实际测试 ID 见 A10、A11、A13。
+`playback.seek.resume` 目前仍为必须的布尔参数，但 main 统一以 false 定位；参数存在不代表已实现连续发声 scrub。文件打开只建立只读数据上下文；按播放才暂停输入并按需打开输出，暂停/定位/播放结束恢复原监听意图。
 
-## M1/M2 实际接线
+## 扩展命令与载荷
 
-shared.ts 当前实现 state.get、devices.list、live.start/stop/reset、view.window、record.configure/chooseDirectory/start/stop/openFolder/recover。目录由主进程对话框授权，renderer 仅提交预设或 takeId，不提交任意绝对文件路径。
+| 范围 | 当前契约与详细记录 |
+| --- | --- |
+| 仪器/布局 | `instrument.configure {settings}`、`workspace.configure {workspace}`；树深≤8、叶子唯一、比例 0.15–0.85、数量/序列化上限由校验器限制；[39](39-M7-WORKSPACE.md)、[41](41-M8-METERING.md) |
+| 声谱 | `spectrogram.configure/query/point/cancel`：配置、来源/范围、queryId+位置/频率、queryId；大数组走独立流，不进命令结果缓存；[43](43-M9-SPECTROGRAM.md)、[46](46-M9-2D-INTEGRATION.md)、[47](47-M9-PRESENTATION-PERFORMANCE.md) |
+| 偏好 | `preferences.retry {}` 仅重试当前设置持久化，不触发采集恢复；退出等待写入；[49](49-M10-3D-INTEGRATION.md) |
+| 目标/报告 | `targets.configure {settings}`；`report.prepare {playbackId,scope}`（whole/selection）；get/cancel/retry/export/open 只带 reportId，jump 加 index（0–999）；[51](51-M11-INTEGRATION.md) |
+| 导入 | `imports.choose/refresh/openRoot {}`；cancel/relocate/clearCache/remove/openSource/openFolder 带 assetId，prepare 加 acceptChanged，rename 加 name，removeExport 加 exportId；[53](53-M12-IMPORT-INTEGRATION.md) |
+| 参考 | `reference.set` 使用来源字段，clear/retry 无参数，activate 带 slot（a/b）及可选 atStart，range 带 slot/startFrame/endFrame，configure 带 linked/offsetNs（有界纳秒）；[54](54-M12-REFERENCE-DESIGN.md)、[55](55-M12-REFERENCE-INTEGRATION.md) |
+| 文件库 | `library.refresh/pruneMissing/storage {}`、rename 的 takeId/name、clearCache 的 takeId、remove 的 takeId/可选 exportId；清理先释放消费者并由主进程确认 |
+| 应用/诊断 | `app.info/quit/diagnostics/copyDiagnostics/exportDiagnostics/feedback/reloadUI {}`，configure 仅 confirmExitWhileRecording，rendererFault 仅 kind=react/script/promise；[60](60-PB1-PB2-SUPPORT.md) |
+| 隔离测试 | `support.testFault {kind}`（renderer/main/worker）、`test.window {mode}`（show/hide/minimize/restore）只在隔离测试入口启用，不作为生产能力 |
 
-record.start 创建 take 并在原生就绪后返回；第一音频块的实际 startFrame 通过后续 NativeRecordSnapshot 确认，不能把 armed 阶段的 UI 请求时间当开始帧。record.stop 等待原生排空，返回 endFrameExclusive、writtenFrames 与分段；转换/哈希仍可处于后台 processing。
+通用命令不接收任意路径。磁盘 File[] 通过 `TraceAPI.importFiles()` 由 preload 的 webUtils 转换，经专用 `trace:import-files` 通道发送；主窗口/mainFrame、文件数量≤4 和磁盘来源同时校验。这是授权文件导入通道，不是通用文件系统 API。
 
-控制器用串行 mutation 队列和 requestId 的运行中/已完成结果缓存（256 项），重复 start 不生成第二个 take。stateRevision 只随状态/设置变化；音频快照另有 eventSequence，前端拒绝旧状态事件。
+## 快照与呈现流
 
-恢复前核对连续源分段和 journal 的最后有效检查点；不同位置未知尾部使用 null/unknownTail。后台恢复进程正常退出后发布结果，应用退出等待录音排空和文件任务。后续 M3/M4 将扩充资产与定位代次，不能用当前 take 全長概览冒充 FILE 历史缓存。
+- `trace:state` / onState：TraceState，含 revision、独立 eventSequence、设备/监测意图、录音/播放/有限任务摘要及各项配置。
+- `trace:snapshot` / onSnapshot：MeterSnapshot = NativeMeterSnapshot + eventSequence/stateRevision 和可选 recording/recordingView/playback/fileView/仪器数据。
+- `trace:spectrogram` / onSpectrogram、`trace:reference` / onReference：独立有界数组流，带查询/来源/配置身份，经 preload 转移到 renderer，旧回包不得覆盖新呈现。
 
-## M3 实际接线
+NativeMeterSnapshot 公开 sourceKind/sourceId/epochId/measurementEpoch、active/error、`format: SourceFormat`、measurementConfigId、positionFrame/measurementFrames、levelIndexFrame/loudnessIndexFrame、continuity、各声道 Peak/RMS/TP、M/S/I/LRA/MAX TP、lraProvisional 和有界历史。采样率在 `format.sampleRate`，不是快照顶层 sampleRate；文件整段 I 在 `fileView.wholeFileIntegrated`，原生输出代次在 `playback.generation`，没有草案中的顶层 playbackGeneration。
 
-- analysis.start：takeId + role（source/deliverable/recovered/session），可带 regionId；多区域原始/恢复分析需要选择区域。regionId 仅允许 source/recovered，返回 jobId。主进程解析已拥有的资产路径。
-- job.cancel：jobId；等待所属进程退出后清理本任务临时缓存，不删音频。
-- metrics.query：analysisId + positionFrame + requestGeneration；返回实际电平/响度索引和整段统计。
-- timeline.query：analysisId + startFrame/endFrame + pixelWidth + requestGeneration；像素列 1–2400，返回同轴波形与实际响度索引。
+电平/响度历史的实际索引分别对应 10 ms/100 ms 步长，不代表每个采样点都有独立 LUFS。录音会话视图使用 `timelineRate=1e9` 的纳秒坐标；不能按当前设备采样率解释跨区域时间轴。控制 revision 不因每帧音频刷新而改变，呈现快照另有有序 eventSequence。FILE 按已呈现位置查询确定历史，循环不累加 I。
 
-两项 query 不要求控制 revision 匹配。状态另带 eventSequence，进度不倒退；playbackGeneration 仍待 M4。录音前暂停分析，停录后同一任务重新开始或重用已验证缓存。被查询的页损坏时进入受控重建，连续失败后保留错误，避免无限循环。
+## 原生所有权、质量与恢复
 
-这是文件历史查询和后台任务，不是 FILE 音频呈现/seek 已完成的声明。
+音频块仅在工作线程内部传递，含帧位置、设备/QPC 时钟、标志及自有 PCM 区域。ReleaseBuffer 前复制到预分配池；消费者归还块后才复用。采集不等待 UI/磁盘/编码，不用可覆盖显示队列作为录音源。停止时等待受控排空与引用释放。
 
-## M2 多区域增量
+`record.start` 的 UI armed 时间不是采集起点；NativeRecordSnapshot 后续确认 startFrame，stop 排空后公开 endFrameExclusive/writtenFrames/segments，转换/哈希仍可能 processing。多区域 currentRecord 表示用户录音意图，重连期间持续存在，实际区域各有格式/帧时钟；见 [23](23-M2-CONTINUATION.md)、[24](24-M2-WAV-PRECISION.md)。
 
-currentRecord 表示用户级录音意图，包含 phase、durationNs、regionCount 和 retryError；它在设备重连期间仍存在。NativeRecordSnapshot 对应一个连续区域。recordingView 提供纳秒时间轴的有界波形、响度、gapFrames 和声道数，不能按当前设备采样率解释其位置。主进程拒绝 REC/重连期间手动切换/停止/重置 LIVE。截图中的 REGION_POSITION_OUT_OF_RANGE 已定位到原生发布竞态，修复及 RECORD_SNAPSHOT_FAILED 的受控失败语义见 23。
+ReplayFreeze v3 的 quality v1 为 `{version:1,estimatedFrames,gapFrames,unknown}`，两项计数是十进制帧字符串，覆盖当前不可变冻结范围。replaySave 的可选 quality 只覆盖 startFrame/endFrame 选区，由原生对象计算；旧字段缺失兼容保存但标记 unknown。导出保留来源 continuity（complete/estimated-silence/gaps/unknown），旧导出只追溯元数据，不要求原 PCM 仍存在；媒体哈希通过不等于原采集完整。见 [73](73-CLOUD-CODE-REVIEW.md)。
 
-## WAV 精度增量
-
-NativeRecordSnapshot.segments 可带 clippedSamples，TakeSummary 带当前资产的 clippedSamples 与 sourceClippedSamples。file-worker 的 quantize 是内部任务，renderer 不获得文件路径、PCM 或通用转换接口。完整语义见 24。
-
-## M4 实际命令与状态
-
-file.open 接受 takeId/role/可选 regionId；file.close 返回 LIVE。playback.play/pause/seek/volume/selection/window 均绑定当前 playbackId，非法范围拒绝，renderer 不提交路径。PlaybackView 保留播放意图、视窗与选区；快照公开实际呈现帧、原生 generation/clock/padding 和 rawModeApplied。历史异步查询核对文件身份、输出代次和视窗代次。选区 AnalysisJobView 带 selectionRange，文件列表整段统计忽略选区任务；缓存键版本 2。见 25。
-
-## M5 实际契约
-
-export.start 使用 takeId/role/可选 regionId 或 exportId、可选 range 和严格输出 preset；export.retry/openFolder/saveCopy 只接受 exportId。另存路径只能来自主进程文件对话框。file.open/analysis.start 支持 role=export 与 exportId。job.cancel 按已拥有的任务 ID 路由。录音设置版本 2 支持 MP3/AAC，旧 WAV 三字段仍兼容。成品逻辑范围通过 decodeRange 映射，分析键版本 3 包含 mediaIdentity；见 26。
-
-## M6 新增命令与状态
-
-- view.settings：严格校验 targetEnabled、targetLufs（-60..0）、waveGain（1/4/16），持久化到显示设置；只影响画图。
-- playback.follow：校验 playbackId 与 enabled。手动 playback.window 关闭跟随；播放头越出窗口时，在启用跟随的情况下移动共享窗口。
-- retention.retry：按 takeId 重试用户已请求的原始文件整理，不改变录音保留意图。
-- app.info / app.quit：本地产品诊断与正常退出；app.info 是只读命令。测试根目录和窗口覆盖只在 --trace-test 下启用。
-- MeterSnapshot.timelineWindow：REC 概览可视范围使用 timelineRate = 1e9 的时间坐标；录音的实际 writtenFrames、设备帧与时钟继续由原生提供。
-
-协议主版本保持 1，recordSettingsVersion 升至 3；计量算法、二进制页和 analysisCacheKeyVersion 均未因 M6 显示设置改变。
-
-## preview.2 接口增量
-
-新增 live.replay（空 payload）、library.refresh（空 payload）、library.remove（takeId，另可带 exportId）。全部经白名单、参数及 revision 校验；移除命令由主进程展示范围确认，renderer 不能提供任意路径。
-
-PlaybackView.temporary 标明内存历史，AnalysisRole 不扩展为伪文件；临时 PCM 不通过 IPC。Native replayFreeze/playbackReplayOpen/replayView/replayAnalyze 只处理原生冻结缓存，选区任务串行并忽略旧上下文结果。Native LIVE diagnostics 增加 replayFrames 与 replayCapacityFrames。协议主版本 1、Meter v4、Session 2、磁盘分析缓存 key 3 均保持。
-
-## preview.3 参数与采集状态
-
-view.window.seconds 为有限 number，5 ≤ seconds ≤ 60；view.gain 只接受 gain，1 ≤ gain ≤ 4。新增 devices.select，只接受 deviceId；监测关闭时仅选择来源，开启时切换实际监测。
-
-TraceState.monitoringRequested 与 active 分开；record.start 不再要求监测已开启，但仍要求有效来源并完成目录选择。displaySettingsVersion 2 接受连续 waveGain，读取旧 ×16 时迁移到 ×4；RecordSettings version 3、Session 2、ReplayInfo 1、磁盘分析 key 3 和 Meter v4 均未改动。正常关闭会刷新尚未落盘的显示偏好。
-
-## preview.4 统一工作台扩展
-
-- view.inspect：sourceKind(live/take)、sourceId、epochId、measurementEpoch、positionFrame、startFrame、endFrame，以及可选 selectionEndFrame。首次固定缓存并验证来源；同一手势沿用快照和原坐标映射。整数范围、白名单与状态代次均校验。
-- view.live：关闭历史上下文并跟随最新，健康采集不重启；非 REC 时可启动已关闭的监测。file.close 仍按原监测意图返回。
-- file.open：只打开数据/分析上下文，不停止采集、不初始化输出。
-- playback.play：仅非 REC，先暂停输入，按需打开输出。pause/seek 关闭输出、恢复原监测意图；seek 不自动发声。
-- PlaybackView/FileView 增加 timeOffsetSeconds；PlaybackView 增加 outputReady。generation 为查看请求代次，diagnostics.nativeGeneration 为实际输出代次。
-- replayFreeze(recording=false) 返回 version=2 和绑定的来源信息；replayRelease() 释放固定快照，未完成任务保留自己的共享引用。
-
-## preview.8 呈现更新
-
-协议 v1、file generation、音频/磁盘缓存语义不变。主进程在 seek / inspect 完成后触发只读历史快照，周期采样继续兜底；发布仍校验 sourceId、generation 与窗口。renderer 按同一身份验证并保留上一完整呈现，等待新快照不会占住主命令队列。录音观察与历史浏览持续并行。见 32。
-
-## 三批迭代的前两批接口
-
-新增 playback.retryAnalysis / playback.clearSelection（playbackId）；原位重试保留游标、选区和窗口，并换用新分析引用/代次。新增 AssetFormat 与 analysisError，文件元数据独立于输出 float PCM。
-
-新增 library.rename（takeId/name）、library.storage（只读）、library.clearCache（takeId）、library.pruneMissing（空参数）；清理使用主进程范围确认。清缓存前核对成品 hash，缺失或变化的成品保留解码音频。维护期间释放分析引用并保护原始音频。
-
-export.configure 持久化最近 ExportPreset；export.describe 返回逻辑来源说明；export.start 可带 saveCopy 布尔值，另存路径只由主进程目录对话框取得。ExportRecord 可选 delivery 状态；重启后的未完成交付转为失败，持久化记录本身不会触发新写入。录音优先暂停另存，继续时复用已授权目标、核对已有文件，禁止覆盖不同内容。export.openDeliveryFolder 按 exportId 打开已完成交付目录。
-
-新增 record.capacity、app.configure（confirmExitWhileRecording）、app.diagnostics、app.copyDiagnostics。诊断只输出固定字段，不含个人路径、录音名称、设备标识或 PCM。录音中窗口关闭确认可配置；普通退出流程保持完整收尾。
-
-Native LIVE diagnostics 与 RecordSnapshot 增加 replayStartFrame/replayEndFrame，范围与 freeze(true) 一致，不复制 PCM。RecordingView.inspectableRange 映射为会话纳秒。Native I/O 边界使用 Windows 扩展路径，元数据/缓存身份仍用原逻辑路径。协议主版本 1、Session 2、磁盘缓存键版本 3、Meter v4 均保持；均为可选字段和白名单扩展。
-
-## preview.9 缓存保存
-
-cache.save 只接受 playbackId 与 useSelection 布尔值。主进程校验当前固定缓存与范围，再选择已授权录音目录。Native replaySave 只在受信主进程接收路径，校验 sourceId、originFrame、frames、epochId、measurementEpoch 与当前冻结对象一致，持有不可变共享引用，在工作线程保存。
-
-保存结果返回新 takeId，原历史上下文保持。新的源文件和压缩成品各自自动排入独立分析；旧播放 ID、超范围、任意路径及格式外字段均拒绝。该扩展不启动 REC，不重启健康监测，不改变 Meter v4 或二进制缓存格式。
+报告 jump 与普通 seek 均释放输出、恢复原监听意图、不自动发声。录音/缓存准备失败统一恢复后台服务，退出/文件库维护/活动录音时保持暂停。正常关闭等待录音收尾和文件任务，后台状态不能由 renderer 自行猜测；Windows 故障/退出专项仍按 [当前交接](13-HANDOFF.md) 跟踪。

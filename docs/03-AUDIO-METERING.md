@@ -41,7 +41,7 @@ preview.4：当前连续录音段的有界历史使用该段自己的 Meter。�
 | 项目 | 定义与单位 | 缓存/显示建议 |
 | --- | --- | --- |
 | Sample Peak | 各声道窗口内绝对样本最大值，转换为 dBFS | 非重叠 10 ms 块保存原始 max；显示保持状态另存 |
-| RMS | 各声道滚动 300 ms 的平方均值开方；未 K 加权，dBFS | 可配置窗口，默认 300 ms；不得标 LUFS |
+| RMS | 各声道滚动 300 ms 的平方均值开方；未 K 加权，dBFS | 当前固定 300 ms，按 10 ms 索引发布；不得标 LUFS |
 | True Peak | libebur128 真峰值估计，dBTP | 处理插值滤波上下文及引擎延迟；区分窗口/全段最大值 |
 | M | 400 ms 窗口的 momentary loudness，LUFS | 每 100 ms 存历史；不是把 400 ms 峰值换标签 |
 | S | 3 s 窗口的 short-term loudness，LUFS | 每 100 ms 存历史 |
@@ -74,7 +74,7 @@ FILE 的测量对象是用户选中的音频资产。位深转换、重采样或
 
 输出设备采样率可与文件不同。监听转换只影响输出适配；表头保持所选文件自身的分析口径，不受监听音量影响。播放游标使用输出设备的实际呈现位置，并通过重采样比率、解码延迟与缓冲映射回文件帧。UI 计时器只做两次可信快照之间的视觉插值。
 
-拖动开始记住是否正在播放，暂停输出；移动时更新游标和历史查询；松开只在原来播放时继续。每个 seek 增加 `playbackGeneration`，旧解码结果必须丢弃。点击定位同样走该逻辑。
+当前定位行为：拖动/点击先暂停并释放音频输出，再更新游标与历史查询，恢复原监测意图；松开后保持静默，需显式播放。每次 seek 更新该文件上下文的 generation，原生输出另有 generation，旧查询/输出结果不得覆盖新位置。早期草案“松开恢复先前播放”未作为当前主进程行为实施。
 
 选区 `[a,b)` 作为独立节目，从空分析状态测其 I/LRA/TP，循环播放不重复累计。记录边界和首尾处理策略；不能对历史 LUFS 求算术平均来当选区 I。历史表头仍按文件坐标显示，选区统计另置。
 
@@ -92,7 +92,7 @@ REC 中源信号按独立 Meter 计量；WAV 整数舍入/手动重采样后的�
 
 ## M3 的 v3 修正记录（现由 v4 替代）
 
-当前 ID：trace-meter-v3-ebur128-1.2.6-lra10hz-eof。C++ 定义在 MeasurementConfig.h，TypeScript 定义在 analysisTypes.ts；worker 验证二者一致，缓存还绑定原生二进制 SHA256。
+该阶段 ID：trace-meter-v3-ebur128-1.2.6-lra10hz-eof。C++ 定义在 MeasurementConfig.h，TypeScript 定义在 analysisTypes.ts；worker 验证二者一致，缓存还绑定原生二进制 SHA256。
 
 标准复核发现 v2 使用的上游内部 LRA 步长为 1 秒。现已在 Trace 使用的 histogram 模式中改为 100 ms；源码补丁与前后 SHA256 见 native/vendor/libebur128/SOURCE.json。原始上游信息和许可保留。
 
@@ -110,7 +110,9 @@ Recorder 的 Meter/波形/响度、已写帧数、估计帧数和 QPC 两端在�
 
 见 25。文件输出使用 IAudioClock position/frequency；暂停冻结输出，seek 刷新 generation，循环按累计流帧映射文件位置。M/S/I 使用文件历史，整段 LRA/Max TP 独立；选区 [a,b) 从空 Meter 分块分析。回听默认请求 Media/RAW，不改变文件测量，RAW 无法使用时回退普通共享流。原始 EBU 素材仍未验收。
 
-## 60 秒内存历史回听（2026-09-16）
+## 60 秒内存历史回听（preview.2 历史实现）
+
+后续 preview.4 已改为查看历史时保持输入，仅发声回听暂停输入；健康 LIVE 返回不重启统计。以下暂停/重开步骤仅为 preview.2 当时行为，当前 ReplayFreeze v3 质量扩展见本文顶部及 [06](06-CONTRACTS.md)。
 
 ReplayBuffer 在 analysis owner 线程接收原始 float32 样本及统一 Meter 每 10 ms 完整对齐的发布记录。PCM 容量实际采样率 × 声道 × 60 秒，计量记录固定 6002 条。REC writer 仍使用独立队列。
 

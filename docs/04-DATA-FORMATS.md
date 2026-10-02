@@ -18,26 +18,28 @@ M7：trace-settings.json 新增独立 workspace 字段，version 1 包含 layout
 
 preview.4：内存历史元数据 v2 增加原子来源/epoch/起点映射；磁盘 schema 不变。未录音不写临时音频；历史查看采用独立有界快照，后台继续缓存，见 31。
 
-状态：当前会话 schema v2，支持加载 v1。多区域写入、会话视图和恢复见 23；二进制分析缓存仍为独立的 schema v1。示例保留早期规格参考，压缩资产尚待 M5。
+状态：当前会话 schema v2，支持加载 v1。多区域写入、会话视图和恢复见 23；二进制分析缓存仍为独立的 schema v1。三格式成品和导出已在 M5 接通，见 [26](26-M5-EXPORT.md)。[示例](../examples/README.md) 已对齐当前字段；它们没有真实音频，不是可以直接回放/恢复的录音。
 
 ## 持久化结构
 
-每次 REC 生成独立 take 目录，目录内 `session.json` 为清单，`journal.jsonl` 为录制/恢复日志；`audio/` 保存当前仍保留的源分段和成品；`cache/` 保存可重建的二进制波形/计量块。所有媒体路径相对会话目录，避免换盘后失效。
+每次 REC 生成独立 take 目录，目录内 `session.json` 为清单，各 region 的 journalFile 为录制/恢复日志（首区域通常为 `journal.jsonl`）；`audio/` 保存当前仍保留的源分段和成品；`cache/` 保存可重建的二进制波形/计量块。所有媒体路径相对会话目录，避免换盘后失效。
 
 应用设置和音频文件分开：设备选择、窗口布局、输出预设放本机配置；不将个人录音写入源码目录。未按 REC 的 LIVE 只允许写一般设置/诊断元数据，不写任何音频临时文件。
 
 | 对象 | 必要字段与约束 |
 | --- | --- |
-| Session | schemaVersion、sessionId、createdAt、状态、takes、assets、segments、events |
-| Take | takeId、实际起止边界、sourceFormat、outputPreset、measurementConfigId |
-| Asset | assetId、role(source/deliverable)、relativePath、codec/container、sampleRate、channelCount、sampleFormat/bitrate、decodedFrameCount、状态、hash |
-| Segment | segmentId、takeId、assetId、captureEpochId、captureStartFrame、assetStartFrame、frameCount、timelineStartNs、sampleRate、gapBeforeNs |
+| SessionDocument | schemaVersion=2、product=Trace、sessionId/name/createdAt/status、preset/sourceFormat、regions/assets/segments/takes/events、frames/durationNs、hasDiscontinuities；实际定义见 sessionStore.ts |
+| CaptureRegion | ordinal/nativeId、格式、实际起止帧、clock、frames、estimatedFrames、clippedSamples、status/error，可选 captureQuality；一次用户录音可含多个 region |
+| SessionAsset | assetId、role(source/deliverable/recovered/session)、relativePath、sampleRate/channelCount、encoding、frameCount、hash；可选 regionId/codec/container/decodedFrameCount/state。压缩导出另存为 exports，不塞进 WAV-only 的 assets |
+| SessionSegment | segmentId/assetId、frameCount、captureStartFrame、timelineStartFrame；regionId、regionStartFrame、timelineStartNs、sampleRate、gapBeforeNs 等按区域映射填写 |
 | Event | 类型、严重程度、所在 epoch/帧/会话时间、可恢复性；未知位置不得填造值 |
-| Analysis | assetId、analysisVersion、measurementConfigId、内容标识、索引步长、有效范围、汇总、状态 |
+| 分析/导出记录 | 分析缓存及 exports 使用独立类型、身份与版本，不能将概念字段表直接交给会话读取器 |
+
+完整定义为 [sessionStore.ts](../src/trace/sessionStore.ts)、[sessionTimeline.ts](../src/trace/sessionTimeline.ts)、[exportTypes.ts](../src/trace/exportTypes.ts)。上表是字段摘要，不是完整 JSON schema。
 
 所有音频帧、长时间纳秒以十进制字符串存 JSON；原生侧 uint64；图形层转成局部可视区浮点秒。`null` 表示未知，不用 0 占位。资产完成后记录内容哈希；写盘中可先用稳定 assetId 和 revision，但不能把未完成内容标成最终哈希。
 
-示例见 [session.example.json](../examples/session.example.json)。文件中的 `exampleOnly:true` 标记说明它是规格示例，实际读取器不得把它当作可播放媒体。
+示例见 [session.example.json](../examples/session.example.json)。该文件通过当前结构校验；`exampleOnly:true` 是文档标识，没有真实媒体，不能当作可播放或可恢复录音。
 
 ## 文件格式
 
@@ -45,12 +47,12 @@ preview.4：内存历史元数据 v2 增加原子来源/epoch/起点映射；磁
 | --- | --- | --- |
 | WAV PCM | 16/24-bit；44.1/48/88.2/96 kHz 或跟随 | 合法 RIFF/WAVE 头，声道和帧数按真实内容写入 |
 | WAV float | 32-bit IEEE float，同上采样率 | 不将 float 写成 integer PCM 格式标志 |
-| MP3 | 44.1/48 kHz，CBR 预设与经验证的 VBR | 无 96 kHz 选项、无 PCM 位深选项；正确处理 delay/padding |
+| MP3 | 44.1/48 kHz，128/192/256/320 kbps CBR；当前无 VBR | 无 96 kHz 选项、无 PCM 位深选项；正确处理 delay/padding |
 | AAC | AAC-LC，44.1/48 kHz，M4A 或 ADTS .aac | 扩展名、封装和实际编码一致；ADTS 需要自身定位索引 |
 
 保存预设示例见 [export-presets.example.json](../examples/export-presets.example.json)。能力发现是运行时真实编码器能力和产品允许范围的交集；即使 AAC 编码器支持 96 kHz，首版也不因此开放该选项。
 
-WAV 默认跟随来源、24-bit。若源本身为整数且格式匹配，可直接写；常见浮点源向整数转换时处理溢出检测与可选抖动。默认不自动归一化或加限制器；检测到会削波时给出明确状态，并保留恢复依据。升位深或升采样不能宣称恢复源中不存在的信息。
+WAV 默认跟随来源、24-bit。若源本身为整数且格式匹配，可直接写；常见浮点源向整数转换时使用原生舍入/饱和量化并记录削波；当前无可选抖动。默认不自动归一化或加限制器；检测到会削波时给出明确状态，并保留恢复依据。升位深或升采样不能宣称恢复源中不存在的信息。
 
 ## 持续写盘与分段
 
