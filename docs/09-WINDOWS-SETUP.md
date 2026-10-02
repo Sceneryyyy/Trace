@@ -48,7 +48,7 @@ ctest --test-dir build/trace-engine -C Release --output-on-failure
 
 `Package` 重建 Trace 引擎及应用，再调用 `tools/package-trace.cjs`。输出目录、产品版本与组件由 [electron-builder.trace.cjs](../electron-builder.trace.cjs) 和 [src/trace/product.ts](../src/trace/product.ts) 定义；应用资源构建成功不等于分发、真实音频或干净系统验证通过。
 
-同事内测 ZIP 的 R3 组装脚本为 `tools/package-internal-test-r3.cjs`，固定 preview.30 / InternalTest-r3；无后缀脚本固定 preview.28 / R1，`-r2` 固定 preview.29 / R2。这些脚本应在匹配的历史来源与素材下使用。preview.31 新分发需新增版本入口并同步来源提交、README/TXT/PDF 和校验，不能直接复用 R3 脚本或只改文件名。最近分发证据见 [69](69-INTERNAL-TEST-R3.md)；历史产物目录被 gitignore 排除，不随源码克隆提供。
+同事内测 ZIP 的 R3 组装脚本为 `tools/package-internal-test-r3.cjs`，固定 preview.30 / InternalTest-r3；无后缀脚本固定 preview.28 / R1，`-r2` 固定 preview.29 / R2。这些脚本应在匹配的历史来源与素材下使用。preview.31 新候选入口已在 [76](76-RELEASE-CHECKLIST.md) 建立，匹配 PDF 已生成；本轮未构建 Windows 新包。新分发需同步来源提交、版本说明与校验，不能直接复用 R3 脚本或只改文件名。最近分发证据见 [69](69-INTERNAL-TEST-R3.md)；历史产物目录被 gitignore 排除，不随源码克隆提供。
 
 ## 云端检查与未验证边界
 
@@ -61,6 +61,6 @@ npm run test:trace
 npm run build:trace
 ```
 
-`tools/trace.cjs` 明确限制 Windows x64，不能在 Linux 使用它作为全套验收入口。可移植 C++ 专项可按 [73](73-CLOUD-CODE-REVIEW.md) 的记录单独编译；未运行 Windows 原生加载、真实采集、96 kHz 或打包时须记录未验证。
+`tools/trace.cjs` 明确限制 Windows x64，不能在 Linux 使用它作为全套验收入口。可移植 C++ 可按 [75](75-CLOUD-RELEASE-PREPARATION.md) 使用 `native/portable` 的 CMake/CTest（可开启 TRACE_SANITIZE）；未运行 Windows 原生加载、真实采集、96 kHz 或打包时须记录未验证。
 
-签名/公开发布、干净 Windows、硬件矩阵、官方 EBU 素材和 PDF 更新等剩余工作见 [当前交接](13-HANDOFF.md)。macOS 实施计划见 [70](70-MACOS-PORT-PLAN.md)。
+签名/公开发布、干净 Windows、硬件矩阵、官方 EBU 素材、工具链安全与真实包等剩余工作见 [当前交接](13-HANDOFF.md)。macOS 实施计划见 [70](70-MACOS-PORT-PLAN.md)。

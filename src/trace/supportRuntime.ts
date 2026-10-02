@@ -96,7 +96,7 @@ export class SupportRuntime {
   app.exit(1)
  }
  /** Records that shutdown exceeded its deadline; the next start can surface it. */
- recordShutdownTimeout(){this.journal.record('shutdown-timeout')}
+ async recordShutdownTimeout(){this.journal.record('shutdown-timeout');await this.journal.flush()}
  async finish(){this.terminating=true;await this.journal.finish();setSupportEventSink(undefined)}
  stopDialogs(){this.terminating=true}
 }

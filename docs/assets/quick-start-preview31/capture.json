@@ -1,0 +1,10 @@
+{
+  "version": "0.1.0-preview.31",
+  "source": "Actual React renderer in headless Chromium; simulated IPC/metrics, no Windows device acceptance",
+  "captures": [
+    "workbench",
+    "waveform",
+    "layout-toolbar",
+    "themes"
+  ]
+}

@@ -21,6 +21,7 @@ async function boundedJSON(file:string,maximum=65536):Promise<unknown>{
 export class SupportJournal {
  private events:SupportEvent[]=[]
  private clean=false
+ private timedOut=false
  private writer:PreferencesWriter
  private lastFault:SupportEvent|null=null
  private available=true
@@ -39,23 +40,24 @@ export class SupportJournal {
   const fatal=event(await boundedJSON(join(directory,'fatal.json'),1024))
   const last=journal.events.at(-1)
   if(fatal&&(!last||fatal.at>last.at)){journal.events.push(fatal);journal.previousInterrupted=true}
-  journal.lastFault=[...journal.events].reverse().find(e=>/failed|gone|uncaught|rejection|file-worker-exit|renderer-(react|script|promise)/.test(e.kind))||null
+  journal.lastFault=[...journal.events].reverse().find(e=>/failed|gone|uncaught|rejection|timeout|file-worker-exit|renderer-(react|script|promise)/.test(e.kind))||null
   journal.record('started');await journal.flush();return journal
  }
  get status():SupportStatus{return {previousInterrupted:this.previousInterrupted,loggingAvailable:this.available,lastFault:this.lastFault?{...this.lastFault}:null}}
  history():SupportEvent[]{return this.events.map(e=>({...e}))}
  record(kind:SupportEventKind,detail?:number):void{
   if(!kinds.includes(kind))return
+  if(kind==='shutdown-timeout'){this.timedOut=true;this.clean=false}
   const next:SupportEvent={at:new Date().toISOString(),kind,count:1,...(Number.isSafeInteger(detail)?{detail}:{})},last=this.events.at(-1)
   // Coalesce repeated errors for one second; disk writes and memory remain bounded.
   if(last&&last.kind===kind&&last.detail===next.detail&&Date.parse(next.at)-Date.parse(last.at)<1000){last.count=Math.min(last.count+1,1000000);return}
   this.events.push(next);if(this.events.length>128)this.events.shift()
-  if(/failed|gone|uncaught|rejection|file-worker-exit|renderer-(react|script|promise)/.test(kind))this.lastFault=next
+  if(/failed|gone|uncaught|rejection|timeout|file-worker-exit|renderer-(react|script|promise)/.test(kind))this.lastFault=next
   this.save();this.changed()
  }
  private save(){this.writer.save(JSON.stringify({schemaVersion:1,clean:this.clean,events:this.events}))}
  async flush(){try{await this.writer.flush()}catch{this.available=false}}
- async finish(){this.clean=true;this.record('clean-exit');await this.flush()}
+ async finish(){if(!this.timedOut){this.clean=true;this.record('clean-exit')}await this.flush()}
  fatal(kind:'main-uncaught'|'main-rejection'|'startup-failed'):void{
   // Only the fatal path uses a bounded synchronous record before immediate termination.
   try{writeFileSync(join(this.directory,'fatal.json'),JSON.stringify({at:new Date().toISOString(),kind,count:1}))}catch{}

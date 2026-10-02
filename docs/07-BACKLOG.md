@@ -6,10 +6,10 @@
 
 | 范围 | 已完成 | 剩余工作 |
 | --- | --- | --- |
-| M13 仪表主题 | 用户已验收；实现与 72-R1/R2 修复已于 2026-09-30 合入 recorder/dev；72-R3 首帧断言已在 2995174 修正 | Windows 完整主题 flow/首帧、3D 游标三角、实时帧时间、显示器/色弱用户体验；[71](71-INSTRUMENT-THEMES-PLAN.md)、[72](72-INSTRUMENT-THEMES-REVIEW.md) |
+| M13 仪表主题 | 用户已验收；实现与 72-R1/R2 修复已于 2026-09-30 合入 recorder/dev；72-R3 首帧断言已在 2995174 修正 | 3D 游标三角云端已实现/回归，见 [75](75-CLOUD-RELEASE-PREPARATION.md)；Windows 完整主题 flow/首帧、实时帧时间、显示器/色弱用户体验；[71](71-INSTRUMENT-THEMES-PLAN.md)、[72](72-INSTRUMENT-THEMES-REVIEW.md) |
 | 云端代码修复 | [73](73-CLOUD-CODE-REVIEW.md) R1–R5 和两项旧缺口已提交 2995174，portable 233/233、类型/应用构建与专项回归通过 | Windows 原生/设备/资源/退出专项与最初三分钟在线视频操作 |
-| Windows 内测 | R3 已有历史打包/重定位证据；[69](69-INTERNAL-TEST-R3.md) | 收集独立 Windows/声卡矩阵；preview.31 PDF、内测包与匹配版本说明未生成 |
-| 公开测试 | PB1/PB2 工程交付；[60](60-PB1-PB2-SUPPORT.md) | PB3–PB5 的环境、发布材料与资源证据；验收范围见 [59](59-PUBLIC-BETA-READINESS.md) |
+| Windows 内测 | R3 已有历史打包/重定位证据；[69](69-INTERNAL-TEST-R3.md) | 收集独立 Windows/声卡矩阵；preview.31 PDF 与候选生成流程已在 75 完成；Windows 新包及独立实机证据待补 |
+| 公开测试 | PB1/PB2 工程交付；[60](60-PB1-PB2-SUPPORT.md) | 75/76 已补发布清单、源码/校验/候选工具；PB3–PB5 实机、完整依赖来源、安全、签名、用户及资源证据待补；验收范围见 [59](59-PUBLIC-BETA-READINESS.md) |
 | macOS | 已选方案一，范围/探针计划见 [70](70-MACOS-PORT-PLAN.md) | Apple silicon 真机 M-MAC0/T00；当前分支尚无完成的 Trace Mac 采集实现 |
 
 ## M7–M12 历史任务与结项

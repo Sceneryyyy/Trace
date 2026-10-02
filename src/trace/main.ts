@@ -21,6 +21,7 @@ import {defaultInstrumentSettings,restoreInstrumentSettings,validateInstrumentSe
 import {DeliveryService} from './deliveryService'
 import {safeDiagnostics} from './diagnostics'
 import {SupportRuntime} from './supportRuntime'
+import {finalizeShutdown,shutdownDeadline} from './shutdown'
 import {exportPreferencesVersion} from './exportPreferences'
 import {recordingCapacity,freeSpace} from './storageCapacity'
 import {mediaDurationNs} from './sessionTimeline'
@@ -834,13 +835,11 @@ app.on('before-quit',event=>{
     await preferencesWriter?.flush()
     await supportRuntime?.finish()
   })()
-  // A wedged worker, encoder or disk write must not leave a window-less process
-  // that can never quit; the recording finaliser above is the only step that
-  // still needs time, and it has its own internal deadline.
-  const deadlineMs=Number(process.env.TRACE_SHUTDOWN_TIMEOUT_MS??60000)
-  let done=false
-  const settle=()=>{if(done)return;done=true;readyToQuit=true;app.quit()}
-  if(deadlineMs>0)setTimeout(()=>{if(done)return;console.error('Trace finalization: timed out after',deadlineMs,'ms');try{supportRuntime?.recordShutdownTimeout()}catch{}settle()},deadlineMs).unref?.()
-  finish.catch(error=>console.error('Trace finalization:',error)).finally(settle)
+  const deadlineMs=shutdownDeadline(process.env.TRACE_SHUTDOWN_TIMEOUT_MS)
+  void finalizeShutdown(finish,{
+   deadlineMs,
+   recordTimeout:async()=>{console.error('Trace finalization: timed out after',deadlineMs,'ms');await supportRuntime?.recordShutdownTimeout()},
+   reportError:error=>console.error('Trace finalization:',error)
+  }).finally(()=>{readyToQuit=true;app.quit()})
 })
 app.on('window-all-closed',()=>app.quit())

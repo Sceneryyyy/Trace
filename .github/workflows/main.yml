@@ -131,7 +131,7 @@ jobs:
           if (-not (Test-Path '.tools/node-gyp/40.8.3/x64/node.lib')) { throw 'Electron import library missing' }
           if (-not (Test-Path 'native/build/Release/visualizer_dsp.node')) { throw 'Prism native DSP missing' }
 
-      # Builds trace_engine.node and runs the 15 CTest targets that cover the
+      # Builds trace_engine.node and runs the 16 CTest targets that cover the
       # recorder, WAV precision, EBU reference values and true-peak timing.
       - name: Build Trace engine and run native tests
         run: npm run build:trace-engine

@@ -2,7 +2,7 @@
 
 2026-09-17。适用软件：Trace 0.1.0-preview.28；手册版本：1.0。
 
-2026-10-02 状态：本文为该版 PDF 的交付与质量记录。PDF 已纳入 preview.30 / R3 的历史包，但不包含 preview.31 主题与最新质量提示；[28](28-USER-GUIDE.md) 已更新为当前源码指南。preview.31 PDF 尚未生成，需同步文案、截图、生成源与校验；[preview.28 PDF](../output/pdf/LeoMoon-Trace-Quick-Start-preview.28-zh-CN.pdf) 已纳入源码版本控制；渲染/QA 报告位于忽略的 artifacts，克隆不会附带这些报告。
+2026-10-02 状态：本文为该版 PDF 的交付与质量记录。PDF 已纳入 preview.30 / R3 的历史包，但不包含 preview.31 主题与最新质量提示；[28](28-USER-GUIDE.md) 已更新为当前源码指南。preview.31 PDF 现已生成，见下方新增交付；旧包/PDF 保持历史身份；[preview.28 PDF](../output/pdf/LeoMoon-Trace-Quick-Start-preview.28-zh-CN.pdf) 已纳入源码版本控制；渲染/QA 报告位于忽略的 artifacts，克隆不会附带这些报告。
 
 ## 核对结果
 
@@ -46,3 +46,9 @@ PDF 已完整渲染为 PNG 并逐页检查。修正了图解第三个标记的�
 使用 Poppler 渲染时出现系统通用 Symbol/ArialUnicode 显示字体配置提示；本 PDF 中文字体子集已实际嵌入，八页渲染、文本提取均正常，未出现缺字方框或裁切。
 
 本轮是文档交付，未修改业务代码、未重打包 preview.28，也未重复音频测试。现有 ZIP 内的 README 仍是原交付快照；新版 PDF 单独提供，下一次重打包可同步纳入。无工程阻塞。
+
+## preview.31 新 PDF（2026-10-02）
+
+[新版 PDF](../output/pdf/LeoMoon-Trace-Quick-Start-preview.31-zh-CN.pdf)：8 页 A4，新增五主题预览/保存/取消与采集质量说明；当前 React 界面在 Linux Chromium 中通过模拟 IPC/读数绘制，截图与来源见 [preview.31 素材](assets/quick-start-preview31/README.md)。这不是 Windows 包截图或 WASAPI/数值验收证据。
+
+生成源现在生成 preview.31；Linux 可通过 TRACE_PDF_FONT_REGULAR/BOLD 选择有许可的 TrueType 字体。本轮嵌入 Noto Sans SC 子集，OFL 许可与来源已保留。`python tools/docs/check-quick-start.py` 检查当前版；`--version 28` 可继续核查旧 PDF。新版文字/嵌入字体/8 书签/4 内部跳转/边界与逐页渲染通过，QA 在忽略的 artifacts。本轮没有将新 PDF 加入旧 R3 包；Windows 新候选组装会独立包含它，见 [76](76-RELEASE-CHECKLIST.md)。

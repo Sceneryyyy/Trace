@@ -1,6 +1,8 @@
-"""Build a Chinese quick-start PDF with actual preview.28 interface captures."""
+"""Build the current Chinese quick-start PDF with labelled renderer examples.
+Set TRACE_PDF_FONT_REGULAR/BOLD to licensed TrueType files on Linux.
+"""
 from pathlib import Path
-import json
+import json, os
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
@@ -11,12 +13,12 @@ from reportlab.platypus import Paragraph, Table, TableStyle
 from PIL import Image
 
 ROOT=Path(__file__).resolve().parents[2]
-ASSETS=ROOT/'docs/assets/quick-start-preview28'
+ASSETS=ROOT/'docs/assets/quick-start-preview31'
 OUT=ROOT/'output/pdf'
 OUT.mkdir(parents=True,exist_ok=True)
-PDF=OUT/'LeoMoon-Trace-Quick-Start-preview.28-zh-CN.pdf'
-pdfmetrics.registerFont(TTFont('CN','C:/Windows/Fonts/msyh.ttc',subfontIndex=0))
-pdfmetrics.registerFont(TTFont('CNB','C:/Windows/Fonts/msyhbd.ttc',subfontIndex=0))
+PDF=OUT/'LeoMoon-Trace-Quick-Start-preview.31-zh-CN.pdf'
+pdfmetrics.registerFont(TTFont('CN',os.environ.get('TRACE_PDF_FONT_REGULAR','C:/Windows/Fonts/msyh.ttc'),subfontIndex=0))
+pdfmetrics.registerFont(TTFont('CNB',os.environ.get('TRACE_PDF_FONT_BOLD','C:/Windows/Fonts/msyhbd.ttc'),subfontIndex=0))
 pdfmetrics.registerFontFamily('CN',normal='CN',bold='CNB')
 W,H=A4
 M=44
@@ -29,7 +31,7 @@ TEAL=colors.HexColor('#167B79')
 PALE=colors.HexColor('#F0F7F3')
 LINE=colors.HexColor('#D9E3E5')
 c=canvas.Canvas(str(PDF),pagesize=A4,pageCompression=1)
-c.setTitle('LeoMoon Trace 快速上手用户手册 - preview.28')
+c.setTitle('LeoMoon Trace 快速上手用户手册 - preview.31')
 c.setAuthor('LeoMoon / Trace')
 c.setSubject('Windows 桌面音频录音、分析与历史回看快速上手')
 layout=[]
@@ -47,7 +49,7 @@ def p(text,x,y,width,size=10.3,leading=16.4,color=INK,bold=False,gap=6):
 def footer():
     c.setStrokeColor(LINE);c.setLineWidth(.5);c.line(M,38,W-M,38)
     c.setFont('CN',8);c.setFillColor(MUTED)
-    c.drawString(M,24,'LeoMoon / Trace  |  快速上手  |  preview.28')
+    c.drawString(M,24,'LeoMoon / Trace  |  快速上手  |  preview.31')
     c.drawRightString(W-M,24,f'{page_no:02d} / 08')
 
 def new_page(title,subtitle):
@@ -117,7 +119,7 @@ for n,title,body in [
 (5,'回看并交付','在“音频文件”中查看录音，按 Space 回听，确认范围后导出。')]:
     y=step(n,title,body,y)
 y=box('先记住两件事','录音关闭时仍可监测，最近约 60 秒声音保留在内存中；要长期保留，请录音或显式“保存缓存”。<br/>拖动历史游标只查看数据，按播放才会发声。',y)
-y=p('适用 0.1.0-preview.28；手册版本 1.0 / 2026-09-17。',M,y,CW,size=9,color=MUTED)
+y=p('适用 0.1.0-preview.31；手册版本 1.1 / 2026-10-02。',M,y,CW,size=9,color=MUTED)
 for text,target in [('界面与首次录音  02-03',2),('历史、布局与仪器  04-05',4),('计量、报告与素材  06-07',6),('快捷键与问题处理  08',8)]:
     yy=y;y=p(text,M,y,CW,size=9.6,color=TEAL,leading=16,gap=0)
     c.linkRect('',f'p{target}',(M,y,W-M,yy),relative=0,thickness=0)
@@ -130,7 +132,7 @@ for n,sx,sy in [(1,24,55),(2,24,106),(3,949,105),(4,320,181),(5,1050,180),(6,24,
     xx=x0+ww*sx/1280;yy=y0+hh*(1-sy/800)
     c.setFillColor(TEAL);c.circle(xx,yy,9,fill=1,stroke=0)
     c.setFillColor(colors.white);c.setFont('Helvetica-Bold',9);c.drawCentredString(xx,yy-3,str(n))
-y=p('实际 preview.28 界面；使用生成的演示信号，图中已打开文件历史。',M,y,CW,size=8.5,color=MUTED,leading=13,gap=12)
+y=p('preview.31 当前 React 界面，读数与接口为云端模拟示例，不代表 Windows 实机计量结果。',M,y,CW,size=8.5,color=MUTED,leading=13,gap=12)
 items=[('① 设备与录音设置','选择系统输出设备；旁边的格式按钮设置录音参数和保存目录。'),('② 当前来源','区分系统声音、录音或外部文件，并显示实际格式与当前位置。'),('③ 仪器与布局','选择仪器、切换布局预设，或点击“编辑布局”自由排列。'),('④ 波形与响度历史','点击定位、拖动查看历史；在时间刻度上拖动可建立选区。'),('⑤ 电平与响度','读数随当前来源和游标变化；先看统计范围，再比较数字。'),('⑥ 走带与文件操作','起点、终点、播放、录音、实时和监测；右侧有缓存、报告与文件。')]
 col=(CW-18)/2
 for i in range(0,6,2):
@@ -155,7 +157,7 @@ y=box('声音回听与系统录音互斥','录音期间可以看历史，但不�
 # 4. Timeline.
 y=new_page('历史定位、选区与循环','同一文件、同一时刻的历史读数可重复查看，不随回听次数重新累计。')
 y,_=picture('waveform',y)
-y=p('浅色范围是选区，两端可拖动调整。图中为演示信号。',M,y,CW,size=8.5,color=MUTED,leading=13,gap=12)
+y=p('示例波形使用模拟数据。建立选区后，两端可拖动调整。',M,y,CW,size=8.5,color=MUTED,leading=13,gap=12)
 y=table(['想做什么','具体操作'],[
 ['查看某一时刻','在波形或历史图内点击、拖动。松开后保持该位置，操作本身不发声。'],
 ['建立选区','拖动时间刻度；或按住 Shift 在图内拖动；也可先切到“选区”模式。'],
@@ -181,7 +183,7 @@ y=table(['仪器','主要用途'],[
 ['声谱图 2D','横轴时间、纵轴频率、颜色表示 dBFS 幅度；与波形共轴。'],
 ['声谱图 3D','同一时频数据的立体展示。拖动旋转，滚轮缩放视角；高度不表示空间声源位置。'],
 ['参考比较','显示 A/B 独立统计与平均频谱；先确认范围和时间偏移。']],[110,CW-110],y,size=9.5)
-y=box('显示改变，不等于声音改变','面板大小、波形倍率、3D 高度和监听音量不会修改导出音频或测量值。FFT、声道、平均时间等分析设置会影响分析结果，应在仪器设置中确认。',y)
+y=box('选择仪表主题','“显示与帮助”提供绿、灰、黄橙、海蓝和蓝橙五套主题。点选即预览，“应用设置”保存，Esc 恢复原配色。主题、显示倍率和监听音量不修改音频或测量值。',y)
 
 # 6. Metering and reports.
 y=new_page('读懂响度，再生成报告','先确认“哪个来源、哪个时间、哪个统计范围”，再判断是否达标。')
@@ -192,7 +194,7 @@ y=table(['读数','单位与含义','使用时注意'],[
 ['S','LUFS：3 s 短时响度','观察较平稳的片段。'],
 ['I','LUFS：指定范围的累计响度','文件大号 I 从文件起点累计到游标；另有整段 I。'],
 ['LRA','LU：响度范围','短于 60 秒仅作暂估，不用于目标或 A/B 差值判断。']],[84,225,CW-309],y,size=9.5)
-y=box('整段、截至游标与选区是不同范围','文件 LRA / MAX TP 默认是整段统计。选区独立分析从选区起点重新累计 I。保存缓存得到的新文件，也从新文件起点累计；不必等于原监测周期的 I。',y)
+y=box('确认统计范围与采集质量','文件 LRA / MAX TP 默认是整段统计。选区和保存缓存的新文件从各自起点累计 I。“包含估计静音”“采集完整性未知”和中断提示不能当作完整采集；编码成功也不会消除这些提示。',y)
 y=section('生成并保存测量报告',y)
 y=step(1,'设置比较目标','点击顶部“目标”，设置 I 目标/容差、TP 上限等；目标只做比较，不自动改音量。',y)
 y=step(2,'选择正确范围','打开已保存文件，点击底部“报告”，选择整段或“选区独立分析”。临时缓存请先保存为文件。',y)

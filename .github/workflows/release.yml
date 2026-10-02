@@ -1,4 +1,4 @@
-name: Build Release
+name: Prism Build Release (upstream)
 
 on:
   workflow_dispatch:

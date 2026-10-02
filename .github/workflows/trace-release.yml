@@ -1,0 +1,15 @@
+name: Trace Candidate
+
+# Produces reviewable Actions artifacts only. No public Release, tag or upload
+# to a third-party download service; hardware/signing gates remain separate.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  candidate:
+    uses: ./.github/workflows/trace.yml
+    with:
+      package_candidate: true

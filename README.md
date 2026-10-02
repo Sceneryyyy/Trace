@@ -16,7 +16,7 @@ Audio Recorder & Analyzer
 
 Trace 是 LeoMoon 系列的桌面音频录音与分析工作台。它把系统声音采集、录音、历史回听和多种测量仪器放在同一个窗口，让你既能观察正在发生的声音，也能沿时间轴回到刚才的细节。
 
-当前源码为 **0.1.0-preview.31**，开发分支为 `recorder/dev`。最近完成打包验证的版本仍是 **Windows x64 0.1.0-preview.30 / InternalTest-r3**（来源提交 `9c1ee21`）；preview.31 尚未打包。macOS 移植方案已记录，当前分支的 Trace 音频后端仍为 Windows/WASAPI，Mac 采集实现与实机验收尚未完成。
+当前源码为 **0.1.0-preview.31**，开发分支为 `recorder/dev`。最近完成打包验证的版本仍是 **Windows x64 0.1.0-preview.30 / InternalTest-r3**（来源提交 `9c1ee21`）；preview.31 Windows 包尚未打包；[新版 PDF 快速上手](output/pdf/LeoMoon-Trace-Quick-Start-preview.31-zh-CN.pdf) 已更新，界面插图明确使用云端模拟数据。macOS 移植方案已记录，当前分支的 Trace 音频后端仍为 Windows/WASAPI，Mac 采集实现与实机验收尚未完成。
 
 ![Trace 工作台：波形、电平与响度共享时间轴](docs/assets/quick-start-preview28/workbench.png)
 
@@ -50,7 +50,7 @@ Trace 是 LeoMoon 系列的桌面音频录音与分析工作台。它把系统�
 
 ### 当前验证边界
 
-本项目仍处于开发预览阶段。preview.30 有历史 Windows 自动化及打包证据；preview.31 的最新修复已通过 Linux 云端类型、可移植测试和应用资源构建，Windows 原生重编译与真实设备复验尚未执行。独立干净 Windows、不同声卡/驱动、真实 96 kHz 等验收仍需补充；Windows 分发包尚未签名。macOS 采集、权限、打包与签名/公证尚未完成实机验证。具体证据与待办以 [当前交接记录](docs/13-HANDOFF.md) 为准。
+本项目仍处于开发预览阶段。preview.30 有历史 Windows 自动化及打包证据；preview.31 的最新修复已通过 Linux 云端类型、可移植测试和应用资源构建，Windows 原生重编译与真实设备复验尚未执行。独立干净 Windows、不同声卡/驱动、真实 96 kHz 等验收仍需补充；Windows 分发包尚未签名。macOS 采集、权限、打包与签名/公证尚未完成实机验证。云端 CI/打包/退出与依赖收尾见 [75](docs/75-CLOUD-RELEASE-PREPARATION.md)，正式发布门禁见 [76](docs/76-RELEASE-CHECKLIST.md)。当前仍有 Electron/打包原生链安全公告待处理；具体证据与待办以 [当前交接记录](docs/13-HANDOFF.md) 为准。
 
 ## 开发入口
 

@@ -1,0 +1,110 @@
+name: Trace CI
+
+on:
+  push:
+    branches: [recorder/dev]
+  pull_request:
+    branches: [recorder/dev, main]
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      package_candidate:
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: trace-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  portable:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24.19.0
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+        env:
+          PRISM_SKIP_NATIVE_POSTINSTALL: '1'
+      - run: npm run typecheck
+      - run: npm run test:trace
+      - run: npm run build:trace
+      - name: Portable C++ with ASan and UBSan
+        run: |
+          cmake -S native/portable -B build/trace-portable -DCMAKE_BUILD_TYPE=Debug -DTRACE_SANITIZE=ON
+          cmake --build build/trace-portable --parallel 4
+          ctest --test-dir build/trace-portable --output-on-failure --output-junit portable-results.xml
+      - name: Actual React subscription regression in Chromium
+        run: node tools/audit/snapshot-selector.cjs
+        env:
+          TRACE_AUDIT_CHROMIUM: google-chrome
+      - name: Renderer interactions with simulated IPC
+        run: node tools/audit/renderer.cjs
+        env:
+          TRACE_AUDIT_CHROMIUM: google-chrome
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: trace-portable-evidence
+          path: |
+            build/trace-portable/portable-results.xml
+            artifacts/cloud-regression/selector-*/result.json
+            artifacts/release-cloud/renderer-*/report.json
+          if-no-files-found: warn
+
+  windows:
+    needs: portable
+    runs-on: windows-2022
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24.19.0
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+        env:
+          PRISM_SKIP_NATIVE_POSTINSTALL: '1'
+      - name: Build pinned Electron native prerequisites
+        run: npm run rebuild:native
+        env:
+          npm_config_devdir: ${{ github.workspace }}/.tools/node-gyp
+      - run: node tools/prefetch-ffmpeg.mjs
+      - name: Verify Trace and retain command outcomes
+        run: node tools/release/verify.cjs
+        env:
+          TRACE_REQUIRE_NATIVE: '1'
+      - name: Build and inspect candidate package
+        if: inputs.package_candidate == true
+        run: |
+          node tools/package-trace.cjs
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node tools/m6/package-audit.cjs
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node tools/release/package-load-smoke.cjs
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node tools/release/candidate.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: trace-windows-evidence
+          path: |
+            artifacts/release/verification.json
+            artifacts/release/package-load.json
+            artifacts/m6/package-audit-latest.json
+            build/trace-engine/Testing/Temporary/LastTest.log
+          if-no-files-found: warn
+      - uses: actions/upload-artifact@v4
+        if: inputs.package_candidate == true
+        with:
+          name: trace-windows-candidate
+          path: dist-trace/candidate/*
+          if-no-files-found: error

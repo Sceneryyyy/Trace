@@ -1,6 +1,7 @@
 import {useLayoutEffect,useMemo,useRef,useState} from 'react'
 import {buildSurface,cameraMatrix,transform,pickSurface,type SurfaceOptions} from './spectralSurface'
 import {SurfaceRenderer,type SurfaceScene} from './surfaceRenderer'
+import {surfaceCursor,drawSurfaceCursor} from './surfaceCursor'
 import type {SpectrogramView} from '../spectrogramView'
 import type {SpectrogramStops} from '../instrumentThemes'
 import './surface.css'
@@ -31,6 +32,9 @@ export function SurfaceCanvas(props:Props){
   const occupied:Array<{x:number;y:number;w:number;h:number}>=[]
   ctx.font='11px "JetBrains Mono",monospace';ctx.textBaseline='middle'
   const labelColour=tk['surface-label'],axisColour=tk['cursor']
+  const marker=surfaceCursor(matrix,scene.cursor,rect.width,rect.height)
+  drawSurfaceCursor(ctx,marker,tk['surface-cursor'])
+  if(marker)occupied.push({x:marker.x-7,y:marker.y-13,w:14,h:15})
   const label=(point:[number,number,number],text:string,color=labelColour,dx=0,dy=0,align:CanvasTextAlign='center')=>{
    const q=transform(matrix,point),x=(q[0]+1)*rect.width/2+dx,y=(1-q[1])*rect.height/2+dy,w=ctx.measureText(text).width,left=x-(align==='center'?w/2:align==='right'?w:0),box={x:left-3,y:y-7,w:w+6,h:14}
    if(box.x<3||box.x+box.w>rect.width-3||box.y<3||box.y+box.h>rect.height-3||occupied.some(b=>box.x<b.x+b.w&&box.x+box.w>b.x&&box.y<b.y+b.h&&box.y+box.h>b.y))return

@@ -1,6 +1,6 @@
 # Trace 项目文档索引
 
-更新：2026-10-02。当前源码 **preview.31**，默认分支 `recorder/dev`；最近验证过的 Windows 内测包 **preview.30 / InternalTest-r3（9c1ee21）**，preview.31 尚未打包。
+更新：2026-10-02。当前源码 **preview.31**，默认分支 `recorder/dev`；最近验证过的 Windows 内测包 **preview.30 / InternalTest-r3（9c1ee21）**，preview.31 Windows 包尚未打包，新 PDF 已生成（云端模拟界面插图）。
 
 先读 [项目首页](../README.md)、[用户指南](28-USER-GUIDE.md) 或 [开发入门](../CODEX-START.md)。当前状态、未验证项和下一任务统一写在 [13-HANDOFF](13-HANDOFF.md)。带日期的阶段记录只证明当时版本的结果；旧“当前/下一步”不能覆盖 13。
 
@@ -14,6 +14,9 @@
 | [Windows 环境](09-WINDOWS-SETUP.md) | 实际构建、测试和分发命令；Linux 可运行范围 |
 | [任务索引](07-BACKLOG.md) | 当前待办与早期任务 ID |
 | [当前交接](13-HANDOFF.md) | 源码/分发身份、最新验证、实机缺口 |
+| [云端发布收尾](75-CLOUD-RELEASE-PREPARATION.md) | CI、打包、退出、依赖与新 PDF 的交付/阻塞 |
+| [发布验收清单](76-RELEASE-CHECKLIST.md) | 候选生成、Windows/测量/安全/用户门禁 |
+| [依赖安全盘点](release/security-baseline.json) | 锁文件绑定的剩余公告与工具链版本 |
 | [文档清理记录](74-DOCUMENTATION-CLEANUP.md) | 本轮删除、归档、勘误与检查 |
 
 ## 现行需求、语义与契约
@@ -102,7 +105,7 @@
 | [59 · 公开测试准备度评估](59-PUBLIC-BETA-READINESS.md) | 历史设计/实施及本阶段证据 |
 | [60 · PB1 单实例与 PB2 故障诊断](60-PB1-PB2-SUPPORT.md) | 历史设计/实施及本阶段证据 |
 | [61 · LeoMoon 系列 / Trace 产品标识接入](61-LEOMOON-TRACE-BRANDING.md) | 历史设计/实施及本阶段证据 |
-| [62 · 用户手册核对与 PDF 快速上手](62-USER-MANUAL.md) | preview.28 PDF 的交付与 QA，非 preview.31 手册 |
+| [62 · 用户手册核对与 PDF 快速上手](62-USER-MANUAL.md) | preview.28 历史与 preview.31 新 PDF 的来源和 QA |
 | [63 · 同事内测分发包](63-INTERNAL-TEST-DISTRIBUTION.md) | preview.28 / R1 分发校验快照 |
 | [64 · 同事内测分发包 R2（preview.29）](64-INTERNAL-TEST-R2.md) | preview.29 / R2；逐帧重渲染结论已勘误 |
 | [Trace 声迹 / Prism 前端代码质量审计报告](66-FRONTEND-AUDIT.md) | 2026-09-20 前端审计；selector 性能结论有后续勘误 |
@@ -124,6 +127,9 @@
 | 文档 | 用途/状态 |
 | --- | --- |
 | [现行数据示例](../examples/README.md) | Session v2 / RecordSettings v3 / ExportPreset；无真实媒体 |
+| [preview.31 PDF](../output/pdf/LeoMoon-Trace-Quick-Start-preview.31-zh-CN.pdf) | 8 页当前快速上手，明确使用云端模拟界面插图 |
+| [当前插图来源](assets/quick-start-preview31/README.md) | 真实 React + 模拟 IPC/读数，非 Windows 采集证明 |
+| [Noto Sans SC 许可](assets/quick-start-preview31/NotoSansSC-OFL.txt) | 新 PDF 嵌入字体的 SIL OFL 1.1 |
 | [preview.28 PDF](../output/pdf/LeoMoon-Trace-Quick-Start-preview.28-zh-CN.pdf) | 8 页历史快速上手，受版本控制，R3 仍沿用 |
 | [手册截图来源](assets/quick-start-preview28/README.md) | preview.28 演示信号/隔离窗口，非当前实机验收 |
 | [品牌素材来源](../resources/trace/branding/README.md) | 实际 PNG、生成过程、SHA256 与品牌归属 |

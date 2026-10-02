@@ -1,6 +1,6 @@
 # Trace 声迹 · 使用说明
 
-适用源码：0.1.0-preview.31（Windows x64 开发预览，2026-10-02 更新）。本指南包含 preview.31 的仪表主题与采集质量改进。最近已验证的分发包仍为 preview.30 / InternalTest-r3，不包含这些新增内容；包内说明与 preview.28 PDF 是历史快照。源码与包的验证边界见 [当前交接](13-HANDOFF.md)，分发信息见 [69](69-INTERNAL-TEST-R3.md)。
+适用源码：0.1.0-preview.31（Windows x64 开发预览，2026-10-02 更新）。本指南包含 preview.31 的仪表主题与采集质量改进。最近已验证的分发包仍为 preview.30 / InternalTest-r3，不包含这些新增内容；包内说明与 preview.28 PDF 是历史快照；[preview.31 PDF](../output/pdf/LeoMoon-Trace-Quick-Start-preview.31-zh-CN.pdf) 已单独更新，使用明确标注的云端模拟界面插图。源码与包的验证边界见 [当前交接](13-HANDOFF.md)，分发信息见 [69](69-INTERNAL-TEST-R3.md)。
 
 界面以 LeoMoon 为系列品牌，TRACE 为当前产品名；绿色至青色的狮子月牙标识同时用于顶部和 Windows 图标。
 
