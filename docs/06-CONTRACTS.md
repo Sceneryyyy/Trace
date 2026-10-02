@@ -1,5 +1,7 @@
 # 06 · 模块接口与消息契约
 
+2026-10-02：replayFreeze 元数据升至 v3，新增 quality v1（estimatedFrames、gapFrames 为十进制帧数字符串，unknown 为布尔）。冻结质量覆盖当前不可变缓存；replaySave 的可选 quality 仅覆盖 startFrame/endFrame 半开选区，由原生对象计算，不信任 renderer 提供的计数。缺失旧字段时兼容保存，但标记 unknown。AnalysisSource.continuity 支持 unknown；导出结果保存来源 continuity，旧导出只追溯元数据、不要求原 PCM 仍存在。report.jump 与普通 seek 一致，暂停并关闭输出、恢复监听意图、不自动发声。录音/缓存准备失败通过统一后台状态恢复，退出/库维护/活动录音期间保持暂停。Request v1、Meter v4、Session v2 和分析缓存 key v3 不变；详见 [73](73-CLOUD-CODE-REVIEW.md) 修复节。
+
 PB2：Request v1 增加无参数 app.exportDiagnostics / app.feedback / app.reloadUI，以及仅接受 kind=react/script/promise 的 app.rendererFault；拒绝路径、收件地址与异常原文。TraceState.support 是可选固定字段状态。app.diagnostics 保留原摘要形状，复制/导出使用 SupportReport schemaVersion=1，包含主模块构建 SHA256 与脱敏历史。support.testFault 仅在隔离 testMode 接受 renderer/main/worker，生产模式返回 TEST_ONLY。源目录选择与固定 mailto 构造均在主进程，见 60。
 
 M12 参考：reference.set/clear/activate/range/configure/retry 使用来源 ID、A/B 槽、十进制帧范围与有界纳秒偏移，禁止路径参数。TraceState.reference 仅含来源/分析摘要及差值；ReferencePacket 通过 trace:reference → preload 独立转移流发送，带版本/序号/配置键和各自真实查询位置，不保留过期数组。workspace v4、引用释放与原生两槽调度见 54/55。

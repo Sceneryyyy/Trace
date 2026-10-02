@@ -8,7 +8,8 @@ import {validateExportRecord} from './exportTypes'
 import type {MediaTools,EncodedMedia,MediaFile,ExportPreset} from './mediaTypes'
 import type {ExportRecord,ExportResult,ExportView,ExportSource,ExportPhase} from './exportTypes'
 import type {ExportOwner,ExportRepository} from './exportRepository'
-import type {AnalysisSource} from './analysisService'
+import type {AnalysisSource,SourceContinuity} from './analysisService'
+import {sourceContinuity} from './captureIntegrity'
 
 type Task={record:ExportRecord;take:ExportOwner;controller?:AbortController;cancelled:boolean;suspended:boolean}
 const terminal=(phase:ExportPhase)=>['ready','failed','cancelled'].includes(phase)
@@ -83,7 +84,21 @@ export class ExportService {
    await rm(target,{recursive:true})
   }catch(error){if((error as NodeJS.ErrnoException).code!=='ENOENT')throw error}
  }
- private async publish(task:Task,result:EncodedMedia,working:string):Promise<ExportResult>{
+ /** Follow only metadata: an original may have been removed after export. */
+ private captureContinuity(record:ExportRecord):SourceContinuity{
+  let current=record;const seen=new Set<string>()
+  while(true){
+   if(current.result?.continuity)return current.result.continuity
+   if(seen.has(current.id))return 'unknown'
+   seen.add(current.id)
+   const doc=this.repository.session(current.source.takeId).document
+   if(current.source.role!=='export')return doc.regions?sourceContinuity({...doc,regions:doc.regions},current.source.regionId):doc.kind==='imported'?'complete':'unknown'
+   const parent=doc.exports?.find(r=>r.id===current.source.exportId)
+   if(!parent)return 'unknown'
+   current=parent
+  }
+ }
+ private async publish(task:Task,result:EncodedMedia,working:string,continuity:SourceContinuity):Promise<ExportResult>{
   const ready=join(working,'ready');await mkdir(ready)
   const moved=new Map<string,string>(),files:ExportResult['files']=[],decoded:ExportResult['decoded']=[]
   const move=async(file:MediaFile,kind:'media'|'decoded',index:number)=>{
@@ -94,7 +109,7 @@ export class ExportService {
   for(let i=0;i<result.files.length;i++)files.push(await move(result.files[i],'media',i))
   for(let i=0;i<result.decoded.length;i++)decoded.push(await move(result.decoded[i],'decoded',i))
   const mediaIdentity=createHash('sha256').update(JSON.stringify({version:1,files:files.map(f=>f.sha256),decoder:result.encoderSha256,recipe:result.decodeRecipe})).digest('hex')
-  const record:ExportResult={version:1,directory:'exports/'+task.record.id,codec:result.codec,container:result.container,sampleRate:result.sampleRate,channelCount:result.channelCount,frames:result.frames,
+  const record:ExportResult={continuity,version:1,directory:'exports/'+task.record.id,codec:result.codec,container:result.container,sampleRate:result.sampleRate,channelCount:result.channelCount,frames:result.frames,
    actualBitrate:result.actualBitrate,files,decoded,recipe:result.decodeRecipe,mediaIdentity,encoderSha256:result.encoderSha256,sourceSha256:result.sourceSha256}
   const final={...task.record,phase:'ready' as const,fraction:1,error:null,result:record};validateExportRecord(final)
   await writeFile(join(ready,'export.json'),JSON.stringify(final,null,2),{flag:'wx'})
@@ -113,7 +128,7 @@ export class ExportService {
    const result=await encodeMedia(this.tools,{sources:source.sources,sampleRate:source.sampleRate,channelCount:source.channelCount,frames:source.frames,origin:source.decodeRange?.startFrame,range:r.source.range},r.preset,working,{
     signal,created:async()=>{owned=true;await writeFile(join(working,'owner.json'),JSON.stringify({version:1,exportId:r.id,takeId:task.take.document.sessionId}),{flag:'wx'})},progress:value=>{if(signal.aborted)return;const control=r.phase!==value.phase;r.phase=value.phase;r.fraction=value.fraction;this.changed(control)}
    })
-   r.result=await this.publish(task,result,working);committed=true;r.phase='ready';r.fraction=1;r.error=null
+   r.result=await this.publish(task,result,working,source.continuity??this.captureContinuity(r));committed=true;r.phase='ready';r.fraction=1;r.error=null
    await task.take.event('export.ready',{exportId:r.id,automatic:r.automatic,container:r.result.container,frames:r.result.frames})
    await task.take.save()
   }catch(error){
@@ -188,7 +203,7 @@ export class ExportService {
   }
   const cacheRoot=join(take.directory,'cache');try{const details=await lstat(cacheRoot);if(!details.isDirectory()||details.isSymbolicLink())throw Error('INVALID_CACHE_DIRECTORY')}catch(error){if((error as NodeJS.ErrnoException).code!=='ENOENT')throw error}
   return {assetFormat:{format:record.preset.format,sampleRate:result.sampleRate,channelCount:result.channelCount,...(record.preset.format==='wav'?{encoding:record.preset.encoding}:{bitrate:record.preset.bitrate}),container:result.container},takeId,role:'export',exportId:id,label:take.document.name+' · '+result.container.toUpperCase()+(record.source.range?' · 选区':''),
-   sources:decoded,cacheRoot,sampleRate:result.sampleRate,channelCount:result.channelCount,frames:result.frames,mediaIdentity:result.mediaIdentity,
+   sources:decoded,cacheRoot,sampleRate:result.sampleRate,channelCount:result.channelCount,frames:result.frames,mediaIdentity:result.mediaIdentity,continuity:this.captureContinuity(record),
    decodeRange:result.recipe.startFrame!=='0'||result.recipe.physicalFrames!==result.frames?{startFrame:result.recipe.startFrame,endFrame:(BigInt(result.recipe.startFrame)+BigInt(result.frames)).toString()}:undefined}
  }
  saveInfo(id:string):{name:string;extension:string;multiple:boolean}{

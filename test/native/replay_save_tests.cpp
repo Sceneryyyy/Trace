@@ -53,5 +53,13 @@ int main(){try{
  }
  bool rejected=false;try{saveReplay(clip,root/"invalid",root/"invalid.jsonl",WavEncoding::Float32,0,2052);}catch(...){rejected=true;}
  check(rejected&&!std::filesystem::exists(root/"invalid-1.wav"),"invalid range created audio");++cases;
+ {
+  ReplayBuffer buffer({48000,1,32,32,4,0,true});std::vector<float> pcm(100,0);
+  buffer.push(pcm.data(),20);buffer.push(pcm.data(),30,EstimatedSilence);buffer.push(pcm.data(),50);
+  const auto frozen=buffer.freeze();const auto dir=root/"quality";std::filesystem::create_directory(dir);
+  saveReplay(*frozen,dir/"clip",dir/"journal.jsonl",WavEncoding::Float32,10,60);
+  std::ifstream journal(dir/"journal.jsonl");const std::string text((std::istreambuf_iterator<char>(journal)),{});
+  check(text.find("\"estimatedFrames\":\"30\"")!=std::string::npos&&text.find("\"unknown\":false")!=std::string::npos,"saved capture quality is absent from journal");++cases;
+ }
  std::cout<<"REPLAY_SAVE_PASS "<<cases<<"\n";return 0;
  }catch(const std::exception& e){std::cerr<<e.what()<<"\n";return 1;}}

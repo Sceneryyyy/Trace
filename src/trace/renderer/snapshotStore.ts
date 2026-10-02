@@ -29,7 +29,7 @@ export function useSnapshotSelector<T>(selector:(snapshot:MeterSnapshot|null)=>T
  const get=():T=>{
   const input=getSnapshot()
   const output=selector(input)
-  if(cache.current&&cache.current.input===input&&equal(cache.current.output,output))return cache.current.output
+  if(cache.current&&equal(cache.current.output,output))return cache.current.output
   cache.current={input,output}
   return output
  }

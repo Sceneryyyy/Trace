@@ -1,12 +1,14 @@
 import type {InstrumentPacket,InstrumentRequest} from './instrumentTypes'
 import type {ReplaySaveRequest,ReplaySaveResult} from './replaySaveTypes'
+import type {ReplayQuality} from './replaySaveTypes'
+import {replayQualityContinuity,validateReplayQuality} from './replaySaveTypes'
 import {nativeFilePath} from './nativeFilePath'
 import {randomUUID} from 'node:crypto'
 import {measurementConfigId} from './analysisTypes'
 import type {HistoricalMetrics} from './analysisTypes'
 import type {AnalysisService,AnalysisSource} from './analysisService'
 import type {FileView,Metric,NativePlaybackSnapshot,NativeMeterSnapshot,PlaybackView,WavePoint,LoudnessPoint,AnalysisJobView,NativeRecordSnapshot} from './shared'
-export type ReplayInfo={frames:string;originFrame:string;captureStartFrame:string;sourceId:string;epochId:string;measurementEpoch:string;sampleRate:number;channelCount:number}
+export type ReplayInfo={quality?:ReplayQuality;frames:string;originFrame:string;captureStartFrame:string;sourceId:string;epochId:string;measurementEpoch:string;sampleRate:number;channelCount:number}
 export type PlaybackNative={
  replaySave?(request:ReplaySaveRequest):Promise<ReplaySaveResult>
  replayFreeze(recording?:boolean):ReplayInfo
@@ -66,7 +68,8 @@ export class PlaybackService {
    startFrame:c.startFrame,endFrame:c.endFrame}
  }
      async openReplay(deviceId:string,info=this.native.replayFreeze(),timeOffsetSeconds=Number(info.captureStartFrame)/info.sampleRate,label='系统声音 · 历史'):Promise<void>{
-   await this.open({takeId:'live-history',role:'source',label,sources:[],cacheRoot:'',sampleRate:info.sampleRate,channelCount:info.channelCount,frames:info.frames},deviceId,info,timeOffsetSeconds)
+   const quality=info.quality?validateReplayQuality(info.quality,info.frames):undefined
+   await this.open({takeId:'live-history',role:'source',label,sources:[],cacheRoot:'',sampleRate:info.sampleRate,channelCount:info.channelCount,frames:info.frames,continuity:replayQualityContinuity(quality)},deviceId,info,timeOffsetSeconds)
   }
   async open(source:AnalysisSource,deviceId:string,replayInfo?:ReplayInfo,timeOffsetSeconds=0):Promise<void>{
    const operation=++this.operation

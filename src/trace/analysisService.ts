@@ -9,7 +9,7 @@ import type { AnalysisJobView, AnalysisRole } from './shared'
  * no capture clock of its own, so the take-level finding has to travel with the
  * source; otherwise a gapped or recovered take reads as complete on playback.
  */
-export type SourceContinuity = 'complete' | 'estimated-silence' | 'gaps'
+export type SourceContinuity = 'complete' | 'estimated-silence' | 'gaps' | 'unknown'
 export type AnalysisSource = {assetFormat?:AssetFormat;takeId:string;role:AnalysisRole;regionId?:string;exportId?:string;label:string;sources:string[];cacheRoot:string;sampleRate:number;channelCount:number;frames:string;continuity?:SourceContinuity;mediaIdentity?:string;decodeRange?:{startFrame:string;endFrame:string};range?:{startFrame:string;endFrame:string}}
 type Job={view:AnalysisJobView;source:AnalysisSource;controller?:AbortController;result?:AnalyzeJobResult;cancelled:boolean;suspended:boolean;repairs:number}
 const terminal=(phase:string)=>['ready','failed','cancelled'].includes(phase)

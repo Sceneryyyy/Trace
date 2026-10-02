@@ -332,7 +332,7 @@ void Engine::analysisLoop() {
                 if (block->flags & Missing) {
                     analysisBase_ = block->firstFrame + block->frames;
                 } else {
-                    replay_->push(block->samples.data(),block->frames);
+                    replay_->push(block->samples.data(),block->frames,block->flags);
                     meter_->push(block->samples.data(), block->frames, block->flags);
                     analyzed_.fetch_add(block->frames);
                 }

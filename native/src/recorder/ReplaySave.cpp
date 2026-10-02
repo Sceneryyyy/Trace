@@ -20,7 +20,8 @@ std::string quote(const std::string& text){
 WavConversion saveReplay(const ReplayClip& clip,const std::filesystem::path& base,
  const std::filesystem::path& journalPath,WavEncoding encoding,uint64_t start,uint64_t end,WavOptions options){
  if(clip.format.sampleRate<8000||clip.format.sampleRate>96000||clip.format.channels<1||clip.format.channels>2||
-  clip.frames()>uint64_t(clip.format.sampleRate)*60||start>=end||end>clip.frames())throw std::runtime_error("INVALID_REPLAY_SELECTION");
+ clip.frames()>uint64_t(clip.format.sampleRate)*60||start>=end||end>clip.frames())throw std::runtime_error("INVALID_REPLAY_SELECTION");
+ const auto quality=clip.quality(start,end);
  WavWriter writer(base,clip.format.sampleRate,clip.format.channels,encoding,options);
  std::ofstream journal(journalPath,std::ios::binary|std::ios::app);
  if(!journal)throw std::runtime_error("JOURNAL_OPEN_FAILED");
@@ -34,7 +35,7 @@ WavConversion saveReplay(const ReplayClip& clip,const std::filesystem::path& bas
   }
   journal<<"]}\n";journal.flush();if(!journal)throw std::runtime_error("JOURNAL_WRITE_FAILED");
  };
- journal<<"{\"seq\":"<<++sequence<<",\"event\":\"prepared\",\"origin\":\"memory\"}\n";
+ journal<<"{\"seq\":"<<++sequence<<",\"event\":\"prepared\",\"origin\":\"memory\",\"quality\":{\"version\":1,\"estimatedFrames\":\""<<quality.estimatedFrames<<"\",\"gapFrames\":\""<<quality.gapFrames<<"\",\"unknown\":"<<(quality.unknown?"true":"false")<<"}}\n";
  journal<<"{\"seq\":"<<++sequence<<",\"event\":\"begin\",\"captureStartFrame\":\"0\"}\n";journal.flush();
  std::array<float,kBlockFrames*2> block{};
  try{

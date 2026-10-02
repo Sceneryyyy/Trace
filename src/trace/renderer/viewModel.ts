@@ -38,7 +38,7 @@ export function deriveView({state,devices,windowDraft,recordWindow,seconds,snaps
  const displaySnapshot=rawDisplaySnapshot?.sourceKind==='take'?{...rawDisplaySnapshot,timelineAvailableRange:view?.inspectableRange,timelineWindow:recBounds,positionFrame:rawDisplaySnapshot.positionFrame}:rawDisplaySnapshot?.sourceKind==='live'?{...rawDisplaySnapshot,timelineAvailableRange:typeof rawDisplaySnapshot.diagnostics.replayStartFrame==='string'&&typeof rawDisplaySnapshot.diagnostics.replayEndFrame==='string'?{startFrame:rawDisplaySnapshot.diagnostics.replayStartFrame,endFrame:rawDisplaySnapshot.diagnostics.replayEndFrame}:undefined,timelineWindow:{startFrame:(liveEnd>liveSpan?liveEnd-liveSpan:0n).toString(),endFrame:liveEnd.toString()}}:rawDisplaySnapshot
  const sourceError=state.error||displaySnapshot?.error||null
  const snapshotFailure=Boolean(state.error?.startsWith('RECORD_SNAPSHOT_FAILED:'))
- const continuity=sourceError?'':displaySnapshot?.continuity==='gaps'?'音频有中断':''
+ const continuity=sourceError?'':displaySnapshot?.continuity==='gaps'?'音频有中断':displaySnapshot?.continuity==='estimated-silence'?'包含估计静音':displaySnapshot?.continuity==='unknown'?'采集完整性未知':''
  const history=Boolean(file?.temporary)
  const replaySeconds=Number(liveSnapshot?.diagnostics.replayFrames||0)/(format?.sampleRate||48000)
  const numberMetrics=file?.error?.startsWith('FILE_SNAPSHOT_FAILED:')||(file?file.analysisPhase!=='ready'||Boolean(displaySnapshot?.error):Boolean(sourceError)||reconnecting)?null:displaySnapshot

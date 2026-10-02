@@ -196,7 +196,7 @@ export const TransportElapsed=memo(function TransportElapsed({inputs,isRecording
 export const ContinuityBar=memo(function ContinuityBar({inputs}:{inputs:ViewInputs}){
  const view=useDerivedView(inputs)
  if(!view.continuity)return null
- return <div className="statusbar"><span className={'status-dot '+(view.sourceError?'error':view.displaySnapshot?.continuity==='gaps'?'warning':'')}/><span>{view.continuity}</span></div>
+ return <div className="statusbar"><span className={'status-dot '+(view.sourceError?'error':'warning')}/><span>{view.continuity}</span></div>
 })
 
 export const SelectionStatsRow=memo(function SelectionStatsRow({inputs,file,hidden}:{inputs:ViewInputs;file:PlaybackView|null|undefined;hidden:boolean}){

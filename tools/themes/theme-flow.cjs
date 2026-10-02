@@ -87,7 +87,7 @@ async function main(){
  await session.close();session=null;session=await start();c=session.cdp
  await wait(()=>c.evaluate("document.querySelectorAll('[data-instrument]').length>0"),'restart')
  const firstPaint=await c.evaluate("(()=>{const m=performance.getEntriesByName('trace-theme-applied')[0],p=performance.getEntriesByType('paint').find(e=>e.name==='first-paint');return {mark:m?.startTime??null,paint:p?.startTime??null,theme:document.documentElement.dataset.traceTheme,query:location.search}})()")
- report.firstPaint=firstPaint;console.log('FIRST_PAINT',JSON.stringify(firstPaint));assert.equal(firstPaint.theme,'ocean');assert.equal((await c.state()).instrumentTheme,'ocean');assert(firstPaint.mark!==null&&(firstPaint.paint===null||firstPaint.mark<firstPaint.paint),JSON.stringify(firstPaint))
+ report.firstPaint=firstPaint;console.log('FIRST_PAINT',JSON.stringify(firstPaint));assert.equal(firstPaint.theme,'ocean');assert.equal((await c.state()).instrumentTheme,'ocean');require('./first-paint.cjs').assertThemeBeforeFirstPaint(firstPaint)
  pass('Restart restores the saved theme and applies it before the first paint ('+firstPaint.mark?.toFixed(1)+' ms < '+firstPaint.paint?.toFixed(1)+' ms)')
  await session.close();session=null
 

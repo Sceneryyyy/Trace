@@ -1,4 +1,7 @@
 import type {ReplaySaveIdentity,ReplaySaveRequest,ReplaySaveResult} from './replaySaveTypes'
+import {validateReplayQuality} from './replaySaveTypes'
+import {sourceContinuity} from './captureIntegrity'
+export {sourceContinuity} from './captureIntegrity'
 import {nativeFilePath} from './nativeFilePath'
 import {localRecordingName} from './naming'
 import {createReadStream} from 'node:fs'
@@ -18,7 +21,7 @@ import type {SessionDocument,CaptureRegion,SessionAsset,SessionSegment} from './
 import {postprocessWav} from './wavPostprocess'
 import {RecordingDisplay} from './recordingDisplay'
 import {restoreInterruptedRetention} from './retentionState'
-import type {AnalysisSource,SourceContinuity} from './analysisService'
+import type {AnalysisSource} from './analysisService'
 import type {NativeRecordSnapshot,RecordSettings,TakeSummary,AnalysisRole,RecordingView} from './shared'
 
 export interface RecordNative {
@@ -37,20 +40,6 @@ async function hashFile(path:string):Promise<string>{
  for await(const bytes of createReadStream(path))value.update(bytes)
  const after=await stat(path);if(before.size!==after.size||before.mtimeMs!==after.mtimeMs)throw Error('SOURCE_CHANGED_DURING_FINALIZE')
  return value.digest('hex')
-}
-/**
- * Continuity finding for material opened from a take. A single interrupted or
- * recovered region, several stitched regions, or device-failure frames that
- * were filled in must not read as complete during playback.
- */
-export function sourceContinuity(d:SessionDocument,regionId?:string):SourceContinuity{
- const regions=regionId?d.regions.filter(r=>r.id===regionId):d.regions
- const covered=regions.filter(r=>r.status!=='cancelled'&&BigInt(r.frames||'0')>0n)
- if(covered.some(r=>r.status==='interrupted'||r.error))return 'gaps'
- if(!regionId&&covered.length>1)return 'gaps'
- if(!regionId&&d.hasDiscontinuities)return 'gaps'
- if(covered.some(r=>BigInt(r.estimatedFrames||'0')>0n))return 'estimated-silence'
- return 'complete'
 }
 export class RecordingService {
  directory=''
@@ -176,6 +165,9 @@ export class RecordingService {
    if(result.sampleRate!==info.sampleRate||result.channelCount!==info.channelCount||result.encoding!==encoding||result.frames!==(BigInt(range.endFrame)-BigInt(range.startFrame)).toString()||
     result.segments.reduce((n,s)=>n+BigInt(s.frames),0n).toString()!==result.frames)throw Error('CACHE_SAVE_FRAME_MISMATCH')
    region.frames=result.frames;region.endFrameExclusive=result.frames;region.status='closed';region.clippedSamples=result.clippedSamples
+   region.captureQuality=result.quality?validateReplayQuality(result.quality,result.frames):{version:1,estimatedFrames:'0',gapFrames:'0',unknown:true}
+   region.estimatedFrames=region.captureQuality.estimatedFrames
+   d.hasDiscontinuities=BigInt(region.captureQuality.gapFrames)>0n
    let prefix=0n
    for(const [index,segment]of result.segments.entries()){
     if(segment.file!==name+'-'+(index+1)+'.wav')throw Error('INVALID_CACHE_SAVE_PATH')
@@ -354,6 +346,7 @@ export class RecordingService {
    if(inventory.confirmedFrames!==null&&prefix<BigInt(inventory.confirmedFrames))throw Error('RECOVERY_CHECKPOINT_TRUNCATED')
    r.startFrame=r.startFrame??inventory.captureStartFrame
    if(inventory.clock){r.clock={domain:r.clock.domain,...inventory.clock};if(inventory.confirmedFrames!==prefix.toString())r.clock.endQpc100ns=null}
+   if(r.captureQuality&&r.frames!==prefix.toString()){r.captureQuality={version:1,estimatedFrames:'0',gapFrames:'0',unknown:true};r.estimatedFrames='0'}
    r.frames=prefix.toString();r.endFrameExclusive=r.startFrame===null?null:(BigInt(r.startFrame)+prefix).toString();r.status='interrupted';r.error='RECOVERED_UNKNOWN_TAIL'
   }
   d.regions=regions;d.assets=d.assets.filter(a=>a.role!=='recovered').concat(assets);d.segments=d.segments.filter(s=>!s.segmentId.includes('-recovered-')).concat(segments)

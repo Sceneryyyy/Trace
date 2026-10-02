@@ -31,6 +31,8 @@ test('interruption, recovery and stitched regions are reported as gaps',()=>{
 
 test('device-failure frames that were filled in are not reported as plain silence',()=>{
  assert.equal(sourceContinuity(doc({regions:[region({estimatedFrames:'480'})]})),'estimated-silence')
+ assert.equal(sourceContinuity(doc({regions:[region({clock:{...region().clock,startEstimated:true}})]})),'estimated-silence')
+ assert.equal(sourceContinuity(doc(),'missing-region'),'unknown')
 })
 
 test('a cancelled or empty region neither hides nor invents a discontinuity',()=>{

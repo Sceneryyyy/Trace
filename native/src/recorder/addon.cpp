@@ -344,9 +344,12 @@ uint64_t replayFrame(Napi::Value value){
  if(s.empty()||s.size()>20||s.find_first_not_of("0123456789")!=std::string::npos)throw std::runtime_error("INVALID_REPLAY_FRAME");
  try{return std::stoull(s);}catch(...){throw std::runtime_error("INVALID_REPLAY_FRAME");}
 }
+Napi::Object replayQuality(Napi::Env env,const Trace::ReplayQuality& quality){
+ auto out=Napi::Object::New(env);out.Set("version",1);frame(out,"estimatedFrames",quality.estimatedFrames);frame(out,"gapFrames",quality.gapFrames);out.Set("unknown",quality.unknown);return out;
+}
 Napi::Value replayFreeze(const Napi::CallbackInfo& info){return guard(info,[&]()->Napi::Value{
  if(info.Length()>1||(info.Length()&&!info[0].IsBoolean()))throw std::runtime_error("INVALID_REPLAY_REQUEST");const auto clip=engine().freezeReplay(info.Length()&&info[0].As<Napi::Boolean>().Value());auto out=Napi::Object::New(info.Env());
- frame(out,"captureStartFrame",clip->captureStartFrame);out.Set("sourceId",clip->sourceId);frame(out,"epochId",clip->captureEpoch);frame(out,"measurementEpoch",clip->measurementEpoch);out.Set("version",2);frame(out,"frames",clip->frames());frame(out,"originFrame",clip->originFrame);out.Set("sampleRate",clip->format.sampleRate);out.Set("channelCount",clip->format.channels);return out;
+ frame(out,"captureStartFrame",clip->captureStartFrame);out.Set("sourceId",clip->sourceId);frame(out,"epochId",clip->captureEpoch);frame(out,"measurementEpoch",clip->measurementEpoch);out.Set("version",3);out.Set("quality",replayQuality(info.Env(),clip->quality(0,clip->frames())));frame(out,"frames",clip->frames());frame(out,"originFrame",clip->originFrame);out.Set("sampleRate",clip->format.sampleRate);out.Set("channelCount",clip->format.channels);return out;
 });}
 Napi::Value replayRelease(const Napi::CallbackInfo& info){return guard(info,[&]()->Napi::Value{if(info.Length())throw std::runtime_error("INVALID_REPLAY_REQUEST");engine().releaseReplay();return info.Env().Undefined();});}
 Napi::Value replayOpen(const Napi::CallbackInfo& info){return guard(info,[&]()->Napi::Value{
@@ -379,14 +382,15 @@ Napi::Value replayAnalyze(const Napi::CallbackInfo& info){return guard(info,[&](
 
 class ReplaySaveWorker:public Napi::AsyncWorker{
  Napi::Promise::Deferred result_;std::shared_ptr<const Trace::ReplayClip> clip_;
- std::filesystem::path base_,journal_;Trace::WavEncoding encoding_;uint64_t start_,end_;Trace::WavConversion value_;
+ std::filesystem::path base_,journal_;Trace::WavEncoding encoding_;uint64_t start_,end_;Trace::WavConversion value_;Trace::ReplayQuality quality_;
 public:
  ReplaySaveWorker(Napi::Env env,std::shared_ptr<const Trace::ReplayClip> clip,std::filesystem::path base,std::filesystem::path journal,Trace::WavEncoding encoding,uint64_t start,uint64_t end)
   :Napi::AsyncWorker(env),result_(Napi::Promise::Deferred::New(env)),clip_(std::move(clip)),base_(std::move(base)),journal_(std::move(journal)),encoding_(encoding),start_(start),end_(end){}
  Napi::Promise promise(){return result_.Promise();}
- void Execute()override{try{value_=Trace::saveReplay(*clip_,base_,journal_,encoding_,start_,end_);}catch(const std::exception& error){SetError(error.what());}}
+ void Execute()override{try{quality_=clip_->quality(start_,end_);value_=Trace::saveReplay(*clip_,base_,journal_,encoding_,start_,end_);}catch(const std::exception& error){SetError(error.what());}}
  void OnOK()override{
   auto value=format(Env(),value_.format);frame(value,"frames",value_.frames);frame(value,"clippedSamples",value_.clippedSamples);
+  value.Set("quality",replayQuality(Env(),quality_));
   value.Set("encoding",encoding_==Trace::WavEncoding::Pcm16?"pcm16":encoding_==Trace::WavEncoding::Pcm24?"pcm24":"float32");
   auto segments=Napi::Array::New(Env(),value_.segments.size());
   for(size_t i=0;i<value_.segments.size();++i){const auto& s=value_.segments[i];auto part=Napi::Object::New(Env());part.Set("file",s.path.filename().u8string());frame(part,"frames",s.frames);frame(part,"bytes",s.bytes);frame(part,"clippedSamples",s.clippedSamples);segments.Set(static_cast<uint32_t>(i),part);}

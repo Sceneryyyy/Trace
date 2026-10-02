@@ -10,6 +10,22 @@ void check(bool value,const char* message){if(!value)throw std::runtime_error(me
 float sample(uint64_t f,uint32_t c){return static_cast<float>((f%997)+c*17)/2048.f;}
 int main(){try{
  unsigned cases=0;
+ {
+  ReplayBuffer buffer({8000,1,32,32,4,0,true});std::vector<float> pcm(480000,0);
+  buffer.push(pcm.data(),7);buffer.push(pcm.data(),11,EstimatedSilence);buffer.push(pcm.data(),13,Gap);buffer.push(pcm.data(),17);
+  const auto clip=buffer.freeze();const auto q=clip->quality(5,23);
+  check(q.estimatedFrames==11&&q.gapFrames==5&&!q.unknown,"quality does not match exact selected frames");
+  check(clip->quality(31,48).estimatedFrames==0&&clip->quality(31,48).gapFrames==0,"clean selection inherits other frames' quality");
+  buffer.push(pcm.data(),480000);const auto wrapped=buffer.freeze();
+  check(wrapped->qualityFlags.size()==wrapped->frames()&&wrapped->quality(0,wrapped->frames()).estimatedFrames==0&&wrapped->quality(0,wrapped->frames()).gapFrames==0,"expired quality survives ring overwrite");
+  check(clip->quality(7,18).estimatedFrames==11,"frozen quality changes with live PCM");
+  buffer.reset();buffer.push(pcm.data(),9,EstimatedSilence);const auto reset=buffer.freeze();
+  check(reset->quality(0,9).estimatedFrames==9&&reset->frames()==9,"quality reset is inconsistent");
+  ReplayClip legacy;legacy.format={8000,1,32,32,4,0,true};legacy.samples.resize(5);
+  check(legacy.quality(0,5).unknown,"missing quality claims complete");
+  bool invalid=false;try{clip->quality(1,49);}catch(...){invalid=true;}check(invalid,"invalid quality range accepted");
+  ++cases;
+ }
  for(auto rate:{44100U,48000U,96000U})for(auto channels:{1U,2U}){
   SourceFormat format{rate,channels,32,32,channels*4,0,true};ReplayBuffer buffer(format);
   std::vector<float> input(kBlockFrames*channels);const uint64_t total=uint64_t(rate)*67+137;

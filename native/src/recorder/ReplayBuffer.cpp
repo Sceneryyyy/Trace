@@ -6,12 +6,13 @@
 namespace Trace {
 ReplayBuffer::ReplayBuffer(SourceFormat format):format_(format),history_(6002){
  if(format.sampleRate<8000||format.sampleRate>96000||!format.channels||format.channels>2)throw std::runtime_error("INVALID_REPLAY_FORMAT");
- capacity_=uint64_t(format.sampleRate)*60;samples_.resize(static_cast<size_t>(capacity_)*format.channels);
+ capacity_=uint64_t(format.sampleRate)*60;samples_.resize(static_cast<size_t>(capacity_)*format.channels);qualityFlags_.resize(static_cast<size_t>(capacity_));
 }
-void ReplayBuffer::push(const float* input,uint32_t frames){
+void ReplayBuffer::push(const float* input,uint32_t frames,uint32_t flags){
  for(uint32_t offset=0;offset<frames;){
   const auto at=frames_%capacity_;const auto count=static_cast<uint32_t>(std::min<uint64_t>(frames-offset,capacity_-at));
   std::copy_n(input+size_t(offset)*format_.channels,size_t(count)*format_.channels,samples_.data()+size_t(at)*format_.channels);
+  std::fill_n(qualityFlags_.data()+size_t(at),count,static_cast<uint8_t>(flags&(EstimatedSilence|Gap|Missing)));
   frames_+=count;offset+=count;
  }
 }
@@ -36,6 +37,9 @@ std::shared_ptr<ReplayClip> ReplayBuffer::freeze(bool publishedOnly)const{
  const auto at=out->originFrame%capacity_,head=std::min(count,capacity_-at);
  std::copy_n(samples_.data()+size_t(at)*format_.channels,size_t(head)*format_.channels,out->samples.data());
  if(head<count)std::copy_n(samples_.data(),size_t(count-head)*format_.channels,out->samples.data()+size_t(head)*format_.channels);
+ out->qualityFlags.resize(static_cast<size_t>(count));
+ std::copy_n(qualityFlags_.data()+size_t(at),size_t(head),out->qualityFlags.data());
+ if(head<count)std::copy_n(qualityFlags_.data(),size_t(count-head),out->qualityFlags.data()+size_t(head));
  out->history.reserve(static_cast<size_t>(rows_-first));
  for(auto i=first;i<rows_;++i){const auto& p=history_[i%history_.size()];if(p.wave.frame>=out->originFrame&&p.wave.frame<=end)out->history.push_back(p);}
  return out;
@@ -78,6 +82,12 @@ ReplayView ReplayClip::view(uint64_t position,uint64_t start,uint64_t end,size_t
  const auto group=std::max<size_t>(1,(points.size()+columns-1)/columns);
  for(size_t i=0;i<points.size();i+=group){auto p=points[i];for(size_t j=i+1;j<std::min(points.size(),i+group);++j){p.frame=points[j].frame;p.flags|=points[j].flags;for(uint32_t c=0;c<format.channels;++c){p.minimum[c]=std::min(p.minimum[c],points[j].minimum[c]);p.maximum[c]=std::max(p.maximum[c],points[j].maximum[c]);}}result.waveform.push_back(p);}
  return result;
+}
+ReplayQuality ReplayClip::quality(uint64_t start,uint64_t end)const{
+ if(start>end||end>frames())throw std::runtime_error("INVALID_REPLAY_SELECTION");
+ ReplayQuality out;if(qualityFlags.size()!=frames()){out.unknown=true;return out;}
+ for(auto f=start;f<end;++f){const auto flags=qualityFlags[size_t(f)];if(flags&EstimatedSilence)++out.estimatedFrames;if(flags&(Gap|Missing))++out.gapFrames;}
+ return out;
 }
 MeterValues ReplayClip::analyze(uint64_t start,uint64_t end)const{
  if(start>=end||end>frames())throw std::runtime_error("INVALID_REPLAY_SELECTION");

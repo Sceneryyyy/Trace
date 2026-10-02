@@ -15,6 +15,13 @@ const file=(patch={})=>({id:'file',analysisPhase:'ready',error:null,sampleRate:4
 const view=(state={},frame=snapshot())=>deriveView({state:{revision:1,deviceId:'device',active:true,error:null,...state},snapshot:frame,devices:[],windowDraft:null,recordWindow:{mode:'all',start:'0',end:'0'},seconds:30})
 const note=v=>metricReadout(v.numberMetrics?.momentary,v.numberAvailability).note
 
+test('estimated and unknown capture quality remain visible in live and file views',()=>{
+ for(const [continuity,text]of [['estimated-silence','包含估计静音'],['unknown','采集完整性未知'],['gaps','音频有中断'],['complete','']]){
+  assert.equal(view({},snapshot({continuity})).continuity,text)
+  assert.equal(view({playback:file()},snapshot({sourceKind:'file',sourceId:'file',continuity})).continuity,text)
+ }
+})
+
 test('source faults keep numerical readings suppressed and show unavailable, not measuring',()=>{
  for(const v of [view({error:'DEVICE_LOST'}),view({},snapshot({error:'SNAPSHOT_FAILED'})),view({error:'DEVICE_LOST'},null)]){
   assert.equal(v.numberMetrics,null);assert.equal(note(v),'无数据')

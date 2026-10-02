@@ -14,6 +14,7 @@
 export const portable = [
   'analysis-retention.test.mjs',
   'canvas-surface.test.mjs',
+  'cloud-review-regressions.test.mjs',
   'delivery-service.test.mjs',
   'export-contracts.test.mjs',
   'file-worker-watchdog.test.mjs',

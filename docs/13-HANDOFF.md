@@ -1,5 +1,21 @@
 # 13 · 当前状态与下一会话
 
+## 最新：云端修复五项问题及两项旧缺口，回归通过（2026-10-02）
+
+按用户授权，已修正 [73](73-CLOUD-CODE-REVIEW.md) 的 R1–R5：selector 相等输出复用、导出来源质量继承/持久化、原生内存缓存按帧质量及保存/重载、报告事件跳转释放输出并恢复监听、录音和缓存准备失败统一恢复后台另存。还补上 68 的估计静音/未知质量提示，以及 72-R3 首帧缺失 paint 不能 PASS 的断言。ReplayFreeze 元数据升至 v3，quality v1；Session/ExportResult 兼容可选质量字段，旧内存数据缺失质量标为 unknown。03/04/05/06 已同步。版本仍 preview.31；用户随后授权将本轮修复、测试和审核记录提交到本地 Git，本轮交付为 `recorder/dev` 上的本地提交，未推送或打包。提交前空白检查通过，沿用下述已通过验证。
+
+已跑：最终 typecheck、portable **233/233（47 文件、0 fail/skip）**、Trace 构建；新增 13 项跨模块回归中，真实 DeliveryService 完成失败后另存，真实保存服务经重载/回听/报告保留质量。真实 React + Chromium 订阅回归通过，相同 30 个快照下顶栏额外 render 从旧代码 30 次降到 0；props/数值变化仍更新。新增可移植 C++ quality 测试 10 cases 通过，覆盖四采样率单双声道、精确选区、环绕、固定/重置、发布前缀及旧数据。日志 `artifacts/cloud-regression/logs/`；详见 73 顶部修复节。
+
+未跑/阻塞：Windows 原生 addon、WAV 写盘新增质量日志及完整 CTest/native、主题完整 flow 和真实首帧、YouTube/声卡/拔设备/96 kHz、磁盘拥塞、GPU/DPI、退出看门狗与安装包仍受 Linux 云环境限制。新增每对象最多约 5.49 MiB 质量环需实机资源检查。下一任务是 Windows 重编译引擎、跑 native 与主题 flow，再补用户最初三分钟实测；云端可运行检查没有失败。下面审核记录保留发现时态。
+
+## 历史：云环境代码审核完成，五项 P2 待修（2026-10-02）
+
+用户因当前只有云环境，将“三分钟 YouTube + Trace 自由操作/截图”验收改为代码完整审核。本轮基线 `recorder/dev@d2981fd`（preview.31），详细发现、复现与边界见 [73-CLOUD-CODE-REVIEW](73-CLOUD-CODE-REVIEW.md)。确认五项 P2：selector 在新快照上不复用相等输出；导出回听丢失原采集 continuity；保存内存缓存不保留估计静音质量；报告事件跳转保留暂停输出导致按钮/监听状态不一致；设备启动失败后遗漏后台另存恢复。另复核 68 的估计静音无界面提示与 72-R3 首帧测试允许 paint=null，均仍未关闭。
+
+已跑：typecheck、portable 219/219、Trace 构建、采集支持元数据 3/3；Linux 直接编译未改动的可移植 C++ 测试，core 16/16、生成 EBU 参考 18/18、TP 时间 233/233、并行 meter 初始化、instrument 3736 checks、spectrogram tile 20 cases 均通过。真实业务模块配明确 mock 完成四项专项复现；真实 React hook 在 headless Chromium 中证明相同选择值仍额外 render 30 次。测试日志及生成夹具在忽略目录 `artifacts/cloud-audit/`。没有改产品代码、已有测试或版本，未提交、推送或打包。
+
+未跑：真实 Windows WASAPI/声卡、YouTube 三分钟录音、拔设备/96 kHz、官方 EBU WAV、整套 Windows native、GPU/DPI 矩阵、退出看门狗故障注入和 preview.31 安装包。完整实机验收受当前 Linux 云环境限制；已运行检查没有阻塞。下一任务先修 73-R2/R3/R5 并补跨模块反例，再处理 R4/R1 与已有提示/首帧测试；Windows 可用后补最初真实操作验收。旧 Windows 通过记录是历史结果，本轮没有重复确认。
+
 ## 最新：主题分支已合入 recorder/dev，后续开发继续在此分支（2026-09-30）
 
 按用户授权，将 `feature/instrument-themes@da0c8ab` 快进合并到 `recorder/dev`，并成功推送到 `origin/recorder/dev`（`Sceneryyyy/Trace`）。主题实现、R1/R2 修复、测试和文档全部进入开发分支，四个原提交完整保留；合并没有冲突。当前工作区已切至 `recorder/dev`，后续开发默认继续在此分支；同一约定已写入仓库 `AGENTS.md`。

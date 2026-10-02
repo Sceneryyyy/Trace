@@ -1,5 +1,7 @@
 # 04 · 会话、音频、缓存与恢复
 
+2026-10-02 云端修复：CaptureRegion 可选 captureQuality v1 保存估计帧、缺口帧和未知质量，estimatedFrames 保持现有字段并校验一致；计数不能超过区域帧数。内存来源缺少旧质量信息时显示 unknown，不能由新文件重新分析推定原采集完整。ExportResult 可选 continuity 持久化编码来源质量，导出再导出继承；旧导出沿来源/region 元数据追溯，循环或缺失链条返回 unknown，不依赖保留原件 PCM。Session schema 仍为 v2、ExportRecord/Result 仍为 v1（兼容可选字段）；参见 [73](73-CLOUD-CODE-REVIEW.md) 修复节。
+
 PB2：配置目录下 support/events.json 为 schemaVersion=1，最多 128 条固定字段事件与 clean 标记；support/fatal.json 仅保存致命异常类别/时间。异步原子写入、短时重复合并；致命退出前只写极小同步标记。导出诊断为独立新目录中的 diagnostics.json + feedback.txt，不附带音频/文件名/路径/设备身份。音频会话和计量缓存格式不变，见 60。
 
 M12 参考比较：workspace v4 增加 comparison 仪器及预设，v1/v2/v3 迁移保留已有树/隐藏状态/自定义预设，新增面板默认隐藏。A/B 配对是本次运行状态，不写入布局或音频文件。各自范围分析、原始测量和监听增益分离；ReferencePacket 的功率数组走独立可转移通道。共享分析取消需等最后一份引用释放，自动原始源整理还需等待参考及关闭中的播放源。见 54/55。

@@ -104,6 +104,11 @@ target_link_libraries(trace-replay-tests PRIVATE trace_core)
 target_compile_options(trace-replay-tests PRIVATE /W4 /EHsc /utf-8)
 add_test(NAME trace-replay COMMAND trace-replay-tests)
 
+add_executable(trace-replay-quality-tests ../../test/native/replay_quality_tests.cpp)
+target_link_libraries(trace-replay-quality-tests PRIVATE trace_core)
+target_compile_options(trace-replay-quality-tests PRIVATE /W4 /EHsc /utf-8)
+add_test(NAME trace-replay-quality COMMAND trace-replay-quality-tests)
+
 add_executable(trace-replay-save-tests ../../test/native/replay_save_tests.cpp)
 target_link_libraries(trace-replay-save-tests PRIVATE trace_core)
 target_compile_options(trace-replay-save-tests PRIVATE /W4 /EHsc /utf-8)

@@ -32,6 +32,7 @@ import { createRequire } from 'node:module'
 import { mkdirSync, readFileSync, realpathSync } from 'node:fs'
 import { validateRequest, isMutation } from './contracts'
 import { RecordingService } from './recording'
+import {sourceContinuity} from './captureIntegrity'
 import { AnalysisService } from './analysisService'
 import { PlaybackService } from './playbackService'
 import {ExportService} from './exportService'
@@ -155,16 +156,21 @@ function releaseRecordingCapture():void{
     recordingCaptureHeld=false
   }catch(error){const message='CAPTURE_RELEASE_FAILED: '+String(error);if(state.error!==message)update({error:message})}
 }
-function syncRecordingState():void{
+function syncRecordingWork():void{
   if(!recordings)return
   releaseRecordingCapture()
-  analyses?.setRecordingBusy(recordings.busy()||managingLibrary)
-  reports?.setRecordingBusy(recordings.busy()||managingLibrary)
-  imports?.setRecordingBusy(recordings.busy()||managingLibrary)
-  references?.setRecordingBusy(recordings.busy()||managingLibrary)
-  if(exporter){if(recordings.busy()||exiting||managingLibrary)void exporter.pauseForRecording();else exporter.resume()}
-  if(deliveries){if(recordings.busy()||exiting||managingLibrary)void deliveries.pause();else deliveries.resume()}
-  if(retention){if(recordings.busy()||exiting||managingLibrary)void retention.pause();else retention.resume()}
+  const blocked=recordings.busy()||managingLibrary||exiting
+  analyses?.setRecordingBusy(blocked)
+  reports?.setRecordingBusy(blocked)
+  imports?.setRecordingBusy(blocked)
+  references?.setRecordingBusy(blocked)
+  if(exporter){if(blocked)void exporter.pauseForRecording();else exporter.resume()}
+  if(deliveries){if(blocked)void deliveries.pause();else deliveries.resume()}
+  if(retention){if(blocked)void retention.pause();else retention.resume()}
+}
+function syncRecordingState():void{
+  if(!recordings)return
+  syncRecordingWork()
   update({recordSettings:{...recordings.settings},recordDirectory:recordings.directory,currentRecord:recordings.activeSummary(),recordings:library?library.summaries():recordings.summaries()})
 }
 function syncExportState(control=true):void{if(!exporter||!recordings)return;const patch={exportJobs:exporter.views().map(decorateExport),recordings:library?library.summaries():recordings.summaries()};if(control)update(patch);else{state={...state,...patch};emitState()}retention?.schedule();deliveries?.observe();imports?.resume();void prepareMemoryAnalyses()}
@@ -336,10 +342,11 @@ function makeReportInput(playbackId:string,scope:'whole'|'selection'):ReportInpu
  const c=playback.reportContext(playbackId,scope==='selection'),a=analyses.reportInput(c.analysisId),imported=imports.has(c.source.takeId)
  const notes:string[]=[];let integrity:import('./reportTypes').ReportSource['integrity']['state']='complete'
  if(imported)notes.push('外部文件的完整性表示文件读取与解码已校验，不声明其原始录制过程完整。')
- else{const doc=recordings.session(c.source.takeId).document,regions=c.source.regionId?doc.regions.filter(r=>r.id===c.source.regionId):doc.regions
- if(doc.status==='recovered'||doc.status==='failed'||regions.some(r=>r.error||r.status==='interrupted')){integrity='unknown';notes.push('录音经过恢复或包含中断，可用文件不代表原始采集全部完整。')}
- else if(regions.length>1||doc.hasDiscontinuities&&!c.source.regionId){integrity='gaps';notes.push('原录音包含多个采集区域或中断；当前文件按内容时间排列。')}
- else if(regions.some(r=>BigInt(r.estimatedFrames)>0n||r.clock.startEstimated||r.clock.endEstimated)){integrity='estimated';notes.push('原采集含估计静音或估计时钟边界。')}}
+ else{const doc=recordings.session(c.source.takeId).document,regions=c.source.regionId?doc.regions.filter(r=>r.id===c.source.regionId):doc.regions,continuity=c.source.continuity??sourceContinuity(doc,c.source.regionId)
+ if(c.source.role!=='export'&&(doc.status==='recovered'||doc.status==='failed'||regions.some(r=>r.error||r.status==='interrupted'))){integrity='unknown';notes.push('录音经过恢复或包含中断，可用文件不代表原始采集全部完整。')}
+ else if(continuity==='gaps'){integrity='gaps';notes.push('原录音包含多个采集区域或中断；当前文件按内容时间排列。')}
+ else if(continuity==='unknown'){integrity='unknown';notes.push('原采集质量信息不足，不能确认录音完整。')}
+ else if(continuity==='estimated-silence'){integrity='estimated';notes.push('原采集含估计静音或估计时钟边界。')}}
  return {playbackId,request:{version:1,source:{origin:imported?'imported':'recording',label:c.source.label,takeId:c.source.takeId,role:c.source.role,regionId:c.source.regionId,exportId:c.source.exportId,format:assetFormatLabel(c.source.assetFormat)||c.source.sampleRate+' Hz',sourceFrames:c.source.frames,scope:{kind:scope,...c.range},integrity:{state:integrity,notes},physicalRange:a.manifest.sourceRange},cacheDirectory:a.directory,cacheKey:a.manifest.cacheKey,sourceFiles:a.source.sources},retain:()=>{try{analyses.retain(c.analysisId);return()=>analyses.release(c.analysisId)}catch(error){if(!String(error).includes('UNKNOWN_ANALYSIS_JOB'))throw error;return()=>{}}}}
 }
 async function chooseDirectory():Promise<boolean>{
@@ -420,7 +427,8 @@ async function dispatch(request:Request):Promise<Reply>{
         const report=reports.result(request.payload.reportId as string),file=playback.view(),event=report.eventPreview[request.payload.index as number]
         if(!file||!event||file.takeId!==report.source.takeId||file.role!==report.source.role||file.regionId!==report.source.regionId||file.exportId!==report.source.exportId)throw Error('REPORT_SOURCE_NOT_OPEN')
         const current=analyses.reportInput(file.analysisId);if(JSON.stringify(current.manifest.sourceSha256)!==JSON.stringify(report.analysis.sourceSha256))throw Error('REPORT_SOURCE_CHANGED')
-        playback.seek(file.id,event.startFrame,false);publishInspectionSample();break
+        if(playback.outputActive())await playback.pause(file.id)
+        playback.seek(file.id,event.startFrame,false);resumeInput();publishInspectionSample();break
       }
       case 'report.export':{
         if(recordings.busy()||managingLibrary)throw Error('RECORDING_ACTIVE')
@@ -547,8 +555,8 @@ async function dispatch(request:Request):Promise<Reply>{
         if(recordings.busy())throw Error('RECORDING_ACTIVE')
         const replay=playback.replayForSave(request.payload.playbackId as string,request.payload.useSelection as boolean)
         if(!recordings.directory&&!(await chooseDirectory())){data={cancelled:true};break}
-        await retention.pause();await deliveries.pause();await exporter.pauseForRecording();await analyses.pauseForRecording()
-        try{const saved=await recordings.saveReplay(replay.info,replay.range);memoryAnalysisTakes.add(saved.takeId);data=saved;void prepareMemoryAnalyses()}
+        try{await retention.pause();await deliveries.pause();await exporter.pauseForRecording();await analyses.pauseForRecording()
+        const saved=await recordings.saveReplay(replay.info,replay.range);memoryAnalysisTakes.add(saved.takeId);data=saved;void prepareMemoryAnalyses()}
         finally{syncRecordingState()}
         break
       }
@@ -557,10 +565,11 @@ async function dispatch(request:Request):Promise<Reply>{
         if(!state.deviceId)throw Error('DEVICE_UNAVAILABLE')
         if(!recordings.directory&&!(await chooseDirectory()))break
         if(playback.active()){await playback.close();inspection=null}
-        await retention.pause();await deliveries.pause();await exporter.pauseForRecording();await analyses.pauseForRecording()
+        try{await retention.pause();await deliveries.pause();await exporter.pauseForRecording();await analyses.pauseForRecording()
         recordingCaptureHeld=true
         if(!engine.snapshot(5,1).active||state.error)startDevice(state.deviceId)
-        await recordings.start(engine.snapshot(10,1).format,{deviceId:state.deviceId,captureEpochId:captureInstance+':'+engine.snapshot(10,1).epochId});break
+        await recordings.start(engine.snapshot(10,1).format,{deviceId:state.deviceId,captureEpochId:captureInstance+':'+engine.snapshot(10,1).epochId})}
+        finally{syncRecordingWork()}break
       case 'record.stop':spectrogram.cancel();data=await recordings.stop();releaseRecordingCapture();break
       case 'file.open':{
         if(recordings.busy())throw Error('RECORDING_ACTIVE')
@@ -642,9 +651,7 @@ async function dispatch(request:Request):Promise<Reply>{
     if(request.command.startsWith('imports.'))return {requestId:request.requestId,ok:false,state:{...state},error:{code:message.split(':')[0],message}}
     if(request.command.startsWith('report.')){if(!recordings.busy()&&!managingLibrary&&!exiting)retention?.resume();return {requestId:request.requestId,ok:false,state:{...state},error:{code:message.split(':')[0],message}}}
     if(request.command.startsWith('spectrogram.')||request.command==='preferences.retry')return {requestId:request.requestId,ok:false,state:{...state},error:{code:message.split(':')[0],message}}
-    if(recordings&&!recordings.busy())releaseRecordingCapture()
-    analyses?.setRecordingBusy(recordings?.busy()||false)
-    if(exporter&&!recordings?.busy()&&!exiting){exporter.resume();retention?.resume()}
+    syncRecordingWork()
     if(engine&&!engine.snapshot(10,1).active&&state.active)update({active:false,error:message})
     return {requestId:request.requestId,ok:false,state:{...state},error:{code:message.split(':')[0],message}}
   }

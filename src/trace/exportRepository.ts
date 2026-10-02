@@ -1,9 +1,10 @@
 import type {ExportRecord,ExportSource} from './exportTypes'
 import type {AnalysisSource} from './analysisService'
+import type {CaptureRegion,SessionDocument} from './sessionStore'
 /** Owned output metadata, independent of capture clocks or external source ownership. */
 export interface ExportOwner {
  readonly directory:string
- readonly document:{sessionId:string;name:string;exports?:ExportRecord[]}
+ readonly document:{sessionId:string;name:string;exports?:ExportRecord[];kind?:'imported';regions?:CaptureRegion[];hasDiscontinuities?:boolean;status?:string;origin?:SessionDocument['origin']}
  save():Promise<void>
  event(type:string,details?:Record<string,unknown>):Promise<void>
 }

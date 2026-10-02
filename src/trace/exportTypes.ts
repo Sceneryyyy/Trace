@@ -1,6 +1,7 @@
 import {isAbsolute,relative,sep} from 'node:path'
 import {validateTakeName} from './naming'
 import type {AssetFormat} from './assetFormat'
+import type {SourceContinuity} from './analysisService'
 import {validateExportPreset} from './mediaTypes'
 import type {ExportPreset,DecodeRecipe} from './mediaTypes'
 export type ExportDescription={label:string;frames:string;sampleRate:number;assetFormat?:AssetFormat}
@@ -9,6 +10,7 @@ export type ExportSourceRole='source'|'deliverable'|'recovered'|'session'|'expor
 export type ExportSource={takeId:string;role:ExportSourceRole;regionId?:string;exportId?:string;range?:{startFrame:string;endFrame:string}}
 export type StoredMediaFile={file:string;frames:string;sha256:string;clippedSamples?:string}
 export type ExportResult={
+ continuity?:SourceContinuity
  version:1;directory:string;codec:string;container:string;sampleRate:number;channelCount:number;frames:string;actualBitrate?:number
  files:StoredMediaFile[];decoded:StoredMediaFile[];recipe:DecodeRecipe;mediaIdentity:string;encoderSha256:string;sourceSha256:string[]
 }
@@ -39,6 +41,7 @@ export function validateExportRecord(value:unknown):ExportRecord{
  if(v.source.role==='export'&&!id(v.source.exportId))throw Error('INVALID_EXPORT_SOURCE')
  if(v.result){
   const r=v.result
+  if(r.continuity!==undefined&&!['complete','estimated-silence','gaps','unknown'].includes(r.continuity))throw Error('INVALID_EXPORT_CONTINUITY')
   if(r.version!==1||r.directory!=='exports/'+v.id||!['wav','mp3','m4a','adts'].includes(r.container)||!['pcm_s16le','pcm_s24le','pcm_f32le','mp3','aac'].includes(r.codec)||
    ![44100,48000,88200,96000].includes(r.sampleRate)||![1,2].includes(r.channelCount)||!u64(r.frames)||!hash(r.mediaIdentity)||!hash(r.encoderSha256)||
    !Array.isArray(r.sourceSha256)||!r.sourceSha256.every(hash)||!Array.isArray(r.files)||!r.files.length||r.files.length>10000||!Array.isArray(r.decoded)||!r.decoded.length||r.decoded.length>10000)throw Error('INVALID_EXPORT_RESULT')

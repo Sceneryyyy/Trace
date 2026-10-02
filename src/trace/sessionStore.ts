@@ -1,4 +1,6 @@
 import type {MemoryOrigin} from './replaySaveTypes'
+import type {ReplayQuality} from './replaySaveTypes'
+import {validateReplayQuality} from './replaySaveTypes'
 import { mkdir, readFile, writeFile, rename, appendFile } from 'node:fs/promises'
 import { join, basename } from 'node:path'
 import { SessionTimeline, u64 } from './sessionTimeline'
@@ -9,7 +11,7 @@ import {recordingEncoding} from './recordSettings'
 import type { TimelineRegion, RegionFormat } from './sessionTimeline'
 import type { AnalysisRole, NativeRecordSnapshot, RecordSettings } from './shared'
 export type SessionAsset={assetId:string;role:Exclude<AnalysisRole,'export'>;relativePath:string;sampleRate:number;channelCount:number;encoding:WavEncoding;frameCount:string;hash:string|null;clippedSamples?:string;regionId?:string;codec?:string;container?:string;decodedFrameCount?:string;state?:string}
-export type CaptureRegion=TimelineRegion&{ordinal:number;nativeId:string;baseName:string;journalFile:string;encoding:WavEncoding;status:'preparing'|'recording'|'closed'|'interrupted'|'cancelled';error:string|null;estimatedFrames:string;clippedSamples:string}
+export type CaptureRegion=TimelineRegion&{captureQuality?:ReplayQuality;ordinal:number;nativeId:string;baseName:string;journalFile:string;encoding:WavEncoding;status:'preparing'|'recording'|'closed'|'interrupted'|'cancelled';error:string|null;estimatedFrames:string;clippedSamples:string}
 export type SessionSegment={segmentId:string;assetId:string;regionId?:string;frameCount:string;captureStartFrame:string|null;timelineStartFrame:string;regionStartFrame?:string;captureEpochId?:string;assetStartFrame?:string;timelineStartNs?:string;gapBeforeNs?:string|null;overlapBeforeNs?:string|null;sampleRate?:number;takeId?:string}
 export type SessionDocument={
  origin?:MemoryOrigin;
@@ -44,6 +46,7 @@ export function normalizeSession(value:unknown):SessionDocument {
  for(let i=0;i<d.regions.length;i++){
   const r=d.regions[i]
   if(!u64(r.clippedSamples)||!u64(r.estimatedFrames)||r.ordinal!==i+1||!safeName(r.baseName)||!safeName(r.journalFile)||typeof r.nativeId!=='string'||!['preparing','recording','closed','interrupted','cancelled'].includes(r.status))throw Error('INVALID_REGION_MANIFEST')
+  if(r.captureQuality){r.captureQuality=validateReplayQuality(r.captureQuality,r.frames);if(r.captureQuality.estimatedFrames!==r.estimatedFrames)throw Error('INVALID_REGION_QUALITY')}
  }
  if(d.exports!==undefined){if(!Array.isArray(d.exports)||d.exports.length>10000)throw Error('INVALID_EXPORT_RECORDS');for(const record of d.exports){validateExportRecord(record);if(record.delivery&&['pending','copying'].includes(record.delivery.phase)){record.delivery.phase='failed';record.delivery.error='上次另存未完成，请重新选择另存位置。'}if(!['ready','failed','cancelled'].includes(record.phase)){record.phase='failed';record.error='上次导出未完成，可以重试。'}}}
  if(d.retention){if(!['pending','verifying','removing','removed','kept','error'].includes(d.retention.phase)||(d.retention.error!==null&&typeof d.retention.error!=='string'))throw Error('INVALID_RETENTION_STATE');if(['verifying','removing'].includes(d.retention.phase))d.retention.phase='pending'}
