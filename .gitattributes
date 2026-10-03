@@ -1,2 +1,9 @@
 # Generated PDFs must keep their exact bytes; do not apply text conversion or EOL filters.
 output/pdf/*.pdf binary
+
+# Preserve the original EBU test archive and official documents byte for byte.
+references/ebu-loudness-test-set-v5/*.zip binary
+references/ebu-loudness-test-set-v5/archive-parts/* binary
+references/ebu-loudness-test-set-v5/*.pdf binary
+# The extracted upstream readme keeps its original CRLFs and trailing blank lines.
+references/ebu-loudness-test-set-v5/readme.txt binary

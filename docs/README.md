@@ -134,6 +134,7 @@
 | [手册截图来源](assets/quick-start-preview28/README.md) | preview.28 演示信号/隔离窗口，非当前实机验收 |
 | [品牌素材来源](../resources/trace/branding/README.md) | 实际 PNG、生成过程、SHA256 与品牌归属 |
 | [初始调研快照](../references/RESEARCH-v0.3.md) | 2026-09-14 方案 v0.3，仅保留历史设计依据 |
+| [EBU Loudness Test Set v5.0](../references/ebu-loudness-test-set-v5/README.md) | 2026-10-03 已取得 70 个原始 WAV 的完整 ZIP、官方 PDF 与校验清单；仅内部测试，计量验收尚未运行 |
 | [会话交接历史](archive/13-HANDOFF-HISTORY.md) | 历史状态/提交/验证证据，当前待办只看 13 |
 
 内测 TXT 输入文案固定 **preview.30 / InternalTest-r3**，不因当前指南更新而成为 preview.31 发布材料；已交付 ZIP 内容与哈希保持历史身份。
