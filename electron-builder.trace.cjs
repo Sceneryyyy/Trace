@@ -2,7 +2,7 @@ module.exports={
  extends:null,
  appId:'local.trace.audio',
  productName:'Trace',
- electronVersion:'40.8.3',
+ electronVersion:'42.11.10',
  electronDist:'node_modules/electron/dist',
  directories:{output:'dist-trace/preview.31',app:'.tools/trace-package-app'},
  extraMetadata:{name:'trace',version:'0.1.0-preview.31',description:'Trace 声迹 · Audio Recorder & Analyzer',main:'out-trace/main/index.js',author:'Trace contributors',dependencies:{},devDependencies:{}},

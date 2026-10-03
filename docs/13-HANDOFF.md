@@ -16,6 +16,12 @@
 
 ## 当前：工程独立化已完成
 
+后续云端发布依赖收尾已启动，见 [80](80-RELEASE-DEPENDENCY-HARDENING.md)：
+当前源码锁定 Electron/SDK 42.11.10、builder 26.15.3、node-gyp 13.1.0 与
+下载器 5.1.0，完整 npm 公告 18→0；FFmpeg 锁定 Gyan 9.0.2 并附已核验
+主源码，静态库精确来源/构建脚本仍缺失。新 Windows/native/候选 CI 正在准备，
+下方 `db005b5` 与 `eae33e5` 是独立化旧工具链的通过/交付身份。
+
 2026-10-03 按用户指定顺序完成 Trace 专用入口、测试/CI 迁移、FFT 本地维护及退役上游清理。复现与来源见 [79](79-TRACE-INDEPENDENT-PROJECT.md)，可审查的提交/日志 SHA/产物元数据见 [验证记录](release/independence-verification.json)。根包及默认安装、构建、测试、诊断、打包均只使用 Trace 与锁定第三方依赖，无需检出或构建 Prism。已删除退役桌面、原 addon、插件、TUI 等 311 文件（53,989,426 字节）；FFT 原算法、固定来源、hash、署名及 GPL 全文保留，历史源码仍可从 Git 追溯。
 
 | 验证范围 | 最终结果及身份 |

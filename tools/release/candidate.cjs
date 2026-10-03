@@ -1,4 +1,5 @@
 const fs=require('node:fs'),path=require('node:path'),{execFileSync}=require('node:child_process'),{createHash}=require('node:crypto'),yauzl=require('yauzl')
+const {validateSecurityInventory}=require('./security-audit.cjs'),{prepareSources}=require('./dependency-sources.cjs')
 const root=path.resolve(__dirname,'../..'),config=require('../../electron-builder.trace.cjs')
 const sha=file=>createHash('sha256').update(fs.readFileSync(file)).digest('hex')
 function validateEvidence(commit,verification,load,audit){
@@ -6,7 +7,7 @@ function validateEvidence(commit,verification,load,audit){
  if(verification.sourceDirty!==false)throw Error('DIRTY_RELEASE_EVIDENCE')
  if(verification.status!=='pass'||load.status!=='pass'||audit.status!=='pass')throw Error('RELEASE_CHECK_FAILED')
  if(verification.platform!=='win32'||verification.arch!=='x64')throw Error('WINDOWS_VERIFICATION_REQUIRED')
- for(const command of ['build:trace-engine','typecheck','test:trace','build:trace','test:trace-native']){
+ for(const command of ['build:trace-engine','check:security','typecheck','test:trace','build:trace','test:trace-native']){
   if(!verification.checks?.some(c=>c.command==='npm run '+command&&c.status==='pass'&&c.exitCode===0))throw Error('MISSING_RELEASE_CHECK: '+command)
  }
  if(!audit.files?.['Trace.exe']||!audit.files?.['resources/app.asar'])throw Error('INCOMPLETE_PACKAGE_AUDIT')
@@ -39,7 +40,10 @@ async function main(){
  const verification=read('artifacts/release/verification.json'),load=read('artifacts/release/package-load.json'),audit=read('artifacts/m6/package-audit-latest.json')
  validateEvidence(commit,verification,load,audit)
  const security=read('docs/release/security-baseline.json')
- if(security.packageLockSha256!==sha(path.join(root,'package-lock.json')))throw Error('STALE_SECURITY_INVENTORY')
+ validateSecurityInventory(security,sha(path.join(root,'package-lock.json')))
+ const securityAudit=read('artifacts/release/security-audit.json')
+ if(securityAudit.commit!==commit||securityAudit.sourceDirty!==false||securityAudit.status!=='pass'||securityAudit.packageLockSha256!==security.packageLockSha256)throw Error('STALE_CURRENT_SECURITY_AUDIT')
+ const dependencySource=await prepareSources({fetch:true})
  const source=path.join(root,config.directories.output),zipName=`Trace-${version}-Windows-x64.zip`,zip=path.join(source,zipName)
  await verifyZip(zip,audit.files)
  const out=path.join(root,'dist-trace/candidate');fs.mkdirSync(out,{recursive:true})
@@ -52,14 +56,18 @@ async function main(){
  copy(path.join(root,`output/pdf/LeoMoon-Trace-Quick-Start-${guide}-zh-CN.pdf`),`快速上手-${guide}.pdf`)
  copy(path.join(root,'docs/assets/quick-start-preview31/NotoSansSC-OFL.txt'),'PDF字体许可.txt')
  copy(path.join(root,'docs/release/security-baseline.json'),'security-baseline.json')
+ copy(path.join(root,'artifacts/release/security-audit.json'),'security-audit.json')
+ for(const archive of dependencySource.archives)copy(archive.path,archive.source.archiveFile)
+ copy(dependencySource.manifestPath,'ffmpeg-source-manifest.json')
+ copy(path.join(path.dirname(dependencySource.manifestPath),'README.md'),'FFmpeg源码说明.md')
  for(const [file,name]of [['verification.json','verification.json'],['package-load.json','package-load.json']])copy(path.join(root,'artifacts/release',file),name)
  copy(path.join(root,'docs/76-RELEASE-CHECKLIST.md'),'发布验收清单.md')
- fs.writeFileSync(path.join(out,'00-开始使用.txt'),`Trace ${version} · Windows x64 工程候选\n\n完整解压 ${zipName} 后运行 Trace.exe；PDF 为单独的快速上手。\n先停止录音并等待处理完成，再退出旧版并使用新目录；保留旧包与用户数据备份。\n\n本附件未签名，真实声卡/96 kHz、长测、完整 EBU Mode/实机计量与独立用户验收尚未完成。\n还有依赖安全公告与 FFmpeg 对应源码核对待处理；不作为正式发布或测量认证。\n具体范围见发布验收清单.md、manifest.json 与 security-baseline.json。\n项目源码在 ${sourceName}，它不代替 FFmpeg 全部构建依赖的对应源码。\n校验以 SHA256SUMS.txt 为准。\n`)
+ fs.writeFileSync(path.join(out,'00-开始使用.txt'),`Trace ${version} · Windows x64 工程候选\n\n完整解压 ${zipName} 后运行 Trace.exe；PDF 为单独的快速上手。\n先停止录音并等待处理完成，再退出旧版并使用新目录；保留旧包与用户数据备份。\n\n本附件未签名，真实声卡/96 kHz、长测、完整 EBU Mode/实机计量与独立用户验收尚未完成。\nnpm 完整依赖安全门禁已通过；FFmpeg 静态依赖的精确来源与完整对应源码仍缺失，不作为正式发布或测量认证。\n具体范围见发布验收清单.md、manifest.json 与 security-baseline.json。\n项目源码在 ${sourceName}；另附已校验 FFmpeg 主源码、来源清单和说明，静态依赖的完整对应源码仍待发布者提供。\n校验以 SHA256SUMS.txt 为准。\n`)
  const manifest={schemaVersion:1,product:'Trace',version,commit,status:'engineering-candidate',platform:'win32-x64',signed:false,
   scope:'Automated engineering candidate; hardware, measurement, licensing and user acceptance gates remain open',
   electron:config.electronVersion,security:{checkedAt:security.checkedAt,counts:security.allDependencies,releaseReady:security.releaseReady},ffmpeg:read('ffmpeg.lock.json'),runtime:read(config.directories.output+'/win-unpacked/resources/licenses/runtime-provenance.json'),
-  projectSource:sourceName,dependencySourceStatus:'FFmpeg and enabled libraries corresponding-source review pending; project archive alone is not the complete dependency source bundle',
-  pending:['Windows hardware/96 kHz/long recording/fault recovery','Complete EBU Mode and hardware measurement acceptance','Physical GPU and mixed DPI','Dependency security and FFmpeg corresponding source','Authenticode signing and downloaded first run','Independent users and invite beta'],
+  projectSource:sourceName,dependencySourceStatus:'FFmpeg upstream archive verified and attached; static dependency revisions, transitive inventory and producer build scripts unavailable',dependencySource:{manifest:'ffmpeg-source-manifest.json',upstreamArchive:dependencySource.manifest.upstream.archiveFile,upstreamArchiveSha256:dependencySource.manifest.upstream.archiveSha256,additionalUpstreamArchives:dependencySource.archives.slice(1).map(({source})=>({name:source.name,file:source.archiveFile,sha256:source.archiveSha256})),correspondingSourceComplete:false},
+  pending:['Windows hardware/96 kHz/long recording/fault recovery','Complete EBU Mode and hardware measurement acceptance','Physical GPU and mixed DPI','FFmpeg static-dependency provenance/security and complete corresponding source','Authenticode signing and downloaded first run','Independent users and invite beta'],
   files:Object.fromEntries(fs.readdirSync(out).map(name=>[name,{bytes:fs.statSync(path.join(out,name)).size,sha256:sha(path.join(out,name))}]))}
  fs.writeFileSync(path.join(out,'manifest.json'),JSON.stringify(manifest,null,2))
  fs.writeFileSync(path.join(out,'SHA256SUMS.txt'),fs.readdirSync(out).map(name=>sha(path.join(out,name))+'  '+name).join('\n')+'\n')

@@ -5,7 +5,7 @@ fs.mkdirSync(folder,{recursive:true})
 const commit=execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim()
 const sourceDirty=Boolean(execFileSync('git',['status','--porcelain'],{cwd:root,encoding:'utf8'}).trim())
 const report={schemaVersion:1,commit,sourceDirty,platform:process.platform,arch:process.arch,status:'running',checks:[],scope:'Trace engineering checks; Windows includes original EBU WAV and real N-API file analysis; no real device, signing or user acceptance'}
-const scripts=['typecheck','test:trace','build:trace']
+const scripts=['check:security','typecheck','test:trace','build:trace']
 if(process.platform==='win32'){scripts.unshift('build:trace-engine');scripts.push('test:trace-native')}
 try{
  for(const script of scripts){

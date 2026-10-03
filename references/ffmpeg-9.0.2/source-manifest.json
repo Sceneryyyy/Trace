@@ -1,0 +1,587 @@
+{
+  "schemaVersion": 1,
+  "checkedOn": "2026-10-03",
+  "scope": "Verified FFmpeg upstream source and publisher inventory; not the full corresponding source of the static Gyan binary",
+  "correspondingSourceComplete": false,
+  "binary": {
+    "version": "9.0.2",
+    "platform": "win32-x64",
+    "archiveSha256": "60f467265b1e312373dbcd92200c2618a74850f98d3d078e94296bb3fa2047ba",
+    "ffmpegSha256": "3256173f3f8bffd7df12227c68adf68025edb1832273a9530688a7bb1ed8edec",
+    "ffprobeSha256": "f0d36ecbbdd3bcfac3efa078c96c7271c2e68b3810595552ac3b7f17e9a65c52",
+    "configuration": "configuration: --enable-gpl --enable-version3 --enable-static --disable-w32threads --disable-autodetect --enable-cairo --enable-fontconfig --enable-iconv --enable-gnutls --enable-libxml2 --enable-gmp --enable-bzlib --enable-lzma --enable-zlib --enable-libsrt --enable-libssh --enable-libzmq --enable-avisynth --enable-sdl2 --enable-libwebp --enable-libx264 --enable-libx265 --enable-libxvid --enable-libaom --enable-libopenjpeg --enable-libvpx --enable-mediafoundation --enable-libass --enable-libfreetype --enable-libfribidi --enable-libharfbuzz --enable-libvidstab --enable-libvmaf --enable-libzimg --enable-amf --enable-cuda-llvm --enable-cuvid --enable-dxva2 --enable-d3d11va --enable-d3d12va --enable-ffnvcodec --enable-libvpl --enable-nvdec --enable-nvenc --enable-vaapi --enable-openal --enable-libgme --enable-libopenmpt --enable-libopencore-amrwb --enable-libmp3lame --enable-libtheora --enable-libvo-amrwbenc --enable-libgsm --enable-libopencore-amrnb --enable-libopus --enable-libspeex --enable-libvorbis --enable-librubberband"
+  },
+  "upstream": {
+    "repository": "https://github.com/FFmpeg/FFmpeg",
+    "commit": "946fcce07b6dcd0331c8cc609192aeff5e1924f8",
+    "release": "9.0.2",
+    "archiveUrl": "https://codeload.github.com/FFmpeg/FFmpeg/tar.gz/946fcce07b6dcd0331c8cc609192aeff5e1924f8",
+    "archiveBytes": 17333895,
+    "archiveSha256": "0aa2b1de2a5698b20a23e93d539a9a8e82ca0117496c5bdf05d198805f42bb3b",
+    "archiveFile": "FFmpeg-9.0.2-Upstream-Source.tar.gz",
+    "releaseFileValidated": true
+  },
+  "publisher": {
+    "releaseUrl": "https://github.com/GyanD/codexffmpeg/releases/tag/9.0.2",
+    "publishedAt": "2026-09-20T06:40:33Z",
+    "repository": "https://github.com/GyanD/codexffmpeg",
+    "observedRepositoryFiles": [
+      ".github/FUNDING.yml",
+      "README.md"
+    ],
+    "static": true,
+    "license": "GPL-3.0-or-later as stated by publisher; Trace remains GPL-3.0-only"
+  },
+  "documents": {
+    "README.publisher.txt": {
+      "bytes": 41577,
+      "sha256": "0342de6bb39dd421cbec2c00d89ad274b640d75ad3f2cab09ffd647ce2d8f949"
+    },
+    "LICENSE.publisher.txt": {
+      "bytes": 35147,
+      "sha256": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903"
+    },
+    "COPYING.GPLv3": {
+      "bytes": 35147,
+      "sha256": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903"
+    },
+    "LICENSE.upstream.md": {
+      "bytes": 4346,
+      "sha256": "2e1d16c72fd74e12063776371da757322f8b77589386532f4fd8634bde7de1af"
+    },
+    "LAME-LGPL.txt": {
+      "bytes": 25284,
+      "sha256": "bfe4a52dc4645385f356a8e83cc54216a293e3b6f1cb4f79f5fc0277abf937fd"
+    },
+    "LAME-README.txt": {
+      "bytes": 1715,
+      "sha256": "687ad59451fddafba33340222a5c5820a99b62249d69b25a3667b396bd623d10"
+    }
+  },
+  "configuredFlags": [
+    "--enable-gpl",
+    "--enable-version3",
+    "--enable-static",
+    "--disable-w32threads",
+    "--disable-autodetect",
+    "--enable-cairo",
+    "--enable-fontconfig",
+    "--enable-iconv",
+    "--enable-gnutls",
+    "--enable-libxml2",
+    "--enable-gmp",
+    "--enable-bzlib",
+    "--enable-lzma",
+    "--enable-zlib",
+    "--enable-libsrt",
+    "--enable-libssh",
+    "--enable-libzmq",
+    "--enable-avisynth",
+    "--enable-sdl2",
+    "--enable-libwebp",
+    "--enable-libx264",
+    "--enable-libx265",
+    "--enable-libxvid",
+    "--enable-libaom",
+    "--enable-libopenjpeg",
+    "--enable-libvpx",
+    "--enable-mediafoundation",
+    "--enable-libass",
+    "--enable-libfreetype",
+    "--enable-libfribidi",
+    "--enable-libharfbuzz",
+    "--enable-libvidstab",
+    "--enable-libvmaf",
+    "--enable-libzimg",
+    "--enable-amf",
+    "--enable-cuda-llvm",
+    "--enable-cuvid",
+    "--enable-dxva2",
+    "--enable-d3d11va",
+    "--enable-d3d12va",
+    "--enable-ffnvcodec",
+    "--enable-libvpl",
+    "--enable-nvdec",
+    "--enable-nvenc",
+    "--enable-vaapi",
+    "--enable-openal",
+    "--enable-libgme",
+    "--enable-libopenmpt",
+    "--enable-libopencore-amrwb",
+    "--enable-libmp3lame",
+    "--enable-libtheora",
+    "--enable-libvo-amrwbenc",
+    "--enable-libgsm",
+    "--enable-libopencore-amrnb",
+    "--enable-libopus",
+    "--enable-libspeex",
+    "--enable-libvorbis",
+    "--enable-librubberband"
+  ],
+  "reportedExternalComponents": [
+    {
+      "name": "avisynth",
+      "exactRevision": null,
+      "sourceArchiveSha256": null,
+      "status": "publisher version known; source archive, local patches and producer build mapping not fully verified",
+      "publisherVersion": "v3.7.5-383-g5c82777b",
+      "publisherCommitSuffix": "5c82777b"
+    },
+    {
+      "name": "libmp3lame",
+      "exactRevision": null,
+      "sourceArchiveSha256": "ddfe36cab873794038ae2c1210557ad34857a4b6bdc515785d1da9e175b1da1e",
+      "status": "official LAME 3.100 source/license verified; producer build/patch mapping remains unknown",
+      "publisherVersion": "3.100",
+      "publisherCommitSuffix": null
+    },
+    {
+      "name": "libvorbis",
+      "exactRevision": null,
+      "sourceArchiveSha256": null,
+      "status": "publisher version known; source archive, local patches and producer build mapping not fully verified",
+      "publisherVersion": "v1.3.7-37-g1b75110b",
+      "publisherCommitSuffix": "1b75110b"
+    },
+    {
+      "name": "bzlib",
+      "exactRevision": null,
+      "sourceArchiveSha256": null,
+      "status": "version not listed for this binary",
+      "publisherVersion": null,
+      "publisherCommitSuffix": null
+    },
+    {
+      "name": "libopencore_amrnb",
+      "exactRevision": null,
+      "sourceArchiveSha256": null,
+      "status": "publisher version known; source archive, local patches and producer build mapping not fully verified",
+      "publisherVersion": "0.1.6",
+      "publisherCommitSuffix": null
+    },
+    {
+      "name": "libvpx",
+      "exactRevision": null,
+      "sourceArchiveSha256": null,
+      "status": "publisher version known; source archive, local patches and producer build mapping not fully verified",
+      "publisherVersion": "v1.17.0-57-gd2413e2ca",
+      "publisherCommitSuffix": "d2413e2ca"
+    },
+    {
+      "name": "cairo",
+      "exactRevision": null,
+      "sourceArchiveSha256": null,
+      "status": "publisher version known; source archive, local patches and producer build mapping not fully verified",
+      "publisherVersion": "1.18.5",
+      "publisherCommitSuffix": null
+    },
+    {
+      "name": "libopencore_amrwb",
+      "exactRevision": null,
+      "sourceArchiveSha256": null,
+      "status": "publisher version known; source archive, local patches and producer build mapping not fully verified",
+      "publisherVersion": "0.1.6",
+      "publisherCommitSuffix": null
+    },
+    {
+      "name": "libwebp",
+      "exactRevision": null,
+      "sourceArchiveSha256": null,
+      "status": "publisher version known; source archive, local patches and producer build mapping not fully verified",
+      "publisherVersion": "v1.6.0-249-g1f34635",
+      "publisherCommitSuffix": "1f34635"
+    },
+    {
+      "name": "gmp",
+      "exactRevision": null,
+      "sourceArchiveSha256": null,
+      "status": "version not listed for this binary",
+      "publisherVersion": null,
+      "publisherCommitSuffix": null
+    },
+    {
+      "name": "libopenjpeg",
+      "exactRevision": null,
+      "sourceArchiveSha256": null,
+      "status": "publisher version known; source archive, local patches and producer build mapping not fully verified",
+      "publisherVersion": "2.5.4",
+      "publisherCommitSuffix": null
+    },
+    {
+      "name": "libx264",
+      "exactRevision": null,
+      "sourceArchiveSha256": null,
+      "status": "publisher version known; source archive, local patches and producer build mapping not fully verified",
+      "publisherVersion": "v0.165.3223",
+      "publisherCommitSuffix": null
+    },
+    {
+      "name": "gnutls",
+      "exactRevision": null,
+      "sourceArchiveSha256": null,
+      "status": "version not listed for this binary",
+      "publisherVersion": null,
+      "publisherCommitSuffix": null
+    },
+    {
+      "name": "libopenmpt",
+      "exactRevision": null,
+      "sourceArchiveSha256": null,
+      "status": "publisher version known; source archive, local patches and producer build mapping not fully verified",
+      "publisherVersion": "libopenmpt-0.6.30-3-g6c0a06bc",
+      "publisherCommitSuffix": "6c0a06bc"
+    },
+    {
+      "name": "libx265",
+      "exactRevision": null,
+      "sourceArchiveSha256": null,
+      "status": "publisher version known; source archive, local patches and producer build mapping not fully verified",
+      "publisherVersion": "4.3-45-g116b875",
+      "publisherCommitSuffix": "116b875"
+    },
+    {
+      "name": "iconv",
+      "exactRevision": null,
+      "sourceArchiveSha256": null,
+      "status": "version not listed for this binary",
+      "publisherVersion": null,
+      "publisherCommitSuffix": null
+    },
+    {
+      "name": "libopus",
+      "exactRevision": null,
+      "sourceArchiveSha256": null,
+      "status": "publisher version known; source archive, local patches and producer build mapping not fully verified",
+      "publisherVersion": "v1.6.1-68-g503d81b1",
+      "publisherCommitSuffix": "503d81b1"
+    },
+    {
+      "name": "libxml2",
+      "exactRevision": null,
+      "sourceArchiveSha256": null,
+      "status": "version not listed for this binary",
+      "publisherVersion": null,
+      "publisherCommitSuffix": null
+    },
+    {
+      "name": "libaom",
+      "exactRevision": null,
+      "sourceArchiveSha256": null,
+      "status": "publisher version known; source archive, local patches and producer build mapping not fully verified",
+      "publisherVersion": "v3.15.0-25-g023743a7d7",
+      "publisherCommitSuffix": "023743a7d7"
+    },
+    {
+      "name": "librubberband",
+      "exactRevision": null,
+      "sourceArchiveSha256": null,
+      "status": "publisher version known; source archive, local patches and producer build mapping not fully verified",
+      "publisherVersion": "v4.0.0",
+      "publisherCommitSuffix": null
+    },
+    {
+      "name": "libxvid",
+      "exactRevision": null,
+      "sourceArchiveSha256": null,
+      "status": "publisher version known; source archive, local patches and producer build mapping not fully verified",
+      "publisherVersion": "v1.3.7",
+      "publisherCommitSuffix": null
+    },
+    {
+      "name": "libass",
+      "exactRevision": null,
+      "sourceArchiveSha256": null,
+      "status": "publisher version known; source archive, local patches and producer build mapping not fully verified",
+      "publisherVersion": "0.17.5-8-gb2fe9d8",
+      "publisherCommitSuffix": "b2fe9d8"
+    },
+    {
+      "name": "libspeex",
+      "exactRevision": null,
+      "sourceArchiveSha256": null,
+      "status": "publisher version known; source archive, local patches and producer build mapping not fully verified",
+      "publisherVersion": "Speex-1.2.1-51-g0589522",
+      "publisherCommitSuffix": "0589522"
+    },
+    {
+      "name": "libzimg",
+      "exactRevision": null,
+      "sourceArchiveSha256": null,
+      "status": "publisher version known; source archive, local patches and producer build mapping not fully verified",
+      "publisherVersion": "release-3.0.6-253-g67e0603",
+      "publisherCommitSuffix": "67e0603"
+    },
+    {
+      "name": "libfontconfig",
+      "exactRevision": null,
+      "sourceArchiveSha256": null,
+      "status": "version not listed for this binary",
+      "publisherVersion": null,
+      "publisherCommitSuffix": null
+    },
+    {
+      "name": "libsrt",
+      "exactRevision": null,
+      "sourceArchiveSha256": null,
+      "status": "publisher version known; source archive, local patches and producer build mapping not fully verified",
+      "publisherVersion": "v1.5.7-7-gcae8f62",
+      "publisherCommitSuffix": "cae8f62"
+    },
+    {
+      "name": "libzmq",
+      "exactRevision": null,
+      "sourceArchiveSha256": null,
+      "status": "publisher version known; source archive, local patches and producer build mapping not fully verified",
+      "publisherVersion": "4.3.5",
+      "publisherCommitSuffix": null
+    },
+    {
+      "name": "libfreetype",
+      "exactRevision": null,
+      "sourceArchiveSha256": null,
+      "status": "publisher version known; source archive, local patches and producer build mapping not fully verified",
+      "publisherVersion": "VER-2-14-3",
+      "publisherCommitSuffix": null
+    },
+    {
+      "name": "libssh",
+      "exactRevision": null,
+      "sourceArchiveSha256": null,
+      "status": "publisher version known; source archive, local patches and producer build mapping not fully verified",
+      "publisherVersion": "0.12.2",
+      "publisherCommitSuffix": null
+    },
+    {
+      "name": "lzma",
+      "exactRevision": null,
+      "sourceArchiveSha256": null,
+      "status": "version not listed for this binary",
+      "publisherVersion": null,
+      "publisherCommitSuffix": null
+    },
+    {
+      "name": "libfribidi",
+      "exactRevision": null,
+      "sourceArchiveSha256": null,
+      "status": "publisher version known; source archive, local patches and producer build mapping not fully verified",
+      "publisherVersion": "v1.0.16-19-gc928e4c",
+      "publisherCommitSuffix": "c928e4c"
+    },
+    {
+      "name": "libtheora",
+      "exactRevision": null,
+      "sourceArchiveSha256": null,
+      "status": "publisher version known; source archive, local patches and producer build mapping not fully verified",
+      "publisherVersion": "v1.2.0",
+      "publisherCommitSuffix": null
+    },
+    {
+      "name": "mediafoundation",
+      "exactRevision": null,
+      "sourceArchiveSha256": null,
+      "status": "version not listed for this binary",
+      "publisherVersion": null,
+      "publisherCommitSuffix": null,
+      "category": "Windows system API; Windows SDK/toolchain version not provided"
+    },
+    {
+      "name": "libgme",
+      "exactRevision": null,
+      "sourceArchiveSha256": null,
+      "status": "publisher version known; source archive, local patches and producer build mapping not fully verified",
+      "publisherVersion": "0.6.6",
+      "publisherCommitSuffix": null
+    },
+    {
+      "name": "libvidstab",
+      "exactRevision": null,
+      "sourceArchiveSha256": null,
+      "status": "publisher version known; source archive, local patches and producer build mapping not fully verified",
+      "publisherVersion": "v1.1.2-214-ge2445c4",
+      "publisherCommitSuffix": "e2445c4"
+    },
+    {
+      "name": "openal",
+      "exactRevision": null,
+      "sourceArchiveSha256": null,
+      "status": "publisher version known; source archive, local patches and producer build mapping not fully verified",
+      "publisherVersion": "1.25.2-48-g7532541",
+      "publisherCommitSuffix": "7532541"
+    },
+    {
+      "name": "libgsm",
+      "exactRevision": null,
+      "sourceArchiveSha256": null,
+      "status": "publisher version known; source archive, local patches and producer build mapping not fully verified",
+      "publisherVersion": "1.0.24",
+      "publisherCommitSuffix": null
+    },
+    {
+      "name": "libvmaf",
+      "exactRevision": null,
+      "sourceArchiveSha256": null,
+      "status": "publisher version known; source archive, local patches and producer build mapping not fully verified",
+      "publisherVersion": "v3.2.0-13-gf85a8536",
+      "publisherCommitSuffix": "f85a8536"
+    },
+    {
+      "name": "sdl2",
+      "exactRevision": null,
+      "sourceArchiveSha256": null,
+      "status": "publisher version known; source archive, local patches and producer build mapping not fully verified",
+      "publisherVersion": "release-2.32.0-234-gb90ac9502",
+      "publisherCommitSuffix": "b90ac9502"
+    },
+    {
+      "name": "libharfbuzz",
+      "exactRevision": null,
+      "sourceArchiveSha256": null,
+      "status": "publisher version known; source archive, local patches and producer build mapping not fully verified",
+      "publisherVersion": "14.4.0-108-g64e2b532",
+      "publisherCommitSuffix": "64e2b532"
+    },
+    {
+      "name": "libvo_amrwbenc",
+      "exactRevision": null,
+      "sourceArchiveSha256": null,
+      "status": "publisher version known; source archive, local patches and producer build mapping not fully verified",
+      "publisherVersion": "0.1.3",
+      "publisherCommitSuffix": null
+    },
+    {
+      "name": "zlib",
+      "exactRevision": null,
+      "sourceArchiveSha256": null,
+      "status": "version not listed for this binary",
+      "publisherVersion": null,
+      "publisherCommitSuffix": null
+    }
+  ],
+  "reportedHardwareFeatures": [
+    {
+      "name": "amf",
+      "status": "system API or external SDK/header provenance requires producer identification",
+      "publisherVersion": "v1.5.2-2-gc35f613"
+    },
+    {
+      "name": "d3d12va",
+      "status": "system API or external SDK/header provenance requires producer identification",
+      "publisherVersion": null
+    },
+    {
+      "name": "nvdec",
+      "status": "system API or external SDK/header provenance requires producer identification",
+      "publisherVersion": null
+    },
+    {
+      "name": "cuda",
+      "status": "system API or external SDK/header provenance requires producer identification",
+      "publisherVersion": null
+    },
+    {
+      "name": "dxva2",
+      "status": "system API or external SDK/header provenance requires producer identification",
+      "publisherVersion": null
+    },
+    {
+      "name": "nvenc",
+      "status": "system API or external SDK/header provenance requires producer identification",
+      "publisherVersion": null
+    },
+    {
+      "name": "cuda_llvm",
+      "status": "system API or external SDK/header provenance requires producer identification",
+      "publisherVersion": null
+    },
+    {
+      "name": "ffnvcodec",
+      "status": "system API or external SDK/header provenance requires producer identification",
+      "publisherVersion": "n13.1.15.0-1-geddcea9"
+    },
+    {
+      "name": "vaapi",
+      "status": "system API or external SDK/header provenance requires producer identification",
+      "publisherVersion": "2.25.0."
+    },
+    {
+      "name": "cuvid",
+      "status": "system API or external SDK/header provenance requires producer identification",
+      "publisherVersion": null
+    },
+    {
+      "name": "libmfx",
+      "status": "system API or external SDK/header provenance requires producer identification",
+      "publisherVersion": null
+    },
+    {
+      "name": "d3d11va",
+      "status": "system API or external SDK/header provenance requires producer identification",
+      "publisherVersion": null
+    },
+    {
+      "name": "libvpl",
+      "status": "system API or external SDK/header provenance requires producer identification",
+      "publisherVersion": "2.17"
+    }
+  ],
+  "unidentifiedTransitiveComponents": true,
+  "missingProducerInputs": [
+    "Versions of unlisted base/system/transitive libraries; full source identities and producer patch mapping for listed versions",
+    "Full transitive dependency and license inventory",
+    "Producer patches and scripts used to configure, compile and link this binary",
+    "Exact compiler/toolchain/package inventory and source mapping"
+  ],
+  "releaseSourceGate": "blocked; supplying FFmpeg upstream alone does not close static dependency source correspondence",
+  "publisherVersionRecords": {
+    "AMF": "v1.5.2-2-gc35f613",
+    "aom": "v3.15.0-25-g023743a7d7",
+    "AviSynthPlus": "v3.7.5-383-g5c82777b",
+    "cairo": "1.18.5",
+    "ffnvcodec": "n13.1.15.0-1-geddcea9",
+    "freetype": "VER-2-14-3",
+    "fribidi": "v1.0.16-19-gc928e4c",
+    "gsm": "1.0.24",
+    "harfbuzz": "14.4.0-108-g64e2b532",
+    "lame": "3.100",
+    "libass": "0.17.5-8-gb2fe9d8",
+    "libgme": "0.6.6",
+    "libopencore-amrnb": "0.1.6",
+    "libopencore-amrwb": "0.1.6",
+    "libssh": "0.12.2",
+    "libtheora": "v1.2.0",
+    "libwebp": "v1.6.0-249-g1f34635",
+    "openal-soft": "1.25.2-48-g7532541",
+    "openjpeg2": "2.5.4",
+    "openmpt": "libopenmpt-0.6.30-3-g6c0a06bc",
+    "opus": "v1.6.1-68-g503d81b1",
+    "rubberband": "v4.0.0",
+    "SDL": "release-2.32.0-234-gb90ac9502",
+    "speex": "Speex-1.2.1-51-g0589522",
+    "srt": "v1.5.7-7-gcae8f62",
+    "VAAPI": "2.25.0.",
+    "vidstab": "v1.1.2-214-ge2445c4",
+    "vmaf": "v3.2.0-13-gf85a8536",
+    "vo-amrwbenc": "0.1.3",
+    "vorbis": "v1.3.7-37-g1b75110b",
+    "VPL": "2.17",
+    "vpx": "v1.17.0-57-gd2413e2ca",
+    "x264": "v0.165.3223",
+    "x265": "4.3-45-g116b875",
+    "xvid": "v1.3.7",
+    "zeromq": "4.3.5",
+    "zimg": "release-3.0.6-253-g67e0603"
+  },
+  "additionalUpstreams": [
+    {
+      "version": "3.100",
+      "archiveBytes": 1524133,
+      "archiveSha256": "ddfe36cab873794038ae2c1210557ad34857a4b6bdc515785d1da9e175b1da1e",
+      "archiveUrl": "https://downloads.sourceforge.net/project/lame/lame/3.100/lame-3.100.tar.gz",
+      "archiveFile": "LAME-3.100-Upstream-Source.tar.gz",
+      "name": "LAME",
+      "publisherRecordName": "lame",
+      "publisherVersion": "3.100",
+      "sourceCorrespondence": "Official upstream version matches publisher record; producer modifications/build recipe unreported"
+    }
+  ]
+}

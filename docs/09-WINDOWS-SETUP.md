@@ -16,7 +16,7 @@
 | FFmpeg / ffprobe | [ffmpeg.lock.json](../ffmpeg.lock.json) 固定 Windows 构建与校验；项目 `Codecs`/`Setup` 入口准备组件 |
 | 声卡与设备 | 软件读取实际 mix format；验收 96 kHz 需要真实支持该格式的系统播放设备 |
 
-`toolchain.m0.json` 是 2026-09-15 的环境快照，其中后续依赖的待定项不代表当前实现缺失。当前依赖与行为以锁文件、构建脚本和源码为准。各机器安装目录不同，普通 shell 找不到 `cl` 不等于未安装工具链。
+`toolchain.m0.json` 是 2026-09-15 的环境快照，其中后续依赖的待定项不代表当前实现缺失。当前依赖与行为以锁文件、构建脚本和源码为准。本轮安全升级固定 Electron 42.11.10、electron-builder 26.15.3、node-gyp 13.1.0；下载器 `@electron/get` 统一为 5.1.0，以移除未修复的旧 HTTP 缓存链。升级后的 Windows/候选结论须取得新的 CI，下方 `db005b5` 属于升级前证据。各机器安装目录不同，普通 shell 找不到 `cl` 不等于未安装工具链。
 
 ## 准备与开发
 
@@ -44,7 +44,7 @@ npm run build
 npm start
 ```
 
-`npm ci` 不带项目级原生安装脚本；它安装锁文件声明的依赖。`install:trace-sdk` 下载 Electron 40.8.3 x64 的头文件与 `node.lib`，由 node-gyp 校验下载内容，保存到 `.tools/node-gyp/40.8.3/`，不编译 addon。`build:trace-engine` 经自身 CMake 构建引擎并运行 CTest；原有 `build:native`/`rebuild:native` 现在也指向同一 Trace 引擎。
+`npm ci` 不带项目级原生安装脚本；它安装锁文件声明的依赖。`install:trace-sdk` 下载 Electron 42.11.10 x64 的头文件与 `node.lib`，由 node-gyp 校验下载内容，保存到 `.tools/node-gyp/42.11.10/`，不编译 addon。`build:trace-engine` 经自身 CMake 构建引擎并运行 CTest；原有 `build:native`/`rebuild:native` 现在也指向同一 Trace 引擎。
 
 `Engine` 已自动运行 CTest。仅需重跑该门禁时可单独执行：
 

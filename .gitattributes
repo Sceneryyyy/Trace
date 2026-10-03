@@ -15,3 +15,10 @@ references/ebu-loudness-test-set-v5/readme.txt binary
 # Internal EBU material is available to private Git clones, not release source ZIPs.
 references/ebu-loudness-test-set-v5 export-ignore
 references/ebu-loudness-test-set-v5/** export-ignore
+references/ffmpeg-9.0.2/README.publisher.txt -text whitespace=-blank-at-eol,-blank-at-eof
+references/ffmpeg-9.0.2/LICENSE.publisher.txt -text
+references/ffmpeg-9.0.2/COPYING.GPLv3 -text
+references/ffmpeg-9.0.2/LICENSE.upstream.md -text
+
+references/ffmpeg-9.0.2/LAME-LGPL.txt -text whitespace=-blank-at-eol,-blank-at-eof,-space-before-tab
+references/ffmpeg-9.0.2/LAME-README.txt -text whitespace=-blank-at-eol,-blank-at-eof

@@ -2,12 +2,14 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import {createRequire} from 'node:module'
 import {createHash} from 'node:crypto'
-import {mkdtempSync,writeFileSync} from 'node:fs'
+import {mkdtempSync,writeFileSync,readFileSync} from 'node:fs'
 import {tmpdir} from 'node:os'
 import {join} from 'node:path'
 const {validateEvidence,verifyZip}=createRequire(import.meta.url)('../tools/release/candidate.cjs')
 const {portableOutcome,expectedFromEnvironment}=createRequire(import.meta.url)('../tools/release/wait-portable-ci.cjs')
-const verification={commit:'abc',sourceDirty:false,status:'pass',platform:'win32',arch:'x64',checks:['build:trace-engine','typecheck','test:trace','build:trace','test:trace-native'].map(c=>({command:'npm run '+c,status:'pass',exitCode:0}))}
+const {validateSecurityInventory}=createRequire(import.meta.url)('../tools/release/security-audit.cjs')
+const {validateManifest,validateArchive}=createRequire(import.meta.url)('../tools/release/dependency-sources.cjs')
+const verification={commit:'abc',sourceDirty:false,status:'pass',platform:'win32',arch:'x64',checks:['build:trace-engine','check:security','typecheck','test:trace','build:trace','test:trace-native'].map(c=>({command:'npm run '+c,status:'pass',exitCode:0}))}
 const load={commit:'abc',status:'pass',exeSha256:'exe',asarSha256:'asar'},audit={status:'pass',files:{'Trace.exe':{sha256:'exe'},'resources/app.asar':{sha256:'asar'}}}
 test('release evidence must match the exact commit and require real Windows native checks',()=>{
  validateEvidence('abc',verification,load,audit)
@@ -44,6 +46,35 @@ test('portable CI gate requires actual GitHub run metadata and a read token',()=
  for(const key of ['GITHUB_RUN_ID','GITHUB_SHA','GITHUB_RUN_ATTEMPT','GITHUB_REPOSITORY','GITHUB_TOKEN'])assert.throws(()=>expectedFromEnvironment({...env,[key]:undefined}))
  assert.throws(()=>expectedFromEnvironment({...env,GITHUB_RUN_ID:'123.5'}))
  assert.throws(()=>expectedFromEnvironment({...env,GITHUB_API_URL:'https://different.invalid'}),/UNSUPPORTED_GITHUB_API/)
+})
+test('a current full dependency audit is required; production-only or stale zero counts cannot authorize a candidate',()=>{
+ const baseline=JSON.parse(readFileSync(new URL('../docs/release/security-baseline.json',import.meta.url),'utf8'))
+ const lockSha=baseline.packageLockSha256
+ validateSecurityInventory(baseline,lockSha)
+ assert.throws(()=>validateSecurityInventory(baseline,'0'.repeat(64)),/STALE_SECURITY_INVENTORY/)
+ assert.throws(()=>validateSecurityInventory({...baseline,allDependencies:{...baseline.allDependencies,high:1,total:1}},lockSha),/DEPENDENCY_ADVISORY_GATE_FAILED/)
+ assert.throws(()=>validateSecurityInventory({...baseline,allDependencies:undefined},lockSha),/DEPENDENCY_ADVISORY_GATE_FAILED/)
+ assert.throws(()=>validateSecurityInventory({...baseline,auditCommands:baseline.auditCommands.filter(c=>c.command.includes('--omit=dev'))},lockSha),/MISSING_SECURITY_AUDIT/)
+})
+test('upstream FFmpeg source must match the actual codec and cannot masquerade as complete static corresponding source',()=>{
+ const codec=JSON.parse(readFileSync(new URL('../ffmpeg.lock.json',import.meta.url),'utf8'))
+ const manifest=JSON.parse(readFileSync(new URL('../'+codec.correspondingSourceManifest,import.meta.url),'utf8'))
+ assert.equal(validateManifest(codec,manifest).correspondingSourceComplete,false)
+ assert.throws(()=>validateManifest(codec,manifest,{requireComplete:true}),/DEPENDENCY_SOURCE_INCOMPLETE/)
+ assert.throws(()=>validateManifest({...codec,ffmpegSha256:'0'.repeat(64)},manifest),/STALE_CODEC_SOURCE/)
+ assert.throws(()=>validateManifest(codec,{...manifest,correspondingSourceComplete:true}),/UNVERIFIED_COMPLETE_SOURCE_CLAIM/)
+ assert.throws(()=>validateManifest(codec,{...manifest,missingProducerInputs:[]}),/SOURCE_BLOCKER_MISSING/)
+ assert.throws(()=>validateManifest(codec,{...manifest,upstream:{...manifest.upstream,archiveUrl:'https://different.invalid/source.tar.gz'}}),/SOURCE_ORIGIN_MISMATCH/)
+ const changedDependency=structuredClone(manifest);changedDependency.additionalUpstreams[0].publisherVersion='unreported';assert.throws(()=>validateManifest(codec,changedDependency),/DEPENDENCY_SOURCE_VERSION_MISMATCH/)
+ const escapedArchive=structuredClone(manifest);escapedArchive.additionalUpstreams[0].archiveFile='../escape.tar.gz';assert.throws(()=>validateManifest(codec,escapedArchive),/DEPENDENCY_SOURCE_INTEGRITY_MISSING/)
+})
+test('source archives reject truncation and changed contents even when a cache already exists',async()=>{
+ const file=join(mkdtempSync(join(tmpdir(),'trace-source-')),'source.tar.gz'),bytes=Buffer.from('fixture-original-source')
+ const identity={archiveBytes:bytes.length,archiveSha256:createHash('sha256').update(bytes).digest('hex')}
+ writeFileSync(file,bytes);await validateArchive(file,identity)
+ const corrupted=Buffer.from(bytes);corrupted[0]^=1;writeFileSync(file,corrupted)
+ await assert.rejects(validateArchive(file,identity),/SOURCE_ARCHIVE_HASH_MISMATCH/)
+ writeFileSync(file,bytes.subarray(1));await assert.rejects(validateArchive(file,identity),/SOURCE_ARCHIVE_SIZE_MISMATCH/)
 })
 // A tiny stored ZIP fixture, independent of external commands or real packages.
 function zipFile(entries){

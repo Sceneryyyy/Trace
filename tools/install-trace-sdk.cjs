@@ -5,7 +5,7 @@ const path = require('node:path')
 const { spawnSync } = require('node:child_process')
 
 const root = path.resolve(__dirname, '..')
-const electronVersion = '40.8.3'
+const electronVersion = '42.11.10'
 
 function sdkPlan() {
   return {

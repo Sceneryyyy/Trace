@@ -21,6 +21,7 @@
 | [EBU 镜像数值检查](77-EBU-MIRROR-VALIDATION.md) | 完整性、独立 hash、真实 Meter 的通过/失败范围与 Max M 缺口 |
 | [Meter v5 校准修复](78-EBU-METER-RECALIBRATION.md) | 10 ms 完整响度索引、68/68 原始 WAV、缓存/报告与验证范围 |
 | [Trace 独立工程](79-TRACE-INDEPENDENT-PROJECT.md) | 专用入口、FFT 来源、清理边界、从零复现与 Windows CI 证据 |
+| [发布依赖与源码收尾](80-RELEASE-DEPENDENCY-HARDENING.md) | 固定安全工具链、实时审计门禁、FFmpeg 主源码与静态依赖资料缺口 |
 | [独立工程验证清单](release/independence-verification.json) | 绑定代码提交、完整 CI、检查结果和私有候选附件元数据；区分自动化与实机范围 |
 | [依赖安全盘点](release/security-baseline.json) | 锁文件绑定的剩余公告与工具链版本 |
 | [文档清理记录](74-DOCUMENTATION-CLEANUP.md) | 本轮删除、归档、勘误与检查 |

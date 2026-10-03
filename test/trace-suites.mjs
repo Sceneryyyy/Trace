@@ -68,6 +68,7 @@ export const portable = [
 
 /** Each entry records why the tier is required, so the cost stays visible. */
 export const native = {
+  'codec-runtime.test.mjs': '.tools/ffmpeg (locked EXEs; three real encoding/decoding roundtrips)',
   'cache-recording.test.mjs': 'build/trace-engine/Release/trace_engine.node',
   'import-service.test.mjs': '.tools/ffmpeg',
   'lufsmeter-native.test.mjs': 'build/trace-engine/Release/trace_engine.node',

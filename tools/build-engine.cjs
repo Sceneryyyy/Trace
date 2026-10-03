@@ -6,7 +6,7 @@ if (process.platform !== 'win32' || process.arch !== 'x64') {
   throw Error('Trace native engine builds require Windows x64; portable C++ tests use native/portable')
 }
 const version = require('../node_modules/electron/package.json').version
-if (version !== '40.8.3') throw Error('Verify a new Electron version before changing the native target')
+if (version !== '42.11.10') throw Error('Verify a new Electron version before changing the native target')
 const candidates = [
   path.join(root, '.tools/node-gyp', version),
   path.join(root, '../.tools/node-gyp', version),
