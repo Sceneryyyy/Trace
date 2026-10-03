@@ -1,5 +1,7 @@
 # 04 · 会话、音频、缓存与恢复
 
+2026-10-03：ExportResult/DecodeRecipe 仍为 v1。AAC-LC M4A 的容器已处理前导延迟，但物理解码可能留下少于 1024 帧的尾块；只有流的 time_base/duration_ts 精确匹配有效帧数时记录实际 endPaddingFrames，现有 decodeRange 排除它。ADTS 从原 M4A 实际首包的负 PTS/Skip Samples 取得前导延迟，不能用 initial_padding=0 或固定常数猜测。文件/物理帧/有效范围/hash 的严格等式保持，见 [80](80-RELEASE-DEPENDENCY-HARDENING.md)。
+
 2026-10-02 云端修复：CaptureRegion 可选 captureQuality v1 保存估计帧、缺口帧和未知质量，estimatedFrames 保持现有字段并校验一致；计数不能超过区域帧数。内存来源缺少旧质量信息时显示 unknown，不能由新文件重新分析推定原采集完整。ExportResult 可选 continuity 持久化编码来源质量，导出再导出继承；旧导出沿来源/region 元数据追溯，循环或缺失链条返回 unknown，不依赖保留原件 PCM。Session schema 仍为 v2、ExportRecord/Result 仍为 v1（兼容可选字段）；参见 [73](73-CLOUD-CODE-REVIEW.md) 修复节。
 
 PB2：配置目录下 support/events.json 为 schemaVersion=1，最多 128 条固定字段事件与 clean 标记；support/fatal.json 仅保存致命异常类别/时间。异步原子写入、短时重复合并；致命退出前只写极小同步标记。导出诊断为独立新目录中的 diagnostics.json + feedback.txt，不附带音频/文件名/路径/设备身份。音频会话和计量缓存格式不变，见 60。

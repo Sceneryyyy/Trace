@@ -6,6 +6,13 @@ import {tmpdir} from 'node:os'
 import {join,resolve} from 'node:path'
 import {createHash} from 'node:crypto'
 import {spawnSync} from 'node:child_process'
+import {pathToFileURL} from 'node:url'
+import {build} from 'esbuild'
+const compiled=resolve('artifacts/release-security/codec-production')
+await build({entryPoints:['src/trace/wavInput.ts','src/trace/importMedia.ts','src/trace/mediaTasks.ts','src/trace/file-worker.ts','src/trace/media-runner.ts'],outdir:compiled,bundle:true,platform:'node',format:'cjs'})
+const {wavInputOptions}=(await import(pathToFileURL(join(compiled,'wavInput.js')))).default
+const {probeImport,decodeImport}=(await import(pathToFileURL(join(compiled,'importMedia.js')))).default
+const {encodeMedia}=(await import(pathToFileURL(join(compiled,'mediaTasks.js')))).default
 const lock=JSON.parse(readFileSync(new URL('../ffmpeg.lock.json',import.meta.url),'utf8'))
 const ffmpeg=resolve('.tools/ffmpeg/bin/ffmpeg.exe'),ffprobe=resolve('.tools/ffmpeg/bin/ffprobe.exe')
 const ready=process.platform==='win32'&&existsSync(ffmpeg)&&existsSync(ffprobe)
@@ -37,15 +44,30 @@ function decodedWave(file){
  return frames
 }
 for(const [format,encoder,codec,extension]of [['WAV','pcm_s24le','pcm_s24le','wav'],['MP3','libmp3lame','mp3','mp3'],['AAC','aac','aac','m4a']]){
- test('locked '+format+' encoder/probe/decode roundtrip preserves stereo rate, duration and signal',options,()=>{
+ test('locked '+format+' encoder/probe/decode roundtrip preserves stereo rate, duration and signal',options,async()=>{
   const dir=mkdtempSync(join(tmpdir(),'trace-codec-')),input=join(dir,'输入 signal.wav'),output=join(dir,'output.'+extension),decoded=join(dir,'decoded.wav'),frames=fixture(input)
-  run(ffmpeg,['-nostdin','-hide_banner','-loglevel','error','-n','-i',input,'-map','0:a:0','-vn','-threads','1','-c:a',encoder,...(format==='WAV'?[]:['-b:a','192k']),output])
-  const probe=JSON.parse(run(ffprobe,['-v','error','-show_streams','-show_format','-of','json',output])),audio=probe.streams.filter(s=>s.codec_type==='audio')
+  run(ffmpeg,['-nostdin','-hide_banner','-loglevel','error','-n',...await wavInputOptions(input),'-i',input,'-map','0:a:0','-vn','-threads','1','-c:a',encoder,...(format==='WAV'?[]:['-b:a','192k']),output])
+  const probe=JSON.parse(run(ffprobe,['-v','error',...await wavInputOptions(output),'-show_streams','-show_format','-of','json',output])),audio=probe.streams.filter(s=>s.codec_type==='audio')
   assert.equal(audio.length,1);assert.equal(audio[0].codec_name,codec);assert.equal(Number(audio[0].sample_rate),48000);assert.equal(audio[0].channels,2)
   assert(Math.abs(Number(probe.format.duration)-2)<.1)
-  run(ffmpeg,['-nostdin','-hide_banner','-loglevel','error','-n','-i',output,'-map','0:a:0','-c:a','pcm_s16le',decoded])
+  run(ffmpeg,['-nostdin','-hide_banner','-loglevel','error','-n',...await wavInputOptions(output),'-i',output,'-map','0:a:0','-c:a','pcm_s16le',decoded])
   const actual=decodedWave(decoded)
   if(format==='AAC')assert(actual>=frames&&actual<=frames+2048,'AAC physical padding exceeds two codec blocks')
   else assert.equal(actual,frames)
  })
 }
+test('production import and three-format export preserve the unchanged periodic WAV across decoded segments',options,async()=>{
+ const dir=mkdtempSync(join(tmpdir(),'trace-codec-production-')),input=join(dir,"输入 ' signal.wav"),frames=fixture(input)
+ const tools={ffmpeg,ffprobe,nativePath:resolve('build/trace-engine/Release/trace_engine.node'),ffmpegSha256:await hash(ffmpeg),ffprobeSha256:await hash(ffprobe)}
+ const metadata=await probeImport(tools,input)
+ assert.equal(metadata.container,'wav');assert.equal(metadata.exactFrames,String(frames));assert.equal(metadata.format.sampleRate,48000);assert.equal(metadata.format.channelCount,2)
+ const imported=await decodeImport(tools,input,join(dir,'cache'),{capacity:async()=>10000000000n,segmentBytes:8192})
+ assert.equal(imported.frames,String(frames));assert(imported.files.length>1)
+ const sources=imported.files.map(file=>join(imported.directory,file.file))
+ for(const preset of [{format:'wav',encoding:'float32',sampleRate:48000},{format:'mp3',bitrate:192,sampleRate:48000},{format:'aac',container:'m4a',bitrate:192,sampleRate:48000},{format:'aac',container:'adts',bitrate:192,sampleRate:48000}]){
+  const result=await encodeMedia(tools,{sources,sampleRate:48000,channelCount:2,frames:String(frames)},preset,join(dir,preset.format+(preset.container?'-'+preset.container:'')))
+  assert.equal(result.frames,String(frames));assert.equal(result.sampleRate,48000);assert.equal(result.channelCount,2)
+  assert.equal(result.decoded.reduce((n,file)=>n+BigInt(file.frames),0n),BigInt(result.decodeRecipe.physicalFrames))
+  assert.equal(BigInt(result.decodeRecipe.physicalFrames)-BigInt(result.decodeRecipe.startFrame)-BigInt(result.decodeRecipe.endPaddingFrames),BigInt(frames))
+ }
+})

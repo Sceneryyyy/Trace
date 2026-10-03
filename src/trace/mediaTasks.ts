@@ -1,6 +1,7 @@
 import {mkdir,readdir,writeFile,lstat} from 'node:fs/promises'
 import {join,basename} from 'node:path'
 import {mediaProcess} from './mediaProcess'
+import {wavInputOptions} from './wavInput'
 import {hashFiles,quantizeFiles} from './fileJobs'
 import {validateExportPreset} from './mediaTypes'
 import type {MediaTools,MediaInput,MediaProgress,MediaFile,EncodedMedia,ExportPreset,DecodeRecipe} from './mediaTypes'
@@ -29,7 +30,7 @@ function progress(options:MediaOptions,phase:MediaProgress['phase'],duration:num
  }
 }
 async function probe(tools:MediaTools,path:string,signal?:AbortSignal):Promise<Probe>{
- const value=JSON.parse(await mediaProcess(tools.ffprobe,['-v','error','-select_streams','a','-show_entries','stream=codec_name,profile,sample_rate,channels,time_base,duration_ts,bit_rate,initial_padding','-of','json',path],{signal,capture:true}))
+ const value=JSON.parse(await mediaProcess(tools.ffprobe,['-v','error',...await wavInputOptions(path),'-select_streams','a','-show_entries','stream=codec_name,profile,sample_rate,channels,time_base,duration_ts,bit_rate,initial_padding','-of','json',path],{signal,capture:true}))
  if(!Array.isArray(value.streams)||value.streams.length!==1)throw Error('INVALID_MEDIA_STREAM_COUNT')
  return value.streams[0]
 }
@@ -56,6 +57,27 @@ export async function floatWave(tools:MediaTools,inputArgs:string[],filter:strin
  return waves(tools,directory,rate,channels,options)
 }
 const total=(files:MediaFile[])=>files.reduce((n,f)=>n+BigInt(f.frames),0n)
+export function encodedPaddingFrames(codec:string,container:string,rate:number,frames:bigint,physical:bigint,start:bigint,information:Probe):bigint{
+ // MP4 describes the exact audible duration, but AAC decoding may emit the
+ // remainder of its final 1024-sample block. Keep it in the physical cache
+ // and exclude it via the existing recipe/range rather than adding audio.
+ if(container==='m4a'&&(codec!=='aac'||information.time_base!=='1/'+rate||
+  !(typeof information.duration_ts==='string'||Number.isSafeInteger(information.duration_ts))||
+  !frame(String(information.duration_ts))||BigInt(information.duration_ts!)!==frames))throw Error('AAC_CONTAINER_FRAME_MISMATCH')
+ const padding=physical-start-frames
+ if(padding<0n||(codec==='aac'?padding>=1024n:padding!==0n))throw Error('ENCODED_DECODED_FRAME_MISMATCH')
+ return padding
+}
+export function aacPrimingFrames(value:unknown,streamPadding?:number):number{
+ const v=value as {packets?:Array<{pts?:number;duration?:number;side_data_list?:Array<{side_data_type?:string;skip_samples?:number;discard_padding?:number}>}>}
+ const packet=Array.isArray(v?.packets)&&v.packets.length===1?v.packets[0]:undefined
+ const skip=Array.isArray(packet?.side_data_list)?packet.side_data_list.filter(item=>item?.side_data_type==='Skip Samples'):undefined
+ const delay=skip?.length===1?skip[0].skip_samples:undefined
+ if(!packet||!Number.isSafeInteger(delay)||!delay||delay<0||packet.duration!==1024||delay>packet.duration||
+  packet.pts!==-delay||skip![0].discard_padding!==0||
+  streamPadding!==undefined&&(!Number.isSafeInteger(streamPadding)||streamPadding<0||streamPadding>0&&streamPadding!==delay))throw Error('AAC_PRIMING_UNAVAILABLE')
+ return delay
+}
 export async function verifyMediaTools(tools:MediaTools,signal?:AbortSignal):Promise<void>{
  const hashes=await hashFiles([tools.ffmpeg,tools.ffprobe],{signal})
  if(hashes[0]!==tools.ffmpegSha256||hashes[1]!==tools.ffprobeSha256)throw Error('ENCODER_BUILD_CHANGED')
@@ -98,6 +120,7 @@ export async function encodeMedia(tools:MediaTools,input:MediaInput,presetValue:
   if(information.codec_name!==codec||Number(information.sample_rate)!==preset.sampleRate||information.channels!==input.channelCount||(codec==='aac'&&information.profile!=='LC'))throw Error('ENCODED_FORMAT_MISMATCH')
   actualBitrate=Number(information.bit_rate)||undefined
   if(preset.format==='mp3'&&actualBitrate!==preset.bitrate*1000)throw Error('MP3_BITRATE_MISMATCH')
+  if(codec==='aac')encodedPaddingFrames(codec,'m4a',preset.sampleRate,frames,frames,0n,information)
   let deliverable=encoded
   if(preset.format==='aac'&&preset.container==='adts'){
    deliverable=join(directory,'encoded.aac')
@@ -105,13 +128,12 @@ export async function encodeMedia(tools:MediaTools,input:MediaInput,presetValue:
    const adts=await probe(tools,deliverable,options.signal)
    if(adts.codec_name!=='aac'||adts.profile!=='LC'||Number(adts.sample_rate)!==preset.sampleRate||adts.channels!==input.channelCount)throw Error('ADTS_FORMAT_MISMATCH')
    actualBitrate=Number(adts.bit_rate)||actualBitrate
-   const delay=information.initial_padding
-   if(!Number.isSafeInteger(delay)||!delay||delay<0||delay>8192)throw Error('AAC_PRIMING_UNAVAILABLE')
+   const firstPacket=JSON.parse(await mediaProcess(tools.ffprobe,['-v','error','-protocol_whitelist','file,pipe','-select_streams','a:0','-read_intervals','%+#1','-show_packets','-show_entries','packet=pts,duration:packet_side_data=side_data_type,skip_samples,discard_padding','-of','json',encoded],{signal:options.signal,capture:true,maximumOutput:16384}))
+   const delay=aacPrimingFrames(firstPacket,information.initial_padding)
    recipe={...recipe,startFrame:String(delay),encoderDelayFrames:String(delay),containerTrimmed:false}
   }
   decoded=await floatWave(tools,['-i',deliverable],undefined,join(directory,'decoded'),preset.sampleRate,input.channelCount,duration,options,'decoding')
-  const physical=total(decoded),endPadding=physical-BigInt(recipe.startFrame)-frames
-  if(endPadding<0n||(recipe.containerTrimmed?endPadding!==0n:endPadding>=1024n))throw Error('ENCODED_DECODED_FRAME_MISMATCH')
+  const physical=total(decoded),endPadding=encodedPaddingFrames(codec,container,preset.sampleRate,frames,physical,BigInt(recipe.startFrame),information)
   recipe={...recipe,physicalFrames:physical.toString(),endPaddingFrames:endPadding.toString()}
   const [sha256]=await hashFiles([deliverable],{signal:options.signal})
   files=[{path:deliverable,frames:frames.toString(),sha256}]

@@ -45,7 +45,7 @@ async function render(input:Input,directory:string,rate:number,channels:number,e
  const outputs:Output[]=[]
  const names=(await readdir(directory)).filter(name=>/^part-[0-9]+\.wav$/.test(name)).sort((a,b)=>Number(a.slice(5,-4))-Number(b.slice(5,-4)))
  for(const name of names){
-  const path=join(directory,name),probe=JSON.parse(await execute(ffprobe,['-v','error','-show_entries','stream=codec_name,sample_rate,channels,duration_ts','-of','json',path])).streams?.[0]
+  const path=join(directory,name),probe=JSON.parse(await execute(ffprobe,['-v','error','-f','wav','-show_entries','stream=codec_name,sample_rate,channels,duration_ts','-of','json',path])).streams?.[0]
   if(!probe||probe.codec_name!==codec||Number(probe.sample_rate)!==rate||probe.channels!==channels||!/^[0-9]+$/.test(String(probe.duration_ts)))throw Error('WAV_POSTPROCESS_FORMAT_MISMATCH')
   const clippedSamples=encoding==='float32'?'0':clips.get(name)
   if(clippedSamples===undefined||BigInt(clippedSamples)>BigInt(probe.duration_ts)*BigInt(channels))throw Error('WAV_CLIP_COUNT_MISMATCH')

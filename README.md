@@ -52,7 +52,7 @@ Trace 是 LeoMoon 系列的桌面音频录音与分析工作台。它把系统�
 
 本项目仍处于开发预览阶段。preview.31 独立工程的 [完整 CI](https://github.com/Sceneryyyy/Trace/actions/runs/37104992986)（`db005b5`）已成功：Windows CTest **19/19**、Trace 原生/FFmpeg 测试 **43/43**、两端可移植 JS **248/248**，Linux ASan/UBSan 的 8 项核心测试与 1 项原始 EBU 门禁、浏览器回归、类型与应用构建均通过；Windows 私有工程候选已生成，包审计及加载/重启通过。完整证据见 [79](docs/79-TRACE-INDEPENDENT-PROJECT.md) 和 [当前交接](docs/13-HANDOFF.md)。
 
-独立干净 Windows、不同声卡/驱动、真实 96 kHz 等实机验收仍需补充；Windows 分发包尚未签名。macOS 采集、权限、打包与签名/公证尚未完成实机验证。正式发布门禁见 [76](docs/76-RELEASE-CHECKLIST.md)，其中依赖安全记录仍有 18 个受影响包待处理。工程候选和自动测试不等于正式发布验收。
+完整与生产 npm 审计均已归零；固定 SDK、编码回归与新候选复验见 [80](docs/80-RELEASE-DEPENDENCY-HARDENING.md)。完整 FFmpeg 静态构建对应源码仍缺发布者资料。独立干净 Windows、不同声卡/驱动、真实 96 kHz 等实机验收仍需补充，Windows 分发包尚未签名；macOS 采集、权限、打包与签名/公证尚未完成实机验证。正式发布门禁见 [76](docs/76-RELEASE-CHECKLIST.md)。
 
 Meter v5 的适用 EBU 原始 WAV 已在 Linux 与 Windows 工程检查中通过 68/68；Windows 实际文件读取与原生分析已验证。响度索引和报告峰值修复见 [78](docs/78-EBU-METER-RECALIBRATION.md)；真实设备、实时/选区/导出完整流程仍需实机验收。
 

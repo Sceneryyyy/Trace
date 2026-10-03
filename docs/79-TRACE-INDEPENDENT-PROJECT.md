@@ -1,6 +1,6 @@
 # 79 · Trace 独立工程
 
-2026-10-03。按用户确认的顺序完成工程入口隔离、测试与 CI 迁移、FFT 本地维护、上游工程清理。源码仍为 **preview.31**，Meter v5 的算法、参考值、容差与产品范围保持。当前验证结果及提交见 [13](13-HANDOFF.md)。
+2026-10-03。按用户确认的顺序完成工程入口隔离、测试与 CI 迁移、FFT 本地维护、上游工程清理。源码仍为 **preview.31**，Meter v5 的算法、参考值、容差与产品范围保持。独立化阶段的通过记录保留原提交身份；后续依赖与编码回归见 [80](80-RELEASE-DEPENDENCY-HARDENING.md)，当前状态见 [13](13-HANDOFF.md)。
 
 ## 独立化的边界
 
@@ -10,9 +10,9 @@ Trace 的安装、构建、测试、诊断与打包只使用本仓库的 Trace �
 | --- | --- |
 | 包入口 | 根包 `trace`，主入口 `out-trace/main/index.js`；默认 `dev/build/start/preview/test/typecheck/dist` 均为 Trace |
 | 普通安装 | `npm ci` 无根目录 native postinstall；Electron/esbuild 自身安装步骤保留 |
-| Windows 原生 | `npm run install:trace-sdk` 独立下载固定 Electron 40.8.3 SDK；`build:trace-engine` 只构建 Trace CMake 目标 |
+| Windows 原生 | `npm run install:trace-sdk` 独立下载固定 Electron 42.11.10 SDK；`build:trace-engine` 只构建 Trace CMake 目标 |
 | 诊断 | `build:trace-diagnostics` 与 `trace:diagnostics` 构建/运行独立 Windows 捕获探针；真实音频夹具仍可供实机验收 |
-| 应用测试 | 默认 51 份可移植测试；8 份 Trace 原生/FFmpeg 测试使用自身引擎或固定编码组件，旧 Prism 数值测试逐字归档为文本 |
+| 应用测试 | 默认 51 份可移植测试；9 份 Trace 原生/FFmpeg 测试使用自身引擎或固定编码组件，旧 Prism 数值测试逐字归档为文本 |
 | 原生数值 | 8 项可移植生成信号与 FFT 门禁；有私有素材时加原始 EBU WAV，共 9 项；Windows 对应共 19 项 |
 | CI | 仅保留 Trace CI 与候选包工作流；Linux sanitizer 核心与原始 EBU 分开运行，Windows 构建独立诊断、引擎与候选包 |
 | 边界检查 | `npm run check:independence` 检查源码导入、包/TS/CMake/测试/CI 入口及 FFT 文件身份 |
@@ -32,6 +32,7 @@ Trace 的安装、构建、测试、诊断与打包只使用本仓库的 Trace �
 ```sh
 npm ci
 npm run check:independence
+npm run check:security
 npm run typecheck
 npm test
 npm run build
@@ -50,7 +51,7 @@ node tools/release/package-load-smoke.cjs
 node tools/release/candidate.cjs
 ```
 
-固定依赖以 `package-lock.json`、[当前工具链清单](../toolchain.trace.json) 和 `ffmpeg.lock.json` 为准。`toolchain.m0.json` 是 2026-09-15 的历史机器快照，不再作为当前安装清单。受代理限制的云环境需按其网络策略让 Electron 下载器使用代理（`ELECTRON_GET_USE_PROXY=1`）；这与项目源码依赖无关。
+固定依赖以 `package-lock.json`、[当前工具链清单](../toolchain.trace.json) 和 `ffmpeg.lock.json` 为准。`toolchain.m0.json` 是 2026-09-15 的历史机器快照，不再作为当前安装清单。受代理限制的 Node 24 云环境按其网络策略使用 `NODE_USE_ENV_PROXY=1 ELECTRON_GET_USE_PROXY=true npm ci`，保留现有代理及 TLS 校验；旧下载器的 `ELECTRON_GET_USE_PROXY=1` 不能沿用为当前安装通过证据，实际过程见 80。
 
 私有 checkout 执行 `python3 references/ebu-loudness-test-set-v5/prepare.py` 后，可配置 `TRACE_REQUIRE_EBU=ON` 的原生门禁。公开源码归档继续排除私有 EBU 包；缺素材时只注册生成信号，强制模式拒绝配置。原始素材通过分母固定为 68 个适用单/双声道 WAV，另外 2 个多声道仍排除，不记为通过。
 

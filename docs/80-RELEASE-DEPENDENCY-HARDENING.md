@@ -51,17 +51,35 @@
 
 ## 验证范围与接力
 
-云端已实际执行：新锁普通安装、完整/生产审计、类型检查、JS **251/251**
+云端已实际执行：新锁普通安装、完整/生产审计、类型检查、JS **254/254**
 （51 文件，0 fail/skip）、默认构建、独立性检查、真实 Electron 42 headless
 图标生成和 SDK 目标计划。首次旧代理标志下载失败保留；在当前受代理限制
 的 Node 24 云环境，使用 `NODE_USE_ENV_PROXY=1 ELECTRON_GET_USE_PROXY=true`
 安装成功，TLS 校验保持。Windows 常规直连环境使用普通 `npm ci`。
 
-新增四项 Windows 实际 EXE 回归，核验二进制/配置/编码器身份及 WAV、MP3、
-AAC 的真实编码、probe、解码、时长/采样率/声道/信号；AAC 物理尾部 padding
-与 PCM 音频帧分别断言，不放宽 EBU 门禁。Windows 引擎/19 CTest/原生及 codec
-测试、Linux ASan/UBSan 与浏览器、当前候选全流程仍须本次 CI 收齐。上一轮
-`db005b5` 只证明旧工具链，不能沿用为本轮兼容通过。
+新增五项 Windows 实际 EXE 回归：二进制/配置/编码器身份、WAV/MP3/AAC
+编码/probe/解码，以及生产导入→多段浮点 PCM→三格式导出（含 AAC M4A/ADTS）。
+断言时长/采样率/声道/信号及物理帧与有效范围，不放宽 EBU 门禁。
+
+第一轮 [CI 37143481325](https://github.com/Sceneryyyy/Trace/actions/runs/37143481325)
+绑定 `3d63d8f`：Windows SDK/诊断/引擎、19/19 CTest（255.94 s）、安全审计、
+251/251 portable JS 和构建通过；native 44/47，新增三格式用例因有效周期
+WAV 被 MPEG-TS 探测误判而失败。二进制身份用例通过。为修复后重新取得
+完整证据，取消了仍在运行的 Linux job；此 run 的总体结论为 cancelled，
+Windows job 仍为 failure，不作为候选通过证据。
+
+修复从 16 字节 RIFF/RIFX 或 RF64/BW64 + WAVE 容器头取得 WAV 解复用提示；
+不依据扩展名，FFmpeg 仍验证实际流与内容。导入探测、导入解码及成品 WAV
+检查使用同一规则；保留原失败正弦信号。新增实际生产回归又发现 AAC M4A
+尾块与 ADTS `initial_padding=0`：M4A 必须有精确匹配的 time_base/duration_ts，
+尾部少于一个 1024 帧 AAC-LC 块才接受；实际尾块记录在既有 recipe，回听与
+计量仍排除它。ADTS 从实际首包负 PTS/Skip Samples 取得延迟，并拒绝缺失、
+冲突或异常元数据。有效帧等式、MP3 零额外填充规则及数值容差保持。
+
+本地补充用 Linux FFmpeg 7.1.5 跑原回归信号和真实生产流程：4 项通过；
+固定 Windows EXE 身份用例明确跳过 1 项，这不算 Windows 通过。最终源码的
+Windows 引擎/19 CTest/**48 项 native**、Linux ASan/UBSan 与浏览器、新候选
+全流程仍须新 CI 收齐。上一轮 `db005b5` 只证明旧工具链，不能沿用为本轮通过。
 
 完成后的 run/commit 与候选身份同步 [13](13-HANDOFF.md)。即使 npm 归零、
 工程候选通过，也不关闭静态 FFmpeg 对应源码与相关库安全核查、真实设备、

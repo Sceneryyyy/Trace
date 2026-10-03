@@ -3,6 +3,7 @@ import {lstat,realpath,mkdir,readFile,writeFile,readdir,unlink,rmdir} from 'node
 import {basename,dirname,isAbsolute,join,resolve,sep} from 'node:path'
 import {hashFiles} from './fileJobs'
 import {mediaProcess} from './mediaProcess'
+import {wavInputOptions} from './wavInput'
 import {floatWave,verifyMediaTools,type MediaOptions} from './mediaTasks'
 import {freeSpace} from './storageCapacity'
 import type {AssetFormat} from './assetFormat'
@@ -48,7 +49,7 @@ export function classifyImport(value:unknown):Omit<ImportProbe,'source'>{
 }
 export async function probeImport(tools:MediaTools,file:string,signal?:AbortSignal):Promise<ImportProbe>{
  await verifyMediaTools(tools,signal);const source=await fingerprintImport(file,signal)
- const raw=await mediaProcess(tools.ffprobe,['-v','error','-protocol_whitelist','file,pipe','-show_entries','format=format_name,duration:stream=codec_type,codec_name,profile,sample_rate,channels,time_base,duration_ts,bit_rate:stream_disposition=attached_pic','-of','json',source.path],{signal,capture:true,maximumOutput:256*1024})
+ const raw=await mediaProcess(tools.ffprobe,['-v','error','-protocol_whitelist','file,pipe',...await wavInputOptions(source.path),'-show_entries','format=format_name,duration:stream=codec_type,codec_name,profile,sample_rate,channels,time_base,duration_ts,bit_rate:stream_disposition=attached_pic','-of','json',source.path],{signal,capture:true,maximumOutput:256*1024})
  return {source,...classifyImport(JSON.parse(raw))}
 }
 async function ownedDirectory(root:string,directory:string):Promise<string>{
@@ -95,7 +96,7 @@ export async function decodeImport(tools:MediaTools,file:string,cacheRoot:string
  if(!Number.isSafeInteger(estimate)||available!==null&&available<BigInt(estimate)+512n*1024n*1024n)throw Error('IMPORT_INSUFFICIENT_SPACE')
  check(options.signal);const id=randomUUID(),directory=join(root,id);await mkdir(directory);await writeFile(join(directory,'owner.json'),JSON.stringify({product:'TraceImportedPCM',version:1,id}),{flag:'wx'})
  try{
-  const decoded=await floatWave(tools,['-xerror','-err_detect','explode','-protocol_whitelist','file,pipe','-i',probe.source.path],undefined,join(directory,'pcm'),probe.format.sampleRate,probe.format.channelCount,probe.durationEstimate||0,options,'decoding')
+  const decoded=await floatWave(tools,['-xerror','-err_detect','explode','-protocol_whitelist','file,pipe',...await wavInputOptions(probe.source.path),'-i',probe.source.path],undefined,join(directory,'pcm'),probe.format.sampleRate,probe.format.channelCount,probe.durationEstimate||0,options,'decoding')
   const frames=decoded.reduce((n,f)=>n+BigInt(f.frames),0n).toString();if(frames==='0'||probe.exactFrames&&frames!==probe.exactFrames||decoded.length>10000)throw Error('IMPORT_DECODED_FRAME_MISMATCH')
   options.progress?.({phase:'verifying',fraction:0});const after=await fingerprintImport(file,options.signal);if(after.sha256!==probe.source.sha256||after.bytes!==probe.source.bytes||after.mtimeMs!==probe.source.mtimeMs||!same(after.path,probe.source.path))throw Error('IMPORT_SOURCE_CHANGED')
   const mediaIdentity=createHash('sha256').update(JSON.stringify({version:1,sourceSha256:after.sha256,decoder:tools.ffmpegSha256,recipe:'full-external-decoding-v1',frames,format:probe.format})).digest('hex')

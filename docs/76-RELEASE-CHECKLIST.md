@@ -1,6 +1,6 @@
 # 76 · Trace Windows 发布验收清单
 
-2026-10-03。本清单适用于包含本轮修复的 preview.31 私有工程候选；历史 preview.30 / InternalTest-r3 保持原交付身份。支持范围先限定 Windows x64、单/双声道。macOS 单列 [70](70-MACOS-PORT-PLAN.md)。当前状态见 [13](13-HANDOFF.md)，独立工程与 CI 证据见 [79](79-TRACE-INDEPENDENT-PROJECT.md)，先前云端收尾记录见 [75](75-CLOUD-RELEASE-PREPARATION.md)。
+2026-10-03。本清单适用于 preview.31 私有工程候选；历史 preview.30 / InternalTest-r3 保持原交付身份。支持范围先限定 Windows x64、单/双声道。macOS 单列 [70](70-MACOS-PORT-PLAN.md)。候选附件内清单为生成时的阶段快照，最终提交/CI/门禁状态见 [13](13-HANDOFF.md) 与 [80](80-RELEASE-DEPENDENCY-HARDENING.md)；独立化证据见 [79](79-TRACE-INDEPENDENT-PROJECT.md)，先前云端记录见 [75](75-CLOUD-RELEASE-PREPARATION.md)。
 
 ## 工程候选生成
 
@@ -21,7 +21,7 @@ node tools/release/candidate.cjs
 
 候选包内 manifest 的 `engineering-candidate` 与 `signed:false` 保持真实身份。Actions runner 的包加载检查不要求声卡，不能替代原有 `tools/m6/package-smoke.cjs` 的音频流程或下面的实机门禁。
 
-[完整 CI](https://github.com/Sceneryyyy/Trace/actions/runs/37104992986)（`db005b5`）已成功：Windows CTest 19/19、实际 Trace 原生/FFmpeg 43/43、两端 portable JS 248/248、Linux ASan/UBSan 核心 8 项与原始 EBU 1 项、浏览器回归、类型与应用构建全部通过；ZIP、五项包审计、包加载/重启及最终私有候选附件也已完成。第二轮曾因受追踪图标被改写而在候选清洁检查失败；图标生成物已转到忽略目录，并在本轮通过原有严格检查，失败及修复证据见 [79](79-TRACE-INDEPENDENT-PROJECT.md)。
+升级前的 [完整 CI](https://github.com/Sceneryyyy/Trace/actions/runs/37104992986)（`db005b5`）已成功：Windows CTest 19/19、实际 Trace 原生/FFmpeg 43/43、两端 portable JS 248/248、Linux ASan/UBSan 核心 8 项与原始 EBU 1 项、浏览器回归、类型与应用构建全部通过；ZIP、五项包审计、包加载/重启及最终私有候选附件也已完成。后续工具链与 codec 必须用新 CI 复验，见 80。历史图标清洁检查失败及修复证据见 [79](79-TRACE-INDEPENDENT-PROJECT.md)。
 
 GitHub 私有附件 `trace-windows-candidate` 的 ID 为 `11267953983`，大小 `212794813` 字节，创建于 `2026-10-03 07:25:32 UTC`；GitHub 所报附件归档 SHA-256 为 `bc7b385c33aa9a81c4fd1537a707089a7265950a4f7892b69688a2771e4bf658`。这是 Actions 附件归档身份，不能当成包内 ZIP 或 manifest 的 hash。云端代理对附件存储目的地返回 403，本地未下载或读取附件内部文件；工作流日志与 GitHub 元数据已确认生成及验证成功，记录见 [独立工程验证清单](release/independence-verification.json)。
 
@@ -29,7 +29,7 @@ GitHub 私有附件 `trace-windows-candidate` 的 ID 为 `11267953983`，大小 
 
 | 门禁 | 操作与预期 | 当前状态 |
 | --- | --- | --- |
-| SEC | 处理 [依赖安全记录](release/security-baseline.json) 的 Electron、tar/打包原生链问题；在新固定 SDK 下重建 Trace 引擎、跑 CTest/native 与三格式/新包。再核对 Electron/Chromium、FFmpeg/VC 安全公告 | 阻塞：18 个受影响包（17 high / 1 critical），升级与复验待办 |
+| SEC | 完整和生产 `npm audit` 必须均为零；新固定 SDK 重建引擎、CTest/native、三格式及新候选必须通过；继续核对 FFmpeg 静态组件/VC 安全来源 | npm 18→0，已加入实时强制门禁；固定工具链完整复验见 80，静态 FFmpeg 依赖精确来源/安全核查仍阻塞 |
 | WIN | 未装开发工具的 Windows 11 x64 普通用户；中文/空格路径、断网，解压→启动→选设备→录音→回听→三格式导出→重启 | CI 候选加载/重启通过；普通用户干净 Windows 与真实音频流程未运行 |
 | DEV | 内置输出、USB 声卡，真实 44.1/48/96 kHz；拔插、默认设备变化、修改格式、设备占用与睡眠恢复 | 未验证矩阵；96 kHz 文件不算采集 |
 | FLOW | 播放约三分钟 YouTube；交叉进行 REC、静默历史查看、停止后回听、报告跳转、缓存/选区保存、另存。按钮与监听状态一致，来源质量贯穿保存/重载/报告 | 未运行 |
@@ -39,7 +39,7 @@ GitHub 私有附件 `trace-windows-candidate` 的 ID 为 `11267953983`，大小 
 | GPU | 核显/普通独显，3D 故障降级与恢复；真实混合 DPI 跨屏；五主题冷启动/恢复的实际 paint、实时帧时间及资源增长 | 云端显示回归通过；物理验证缺失 |
 | UX | 建议至少五名未参与开发的用户，无口头指导完成录音导出、保存缓存、布局、范围报告和 A/B；检查统计/来源/删除范围误判 | 未运行；人数是建议指标 |
 | DIST | 签名、实际浏览器下载后的首次启动、手动升级/回退、配置迁移；版本下载页、SHA256、已知限制与反馈入口 | 未签名；公开分发未生成 |
-| SRC | 下载处提供匹配程序的 Trace 项目源码及必要构建资料；核对 FFmpeg GPL/version3 静态构建和启用依赖的对应源码/许可 | 项目归档工具已完成；完整依赖源码核对待办 |
+| SRC | 下载处提供匹配程序的 Trace 项目源码及必要构建资料；核对 FFmpeg GPL/version3 静态构建和启用依赖的对应源码/许可 | 项目归档、FFmpeg 9.0.2 主源码、LAME 3.100 官方源码/许可和 37 条发布者版本记录已核验；八项基础库版本、完整传递来源/补丁/构建资料仍缺失，完整对应源码门禁未关闭 |
 | BETA | 建议 10–20 人、约一周邀请测试；按问题单复验，没有未解决的丢音/损坏、静默测量错误或启动失败 | 尚未开展；按覆盖结果放行 |
 
 ## 每项证据应保留
