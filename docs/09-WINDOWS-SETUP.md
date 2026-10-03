@@ -1,6 +1,6 @@
 # 09 · Windows 开发与交付环境
 
-2026-10-02 更新。所有命令在本仓库根执行。Trace 已有完整源码和专用构建入口；首次接入过程见 [16](16-M0-VALIDATION.md)，当前状态见 [13](13-HANDOFF.md)。
+2026-10-03 更新。所有命令在本仓库根执行。默认安装、构建、测试和分发入口均属于 Trace；当前工程无需构建 Prism addon。独立工程边界见 [79](79-TRACE-INDEPENDENT-PROJECT.md)，首次接入过程见 [16](16-M0-VALIDATION.md)，当前验证状态见 [13](13-HANDOFF.md)。源码版本仍为 preview.31，计量配置仍为 Meter v5。
 
 ## 工具与锁定记录
 
@@ -9,9 +9,10 @@
 | Windows | x64；真实 WASAPI、设备故障、原生 DLL 和分发验证需要 Windows |
 | Node/npm | Windows 基线 Node 24.19.0、项目入口使用本地 npm 10.9.2；精确 M0 环境见 [toolchain.m0.json](../toolchain.m0.json) |
 | MSVC / SDK | Visual Studio 2022 C++ x64 工具链与 Windows SDK；实际构建器见 `tools/build-engine.cjs`，历史版本见 toolchain |
-| Python / CMake | node-gyp 兼容的 Python、CMake；Trace 引擎经 CMake 构建，上游 DSP 经 node-gyp 针对 Electron ABI 构建 |
+| Python / CMake | Python 3.9+ 用于原始 EBU 素材检查，CMake 用于 Trace 引擎/测试构建；node-gyp 仅用于获取与校验锁定 Electron SDK |
 | Electron /前端依赖 | 以 [package-lock.json](../package-lock.json) 为准；不能只依据上游 README 的 Node 18+ 说明选环境 |
 | libebur128 | [native/vendor/libebur128](../native/vendor/libebur128) 的锁定源码与 [本地补丁记录](../native/vendor/libebur128/TRACE-PATCHES.md) |
+| FFT | [native/vendor/prism-fft](../native/vendor/prism-fft) 的本地源码组件、来源与 GPL 许可；由 Trace 自身 CMake 编译 |
 | FFmpeg / ffprobe | [ffmpeg.lock.json](../ffmpeg.lock.json) 固定 Windows 构建与校验；项目 `Codecs`/`Setup` 入口准备组件 |
 | 声卡与设备 | 软件读取实际 mix format；验收 96 kHz 需要真实支持该格式的系统播放设备 |
 
@@ -20,14 +21,30 @@
 ## 准备与开发
 
 ```powershell
-.\Trace.ps1 -Action Setup      # 安装锁定依赖、Electron/esbuild、编码组件，构建上游 DSP
+.\Trace.ps1 -Action Setup      # 安装锁定依赖、Electron/esbuild、Electron SDK 与编码组件
 .\Trace.ps1 -Action Engine     # 构建 Trace 引擎/测试目标并自动运行 CTest
-.\Trace.ps1 -Action Check      # 类型、采集能力、上游响度、portable/native Trace 测试
+.\Trace.ps1 -Action Check      # 类型与 portable/native Trace 测试
 .\Trace.ps1 -Action AppBuild   # 构建 Trace main/preload/renderer
 .\Trace.ps1 -Action App        # 启动已构建的 Trace 应用
 ```
 
-`Trace.ps1` 调用 `tools/trace.cjs`；系统编译工具需事先安装。Electron addon 必须匹配锁定 Electron 的架构与 ABI。`Setup` 构建的上游 DSP 与 `Engine` 构建的 Trace 引擎是两个目标。
+`Trace.ps1` 调用 `tools/trace.cjs`；系统编译工具需事先安装。Electron addon 必须匹配锁定 Electron 的架构与 ABI。`Setup` 获取依赖与 SDK，`Engine` 构建唯一的 Trace 原生 addon `trace_engine.node`。无需克隆、安装或编译上游工程。
+
+也可逐项执行标准 npm 入口：
+
+```powershell
+npm ci
+npm run check:independence
+npm run install:trace-sdk
+node tools/prefetch-ffmpeg.mjs
+npm run build:trace-engine
+npm run typecheck
+npm test
+npm run build
+npm start
+```
+
+`npm ci` 不带项目级原生安装脚本；它安装锁文件声明的依赖。`install:trace-sdk` 下载 Electron 40.8.3 x64 的头文件与 `node.lib`，由 node-gyp 校验下载内容，保存到 `.tools/node-gyp/40.8.3/`，不编译 addon。`build:trace-engine` 经自身 CMake 构建引擎并运行 CTest；原有 `build:native`/`rebuild:native` 现在也指向同一 Trace 引擎。
 
 `Engine` 已自动运行 CTest。仅需重跑该门禁时可单独执行：
 
@@ -35,9 +52,23 @@
 ctest --test-dir build/trace-engine -C Release --output-on-failure
 ```
 
-当前 CMake 注册 16 项，包含 preview.31 新增的 `trace-replay-quality`；此数量来自源码，最新 16 项全量 Windows 运行尚未执行，不能沿用旧 15/15 结论。可单独执行 `npm run test:trace`（portable）、`npm run test:trace-native`（Windows 原生）、`npm run test:trace-all`。测试分层以 `scripts/run-trace-tests.mjs` 为准。
+当前 Windows CMake 注册 18 项基础测试；私有原始 EBU 素材齐备时，再注册 `trace-ebu-wav`，共 19 项，包含新增的 FFT 独立数值回归。此数量来自源码，不表示本轮 19 项已在 Windows 全量通过，不能沿用历史结果。
 
-默认 `npm run dev`/`build`/`dist:win` 属于 Prism。Trace 使用 `npm run build:trace`、`npm run start:trace` 和项目入口；不要将上游 VST/TUI 安装流程当作 Trace 分发流程。
+可单独执行 `npm run test:trace`（portable）、`npm run test:trace-native`（Windows 原生）、`npm run test:trace-all`。native 层只测试实际 Trace API 与 FFmpeg；缺少引擎/编码组件时会明确跳过，在严格门禁中须设置 `$env:TRACE_REQUIRE_NATIVE='1'`，使缺失依赖直接失败。测试分层以 `scripts/run-trace-tests.mjs` 和 `test/trace-suites.mjs` 为准。
+
+默认 `npm run dev`/`build`/`test`/`dist:win` 均属于 Trace。`build:trace`/`start:trace` 保留兼容入口；类型检查只覆盖 Trace 源码和自身构建配置，独立边界检查防止重新引入上游路径。
+
+## Windows 原始 WASAPI 诊断
+
+SDK-only 诊断工具保留设备枚举、包位置/标记检查与确定性播放夹具；它不加载任何 addon，也不链接 Prism 源码：
+
+```powershell
+npm run build:trace-diagnostics
+npm run trace:diagnostics -- list
+npm run trace:diagnostics -- raw --seconds 6 --fixture
+```
+
+可用 `--device-index 0` 指定枚举索引。源码位于 `tools/diagnostics/`，两个可执行文件 `trace-capture-probe.exe` 与 `trace-render-fixture.exe` 输出到 `build/trace-diagnostics/Release/`；包元数据报告保存在 `artifacts/diagnostics/`。夹具会在选定系统播放端点发出低幅测试音，须在 Windows 实机执行。旧 M0 的上游模式与 addon smoke 已退役，历史证据保留在文档与 Git 来源中。
 
 ## Windows 分发
 
@@ -55,12 +86,22 @@ ctest --test-dir build/trace-engine -C Release --output-on-failure
 仅有 Linux 环境时，可运行：
 
 ```bash
-npm ci --ignore-scripts --no-audit --no-fund
+npm ci
+npm run check:independence
 npm run typecheck
-npm run test:trace
-npm run build:trace
+npm test
+npm run build
 ```
 
-`tools/trace.cjs` 明确限制 Windows x64，不能在 Linux 使用它作为全套验收入口。可移植 C++ 可按 [75](75-CLOUD-RELEASE-PREPARATION.md) 使用 `native/portable` 的 CMake/CTest（可开启 TRACE_SANITIZE）；未运行 Windows 原生加载、真实采集、96 kHz 或打包时须记录未验证。
+`tools/trace.cjs` 明确限制 Windows x64，不能在 Linux 使用它作为全套验收入口。可移植 C++ 与原始 EBU 素材门禁使用自身 CMake：
 
-签名/公开发布、干净 Windows、硬件矩阵、官方 EBU 素材、工具链安全与真实包等剩余工作见 [当前交接](13-HANDOFF.md)。macOS 实施计划见 [70](70-MACOS-PORT-PLAN.md)。
+```bash
+cmake -S native/portable -B build/trace-portable -DCMAKE_BUILD_TYPE=RelWithDebInfo -DTRACE_SANITIZE=ON -DTRACE_REQUIRE_EBU=ON
+cmake --build build/trace-portable --parallel 2
+ctest --test-dir build/trace-portable --parallel 2 -E '^ebu_wav$' --output-on-failure
+ctest --test-dir build/trace-portable -R '^ebu_wav$' --output-on-failure
+```
+
+私有完整 checkout 当前注册 9 项 portable CTest：8 项核心数值/边界回归（含 FFT）与 1 项原始 EBU WAV 门禁。Sanitizer 下将原始 WAV 单独运行，避免与其余测试争抢 CPU 导致超时。`TRACE_REQUIRE_EBU=ON` 会在缺少原始素材时失败；公开源码归档不包含私有 EBU 素材，不能报告该门禁已通过。门禁数量仅描述当前配置，本轮实际结果以 [79](79-TRACE-INDEPENDENT-PROJECT.md) 和 13 为准。未运行 Windows 原生加载、真实采集、96 kHz 或打包时须记录未验证。
+
+签名/公开发布、干净 Windows、硬件矩阵、Windows EBU 文件/设备全链路、工具链安全与真实包等剩余工作见 [当前交接](13-HANDOFF.md)。macOS 实施计划见 [70](70-MACOS-PORT-PLAN.md)。

@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "recordedOn": "2026-10-03",
+  "scope": "Pinned Trace engineering inputs; not an observed hardware/toolchain acceptance record",
+  "product": "Trace",
+  "sourceVersion": "0.1.0-preview.31",
+  "supportedBackend": "win32-x64 WASAPI",
+  "ciNode": "24.19.0",
+  "dependencies": {
+    "@fontsource/inter": "5.2.8",
+    "@fontsource/jetbrains-mono": "5.2.8",
+    "node-addon-api": "8.6.0",
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "@vitejs/plugin-react": "5.2.0",
+    "electron": "40.8.3",
+    "electron-builder": "26.8.1",
+    "electron-vite": "5.0.0",
+    "node-gyp": "10.3.1",
+    "postcss": "8.5.28",
+    "typescript": "5.9.3",
+    "vite": "7.3.6",
+    "@types/node": "24.12.0",
+    "esbuild": "0.25.12",
+    "@electron/asar": "3.4.1",
+    "7zip-bin": "5.2.0",
+    "pe-library": "0.4.1",
+    "resedit": "1.7.2",
+    "yauzl": "2.10.0"
+  },
+  "packageLockSha256": "2a98a88d1fb88068aab93a4408f83c33d19d0a7a44ef1bc72ba65ce63db18c68",
+  "native": {
+    "language": "C++17",
+    "minimumCmake": "3.22",
+    "windowsCompiler": "Visual Studio 2022 x64",
+    "electronSdk": "40.8.3",
+    "libebur128": "1.2.6 + documented Trace patches",
+    "fft": {
+      "path": "native/vendor/prism-fft",
+      "upstream": "https://github.com/Boof2015/prism",
+      "commit": "df0755b8caaaab85157ac51aefffca0526974fc1"
+    }
+  },
+  "codecLock": "ffmpeg.lock.json",
+  "meterConfiguration": "trace-meter-v5-ebur128-1.2.6-lra10hz-msi100hz-tpaligned",
+  "historicalMachineSnapshot": "toolchain.m0.json",
+  "validation": "docs/79-TRACE-INDEPENDENT-PROJECT.md"
+}

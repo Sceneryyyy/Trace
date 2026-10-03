@@ -21,14 +21,14 @@ if (!['portable', 'native', 'all'].includes(tier)) {
 
 const artifacts = {
   'build/trace-engine/Release/trace_engine.node': 'npm run build:trace-engine',
-  'native/build/Release/visualizer_dsp.node': 'npm run rebuild:native',
   '.tools/ffmpeg': 'node tools/prefetch-ffmpeg.mjs',
 }
 
 function nativeFiles() {
   const missing = new Map()
   for (const [path, command] of Object.entries(artifacts)) {
-    if (!existsSync(join(root, path))) missing.set(path, command)
+    const relevant = Object.values(native).some(requirement => requirement.includes(path))
+    if (relevant && !existsSync(join(root, path))) missing.set(path, command)
   }
   const runnable = []
   for (const [file, requirement] of Object.entries(native)) {

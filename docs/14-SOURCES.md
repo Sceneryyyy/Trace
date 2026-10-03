@@ -31,3 +31,7 @@ Prism 源码存在队列满后弹出旧块、GetBuffer 时间戳参数为空、�
 2026-09-15 已完成同级 VSTDev 的有限只读对齐，见 10；没有移植其代码或执行其构建/部署。Prism 的本机源码和采集诊断证据见 16。
 
 原调研快照保留于 [RESEARCH-v0.3](../references/RESEARCH-v0.3.md)。快照中的设计概述由当前详细设计补充；原厂来源随版本可能改变，实施时保存实际锁文件/源码 revision 和构建结果。
+
+## 2026-10-03 独立工程来源
+
+当前构建边界见 [79](79-TRACE-INDEPENDENT-PROJECT.md)。保留的 FFT 已从固定上游抽取到 [本地组件](../native/vendor/prism-fft/README.md)，[SOURCE.json](../native/vendor/prism-fft/SOURCE.json) 保存原文件、本地文件的 hash 与提取说明；算法未改。上游完整工程已移除，原 README 字节快照与固定提交导航见 [来源入口](../README-Prism.md)。构建无需再访问或编译 Prism；GPL 继承与署名保留。

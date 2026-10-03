@@ -14,8 +14,8 @@ add_library(trace_portable STATIC
  ../vendor/libebur128/ebur128.c ../src/recorder/EburConstants.cpp
  ../src/recorder/Meter.cpp
  ../src/recorder/ReplayBuffer.cpp ../src/recorder/InstrumentAnalysis.cpp
- ../src/recorder/SpectrogramTile.cpp ../src/dsp_utils.cpp)
-target_include_directories(trace_portable PUBLIC ../src/recorder ../vendor/libebur128 PRIVATE ../vendor/libebur128/queue)
+ ../src/recorder/SpectrogramTile.cpp ../vendor/prism-fft/FFT.cpp)
+target_include_directories(trace_portable PUBLIC ../src/recorder ../vendor/prism-fft ../vendor/libebur128 PRIVATE ../vendor/libebur128/queue)
 if(MSVC)
  target_compile_definitions(trace_portable PRIVATE _USE_MATH_DEFINES)
  target_compile_options(trace_portable PRIVATE /fp:precise)
@@ -26,7 +26,7 @@ endif()
 enable_testing()
 # replay_buffer also exercises WaveSequence/WavReader and remains in Windows
 # CTest. This target never substitutes a fake reader for the Windows file path.
-foreach(case ebu_reference meter_cadence meter_init tp_time replay_quality instrument_analysis spectrogram_tile)
+foreach(case ebu_reference meter_cadence meter_init tp_time replay_quality fft instrument_analysis spectrogram_tile)
  add_executable(${case} ../../test/native/${case}_tests.cpp)
  target_link_libraries(${case} PRIVATE trace_portable)
  add_test(NAME ${case} COMMAND ${case})

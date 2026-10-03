@@ -6,7 +6,7 @@ import {mkdtempSync,writeFileSync} from 'node:fs'
 import {tmpdir} from 'node:os'
 import {join} from 'node:path'
 const {validateEvidence,verifyZip}=createRequire(import.meta.url)('../tools/release/candidate.cjs')
-const verification={commit:'abc',sourceDirty:false,status:'pass',platform:'win32',arch:'x64',checks:['build:trace-engine','typecheck','test:trace','build:trace','test:capture-support','test:lufsmeter-native','test:trace-native'].map(c=>({command:'npm run '+c,status:'pass',exitCode:0}))}
+const verification={commit:'abc',sourceDirty:false,status:'pass',platform:'win32',arch:'x64',checks:['build:trace-engine','typecheck','test:trace','build:trace','test:trace-native'].map(c=>({command:'npm run '+c,status:'pass',exitCode:0}))}
 const load={commit:'abc',status:'pass',exeSha256:'exe',asarSha256:'asar'},audit={status:'pass',files:{'Trace.exe':{sha256:'exe'},'resources/app.asar':{sha256:'asar'}}}
 test('release evidence must match the exact commit and require real Windows native checks',()=>{
  validateEvidence('abc',verification,load,audit)

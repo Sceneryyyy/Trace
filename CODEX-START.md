@@ -1,6 +1,6 @@
 # Trace 声迹 · 开发入门
 
-2026-10-02 更新。本目录已经是完整源码仓库；默认开发分支为 `recorder/dev`。当前源码 preview.31，最近验证过的分发包 preview.30 / InternalTest-r3。版本与验证边界见 [当前交接](docs/13-HANDOFF.md)。
+2026-10-03 更新。本目录已经是完整源码仓库；默认开发分支为 `recorder/dev`。当前源码 preview.31，最近验证过的分发包 preview.30 / InternalTest-r3。版本与验证边界见 [当前交接](docs/13-HANDOFF.md)，独立工程边界见 [79](docs/79-TRACE-INDEPENDENT-PROJECT.md)。
 
 ## 开始工作
 
@@ -21,18 +21,19 @@
 .\Trace.ps1 -Action App
 ```
 
-`Setup` 准备锁定依赖、Electron、FFmpeg 和上游 DSP；`Engine` 单独构建 Trace 音频后端。原生 CTest 与分发入口见 09。`package.json` 的默认 `dev`/`build` 属于上游 Prism；Trace 使用 `build:trace`/`start:trace` 及上述项目入口。
+`Setup` 准备锁定依赖、Electron SDK 和 FFmpeg；`Engine` 构建 Trace 音频后端并运行原生 CTest。默认 `dev`、`build`、`test`、`dist` 均属于 Trace；`build:trace`/`start:trace` 保留兼容入口。单独获取 SDK 使用 `npm run install:trace-sdk`，无需编译上游 addon。原生 CTest、SDK-only WASAPI 诊断与分发入口见 [09](docs/09-WINDOWS-SETUP.md)。
 
 ## Linux 云端可执行检查
 
 ```bash
-npm ci --ignore-scripts --no-audit --no-fund
+npm ci
+npm run check:independence
 npm run typecheck
-npm run test:trace
-npm run build:trace
+npm test
+npm run build
 ```
 
-这组命令验证静态类型、可移植业务逻辑和应用资源，不能运行 Windows WASAPI、构建 Windows 原生引擎或验证分发包。最新云端证据见 [73](docs/73-CLOUD-CODE-REVIEW.md)；实机待办见当前交接。macOS 路线见 [70](docs/70-MACOS-PORT-PLAN.md)，当前分支没有完成 Trace 的 Mac 采集实现。
+这组命令验证工程依赖边界、静态类型、可移植业务逻辑和应用资源；`npm ci` 安装声明的依赖，不构建本项目或上游的原生 addon。可移植 C++、FFT 与原始 EBU 素材检查使用 `native/portable`，命令见 [09](docs/09-WINDOWS-SETUP.md)。Windows WASAPI、原生引擎加载与分发包须另验；最新本轮结果以 [79](docs/79-TRACE-INDEPENDENT-PROJECT.md) 和当前交接为准。macOS 路线见 [70](docs/70-MACOS-PORT-PLAN.md)，当前分支没有完成 Trace 的 Mac 采集实现。
 
 ## 项目来源与约定
 

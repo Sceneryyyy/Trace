@@ -24,7 +24,7 @@ app.whenReady().then(async()=>{
   const index=devices.findIndex(d=>d.supported&&/Realtek/i.test(d.label))
   if(index<0)throw Error('Dedicated Realtek endpoint unavailable')
   await request('live.start',{deviceId:devices[index].id})
-  fixture=spawn(path.join(root,'build/m0/Release/trace-render-fixture.exe'),[String(index),'1900'],{windowsHide:true,stdio:['ignore','pipe','pipe']})
+  fixture=spawn(path.join(root,'build/trace-diagnostics/Release/trace-render-fixture.exe'),[String(index),'1900'],{windowsHide:true,stdio:['ignore','pipe','pipe']})
   await new Promise((resolve,reject)=>{
     const timeout=setTimeout(()=>reject(Error('Render fixture startup timeout')),10000)
     fixture.stdout.on('data',data=>{if(String(data).includes('RENDER_READY')){clearTimeout(timeout);resolve()}})

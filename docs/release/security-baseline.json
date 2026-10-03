@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-10-02T17:59:03.683404+00:00",
-  "packageLockSha256": "514c81a9dfbcbbd5b19516587cfaa803c062983828b575a30cf5fda082829b2f",
+  "checkedAt": "2026-10-03T05:54:11.139648+00:00",
+  "packageLockSha256": "2a98a88d1fb88068aab93a4408f83c33d19d0a7a44ef1bc72ba65ce63db18c68",
   "releaseReady": false,
   "allDependencies": {
     "info": 0,
     "low": 0,
     "moderate": 0,
-    "high": 14,
+    "high": 17,
     "critical": 1,
-    "total": 15
+    "total": 18
   },
   "npmProductionDependencies": {
     "info": 0,
@@ -20,44 +20,92 @@
     "total": 0
   },
   "scope": "npm advisory inventory, not an exploitability proof. Electron is a devDependency but its runtime ships in Trace; omit=dev does not clear product security. FFmpeg/Chromium/VC runtime need their own review.",
-  "preservedWindowsToolchain": {
+  "inventorySource": "npm audit against the exact package-lock; installed paths and versions below are lock-resolved entries, not a separate fresh-install attestation.",
+  "directToolchain": {
     "electron": "40.8.3",
     "electron-builder": "26.8.1",
     "node-gyp": "10.3.1",
-    "@electron/rebuild": "3.7.2",
-    "node-addon-api": "8.6.0"
+    "node-addon-api": "8.6.0",
+    "electron-vite": "5.0.0",
+    "vite": "7.3.6",
+    "typescript": "5.9.3",
+    "esbuild": "0.25.12",
+    "@electron/asar": "3.4.1",
+    "7zip-bin": "5.2.0",
+    "pe-library": "0.4.1",
+    "resedit": "1.7.2",
+    "yauzl": "2.10.0"
   },
+  "auditCommands": [
+    {
+      "command": "npm audit --json",
+      "exitCode": 1,
+      "reportSha256": "83c1cac8977e13e15f798ef6f890fd172fb6ada96bae05bd5044a9531d912250"
+    },
+    {
+      "command": "npm audit --omit=dev --json",
+      "exitCode": 0,
+      "reportSha256": "0127d8ef31b92b66c80d2e0134ae1b633deb24eb34c93372d5ca04d22d9e1901"
+    }
+  ],
+  "pending": [
+    "Electron and Chromium runtime advisory review and pinned-toolchain upgrade with Windows/native/package regression",
+    "tar, extraction and build-tool dependency advisories; no blanket upgrade or exploitability conclusion in this inventory",
+    "FFmpeg and VC runtime advisories plus corresponding-source review"
+  ],
   "remaining": [
     {
-      "package": "@electron/node-gyp",
+      "package": "@electron/get",
       "severity": "high",
+      "isDirect": false,
       "installed": [
         {
-          "path": "node_modules/@electron/node-gyp",
-          "version": "10.2.0-electron.1"
+          "path": "node_modules/@electron/get",
+          "version": "2.0.3"
+        },
+        {
+          "path": "node_modules/app-builder-lib/node_modules/@electron/get",
+          "version": "3.1.0"
         }
+      ],
+      "viaPackages": [
+        "got"
       ],
       "advisories": []
     },
     {
       "package": "@electron/rebuild",
       "severity": "high",
+      "isDirect": false,
       "installed": [
         {
-          "path": "node_modules/@electron/rebuild",
-          "version": "3.7.2"
+          "path": "node_modules/app-builder-lib/node_modules/@electron/rebuild",
+          "version": "4.0.3"
         }
+      ],
+      "viaPackages": [
+        "got",
+        "node-gyp"
       ],
       "advisories": []
     },
     {
       "package": "app-builder-lib",
       "severity": "high",
+      "isDirect": false,
       "installed": [
         {
           "path": "node_modules/app-builder-lib",
           "version": "26.8.1"
         }
+      ],
+      "viaPackages": [
+        "@electron/get",
+        "builder-util",
+        "builder-util-runtime",
+        "dmg-builder",
+        "electron-builder-squirrel-windows",
+        "electron-publish"
       ],
       "advisories": [
         {
@@ -70,23 +118,29 @@
     {
       "package": "builder-util",
       "severity": "high",
+      "isDirect": false,
       "installed": [
         {
           "path": "node_modules/builder-util",
           "version": "26.8.1"
         }
       ],
+      "viaPackages": [
+        "builder-util-runtime"
+      ],
       "advisories": []
     },
     {
       "package": "builder-util-runtime",
       "severity": "high",
+      "isDirect": false,
       "installed": [
         {
           "path": "node_modules/builder-util-runtime",
           "version": "9.5.1"
         }
       ],
+      "viaPackages": [],
       "advisories": [
         {
           "title": "electron-updater: Cross-origin redirect leaks `PRIVATE-TOKEN` and mixed-case `Authorization` credentials in `builder-util-runtime`",
@@ -98,37 +152,62 @@
     {
       "package": "cacache",
       "severity": "high",
+      "isDirect": false,
       "installed": [
-        {
-          "path": "node_modules/cacache",
-          "version": "16.1.3"
-        },
         {
           "path": "node_modules/node-gyp/node_modules/cacache",
           "version": "18.0.4"
         }
+      ],
+      "viaPackages": [
+        "tar"
+      ],
+      "advisories": []
+    },
+    {
+      "package": "cacheable-request",
+      "severity": "high",
+      "isDirect": false,
+      "installed": [
+        {
+          "path": "node_modules/cacheable-request",
+          "version": "7.0.4"
+        }
+      ],
+      "viaPackages": [
+        "http-cache-semantics"
       ],
       "advisories": []
     },
     {
       "package": "dmg-builder",
       "severity": "high",
+      "isDirect": false,
       "installed": [
         {
           "path": "node_modules/dmg-builder",
           "version": "26.8.1"
         }
       ],
+      "viaPackages": [
+        "app-builder-lib",
+        "builder-util"
+      ],
       "advisories": []
     },
     {
       "package": "electron",
       "severity": "high",
+      "isDirect": true,
       "installed": [
         {
           "path": "node_modules/electron",
           "version": "40.8.3"
         }
+      ],
+      "viaPackages": [
+        "@electron/get",
+        "extract-zip"
       ],
       "advisories": [
         {
@@ -261,45 +340,64 @@
     {
       "package": "electron-builder",
       "severity": "high",
+      "isDirect": true,
       "installed": [
         {
           "path": "node_modules/electron-builder",
           "version": "26.8.1"
         }
       ],
+      "viaPackages": [
+        "app-builder-lib",
+        "builder-util",
+        "builder-util-runtime",
+        "dmg-builder"
+      ],
       "advisories": []
     },
     {
       "package": "electron-builder-squirrel-windows",
       "severity": "high",
+      "isDirect": false,
       "installed": [
         {
           "path": "node_modules/electron-builder-squirrel-windows",
           "version": "26.8.1"
         }
       ],
+      "viaPackages": [
+        "app-builder-lib",
+        "builder-util"
+      ],
       "advisories": []
     },
     {
       "package": "electron-publish",
       "severity": "high",
+      "isDirect": false,
       "installed": [
         {
           "path": "node_modules/electron-publish",
           "version": "26.8.1"
         }
       ],
+      "viaPackages": [
+        "builder-util",
+        "builder-util-runtime"
+      ],
       "advisories": []
     },
     {
       "package": "extract-zip",
       "severity": "high",
+      "isDirect": false,
       "installed": [
         {
           "path": "node_modules/extract-zip",
           "version": "2.0.1"
         }
       ],
+      "viaPackages": [],
       "advisories": [
         {
           "title": "extract-zip unvalidated symlink path traversal",
@@ -314,34 +412,83 @@
       ]
     },
     {
-      "package": "make-fetch-happen",
+      "package": "got",
       "severity": "high",
+      "isDirect": false,
       "installed": [
         {
-          "path": "node_modules/make-fetch-happen",
-          "version": "10.2.1"
+          "path": "node_modules/got",
+          "version": "11.8.6"
+        }
+      ],
+      "viaPackages": [
+        "cacheable-request"
+      ],
+      "advisories": []
+    },
+    {
+      "package": "http-cache-semantics",
+      "severity": "high",
+      "isDirect": false,
+      "installed": [
+        {
+          "path": "node_modules/http-cache-semantics",
+          "version": "4.2.0"
+        }
+      ],
+      "viaPackages": [],
+      "advisories": [
+        {
+          "title": "http-cache-semantics max-stale handling can disclose cross-user cached responses",
+          "range": "<=4.2.0",
+          "url": "https://github.com/advisories/GHSA-ch52-4w7c-c8xp"
+        }
+      ]
+    },
+    {
+      "package": "make-fetch-happen",
+      "severity": "high",
+      "isDirect": false,
+      "installed": [
+        {
+          "path": "node_modules/app-builder-lib/node_modules/make-fetch-happen",
+          "version": "14.0.3"
         },
         {
           "path": "node_modules/node-gyp/node_modules/make-fetch-happen",
           "version": "13.0.1"
         }
       ],
+      "viaPackages": [
+        "cacache",
+        "http-cache-semantics"
+      ],
       "advisories": []
     },
     {
       "package": "node-gyp",
       "severity": "high",
+      "isDirect": true,
       "installed": [
+        {
+          "path": "node_modules/app-builder-lib/node_modules/node-gyp",
+          "version": "11.5.0"
+        },
         {
           "path": "node_modules/node-gyp",
           "version": "10.3.1"
         }
+      ],
+      "viaPackages": [
+        "make-fetch-happen",
+        "tar"
       ],
       "advisories": []
     },
     {
       "package": "tar",
       "severity": "critical",
+      "isDirect": false,
       "installed": [
         {
           "path": "node_modules/app-builder-lib/node_modules/tar",
@@ -352,6 +499,7 @@
           "version": "6.2.1"
         }
       ],
+      "viaPackages": [],
       "advisories": [
         {
           "title": "node-tar Vulnerable to Arbitrary File Creation/Overwrite via Hardlink Path Traversal",

@@ -1,5 +1,5 @@
 param(
-    [ValidateSet('Setup','Native','Check','Build','ProbeBuild','Probe','Smoke','Engine','AppBuild','App','Codecs','Package')]
+    [ValidateSet('Setup','Sdk','Native','Check','Build','Engine','AppBuild','App','Codecs','Package')]
     [string]$Action = 'Check',
     [Parameter(ValueFromRemainingArguments=$true)]
     [string[]]$Arguments

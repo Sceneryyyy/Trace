@@ -1,0 +1,12 @@
+{
+  "repository": "https://github.com/Boof2015/prism",
+  "commit": "df0755b8caaaab85157ac51aefffca0526974fc1",
+  "license": "GPL-3.0-only",
+  "snapshot": {
+    "file": "README.original.txt",
+    "sha256": "7583591088d1dbb70eb680de07d60a407ae52f990663ff939f7df6a614f70bea",
+    "description": "Original upstream README preserved byte-for-byte; historical relative image/plugin paths belong to the pinned Prism checkout."
+  },
+  "currentReuse": "native/vendor/prism-fft/SOURCE.json",
+  "historicalTraceCheckout": "b1a16449832b5e2903640cb9dd1d2d59db30d77b"
+}

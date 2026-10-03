@@ -56,12 +56,24 @@ Meter v5 的适用 EBU 原始 WAV 已在云端通过 68/68；响度索引和报�
 
 ## 开发入口
 
-Trace 使用 Electron / React / TypeScript，Windows 音频后端使用原生 C++ / WASAPI，计量使用 libebur128，格式转换使用 FFmpeg。项目采用锁定依赖和本地构建工具，准备环境时先阅读 [工具链记录](toolchain.m0.json) 与 [开发交接](docs/13-HANDOFF.md)。
+Trace 使用 Electron / React / TypeScript，Windows 音频后端使用原生 C++ / WASAPI，计量使用 libebur128，格式转换使用 FFmpeg。默认安装、类型检查、测试、应用构建与分发入口均属于 Trace；安装依赖不会构建 Prism addon。仍复用的 FFT 已作为带来源与许可记录的本地组件维护。独立工程边界见 [79](docs/79-TRACE-INDEPENDENT-PROJECT.md)，环境准备见 [09](docs/09-WINDOWS-SETUP.md)；[当前工具链清单](toolchain.trace.json) 记录固定依赖，[M0 记录](toolchain.m0.json) 保留早期验证快照。
+
+安装锁定依赖并执行可移植检查：
+
+```bash
+npm ci
+npm run check:independence
+npm run typecheck
+npm test
+npm run build
+```
+
+这些命令可在 Linux 云端运行；`npm run dev` 启动 Trace 开发界面。Windows 原生音频引擎与分发包另需系统 C++ 工具链。
 
 在仓库根目录的 Windows PowerShell 中执行：
 
 ```powershell
-.\Trace.ps1 -Action Setup     # 准备依赖与上游原生模块
+.\Trace.ps1 -Action Setup     # 准备依赖、Electron SDK 与 FFmpeg
 .\Trace.ps1 -Action Engine    # 构建 Trace 音频引擎
 .\Trace.ps1 -Action Check     # 类型检查与针对性测试
 .\Trace.ps1 -Action AppBuild  # 构建 Trace 应用
@@ -70,6 +82,8 @@ Trace 使用 Electron / React / TypeScript，Windows 音频后端使用原生 C+
 ```
 
 构建所需的 Node、Python、Visual Studio C++ 等版本以工具链和项目文档为准；上述入口不会代替系统构建工具的安装。
+
+单独准备 Electron SDK 使用 `npm run install:trace-sdk`，只获取头文件与链接库。Windows 原始 WASAPI 诊断使用 `npm run build:trace-diagnostics` 和 `npm run trace:diagnostics -- list`；该工具直接使用 Windows SDK，详情见 [09](docs/09-WINDOWS-SETUP.md)。
 
 | 入口 | 内容 |
 | --- | --- |

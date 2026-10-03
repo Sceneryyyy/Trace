@@ -38,30 +38,26 @@ async function ensureNpm() {
   run('tar', ['-xzf', target, '-C', path.join(local, 'npm')])
 }
 async function main() {
-  if (process.platform !== 'win32') throw Error('Trace M0 tooling targets Windows x64')
-  if (process.arch !== 'x64') throw Error('Trace M0 requires x64 Node')
+  if (process.platform !== 'win32') throw Error('Trace desktop tooling targets Windows x64; use npm run build/test/typecheck for portable checks')
+  if (process.arch !== 'x64') throw Error('Trace desktop tooling requires x64 Node')
+  if (action === 'sdk') return run(process.execPath, ['tools/install-trace-sdk.cjs'])
   if (action === 'codecs') return run(process.execPath, ['tools/prefetch-ffmpeg.mjs'])
-  if (action === 'engine') return run(process.execPath, ['tools/build-engine.cjs'])
+  if (action === 'engine' || action === 'native') return run(process.execPath, ['tools/build-engine.cjs'])
   if (action === 'app') { delete env.ELECTRON_RUN_AS_NODE; return run(require('electron'), ['out-trace/main/index.js']) }
-  if (action === 'package') { await ensureNpm(); run(process.execPath, ['tools/build-engine.cjs']); run(process.execPath, [npm, 'run', 'build:trace']); return run(process.execPath, ['tools/package-trace.cjs', ...process.argv.slice(3)]) }
+  if (action === 'package') { await ensureNpm(); run(process.execPath, [npm, 'run', 'build:trace']); run(process.execPath, ['tools/build-engine.cjs']); return run(process.execPath, ['tools/package-trace.cjs', ...process.argv.slice(3)]) }
   if (action === 'appbuild') { await ensureNpm(); return run(process.execPath, [npm, 'run', 'build:trace']) }
-  if (action === 'probebuild') return run(process.execPath, ['tools/m0/run.cjs', 'build'])
-  if (action === 'probe') return run(process.execPath, ['tools/m0/run.cjs', 'probe', ...process.argv.slice(3)])
-  if (action === 'smoke') return run(process.execPath, ['tools/m0/run.cjs', 'electron'])
-  if (!['setup', 'native', 'check', 'build'].includes(action)) throw Error('Unknown action')
+  if (!['setup', 'check', 'build'].includes(action)) throw Error('Unknown action')
   await ensureNpm()
   if (action === 'setup') {
     run(process.execPath, [npm, 'ci', '--ignore-scripts', '--no-audit', '--no-fund'])
     run(process.execPath, ['node_modules/electron/install.js'])
     run(process.execPath, ['node_modules/esbuild/install.js'])
+    run(process.execPath, ['tools/install-trace-sdk.cjs'])
     run(process.execPath, ['tools/prefetch-ffmpeg.mjs'])
-  }
-  if (action === 'setup' || action === 'native') {
-    run(process.execPath, [npm, 'run', 'rebuild:native'])
   } else if (action === 'check') {
     // test:trace covers the whole portable tier, which subsumes the individual
     // report/contracts/recording scripts that used to be listed here.
-    for (const script of ['typecheck', 'test:capture-support', 'test:lufsmeter-native', 'test:trace', 'test:trace-native']) {
+    for (const script of ['typecheck', 'test:trace', 'test:trace-native']) {
       run(process.execPath, [npm, 'run', script])
     }
   } else if (action === 'build') {

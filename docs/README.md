@@ -1,6 +1,6 @@
 # Trace 项目文档索引
 
-更新：2026-10-02。当前源码 **preview.31**，默认分支 `recorder/dev`；最近验证过的 Windows 内测包 **preview.30 / InternalTest-r3（9c1ee21）**，preview.31 Windows 包尚未打包，新 PDF 已生成（云端模拟界面插图）。
+更新：2026-10-03。当前源码 **preview.31**，默认分支 `recorder/dev`；最近验证过的 Windows 内测包 **preview.30 / InternalTest-r3（9c1ee21）**，preview.31 Windows 包尚未打包，新 PDF 已生成（云端模拟界面插图）。
 
 先读 [项目首页](../README.md)、[用户指南](28-USER-GUIDE.md) 或 [开发入门](../CODEX-START.md)。当前状态、未验证项和下一任务统一写在 [13-HANDOFF](13-HANDOFF.md)。带日期的阶段记录只证明当时版本的结果；旧“当前/下一步”不能覆盖 13。
 
@@ -18,6 +18,7 @@
 | [发布验收清单](76-RELEASE-CHECKLIST.md) | 候选生成、Windows/测量/安全/用户门禁 |
 | [EBU 镜像数值检查](77-EBU-MIRROR-VALIDATION.md) | 完整性、独立 hash、真实 Meter 的通过/失败范围与 Max M 缺口 |
 | [Meter v5 校准修复](78-EBU-METER-RECALIBRATION.md) | 10 ms 完整响度索引、68/68 原始 WAV、缓存/报告与验证范围 |
+| [Trace 独立工程](79-TRACE-INDEPENDENT-PROJECT.md) | 专用入口、FFT 来源、清理边界与从零复现 |
 | [依赖安全盘点](release/security-baseline.json) | 锁文件绑定的剩余公告与工具链版本 |
 | [文档清理记录](74-DOCUMENTATION-CLEANUP.md) | 本轮删除、归档、勘误与检查 |
 
@@ -136,7 +137,7 @@
 | [手册截图来源](assets/quick-start-preview28/README.md) | preview.28 演示信号/隔离窗口，非当前实机验收 |
 | [品牌素材来源](../resources/trace/branding/README.md) | 实际 PNG、生成过程、SHA256 与品牌归属 |
 | [初始调研快照](../references/RESEARCH-v0.3.md) | 2026-09-14 方案 v0.3，仅保留历史设计依据 |
-| [EBU Loudness Test Set v5.0](../references/ebu-loudness-test-set-v5/README.md) | 2026-10-03 已取得 70 个原始 WAV 的完整 ZIP、官方 PDF 与校验清单；仅内部测试，计量验收尚未运行 |
+| [EBU Loudness Test Set v5.0](../references/ebu-loudness-test-set-v5/README.md) | 2026-10-03 已取得 70 个原始 WAV 的完整 ZIP、官方 PDF 与校验清单；仅内部测试；适用 Meter 数值 68/68 通过，完整验收见 76 |
 | [会话交接历史](archive/13-HANDOFF-HISTORY.md) | 历史状态/提交/验证证据，当前待办只看 13 |
 
 内测 TXT 输入文案固定 **preview.30 / InternalTest-r3**，不因当前指南更新而成为 preview.31 发布材料；已交付 ZIP 内容与哈希保持历史身份。
@@ -156,10 +157,11 @@
 | 文档 | 用途/状态 |
 | --- | --- |
 | [Trace 项目首页](../README.md) | 产品/源码/分发入口 |
-| [上游 Prism README](../README-Prism.md) | 按字节保留的上游原说明 |
+| [上游 Prism README](../README-Prism.md) | 来源导航；原说明字节快照保存在 references/prism |
 | [GNU GPL v3](../LICENSE) | 原始许可条款 |
 | [第三方声明](../THIRD_PARTY_NOTICES.md) | 上游与依赖许可/来源 |
-| [上游 DAW 插件说明](../plugin/README.md) | Prism VST/AU/Standalone 的独立目标说明 |
+| [上游 DAW 插件说明](https://github.com/Boof2015/prism/blob/df0755b8caaaab85157ac51aefffca0526974fc1/plugin/README.md) | Prism VST/AU/Standalone 的独立目标说明 |
+| [本地 FFT 来源与许可](../native/vendor/prism-fft/README.md) | 固定来源的最小 FFT 组件；独立数值门禁 |
 | [libebur128 本地补丁](../native/vendor/libebur128/TRACE-PATCHES.md) | 1.2.6 锁定来源、数值改动与版本证据 |
 
 15（开工包自检）、65（临时未提交变更交接）和根目录 TRACE-README 兼容入口已被后续内容替代并删除，原件可从 Git 历史追溯；编号不重新排列。删除理由见 74。

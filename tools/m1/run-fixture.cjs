@@ -21,7 +21,7 @@ async function main() {
   await new Promise(resolve => setTimeout(resolve, 1000))
   const args = ['raw', '--seconds', '6', '--fixture']
   if (index !== undefined) args.push('--device-index', index)
-  const fixture = run(path.join(root, 'build/m0/Release/trace-capture-probe.exe'), args)
+  const fixture = run(path.join(root, 'build/trace-diagnostics/Release/trace-capture-probe.exe'), args)
   const [s, f] = await Promise.all([smoke, fixture])
   const name = index ?? '-default'
   fs.writeFileSync(path.join(root, 'artifacts/m1/raw-fixture' + name + '.json'), f.stdout)

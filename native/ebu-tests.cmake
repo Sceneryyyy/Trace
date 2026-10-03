@@ -21,7 +21,9 @@ function(trace_add_ebu_wav_gate library executable test_name native_reader)
     add_test(NAME ${test_name} COMMAND "${Python3_EXECUTABLE}" "${TRACE_EBU_RUNNER}"
       --probe $<TARGET_FILE:${executable}> --assets "${TRACE_EBU_ASSETS}"
       --report "${CMAKE_BINARY_DIR}/ebu-wav-results.json")
-    set_tests_properties(${test_name} PROPERTIES TIMEOUT 900)
+    # ASan original-file streaming can exceed 15 minutes on hosted runners.
+    # Keep the numerical tolerances unchanged and bound the total gate runtime.
+    set_tests_properties(${test_name} PROPERTIES TIMEOUT 1800)
   elseif(TRACE_REQUIRE_EBU)
     message(FATAL_ERROR "Private EBU assets required; clone the authorized private repository or set TRACE_EBU_ASSETS")
   else()

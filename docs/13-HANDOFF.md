@@ -7,13 +7,27 @@
 | 项目 | 当前记录 |
 | --- | --- |
 | 源码 | `0.1.0-preview.31`；计量配置已升级 Meter v5，EBU 修复见 [78](78-EBU-METER-RECALIBRATION.md)；云端发布准备见 [75](75-CLOUD-RELEASE-PREPARATION.md) |
-| Git | `Sceneryyyy/Trace`，默认开发分支 `recorder/dev`。本次 GitHub 同步范围包含云端发布准备 `2e26689`、保留 EBU 素材的合并 `b83c9bd`、基线核验 `e25dc2f`、Meter v5 修复 `f42aba7` 及本次文档更新；保留原提交身份与合并历史，分支按快进规则更新 |
+| Git | `Sceneryyyy/Trace`，默认 `recorder/dev`；保留提交身份及合并历史。本轮工程独立化接在 `b1a1644` 之后；实际提交与远程状态以 Git/Actions 为准 |
 | 仪表主题 | 实现 `2938c8e`、审计修复 `c67e9e9` 等已于 2026-09-30 合入 `recorder/dev`；用户已验收开发构建并接受 71-D5 差异 |
 | 最近已验证分发包 | Windows x64 preview.30 / InternalTest-r3，来源 `9c1ee21`，包名/校验见 [69](69-INTERNAL-TEST-R3.md) |
 | preview.31 分发 | Windows 包尚未重打包；preview.31 PDF 已生成（云端模拟界面插图），preview.28 PDF 和 R3 包仍是历史快照 |
 | macOS | [70](70-MACOS-PORT-PLAN.md) 方案已记录；当前分支的 Trace 后端仍为 Windows/WASAPI，Mac 实现/实机验收未完成 |
 
-## 本轮云端发布收尾
+## 当前：工程独立化
+
+2026-10-03 用户要求按既定顺序推进直到达成独立化。实现与复现见 [79](79-TRACE-INDEPENDENT-PROJECT.md)。根包改为 Trace，默认安装/构建/测试只指向 Trace；独立 SDK 下载不编译 Prism addon。退役主程序、插件、TUI 等 311 文件（约 54 MB）已删除；仅复用的 FFT 本地组件保留原算法、固定来源、hash 和 GPL 全文。默认数值测试使用实际 `trace_engine`，旧 Prism 用例逐字归档为文本；历史文档与源文件可按固定 Git 提交追溯。
+
+- `check:independence` 已通过：120 源文件、570 导入，未依赖删除的上游工程。
+- 从源码归档建立全新目录、空 node_modules，普通 `npm ci` 成功（445 packages）；不设置 Prism 跳过变量或禁用安装脚本。云环境首次 Electron 下载直连失败已保留；启用下载器代理后成功，不修改证书验证。
+- 全新目录默认 `typecheck`、`npm test`（246/246，51 文件，0 fail/skip）及 `npm run build` 通过；独立性正例通过，并准确拒绝跨上游路径/未声明依赖反例。
+- 独立 Release CMake 生成信号 8/8 加原始 EBU 1/1 通过（原始 gate 87.10 s）：68/68、112/112 数值、204/204 帧数/分块/EOF；新的完整报告在 `artifacts/independence/`。GitHub Windows 19 项 CTest、8 份 N-API、诊断/候选包验证仍待运行，不能记为通过。
+- 计量配置仍 v5，68 个适用 WAV 的分母/参考/容差不变；新 FFT 门禁使私有 checkout 原生项数成为 portable 9 / Windows 19。公开源码归档仍排除私有 EBU 素材。
+- 旧 Actions 原始 WAV 在 900 秒墙钟上限超时；保留失败，核心和原始 WAV 现串开执行，原始 gate 上限 1800 秒，数值标准没有放宽。
+- 实际新依赖审计：18 个受影响包（17 high / 1 critical），生产依赖审计 0；公告与工具链记录绑定当前 lock。工程独立化不自动关闭安全、许可对应源码、设备、签名及正式发布门禁。
+
+本节覆盖当前工程状态，下方日期/阶段记录保留当时证据。硬件、96 kHz 采集、真实三分钟在线视频操作、长测/GPU/DPI 与用户测试继续按 [76](76-RELEASE-CHECKLIST.md) 跟踪。
+
+## 历史云端发布准备（独立化之前）
 
 用户授权完成可独立执行的发布准备并提交本地 Git。交付见 [75](75-CLOUD-RELEASE-PREPARATION.md)，下一环境门禁见 [76](76-RELEASE-CHECKLIST.md)。
 
@@ -37,7 +51,7 @@
 
 上述修复当时保持 Session v2、Request v1、Meter v4、磁盘分析缓存 key v3；新增质量字段向旧记录兼容。本次 EBU 修复升级 Meter v5，其余协议版本保持。具体类型与边界见 [03](03-AUDIO-METERING.md)、[04](04-DATA-FORMATS.md)、[05](05-UI-UX.md)、[06](06-CONTRACTS.md)。
 
-## 已运行与未运行
+## 历史检查范围（独立化之前）
 
 75 发布准备阶段的云端检查：typecheck、portable **243/243（50 文件，0 fail/skip）**、build:trace 通过；当时六项可移植 C++ CTest 在 ASan/UBSan 下 6/6；真实 React selector 和模拟 IPC 的五主题/质量/读数/键盘/取消恢复通过。新增两份工作流 actionlint 通过；PDF 8 页/8 书签/4 链接、字体/文字/页面边界与渲染通过。当前依赖公告记录绑定锁文件，见 [security-baseline](release/security-baseline.json)。本次 v5 的检查见下节，不复用旧结果。
 

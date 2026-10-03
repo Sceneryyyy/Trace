@@ -1,14 +1,12 @@
 import assert from 'node:assert/strict'
-import { createRequire } from 'node:module'
 import test from 'node:test'
 
-const require = createRequire(import.meta.url)
-const { lufsmeter } = require('../native/build/Release/visualizer_dsp.node')
+import {engine, waveFixture, tone, near} from './native-wave-fixture.mjs'
+import {join} from 'node:path'
 
 const EBU_SAMPLE_RATE = 48000
 const EBU_TOLERANCE_BELOW_DB = 0.4
 const EBU_TOLERANCE_ABOVE_DB = 0.2
-const SILENCE_DB = -60
 
 function assertEbuTolerance(actual, expected, label) {
   assert.ok(
@@ -40,31 +38,15 @@ function createPhaseTone(
   return samples
 }
 
-function pushStereo(left, right = left, chunkSizes = null) {
-  if (!chunkSizes) {
-    lufsmeter.pushSamples(left, right)
-    return
-  }
-
-  let offset = 0
-  let chunkIndex = 0
-  while (offset < Math.min(left.length, right.length)) {
-    const requestedSize = chunkSizes[chunkIndex % chunkSizes.length]
-    const length = Math.min(requestedSize, left.length - offset, right.length - offset)
-    lufsmeter.pushSamples(
-      left.subarray(offset, offset + length),
-      right.subarray(offset, offset + length),
-    )
-    offset += length
-    chunkIndex += 1
-  }
-}
-
-function measure(sampleRate, left, right = left, chunkSizes = null) {
-  lufsmeter.setSampleRate(sampleRate)
-  lufsmeter.reset()
-  pushStereo(left, right, chunkSizes)
-  return lufsmeter.getSnapshot()
+function measure(sampleRate, left, right = left, blockFrames = 2048) {
+  const f = waveFixture([left, right], sampleRate)
+  try {
+    const result = engine.analyzeWaves([f.file], join(f.directory, 'analysis'), blockFrames)
+    assert.equal(result.frames, String(left.length))
+    assert.equal(result.summary.levelIndexFrame, result.frames)
+    assert.equal(result.summary.loudnessIndexFrame, result.frames)
+    return result.summary
+  } finally { f.cleanup() }
 }
 
 function besselI0(value) {
@@ -145,90 +127,54 @@ function downsample4x(reference, offset) {
   return samples
 }
 
-test('BS.1770 true peak passes EBU Tech 3341 phase-tone cases 15-19', () => {
-  const cases = [
-    { number: 15, divisor: 4, amplitude: 0.5, phase: 0, expected: -6 },
-    { number: 16, divisor: 4, amplitude: 0.5, phase: 45, expected: -6 },
-    { number: 17, divisor: 6, amplitude: 0.5, phase: 60, expected: -6 },
-    { number: 18, divisor: 8, amplitude: 0.5, phase: 67.5, expected: -6 },
-    { number: 19, divisor: 4, amplitude: 1.41, phase: 45, expected: 3 },
-  ]
-
-  for (const vector of cases) {
-    const tone = createPhaseTone(
-      EBU_SAMPLE_RATE,
-      EBU_SAMPLE_RATE / vector.divisor,
-      vector.amplitude,
-      vector.phase,
-    )
-    const snapshot = measure(EBU_SAMPLE_RATE, tone)
-    assertEbuTolerance(snapshot.maxTruePeakDb, vector.expected, `EBU case ${vector.number}`)
-    assertEbuTolerance(snapshot.truePeakLDb, vector.expected, `EBU case ${vector.number} left marker`)
-    assertEbuTolerance(snapshot.truePeakRDb, vector.expected, `EBU case ${vector.number} right marker`)
+test('Trace file Meter passes unchanged EBU Tech 3341 generated phase tones 15–19', () => {
+  for (const vector of [
+    {number: 15, divisor: 4, amplitude: 0.5, phase: 0, expected: -6},
+    {number: 16, divisor: 4, amplitude: 0.5, phase: 45, expected: -6},
+    {number: 17, divisor: 6, amplitude: 0.5, phase: 60, expected: -6},
+    {number: 18, divisor: 8, amplitude: 0.5, phase: 67.5, expected: -6},
+    {number: 19, divisor: 4, amplitude: 1.41, phase: 45, expected: 3},
+  ]) {
+    const input = createPhaseTone(48000, 48000 / vector.divisor, vector.amplitude, vector.phase)
+    const summary = measure(48000, input)
+    assert.equal(summary.maxTruePeak.status, 'ready')
+    assertEbuTolerance(summary.maxTruePeak.value, vector.expected, `EBU case ${vector.number}`)
   }
 })
 
-test('BS.1770 true peak passes four phase offsets of a filtered transient (EBU cases 20-23)', () => {
+test('Trace file Meter passes all four phase offsets of the unchanged independent filtered transient', () => {
   const reference = createTransientReferenceAt4x()
-  for (let offset = 0; offset < 4; offset += 1) {
-    const samples = downsample4x(reference, offset)
-    const snapshot = measure(EBU_SAMPLE_RATE, samples)
-    assertEbuTolerance(snapshot.maxTruePeakDb, 0, `EBU transient case ${20 + offset}`)
-  }
+  for (let offset = 0; offset < 4; offset++) assertEbuTolerance(measure(48000, downsample4x(reference, offset)).maxTruePeak.value, 0, `EBU transient ${20 + offset}`)
 })
 
-test('true-peak state is independent of arbitrary audio chunk boundaries', () => {
-  const tone = createPhaseTone(EBU_SAMPLE_RATE, EBU_SAMPLE_RATE / 4, 1.41, 45)
-  const contiguous = measure(EBU_SAMPLE_RATE, tone).maxTruePeakDb
-  const irregular = measure(EBU_SAMPLE_RATE, tone, tone, [1, 7, 113, 2, 509, 31]).maxTruePeakDb
-  assert.ok(Math.abs(contiguous - irregular) < 1e-6, `${contiguous} vs ${irregular}`)
+test('Trace file analysis readout is independent of read block boundaries', () => {
+  const input = createPhaseTone(48000, 12000, 1.41, 45)
+  const regular = measure(48000, input, input, 2048)
+  for (const blockFrames of [1, 7, 113, 509]) assert.deepEqual(measure(48000, input, input, blockFrames), regular)
 })
 
-test('true peak supports common host rates with rate-aware oversampling', () => {
-  for (const sampleRate of [44100, 48000, 96000, 192000]) {
-    const tone = createPhaseTone(sampleRate, sampleRate / 4, 1.41, 45)
-    const snapshot = measure(sampleRate, tone)
-    assertEbuTolerance(snapshot.maxTruePeakDb, 3, `${sampleRate} Hz`)
-  }
+test('Trace true peak remains calibrated at every supported product rate', () => {
+  for (const rate of [44100, 48000, 88200, 96000]) assertEbuTolerance(measure(rate, createPhaseTone(rate, rate / 4, 1.41, 45)).maxTruePeak.value, 3, `${rate} Hz`)
 })
 
-test('true-peak channels preserve polarity and remain independent', () => {
-  const positive = createPhaseTone(EBU_SAMPLE_RATE, EBU_SAMPLE_RATE / 4, 1.41, 45)
-  const negative = Float32Array.from(positive, (sample) => -sample)
-  const silence = new Float32Array(positive.length)
-
-  const positiveSnapshot = measure(EBU_SAMPLE_RATE, positive, silence)
-  assertEbuTolerance(positiveSnapshot.truePeakLDb, 3, 'left channel')
-  assert.equal(positiveSnapshot.truePeakRDb, SILENCE_DB)
-
-  const negativeSnapshot = measure(EBU_SAMPLE_RATE, negative, silence)
-  assert.ok(Math.abs(negativeSnapshot.truePeakLDb - positiveSnapshot.truePeakLDb) < 1e-6)
-  assert.equal(negativeSnapshot.truePeakRDb, SILENCE_DB)
+test('Trace preserves polarity and channel silence without inventing a finite silence reading', () => {
+  const positive = createPhaseTone(48000, 12000, 1.41, 45), zero = new Float32Array(positive.length)
+  const a = measure(48000, positive, zero), b = measure(48000, Float32Array.from(positive, x => -x), zero)
+  assertEbuTolerance(a.maxTruePeak.value, 3, 'left channel')
+  near(b.maxTruePeak.value, a.maxTruePeak.value, 1e-6, 'polarity')
+  for (const summary of [a, b]) {assert.equal(summary.channels[1].truePeak.status, 'silence'); assert.equal(summary.channels[1].truePeak.value, null)}
 })
 
-test('maximum true peak persists across quieter input and clears on reset', () => {
-  const loud = createPhaseTone(EBU_SAMPLE_RATE, EBU_SAMPLE_RATE / 4, 1.41, 45)
-  const quiet = createPhaseTone(EBU_SAMPLE_RATE, EBU_SAMPLE_RATE / 4, 0.1, 45)
-  const silence = new Float32Array(1024)
+test('Trace maximum true peak includes earlier loud input and is independent for a new file', () => {
+  const loud = createPhaseTone(48000, 12000, 1.41, 45), quiet = createPhaseTone(48000, 12000, 0.1, 45)
+  const program = new Float32Array(loud.length + quiet.length); program.set(loud); program.set(quiet, loud.length)
+  near(measure(48000, program).maxTruePeak.value, measure(48000, loud).maxTruePeak.value, 1e-6, 'earlier peak persists')
+  assert(measure(48000, quiet).maxTruePeak.value < -19)
+  const silence = measure(48000, new Float32Array(4800))
+  assert.equal(silence.maxTruePeak.status, 'silence'); assert.equal(silence.maxTruePeak.value, null)
+})
 
-  lufsmeter.setSampleRate(EBU_SAMPLE_RATE)
-  lufsmeter.reset()
-  pushStereo(loud)
-  const loudSnapshot = lufsmeter.getSnapshot()
-  assert.ok(loudSnapshot.maxTruePeakDb > 0)
-
-  pushStereo(quiet)
-  assert.equal(lufsmeter.getSnapshot().maxTruePeakDb, loudSnapshot.maxTruePeakDb)
-
-  lufsmeter.reset()
-  assert.deepEqual(
-    {
-      truePeakLDb: lufsmeter.getSnapshot().truePeakLDb,
-      truePeakRDb: lufsmeter.getSnapshot().truePeakRDb,
-      maxTruePeakDb: lufsmeter.getSnapshot().maxTruePeakDb,
-    },
-    { truePeakLDb: SILENCE_DB, truePeakRDb: SILENCE_DB, maxTruePeakDb: SILENCE_DB },
-  )
-  pushStereo(silence)
-  assert.equal(lufsmeter.getSnapshot().maxTruePeakDb, SILENCE_DB)
+test('Trace generated -23 LUFS programme reaches real M/S/I with the unchanged 0.1 LU tolerance', () => {
+  const summary = measure(48000, tone(1000, 48000 * 4, 48000, 10 ** (-23 / 20)))
+  for (const key of ['momentary', 'shortTerm', 'integratedToCursor']) {assert.equal(summary[key].status, 'ready'); near(summary[key].value, -23, 0.1, key)}
 })

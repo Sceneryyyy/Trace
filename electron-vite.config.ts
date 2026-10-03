@@ -1,14 +1,3 @@
-import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
-import react from '@vitejs/plugin-react'
-
-export default defineConfig({
-  main: {
-    plugins: [externalizeDepsPlugin()]
-  },
-  preload: {
-    plugins: [externalizeDepsPlugin()]
-  },
-  renderer: {
-    plugins: [react()]
-  }
-})
+// The default Electron/Vite entry builds Trace. Keep the explicit config name
+// for existing development and release commands.
+export { default } from './electron-vite.trace.config'

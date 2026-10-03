@@ -1,170 +1,71 @@
 import assert from 'node:assert/strict'
-import { createRequire } from 'node:module'
 import test from 'node:test'
+import {engine, waveFixture, tone, near} from './native-wave-fixture.mjs'
 
-const require = createRequire(import.meta.url)
-const nativeAddon = require('../native/build/Release/visualizer_dsp.node')
-const { spectrum } = nativeAddon
-
-const SAMPLE_RATE = 48000
-const SILENCE_DB = -120
-
-function createTone(frequencyHz, length, amplitude = 1) {
-  const samples = new Float32Array(length)
-  for (let index = 0; index < length; index += 1) {
-    samples[index] = Math.sin((2 * Math.PI * frequencyHz * index) / SAMPLE_RATE) * amplitude
+test('Trace N-API exposes its actual capture, file and instrument contract', () => {
+  for (const name of ['devices', 'start', 'stop', 'reset', 'snapshot', 'recordStart', 'recordStop', 'recordStatus', 'analyzeWaves', 'instrumentAnalyze', 'spectrogramTile']) {
+    assert.equal(typeof engine[name], 'function', name)
   }
-  return samples
-}
+  assert.equal(engine.snapshot().active, false)
+  assert.throws(() => engine.instrumentAnalyze({}), /INVALID_INSTRUMENT_CONFIG/)
+})
 
-function configure(fftSize) {
-  spectrum.setFFTSize(fftSize)
-  spectrum.setSampleRate(SAMPLE_RATE)
-  spectrum.setSmoothing(0)
-  spectrum.reset()
-}
-
-function assertAlmostEqual(actual, expected, tolerance, message) {
-  assert.ok(
-    Math.abs(actual - expected) <= tolerance,
-    `${message}: expected ${expected} +/- ${tolerance}, got ${actual}`,
-  )
-}
-
-function interpolatePeakDb(magnitudes) {
-  let peakBin = 1
-  for (let index = 2; index < magnitudes.length - 1; index += 1) {
-    if (magnitudes[index] > magnitudes[peakBin]) peakBin = index
-  }
-
-  const y1 = magnitudes[peakBin - 1]
-  const y2 = magnitudes[peakBin]
-  const y3 = magnitudes[peakBin + 1]
-  const denominator = y1 - (2 * y2) + y3
-  if (Math.abs(denominator) <= 1e-9) return y2
-  const offset = Math.max(-0.5, Math.min(0.5, 0.5 * (y1 - y3) / denominator))
-  return y2 - (0.25 * (y1 - y3) * offset)
-}
-
-test('native capture exports preserve the renderer-facing API shape', () => {
-  for (const exportName of ['macosCapture', 'windowsCapture', 'linuxCapture']) {
-    const capture = nativeAddon[exportName]
-    assert.ok(capture, `${exportName} should be exported`)
-    for (const method of ['getSupport', 'listOutputDevices', 'start', 'stop', 'drain', 'nowMilliseconds']) {
-      assert.equal(typeof capture[method], 'function', `${exportName}.${method} should be a function`)
+test('Trace FFT preserves calibrated bin-centered amplitude at every supported rate and FFT size', async t => {
+  for (const rate of [44100, 48000, 88200, 96000]) for (const fftSize of [512, 1024, 2048, 4096, 8192, 16384]) {
+    for (const amplitude of [1, 0.5, 0.1]) {
+      const f = waveFixture([tone(23 * rate / fftSize, fftSize, rate, amplitude)], rate); t.after(f.cleanup)
+      const result = await engine.instrumentAnalyze(f.request({fftSize, channel: 'left'}))
+      assert.equal(result.status, 'ready'); assert.equal(result.positionFrame, String(fftSize))
+      near(result.binHz, rate / fftSize, 1e-12, 'actual bin Hz')
+      near(10 * Math.log10(result.current[23]), 20 * Math.log10(amplitude), 0.05, `${rate} Hz / ${fftSize} / ${amplitude}`)
     }
   }
+})
 
-  const activeExport = process.platform === 'darwin'
-    ? 'macosCapture'
-    : process.platform === 'win32'
-      ? 'windowsCapture'
-      : 'linuxCapture'
-  const support = nativeAddon[activeExport].getSupport()
-  assert.equal(typeof support.available, 'boolean')
-  assert.ok(support.reason === null || typeof support.reason === 'string')
-
-  for (const exportName of ['macosCapture', 'windowsCapture', 'linuxCapture']) {
-    if (exportName === activeExport) continue
-    const capture = nativeAddon[exportName]
-    assert.deepEqual(capture.listOutputDevices(), [])
-    assert.equal(capture.getSupport().available, false)
-    assert.deepEqual(capture.drain(), { chunks: [], overwriteCount: 0, queueDepth: 0 })
-    assert.throws(() => capture.start(), /unavailable on the current platform/)
+function directPower(samples, fftSize, bin) {
+  let real = 0, imaginary = 0, sum = 0
+  for (let n = 0; n < fftSize; n++) {
+    const window = 0.5 * (1 - Math.cos(2 * Math.PI * n / fftSize)), phase = -2 * Math.PI * bin * n / fftSize
+    sum += window; real += samples[n] * window * Math.cos(phase); imaginary += samples[n] * window * Math.sin(phase)
   }
+  const gain = (bin === 0 || bin === fftSize / 2 ? 1 : 2) / sum
+  return (real * real + imaginary * imaginary) * gain * gain
+}
 
-  assert.ok(nativeAddon.windowsMedia)
-  for (const method of ['getSupport', 'getSpotifyPlaybackState', 'sendSpotifyControl']) {
-    assert.equal(typeof nativeAddon.windowsMedia[method], 'function')
+test('Trace off-bin leakage and noise agree with an independent direct DFT', async t => {
+  for (const fftSize of [512, 1024, 2048, 4096]) {
+    let seed = 7
+    const pcm = Float32Array.from({length: fftSize}, (_, n) => {
+      seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0
+      return 0.5 * Math.sin(2 * Math.PI * 37.37 * n / fftSize) + (seed / 2 ** 32 - 0.5) * 0.1
+    })
+    const f = waveFixture([pcm]); t.after(f.cleanup)
+    const result = await engine.instrumentAnalyze(f.request({fftSize, channel: 'left'}))
+    for (const bin of [0, 1, 36, 37, 38, 93, fftSize / 2]) {
+      const expected = directPower(pcm, fftSize, bin)
+      near(result.current[bin], expected, Math.max(1e-8, expected * 2e-4), `DFT ${fftSize}/${bin}`)
+    }
   }
 })
 
-test('spectrum channel-max dBFS is calibrated for bin-centered amplitudes', () => {
-  const fftSize = 2048
-  const bin = 42
-  const frequencyHz = bin * SAMPLE_RATE / fftSize
-
-  for (const amplitude of [1, 0.5, 0.1]) {
-    configure(fftSize)
-    spectrum.pushSamples(createTone(frequencyHz, fftSize, amplitude))
-    const expectedDbfs = 20 * Math.log10(amplitude)
-    const filledMagnitudes = new Float32Array(fftSize / 2)
-    assert.equal(spectrum.fillChannelMaxMagnitudes(filledMagnitudes), fftSize / 2)
-    assertAlmostEqual(
-      filledMagnitudes[bin],
-      expectedDbfs,
-      0.05,
-      `amplitude ${amplitude}`,
-    )
+test('Trace channel selection preserves L/R, Mid/Side and anti-phase energy', async t => {
+  const n = 2048, full = tone(23 * 48000 / n, n), half = Float32Array.from(full, x => x * 0.5), zero = new Float32Array(n), negative = Float32Array.from(full, x => -x)
+  for (const [left, right, channel, expected] of [
+    [full, zero, 'left', 1], [zero, full, 'right', 1], [half, full, 'stereo', 0.625],
+    [full, zero, 'mid', 0.25], [full, zero, 'side', 0.25],
+    [full, negative, 'stereo', 1], [full, negative, 'mid', 0], [full, negative, 'side', 1],
+  ]) {
+    const f = waveFixture([left, right]); t.after(f.cleanup)
+    const result = await engine.instrumentAnalyze(f.request({channel}))
+    near(result.current[23], expected, 1e-6, channel)
   }
 })
 
-// setFFTSize feeds a radix-2 transform that indexes assuming a power of two,
-// and getSamples used to allocate straight from an unchecked uint32 while the
-// interpolator wrapped its position in an unbounded while loop. All three are
-// reachable from the renderer, so malformed input must be rejected or clamped
-// rather than corrupting the heap or spinning forever.
-test('malformed analyzer parameters cannot corrupt or hang the native DSP', () => {
-  for (const size of [1000, 3, 0, 1, 12345, 2 ** 31]) {
-    spectrum.setFFTSize(size)
-    const applied = spectrum.getFFTSize()
-    assert.ok(applied >= 128 && applied <= 16384, `FFT size must stay in range, got ${applied}`)
-    assert.equal(applied & (applied - 1), 0, `FFT size must remain a power of two, got ${applied}`)
-    configure(applied)
-    spectrum.pushSamples(createTone(1000, applied))
-    assert.equal(spectrum.getMagnitudes().length, applied / 2)
-  }
-
-  const { oscilloscope } = nativeAddon
-  oscilloscope.reset()
-  oscilloscope.pushSamples(createTone(1000, 2048))
-  for (const startPos of [Infinity, -Infinity, NaN, 1e30, -1e30]) {
-    const samples = oscilloscope.getSamples(startPos, 64)
-    assert.equal(samples.length, 64)
-    for (const value of samples) assert.ok(Number.isFinite(value), 'sample must stay finite')
-  }
-  assert.throws(() => oscilloscope.getSamples(0, 4294967295), /count/)
-})
-
-test('spectrum off-bin dBFS interpolation stays within 0.3 dB across FFT sizes', () => {
-  for (const fftSize of [1024, 2048, 4096, 8192, 16384]) {
-    configure(fftSize)
-    spectrum.pushSamples(createTone(440, fftSize))
-    assertAlmostEqual(
-      interpolatePeakDb(spectrum.getChannelMaxMagnitudes()),
-      0,
-      0.3,
-      `FFT size ${fftSize}`,
-    )
-  }
-})
-
-test('spectrum preserves Mid/Side curves while channel-max follows the louder L/R channel', () => {
-  const fftSize = 2048
-  const bin = 42
-  const frequencyHz = bin * SAMPLE_RATE / fftSize
-  const fullScale = createTone(frequencyHz, fftSize)
-  const halfScale = createTone(frequencyHz, fftSize, 0.5)
-  const silence = new Float32Array(fftSize)
-  const inverted = Float32Array.from(fullScale, (sample) => -sample)
-
-  configure(fftSize)
-  spectrum.pushStereoSamples(fullScale, silence)
-  assertAlmostEqual(spectrum.getMagnitudes()[bin], -6.0206, 0.05, 'left-only Mid level')
-  assertAlmostEqual(spectrum.getSideMagnitudes()[bin], -6.0206, 0.05, 'left-only Side level')
-  assertAlmostEqual(spectrum.getChannelMaxMagnitudes()[bin], 0, 0.05, 'left-only channel max')
-
-  configure(fftSize)
-  spectrum.pushStereoSamples(silence, fullScale)
-  assertAlmostEqual(spectrum.getChannelMaxMagnitudes()[bin], 0, 0.05, 'right-only channel max')
-
-  configure(fftSize)
-  spectrum.pushStereoSamples(halfScale, fullScale)
-  assertAlmostEqual(spectrum.getChannelMaxMagnitudes()[bin], 0, 0.05, 'unequal-channel max')
-
-  configure(fftSize)
-  spectrum.pushStereoSamples(fullScale, inverted)
-  assert.equal(spectrum.getMagnitudes()[bin], SILENCE_DB)
-  assertAlmostEqual(spectrum.getSideMagnitudes()[bin], 0, 0.05, 'anti-phase Side level')
-  assertAlmostEqual(spectrum.getChannelMaxMagnitudes()[bin], 0, 0.05, 'anti-phase channel max')
+test('Trace rejects malformed FFT, windows, frames, channels and source requests before scheduling native work', t => {
+  const f = waveFixture([tone(1000, 2048)]); t.after(f.cleanup)
+  for (const fftSize of [0, 3, 1000, 12345, 2 ** 31, NaN, Infinity]) assert.throws(() => engine.instrumentAnalyze(f.request({fftSize})), /INVALID_INSTRUMENT_CONFIG/)
+  for (const config of [{averageMs: 2001}, {holdMs: -1}, {fieldMs: 0}, {channel: 'other'}]) assert.throws(() => engine.instrumentAnalyze(f.request(config)), /INVALID_INSTRUMENT_CONFIG/)
+  for (const positionFrame of ['-1', '1.5', '', '18446744073709551616', Infinity]) assert.throws(() => engine.instrumentAnalyze({...f.request(), positionFrame}))
+  assert.throws(() => engine.instrumentAnalyze({...f.request(), sampleRate: 192000}), /INVALID_INSTRUMENT_CONFIG/)
+  assert.throws(() => engine.instrumentAnalyze({...f.request(), sources: ['relative.wav']}), /INVALID_INSTRUMENT_FILES/)
 })

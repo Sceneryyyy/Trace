@@ -12,9 +12,33 @@ try{
  report.checks.push('ASAR contains only the Trace build and a minimal package, with all workers and assets identical to the build')
  const files=[];function walk(p){for(const d of fs.readdirSync(p,{withFileTypes:true})){const name=path.join(p,d.name);if(d.isDirectory())walk(name);else files.push(name)}}walk(dir)
  assert(!files.some(p=>/\.(wav|mp3|m4a|aac|vst3)$/i.test(p)));assert(!fs.existsSync(path.join(dir,'resources/default_app.asar')))
- for(const p of ['README-Trace.md','LICENSE.electron.txt','LICENSES.chromium.html','resources/licenses/React-MIT.txt','resources/licenses/ReactDOM-MIT.txt','resources/licenses/ReactScheduler-MIT.txt','resources/licenses/Prism-GPL-3.0.txt','resources/licenses/libebur128-MIT.txt','resources/licenses/libebur128-patches.md','resources/licenses/FFmpeg-GPL.txt','resources/licenses/Inter-OFL.txt','resources/licenses/JetBrainsMono-OFL.txt'])assert(fs.statSync(path.join(dir,p)).size>0,p)
+ for(const p of ['README-Trace.md','LICENSE.electron.txt','LICENSES.chromium.html','resources/licenses/React-MIT.txt','resources/licenses/ReactDOM-MIT.txt','resources/licenses/ReactScheduler-MIT.txt','resources/licenses/Prism-GPL-3.0.txt','resources/licenses/Prism-FFT-GPL-3.0.txt','resources/licenses/prism-fft-source.json','resources/licenses/prism-fft-README.md','resources/licenses/libebur128-MIT.txt','resources/licenses/libebur128-patches.md','resources/licenses/FFmpeg-GPL.txt','resources/licenses/Inter-OFL.txt','resources/licenses/JetBrainsMono-OFL.txt'])assert(fs.statSync(path.join(dir,p)).size>0,p)
  assert(fs.readFileSync(path.join(dir,'README-Trace.md')).equals(fs.readFileSync(path.join(root,'docs/28-USER-GUIDE.md'))))
  report.checks.push('Package contains usage guide, licenses and no recordings, default demo, VST or TUI')
+ const fftRoot=path.join(root,'native/vendor/prism-fft')
+ for(const [original,packaged]of [['COPYING','Prism-FFT-GPL-3.0.txt'],['SOURCE.json','prism-fft-source.json'],['README.md','prism-fft-README.md']]){
+  const source=path.join(fftRoot,original),target=path.join(dir,'resources/licenses',packaged)
+  assert(fs.readFileSync(target).equals(fs.readFileSync(source)),packaged+' differs from retained FFT provenance')
+  assert.equal(sha(target),sha(source),packaged)
+ }
+ assert.equal(sha(path.join(dir,'resources/licenses/Prism-GPL-3.0.txt')),sha(path.join(root,'LICENSE')))
+ const fftSource=JSON.parse(fs.readFileSync(path.join(fftRoot,'SOURCE.json'),'utf8'))
+ assert.equal(fftSource.repository,'https://github.com/Boof2015/prism')
+ assert.equal(fftSource.commit,'df0755b8caaaab85157ac51aefffca0526974fc1')
+ const originalSources={
+  'FFT.h':['native/src/dsp_utils.h','52f1cd4ef6b00227fd46adfa75237957c4b35628ac5d6371d26b65d3f3ee5c95'],
+  'FFT.cpp':['native/src/dsp_utils.cpp','63bad15b4eb398bd12df5f4439bcafe2d62aee0a1edd3541d5dd560c77dfa7bf'],
+  COPYING:['LICENSE','3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986'],
+ }
+ assert.deepEqual(fftSource.files.map(entry=>entry.file).sort(),Object.keys(originalSources).sort())
+ for(const entry of fftSource.files){
+  const [sourcePath,sourceSha256]=originalSources[entry.file]
+  assert.equal(entry.sourcePath,sourcePath,entry.file+' source path')
+  assert.equal(entry.sourceSha256,sourceSha256,entry.file+' pinned source hash')
+  assert.equal(sha(path.join(fftRoot,entry.file)),entry.sha256,entry.file+' retained source hash')
+ }
+ report.fftProvenance={repository:fftSource.repository,commit:fftSource.commit,manifestSha256:sha(path.join(fftRoot,'SOURCE.json')),files:fftSource.files.map(({file,sourceSha256,sha256})=>({file,sourceSha256,sha256}))}
+ report.checks.push('Retained Prism FFT license/provenance matches packaged bytes and pinned source/extraction hashes')
  assert.equal(sha(path.join(dir,'resources/native/trace_engine.node')),sha(path.join(root,'build/trace-engine/Release/trace_engine.node')))
  const codec=JSON.parse(fs.readFileSync(path.join(dir,'resources/ffmpeg.lock.json'),'utf8'))
  for(const bin of ['ffmpeg','ffprobe'])assert.equal(sha(path.join(dir,'resources/ffmpeg',bin+'.exe')),codec[bin+'Sha256'])

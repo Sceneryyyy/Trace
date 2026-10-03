@@ -1,5 +1,7 @@
 # 02 · 架构与模块边界
 
+2026-10-03：Trace 已建立独立工程入口。默认安装、构建、测试和 CI 使用自身源码与声明的第三方依赖；原生引擎只生成 `trace_engine.node`。仍复用的 FFT 位于 `native/vendor/prism-fft/`，保留固定来源和 GPL 许可，不依赖上游工程目录。原始 WASAPI 诊断位于 `tools/diagnostics/`，仅链接 Windows SDK。实施及本轮验证边界见 [79](79-TRACE-INDEPENDENT-PROJECT.md)；以下早期路线保留来源与决策历史。
+
 2026-09-24：原 Windows/WASAPI 架构保持现状；已选定的 Mac 扩展按 [ADR-012](11-DECISIONS.md) 与 [70-MACOS-PORT-PLAN](70-MACOS-PORT-PLAN.md) 在采集、输出、文件操作和打包处增加平台后端。下方 Windows 图和原始默认路线不表示 Mac 实现已完成。
 
 PB1/PB2：userData 规范化后、引擎/录音库初始化前取得 Electron 单实例锁。SupportJournal/SupportRuntime 在主进程管理有界诊断与故障恢复入口；React RecoveryBoundary 提供最小可操作界面。录音仍使用原生线程与既有恢复日志，界面重载不重启引擎。见 [60](60-PB1-PB2-SUPPORT.md)。
@@ -18,11 +20,11 @@ preview.4：PlaybackService 分离只读历史上下文与按需音频输出。�
 
 状态（2026-09-15）：M0/M1/M2 已过最小工程关口；M2 的录音、会话、转换/恢复及 30 分钟实录/重开通过。当前实际映射为 src/trace 和 native/src/recorder；FILE 播放/历史/选区已接通并通过 M4 最小工程门禁，见 25；Export/有损成品解码已接通，见 26；该日期的桌面交付待 M6，后续已完成开发预览交付，见 27。M3 原始 EBU 素材门禁仍开放。以下架构是完整目标，未接通部分不能按已实现理解。
 
-## 默认技术路线
+## 当前技术路线与历史复用起点
 
-本仓库已基于 Prism `df0755b8caaaab85157ac51aefffca0526974fc1` 完成复用接入，保留 Windows 设备枚举、WASAPI 接线及 React 面板，并实现独立的连续录音和回放领域层。后续直接在当前 checkout 开发，无需重复克隆上游。桌面壳沿用 Electron/React/TypeScript，音频路径使用 C++，统一计量使用 libebur128，格式转换使用固定构建的 FFmpeg。不要先升级整套前端或把业务功能嫁接到 vstdev。
+当前 Trace 桌面壳使用 Electron/React/TypeScript，音频路径使用自身 C++/WASAPI 引擎，统一计量使用 libebur128，格式转换使用固定构建的 FFmpeg。`npm ci` 只安装锁定依赖，`typecheck` 只覆盖 Trace 与其构建配置，默认 `test`/`build`/`dist` 直接进入 Trace。FFT 的本地源码组件参与自身 CMake 构建；来源锁定与边界检查不要求克隆或编译 Prism。
 
-Prism 是优先验证对象，不是“无需改造”的保证。M0 通过条件和 NAudio/WPF 备用路线见 ADR-001。备用路线只在明确证据触发后替换主路线；模块契约、数值定义和测试素材继续复用。
+历史上，本仓库基于 Prism `df0755b8caaaab85157ac51aefffca0526974fc1` 完成复用验证与接入，并逐步建立连续录音和回放领域层。Prism 曾是优先验证对象；当时 M0 通过条件和 NAudio/WPF 备用路线见 ADR-001。这些记录用于解释来源和设计决策，当前工程按 [79](79-TRACE-INDEPENDENT-PROJECT.md) 维护。不要先升级整套前端或把业务功能嫁接到 vstdev。
 
 ## 数据流
 
@@ -87,14 +89,14 @@ UI 快照允许合并为最新值，显示历史按时间查询；音频和持�
 
 异常通知使用独立的小型控制通道与原子计数，不能让“故障消息也因音频队列已满而丢失”。后台分析/编码限并发，录音优先；窗口最小化只降低绘制频率。
 
-## 对 Prism 的必要改造点
+## 历史 Prism 复用改造依据
 
-已查源码：Windows capture 的 `GetBuffer` 未取 device/QPC 位置；可视化队列满时丢最旧块；无包时按单调时钟估算补零；片段导出最高 60 秒、16-bit、整段构造。它们必须经过独立验证或改造后才能成为持续录音路径。
+初始审阅源码时发现：Windows capture 的 `GetBuffer` 未取 device/QPC 位置；可视化队列满时丢最旧块；无包时按单调时钟估算补零；片段导出最高 60 秒、16-bit、整段构造。它们是早期持续录音路线的复用风险，具体证据仍见历史来源与 M0 记录。
 
-在原生采集处加入 sample frame/epoch/flags，分离显示队列和录音队列，替换历史计量中的墙上时钟，补齐 LRA，并建立流式文件路径。不能只把 60 秒上限改大。M0 要用证据判断这个改造边界是否可控。
+Trace 后续建立了 sample frame/epoch/flags、分离的显示与录音队列、基于实际帧位置的计量、LRA 和流式文件路径。保持这些约束；不能将上游可视化队列重新作为录音路径，或只扩大原始 60 秒上限。
 
 ## 实际代码组织
 
-Trace 主进程、preload、领域服务和 shared/contracts 位于 `src/trace/`，界面位于 `src/trace/renderer/`，原生引擎位于 `native/src/recorder/`，CMake 入口位于 `native/recorder/`；测试位于 `test/`（以 Trace runner 分层），工具位于 `tools/`。上游 Prism 的其他目录继续保留来源与复用边界，不作为 Trace 主入口。
+Trace 主进程、preload、领域服务和 shared/contracts 位于 `src/trace/`，界面位于 `src/trace/renderer/`，原生引擎位于 `native/src/recorder/`，Windows CMake 入口位于 `native/recorder/`，可移植数值检查位于 `native/portable/`。第三方本地源码位于 `native/vendor/`；测试位于 `test/`（以 Trace runner 分层），工具位于 `tools/`。无关上游应用、插件、TUI、构建脚本和资源已从当前工程移除；来源、原始说明、许可与历史记录继续保留，见 [14](14-SOURCES.md) 和 [79](79-TRACE-INDEPENDENT-PROJECT.md)。
 
 录音设备重设、多采样率分段、成品缓存和恢复细节见 [03](03-AUDIO-METERING.md)、[04](04-DATA-FORMATS.md)、[06](06-CONTRACTS.md)。

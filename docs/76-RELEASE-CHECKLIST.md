@@ -1,10 +1,10 @@
 # 76 · Trace Windows 发布验收清单
 
-2026-10-02。本清单适用于包含本轮修复的 preview.31 候选；支持范围先限定 Windows x64、单/双声道。macOS 单列 [70](70-MACOS-PORT-PLAN.md)。当前状态见 [13](13-HANDOFF.md)，云端交付范围见 [75](75-CLOUD-RELEASE-PREPARATION.md)。
+2026-10-03。本清单适用于包含本轮修复的 preview.31 候选；支持范围先限定 Windows x64、单/双声道。macOS 单列 [70](70-MACOS-PORT-PLAN.md)。当前状态见 [13](13-HANDOFF.md)，云端交付范围见 [75](75-CLOUD-RELEASE-PREPARATION.md)。
 
 ## 工程候选生成
 
-新增工作流提交到 GitHub 后，选择 `recorder/dev` 手动执行 **Trace Candidate**。它调用 Trace CI：Linux 检查通过后才在 Windows 准备 SDK/DSP、构建引擎并执行 CTest/native，然后打包、审计与验证包内运行库加载/主题重启。
+选择 `recorder/dev` 手动执行 **Trace Candidate**，或在 Trace CI 手动勾选 `package_candidate`。它调用 Trace CI：Linux 检查通过后才在 Windows 独立准备 Trace SDK/诊断、构建引擎并执行 CTest/native，然后打包、审计与验证包内运行库加载/主题重启。
 
 本地 Windows 等价入口（VS2022/CMake/Python 已准备，干净 checkout）：
 
@@ -25,7 +25,7 @@ node tools/release/candidate.cjs
 
 | 门禁 | 操作与预期 | 当前状态 |
 | --- | --- | --- |
-| SEC | 处理 [依赖安全记录](release/security-baseline.json) 的 Electron、tar/打包原生链问题；在新固定 SDK 下重建 addon、跑 CTest/native 与三格式/新包。再核对 Electron/Chromium、FFmpeg/VC 安全公告 | 阻塞：15 个受影响包，Windows 升级复验缺失 |
+| SEC | 处理 [依赖安全记录](release/security-baseline.json) 的 Electron、tar/打包原生链问题；在新固定 SDK 下重建 addon、跑 CTest/native 与三格式/新包。再核对 Electron/Chromium、FFmpeg/VC 安全公告 | 阻塞：18 个受影响包（17 high / 1 critical），升级与复验待办 |
 | WIN | 未装开发工具的 Windows 11 x64 普通用户；中文/空格路径、断网，解压→启动→选设备→录音→回听→三格式导出→重启 | 未运行最新包 |
 | DEV | 内置输出、USB 声卡，真实 44.1/48/96 kHz；拔插、默认设备变化、修改格式、设备占用与睡眠恢复 | 未验证矩阵；96 kHz 文件不算采集 |
 | FLOW | 播放约三分钟 YouTube；交叉进行 REC、静默历史查看、停止后回听、报告跳转、缓存/选区保存、另存。按钮与监听状态一致，来源质量贯穿保存/重载/报告 | 未运行 |

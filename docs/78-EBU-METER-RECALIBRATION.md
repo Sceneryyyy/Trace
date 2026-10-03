@@ -59,3 +59,7 @@ Windows 继续执行 `npm run build:trace-engine` 或 `Trace.ps1 -Action Engine`
 修复提交 `f42aba71d69d3ecd55346b0df071a4d81b0930ba` 的干净 checkout 又完成一次 Release 原始素材门禁（80.25 s），同样 68/68、112/112、204/204 全部通过。报告 sourceDirty=false；记录的 Meter、配置、FILE writer、厂商库、probe 与 runner 的 hash 均核对一致。报告副本为 `artifacts/ebu-recalibration/ebu-wav-committed.json`；此后仅文档提交没有改变该数值测试的源码。
 
 最终结果也同步在 [当前交接](13-HANDOFF.md)。云端日志在忽略目录 `artifacts/ebu-recalibration/`，77 的旧失败日志保留。原始节目仅为 48 kHz；四种采样率的新增证据来自生成信号。Windows addon、实际文件缓存写入/读回、实时设备、选区/导出全链路及新分发包仍待实机验证。本轮通过的是适用素材的计量核心数值门禁，正式 EBU Mode 的界面/全标准及发布门禁仍单列。
+
+## 独立化之后的入口
+
+上述验证数目是 Meter v5 修复时的历史证据。2026-10-03 工程独立化新增 FFT 门禁后，有私有 EBU 素材时为 9 项 portable / 19 项 Windows CTest；默认 JS 测试与原生 addon 均使用 Trace。CI sanitizer 核心先跑、原始 WAV 单独跑，portable job 45 分钟、原始 gate 墙钟上限 1800 秒；原始参考、容差和 68 文件分母保持。当前复现与新证据见 [79](79-TRACE-INDEPENDENT-PROJECT.md) 和 [13](13-HANDOFF.md)。

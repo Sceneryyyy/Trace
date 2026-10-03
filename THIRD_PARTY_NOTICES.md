@@ -11,32 +11,19 @@ technical test material and must not be included in application packages or
 public source/release distributions. See that directory's README for exact
 sources, SHA-256 values, and permitted-use information.
 
-## FTXUI
+## Prism-derived code and retained FFT
 
-Prism TUI statically links [FTXUI](https://github.com/ArthurSonzogni/FTXUI),
-version 7.0.1.
+Trace was developed from [Boof2015/Prism](https://github.com/Boof2015/prism),
+pinned at `df0755b8caaaab85157ac51aefffca0526974fc1`. The original author
+and project attribution are retained in README-Prism.md and docs/14-SOURCES.md.
+The project remains GPL-3.0-only; the complete license is in LICENSE.
 
-The MIT License
-
-Copyright (c) 2019 Arthur Sonzogni.
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
+The maintained FFT extraction under `native/vendor/prism-fft/` retains the
+original `DSP::FFT` class and function bodies. COPYING preserves the complete
+original GPL license; SOURCE.json records source and extraction hashes, the
+revision and the exact changes. Trace builds that local component directly.
+Prism's standalone application, capture addon, TUI and VST build are not Trace
+build dependencies. FTXUI/JUCE belonged to those removed upstream targets.
 
 ## libebur128 (Trace native engine)
 

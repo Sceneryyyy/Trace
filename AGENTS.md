@@ -39,7 +39,7 @@
 
 ## 工程约定
 
-- 默认路线：锁定提交的 Prism 复用验证 → Electron/React/TypeScript + 原生 WASAPI/C++ 引擎 + libebur128 + FFmpeg。M0 失败按 ADR-001 处理，不能同时维护三套实现。
+- 当前路线：Trace 独立 Electron/React/TypeScript 工程 + 原生 WASAPI/C++ 引擎 + libebur128 + FFmpeg；默认安装、构建、测试和 CI 不编译 Prism addon，保留的 FFT 在 native/vendor/prism-fft 中锁定来源与许可。历史 Prism 复用验证与 M0 备用决策保留追溯，见 ADR-001；独立工程边界见 docs/79-TRACE-INDEPENDENT-PROJECT.md，不能同时维护三套实现。
 - 锁定经验证的 SDK、包版本、上游提交和编码器构建；保存锁文件。不要为了消除编译错误直接升级整个依赖树。
 - 前端只发白名单命令并接收快照/分块数据。校验参数、状态和请求代次；旧 seek 结果不能覆盖新游标。
 - 计量算法、数据协议或缓存语义变更时更新版本及相应设计。原始数据不可被显示缓存替代。

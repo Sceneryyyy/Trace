@@ -42,7 +42,7 @@ app.whenReady().then(async()=>{
   const epoch=await evaluate("window.__m2.epochId")
   await click('.record-button')
   await wait("window.__m2?.recording?.phase==='recording'")
-  const fixture=spawn(path.join(root,'build/m0/Release/trace-capture-probe.exe'),['raw','--seconds','6','--fixture'],{windowsHide:true,stdio:'ignore'})
+  const fixture=spawn(path.join(root,'build/trace-diagnostics/Release/trace-capture-probe.exe'),['raw','--seconds','6','--fixture'],{windowsHide:true,stdio:'ignore'})
   const fixtureDone=new Promise(r=>fixture.on('close',r))
   await delay(1200)
   requireCheck(await evaluate("document.querySelector('.record-button').getAttribute('aria-label')==='结束录音'&&document.querySelector('.record-button').getAttribute('aria-pressed')==='true'&&Boolean(document.querySelector('.record-button svg rect'))"),'REC button became stop')

@@ -1,232 +1,66 @@
 {
-  "name": "prism",
-  "version": "0.3.0-beta",
-  "description": "Open-source audio metering and visualization tool",
-  "main": "./out/main/index.js",
+  "name": "trace",
+  "version": "0.1.0-preview.31",
+  "description": "Trace 声迹 · Audio Recorder & Analyzer",
+  "main": "./out-trace/main/index.js",
   "scripts": {
-    "dev": "node ./scripts/build/writeAppBuildMetadata.cjs && electron-vite dev",
-    "dev:mac": "node ./scripts/build/writeAppBuildMetadata.cjs && env -u ELECTRON_RUN_AS_NODE electron-vite dev",
-    "build": "electron-vite build && node ./scripts/build/writeAppBuildMetadata.cjs",
-    "preview": "electron-vite preview",
-    "typecheck": "tsc --noEmit",
-    "build:icons": "node scripts/build/generate-prism-icons.mjs",
-    "build:clip-drag-icons": "node scripts/build/generate-audio-clip-drag-icons.mjs",
-    "test": "node scripts/run-tests.mjs",
-    "test:audio-router": "node scripts/run-audio-router-tests.mjs",
-    "test:audio-clips": "node scripts/run-audio-clip-tests.mjs",
-    "test:audio-store": "node scripts/run-audio-store-tests.mjs",
-    "test:astra": "node scripts/run-astra-integration-tests.mjs",
+    "dev": "electron-vite dev --config electron-vite.trace.config.ts",
+    "build": "npm run build:trace",
+    "start": "node tools/trace.cjs App",
+    "preview": "electron-vite preview --config electron-vite.trace.config.ts",
+    "typecheck": "tsc --noEmit --project tsconfig.json && tsc --noEmit --project tsconfig.node.json",
+    "test": "npm run test:trace",
+    "install:trace-sdk": "node tools/install-trace-sdk.cjs",
+    "build:native": "npm run build:trace-engine",
+    "rebuild:native": "npm run build:trace-engine",
+    "dist": "npm run build && npm run build:trace-engine && node tools/package-trace.cjs",
+    "dist:win": "npm run dist",
     "build:trace": "electron-vite build --config electron-vite.trace.config.ts",
-    "start:trace": "electron out-trace/main/index.js",
+    "start:trace": "npm run start",
     "build:trace-engine": "node tools/build-engine.cjs",
-    "build:trace-probe": "node tools/m0/run.cjs build",
-    "trace:probe": "node tools/m0/run.cjs probe",
-    "test:trace-smoke": "node tools/m0/run.cjs electron",
-    "test:trace-contracts": "node --test test/trace-contracts.test.mjs",
-    "test:trace-report": "node --test test/trace-m0-report.test.mjs",
-    "test:capture-support": "node scripts/run-capture-support-tests.mjs",
-    "test:spotify-provider": "node scripts/run-mac-spotify-provider-tests.mjs",
-    "test:now-playing": "node scripts/run-now-playing-manager-tests.mjs",
-    "test:profiles": "node scripts/run-profile-library-tests.mjs",
-    "test:themes": "node scripts/run-theme-library-tests.mjs",
-    "test:secret-vault": "node scripts/run-secret-vault-tests.mjs",
-    "test:window-state": "node scripts/run-window-state-tests.mjs",
-    "test:desktop-integration": "node scripts/run-desktop-integration-tests.mjs",
-    "test:renderer-helpers": "node scripts/run-renderer-helper-tests.mjs",
-    "test:spectrum-native": "node --test test/spectrum-native.test.mjs",
-    "test:spectrogram-native": "node --test test/spectrogram-native.test.mjs",
-    "test:vectorscope-native": "node --test test/vectorscope-native.test.mjs",
-    "test:lufsmeter-native": "node --test test/lufsmeter-native.test.mjs",
-    "test:lufsmeter-ebu": "node scripts/run-ebu-true-peak-tests.mjs",
-    "test:tui": "node scripts/build/build-tui.cjs --test",
-    "test:build-metadata": "node scripts/run-build-metadata-tests.mjs",
-    "test:updates": "node scripts/run-update-tests.mjs",
-    "plugin-ui:dev": "vite --config vite.plugin-ui.config.ts",
-    "plugin-ui:build": "vite build --config vite.plugin-ui.config.ts",
-    "build:native": "cd native && node-gyp rebuild",
-    "configure:tui": "node scripts/build/build-tui.cjs --configure-only",
-    "build:tui": "node scripts/build/build-tui.cjs",
-    "stage:tui": "node scripts/build/build-tui.cjs --stage",
-    "rebuild:native": "node -e \"const e=require('electron/package.json').version;const a=process.arch;const{execSync}=require('child_process');execSync('node-gyp rebuild --target='+e+' --arch='+a+' --dist-url=https://electronjs.org/headers',{stdio:'inherit',cwd:'native'})\"",
-    "postinstall": "node scripts/build/postinstall-native.cjs",
-    "dist": "node scripts/build/dist-current.cjs",
-    "dist:mac": "npm run stage:tui && npm run build && electron-builder --mac --publish never",
-    "dist:win": "powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File scripts/build/check-windows-dist-output.ps1 && npm run stage:tui && npm run build && electron-builder --win --publish never",
-    "dist:linux": "npm run dist:linux:appimage && npm run stage:tui && electron-builder --linux deb rpm tar.gz --publish never",
-    "dist:linux:appimage": "npm run build && electron-builder --config electron-builder.appimage.cjs --linux AppImage --publish never",
-    "dist:linux:packages": "npm run stage:tui && electron-builder --linux deb rpm tar.gz --publish never",
     "test:trace": "node scripts/run-trace-tests.mjs portable",
     "test:trace-native": "node scripts/run-trace-tests.mjs native",
     "test:trace-all": "node scripts/run-trace-tests.mjs all",
+    "test:trace-contracts": "node --test test/trace-contracts.test.mjs",
+    "test:trace-report": "node --test test/probe-report.test.mjs",
     "test:trace-recording": "node --test test/recording-service.test.mjs test/recovery-inventory.test.mjs",
     "test:trace-timeline": "node --test test/session-timeline.test.mjs",
     "test:trace-workspace": "node --test test/workspace-layout.test.mjs",
-    "test:trace-m7": "node tools/m7/verify.cjs"
+    "test:trace-m7": "node tools/m7/verify.cjs",
+    "build:trace-diagnostics": "node tools/diagnostics/run.cjs build",
+    "trace:diagnostics": "node tools/diagnostics/run.cjs",
+    "check:independence": "node tools/independence/check.cjs"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Boof2015/prism"
+    "url": "https://github.com/Sceneryyyy/Trace"
   },
-  "author": {
-    "name": "Boof2015",
-    "email": "contact@novaml.ai"
-  },
+  "author": "Trace contributors",
   "license": "GPL-3.0-only",
   "dependencies": {
-    "@fontsource/inter": "^5.2.8",
-    "@fontsource/jetbrains-mono": "^5.2.8",
-    "node-addon-api": "^8.5.0",
-    "react": "^19.2.3",
-    "react-dom": "^19.2.3",
-    "zustand": "^5.0.10"
+    "@fontsource/inter": "5.2.8",
+    "@fontsource/jetbrains-mono": "5.2.8",
+    "node-addon-api": "8.6.0",
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
   },
   "devDependencies": {
-    "@electron/rebuild": "^3.7.1",
-    "@types/react": "^19.2.9",
-    "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^5.1.2",
-    "autoprefixer": "^10.4.23",
-    "electron": "^40.0.0",
-    "electron-builder": "^26.0.0",
-    "electron-vite": "^5.0.0",
-    "node-gyp": "^10.3.1",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "@vitejs/plugin-react": "5.2.0",
+    "electron": "40.8.3",
+    "electron-builder": "26.8.1",
+    "electron-vite": "5.0.0",
+    "node-gyp": "10.3.1",
     "postcss": "8.5.28",
-    "tailwindcss": "^4.1.18",
-    "typescript": "^5.9.3",
-    "vite": "7.3.6"
-  },
-  "build": {
-    "appId": "com.astra.prism",
-    "productName": "Prism",
-    "directories": {
-      "output": "dist"
-    },
-    "fileAssociations": [
-      {
-        "ext": "prsm",
-        "name": "Prism Profile",
-        "description": "Prism shareable profile",
-        "role": "Editor"
-      }
-    ],
-    "files": [
-      "out/**/*",
-      "native/build/Release/*.node"
-    ],
-    "extraResources": [
-      {
-        "from": "native/build/Release/",
-        "to": "native/",
-        "filter": [
-          "*.node"
-        ]
-      },
-      {
-        "from": "resources/icon.png",
-        "to": "icon.png"
-      },
-      {
-        "from": "resources/drag/",
-        "to": "drag/"
-      },
-      {
-        "from": "resources/tray/",
-        "to": "tray/"
-      },
-      {
-        "from": "plugin/dist-installer/",
-        "to": "plugins/"
-      },
-      {
-        "from": "tui/dist-installer/",
-        "to": "tui/"
-      },
-      {
-        "from": "THIRD_PARTY_NOTICES.md",
-        "to": "THIRD_PARTY_NOTICES.md"
-      }
-    ],
-    "mac": {
-      "target": [
-        "pkg",
-        "zip"
-      ],
-      "icon": "resources/icon.icns",
-      "category": "public.app-category.music",
-      "hardenedRuntime": true,
-      "entitlements": "resources/entitlements.mac.plist",
-      "entitlementsInherit": "resources/entitlements.mac.inherit.plist"
-    },
-    "pkg": {
-      "installLocation": "/Applications",
-      "scripts": "../resources/installer/macos-scripts"
-    },
-    "win": {
-      "target": [
-        {
-          "target": "nsis",
-          "arch": [
-            "x64"
-          ]
-        },
-        {
-          "target": "portable",
-          "arch": [
-            "x64"
-          ]
-        }
-      ],
-      "icon": "resources/icon.ico"
-    },
-    "nsis": {
-      "oneClick": false,
-      "perMachine": true,
-      "allowToChangeInstallationDirectory": true,
-      "include": "resources/installer/windows-vst3.nsh"
-    },
-    "linux": {
-      "target": [
-        "AppImage",
-        "deb",
-        "rpm",
-        "tar.gz"
-      ],
-      "icon": "resources/icon.png",
-      "category": "Audio"
-    },
-    "deb": {
-      "afterInstall": "resources/installer/linux/install-vst3-from-package.sh",
-      "afterRemove": "resources/installer/linux/remove-vst3-from-system.sh",
-      "depends": [
-        "libgtk-3-0",
-        "libnotify4",
-        "libnss3",
-        "libxss1",
-        "libxtst6",
-        "xdg-utils",
-        "libatspi2.0-0",
-        "libuuid1",
-        "libsecret-1-0",
-        "libpulse0",
-        "libwebkit2gtk-4.1-0"
-      ]
-    },
-    "rpm": {
-      "afterInstall": "resources/installer/linux/install-vst3-from-package.sh",
-      "afterRemove": "resources/installer/linux/remove-vst3-from-system.sh",
-      "depends": [
-        "gtk3",
-        "libnotify",
-        "nss",
-        "libXScrnSaver",
-        "libXtst",
-        "xdg-utils",
-        "at-spi2-core",
-        "libuuid",
-        "libsecret",
-        "pulseaudio-libs",
-        "webkit2gtk4.1"
-      ]
-    }
+    "typescript": "5.9.3",
+    "vite": "7.3.6",
+    "@types/node": "24.12.0",
+    "esbuild": "0.25.12",
+    "@electron/asar": "3.4.1",
+    "7zip-bin": "5.2.0",
+    "pe-library": "0.4.1",
+    "resedit": "1.7.2",
+    "yauzl": "2.10.0"
   }
 }

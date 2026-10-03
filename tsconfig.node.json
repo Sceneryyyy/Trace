@@ -1,11 +1,12 @@
 {
   "compilerOptions": {
-    "composite": true,
+    "target": "ES2022",
     "skipLibCheck": true,
     "module": "ESNext",
     "moduleResolution": "bundler",
     "allowSyntheticDefaultImports": true,
-    "strict": true
+    "strict": true,
+    "noEmit": true
   },
-  "include": ["electron-vite.config.ts"]
+  "include": ["electron-vite.config.ts", "electron-vite.trace.config.ts"]
 }

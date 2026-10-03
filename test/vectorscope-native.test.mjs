@@ -1,55 +1,34 @@
 import assert from 'node:assert/strict'
-import { createRequire } from 'node:module'
 import test from 'node:test'
+import {engine, waveFixture, tone, near} from './native-wave-fixture.mjs'
 
-const require = createRequire(import.meta.url)
-const { vectorscope } = require('../native/build/Release/visualizer_dsp.node')
-
-function createHighFrequencyStereo(frequencyHz, sampleRate, length) {
-  const left = new Float32Array(length)
-  const right = new Float32Array(length)
-  for (let index = 0; index < length; index += 1) {
-    const phase = 2 * Math.PI * frequencyHz * index / sampleRate
-    left[index] = 0.75 * Math.sin(phase)
-    right[index] = -0.4 * Math.cos(phase)
-  }
-  return { left, right }
-}
-
-function assertArrayAlmostEqual(actual, expected, tolerance, message) {
-  assert.equal(actual.length, expected.length, `${message} length`)
-  for (let index = 0; index < expected.length; index += 1) {
-    assert.ok(
-      Math.abs(actual[index] - expected[index]) <= tolerance,
-      `${message} sample ${index}: expected ${expected[index]} +/- ${tolerance}, got ${actual[index]}`,
-    )
-  }
-}
-
-test('native vectorscope preserves full-band channel samples above the former 8 kHz cutoff', () => {
-  const length = 512
-
-  for (const sampleRate of [44100, 48000, 96000]) {
-    const frequencyHz = 12000
-    const { left, right } = createHighFrequencyStereo(frequencyHz, sampleRate, length)
-
-    vectorscope.setSampleRate(sampleRate)
-    vectorscope.reset()
-    vectorscope.pushSamples(left, right)
-    const result = vectorscope.getPoints(length)
-
-    assert.equal(result.count, length)
-    assertArrayAlmostEqual(result.x, right, 1e-7, `${sampleRate}Hz right/X`)
-    assertArrayAlmostEqual(result.y, left, 1e-7, `${sampleRate}Hz left/Y`)
+test('Trace sound field retains high-frequency stereo samples at every product rate', async t => {
+  for (const rate of [44100, 48000, 88200, 96000]) {
+    const left = tone(12000, 2048, rate, 0.75), right = tone(12000, 2048, rate, -0.4, Math.PI / 2)
+    const f = waveFixture([left, right], rate); t.after(f.cleanup)
+    const result = await engine.instrumentAnalyze(f.request())
+    assert.equal(result.field.points.length, 2048 * 4)
+    for (let i = 0; i < 2048; i++) {
+      near(result.field.points[i * 4], (right[i] - left[i]) / 2, 1e-7, 'scope side X')
+      near(result.field.points[i * 4 + 1], (right[i] + left[i]) / 2, 1e-7, 'scope mid Y')
+      near(result.field.points[i * 4 + 2], (2048 - i) / rate, 1e-8, 'real point age')
+      assert.equal(result.field.points[i * 4 + 3], 0)
+    }
   }
 })
 
-test('native vectorscope legacy process keeps the renderer-facing X/Y channel shape', () => {
-  const { left, right } = createHighFrequencyStereo(15000, 48000, 256)
-  vectorscope.setSampleRate(48000)
-  vectorscope.reset()
-
-  const result = vectorscope.process(left, right)
-  assertArrayAlmostEqual(result.x, right, 1e-7, 'legacy right/X')
-  assertArrayAlmostEqual(result.y, left, 1e-7, 'legacy left/Y')
+test('Trace field reports phase, balance, silence and clipping through its actual API', async t => {
+  const full = tone(1000, 4800, 48000, 0.5), negative = Float32Array.from(full, x => -x), zero = new Float32Array(4800)
+  for (const [left, right, correlation, balance] of [[full, full, 1, 0], [full, negative, -1, 0], [full, zero, null, -1]]) {
+    const f = waveFixture([left, right]); t.after(f.cleanup)
+    const r = await engine.instrumentAnalyze(f.request())
+    if (correlation === null) assert.equal(r.field.correlation.status, 'insufficient')
+    else near(r.field.correlation.value, correlation, 1e-8, 'correlation')
+    near(r.field.balance.value, balance, 1e-8, 'balance')
+    assert(r.field.points.length <= 2048 * 4); assert.equal(r.field.polarRms.length, 181)
+  }
+  const silence = waveFixture([zero, zero]); t.after(silence.cleanup)
+  assert.equal((await engine.instrumentAnalyze(silence.request())).field.balance.status, 'silence')
+  const over = waveFixture([new Float32Array(2048).fill(2), new Float32Array(2048).fill(2)]); t.after(over.cleanup)
+  assert.equal((await engine.instrumentAnalyze(over.request())).field.points[3], 1)
 })

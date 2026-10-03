@@ -1,5 +1,10 @@
 # Generated PDFs must keep their exact bytes; do not apply text conversion or EOL filters.
 output/pdf/*.pdf binary
+# Preserve the upstream README snapshot exactly after retiring its build tree.
+references/prism/README.original.txt binary
+# Provenance and security evidence use byte identities across Linux/Windows.
+native/vendor/prism-fft/** -text
+package-lock.json -text
 
 # Preserve the original EBU test archive and official documents byte for byte.
 references/ebu-loudness-test-set-v5/*.zip binary

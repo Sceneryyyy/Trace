@@ -1,0 +1,43 @@
+{
+  "name": "Prism FFT (Trace-maintained extraction)",
+  "repository": "https://github.com/Boof2015/prism",
+  "commit": "df0755b8caaaab85157ac51aefffca0526974fc1",
+  "license": "GPL-3.0-only (the pinned package.json license); COPYING retains the complete original LICENSE",
+  "exportedSymbols": [
+    "DSP::FFT"
+  ],
+  "callers": [
+    "native/src/recorder/InstrumentAnalysis.cpp"
+  ],
+  "contract": "Existing radix-2 FFT, instantiated only at validated sizes 512/1024/2048/4096/8192/16384 by Trace. No algorithm, scaling, floating-point or buffer changes.",
+  "files": [
+    {
+      "file": "FFT.h",
+      "sourcePath": "native/src/dsp_utils.h",
+      "sourceSha256": "52f1cd4ef6b00227fd46adfa75237957c4b35628ac5d6371d26b65d3f3ee5c95",
+      "sourceLines": "1-28",
+      "sha256": "ea998b874c568fbfa646543587b479d46574d7f7515bc9735309fe69080d25e2",
+      "changes": [
+        "Keep the original preamble and FFT class byte-for-byte; exclude unrelated DSP declarations; close namespace."
+      ]
+    },
+    {
+      "file": "FFT.cpp",
+      "sourcePath": "native/src/dsp_utils.cpp",
+      "sourceSha256": "63bad15b4eb398bd12df5f4439bcafe2d62aee0a1edd3541d5dd560c77dfa7bf",
+      "sourceLines": "1-70",
+      "sha256": "147fbd4da05b2c850705fa66dffb1d03cb8604983c0ad1d727939a850d59975d",
+      "changes": [
+        "Keep all FFT function bodies byte-for-byte; rename local include to FFT.h; exclude unrelated DSP functions; close namespace."
+      ]
+    },
+    {
+      "file": "COPYING",
+      "sourcePath": "LICENSE",
+      "sourceSha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+      "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+      "changes": []
+    }
+  ],
+  "notes": "README.md"
+}

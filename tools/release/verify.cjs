@@ -4,13 +4,13 @@ const root=path.resolve(__dirname,'../..'),folder=path.join(root,'artifacts/rele
 fs.mkdirSync(folder,{recursive:true})
 const commit=execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim()
 const sourceDirty=Boolean(execFileSync('git',['status','--porcelain'],{cwd:root,encoding:'utf8'}).trim())
-const report={schemaVersion:1,commit,sourceDirty,platform:process.platform,arch:process.arch,status:'running',checks:[],scope:'Engineering checks; no real device, official EBU WAV, signing or user acceptance'}
+const report={schemaVersion:1,commit,sourceDirty,platform:process.platform,arch:process.arch,status:'running',checks:[],scope:'Trace engineering checks; Windows includes original EBU WAV and real N-API file analysis; no real device, signing or user acceptance'}
 const scripts=['typecheck','test:trace','build:trace']
-if(process.platform==='win32'){scripts.unshift('build:trace-engine');scripts.push('test:capture-support','test:lufsmeter-native','test:trace-native')}
+if(process.platform==='win32'){scripts.unshift('build:trace-engine');scripts.push('test:trace-native')}
 try{
  for(const script of scripts){
   const npm=process.platform==='win32'?['cmd.exe',['/d','/s','/c','npm run '+script]]:['npm',['run',script]]
-  const result=spawnSync(npm[0],npm[1],{cwd:root,stdio:'inherit',env:{...process.env,TRACE_REQUIRE_NATIVE:'1'},windowsHide:true})
+  const result=spawnSync(npm[0],npm[1],{cwd:root,stdio:'inherit',env:{...process.env,TRACE_REQUIRE_NATIVE:'1',TRACE_REQUIRE_EBU:'1'},windowsHide:true})
   report.checks.push({command:'npm run '+script,exitCode:result.status,status:!result.error&&result.status===0?'pass':'fail'})
   if(result.error||result.status!==0)throw result.error||Error('Failed: '+script)
  }

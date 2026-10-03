@@ -7,9 +7,10 @@
 // portable: pure TypeScript sources bundled on the fly by esbuild. No compiled
 //   native module, no ffmpeg, no packaged application. Runs on any OS and on a
 //   clean checkout after `npm ci`, which makes this the tier CI can enforce.
-// native: needs build/trace-engine/Release/trace_engine.node,
-//   native/build/Release/visualizer_dsp.node or .tools/ffmpeg. Windows only,
+// native: needs build/trace-engine/Release/trace_engine.node or .tools/ffmpeg. Windows only,
 //   and only after the corresponding build step.
+// Archived Prism-specific API tests in archive/prism are historical references;
+// their Trace equivalents here exercise production Trace N-API and C++ kernels.
 
 export const portable = [
   'analysis-retention.test.mjs',
@@ -60,7 +61,7 @@ export const portable = [
   'support-journal.test.mjs',
   'surface-settings.test.mjs',
   'trace-contracts.test.mjs',
-  'trace-m0-report.test.mjs',
+  'probe-report.test.mjs',
   'workbench-navigation.test.mjs',
   'workspace-layout.test.mjs',
 ]
@@ -69,10 +70,10 @@ export const portable = [
 export const native = {
   'cache-recording.test.mjs': 'build/trace-engine/Release/trace_engine.node',
   'import-service.test.mjs': '.tools/ffmpeg',
-  'lufsmeter-native.test.mjs': 'native/build/Release/visualizer_dsp.node',
+  'lufsmeter-native.test.mjs': 'build/trace-engine/Release/trace_engine.node',
   'native-long-path.test.mjs': 'build/trace-engine/Release/trace_engine.node',
   'recording-continuation.test.mjs': 'build/trace-engine/Release/trace_engine.node + .tools/ffmpeg',
-  'spectrogram-native.test.mjs': 'native/build/Release/visualizer_dsp.node',
-  'spectrum-native.test.mjs': 'native/build/Release/visualizer_dsp.node',
-  'vectorscope-native.test.mjs': 'native/build/Release/visualizer_dsp.node',
+  'spectrogram-native.test.mjs': 'build/trace-engine/Release/trace_engine.node',
+  'spectrum-native.test.mjs': 'build/trace-engine/Release/trace_engine.node',
+  'vectorscope-native.test.mjs': 'build/trace-engine/Release/trace_engine.node',
 }

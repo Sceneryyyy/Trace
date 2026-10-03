@@ -59,7 +59,7 @@ app.whenReady().then(async () => {
     requireCheck(!invalid.ok && invalid.error.code === 'INVALID_REQUEST', 'IPC rejects commands outside whitelist')
     const stale = await evaluate("window.trace.request({protocolVersion:1,requestId:crypto.randomUUID(),expectedStateRevision:0,command:'live.stop',payload:{}})")
     requireCheck(!stale.ok && stale.error.code === 'STALE_REQUEST' && stale.state.active, 'Stale mutation cannot stop current capture')
-    const fixture = spawn(path.join(root,'build/m0/Release/trace-capture-probe.exe'),['raw','--seconds','6','--fixture'],{windowsHide:true,stdio:'ignore'})
+    const fixture = spawn(path.join(root,'build/trace-diagnostics/Release/trace-capture-probe.exe'),['raw','--seconds','6','--fixture'],{windowsHide:true,stdio:'ignore'})
     const fixtureDone = new Promise(resolve => fixture.on('close', code => resolve(code)))
     await delay(1200)
     for (const [width, height] of [[1280, 800], [1024, 700]]) {

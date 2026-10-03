@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [recorder/dev, main]
   workflow_dispatch:
+    inputs:
+      package_candidate:
+        description: Build and inspect a private Windows engineering candidate
+        type: boolean
+        default: false
   workflow_call:
     inputs:
       package_candidate:
@@ -22,7 +27,7 @@ concurrency:
 jobs:
   portable:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
@@ -31,8 +36,7 @@ jobs:
           cache: npm
       - name: Install locked dependencies
         run: npm ci
-        env:
-          PRISM_SKIP_NATIVE_POSTINSTALL: '1'
+      - run: npm run check:independence
       - run: npm run typecheck
       - run: npm run test:trace
       - run: npm run build:trace
@@ -40,7 +44,8 @@ jobs:
         run: |
           cmake -S native/portable -B build/trace-portable -DCMAKE_BUILD_TYPE=RelWithDebInfo -DTRACE_SANITIZE=ON -DTRACE_REQUIRE_EBU=ON
           cmake --build build/trace-portable --parallel 4
-          ctest --test-dir build/trace-portable --parallel 2 --output-on-failure --output-junit portable-results.xml
+          ctest --test-dir build/trace-portable --parallel 2 -E '^ebu_wav$' --output-on-failure --output-junit portable-core-results.xml
+          ctest --test-dir build/trace-portable -R '^ebu_wav$' --output-on-failure --output-junit ebu-wav-results.xml
       - name: Actual React subscription regression in Chromium
         run: node tools/audit/snapshot-selector.cjs
         env:
@@ -54,7 +59,8 @@ jobs:
         with:
           name: trace-portable-evidence
           path: |
-            build/trace-portable/portable-results.xml
+            build/trace-portable/portable-core-results.xml
+            build/trace-portable/ebu-wav-results.xml
             build/trace-portable/ebu-wav-results.json
             artifacts/cloud-regression/selector-*/result.json
             artifacts/release-cloud/renderer-*/report.json
@@ -63,7 +69,7 @@ jobs:
   windows:
     needs: portable
     runs-on: windows-2022
-    timeout-minutes: 45
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
@@ -72,12 +78,11 @@ jobs:
           cache: npm
       - name: Install locked dependencies
         run: npm ci
-        env:
-          PRISM_SKIP_NATIVE_POSTINSTALL: '1'
-      - name: Build pinned Electron native prerequisites
-        run: npm run rebuild:native
-        env:
-          npm_config_devdir: ${{ github.workspace }}/.tools/node-gyp
+      - run: npm run check:independence
+      - name: Fetch pinned Electron SDK without building another application
+        run: npm run install:trace-sdk
+      - name: Compile independent Trace diagnostic fixtures
+        run: npm run build:trace-diagnostics
       - run: node tools/prefetch-ffmpeg.mjs
       - name: Verify Trace and retain command outcomes
         run: node tools/release/verify.cjs
