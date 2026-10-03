@@ -59,6 +59,14 @@ Session v2、Request v1、Meter v4、磁盘分析缓存 key v3 保持；新增�
 
 素材仅限私有内部研发测试，保留 EBU 原始条款，不随应用包或公开 Release 分发。本次没有调整音频算法、产品版本或构建配置。
 
+### 2026-10-03 本会话复验
+
+已按用户命令切换 recorder/dev 并尝试 `git pull --ff-only`；本地 `2e26689` 与远程 `9c53e4a` 分叉，因此保留两边并完成本地合并 `b83c9bd`，解决 07/13 文档冲突。`prepare.py` 已成功运行，独立 Gentoo Manifest 的大小/SHA-512/BLAKE2b 也全部匹配。详细证据见 [77](77-EBU-MIRROR-VALIDATION.md)。
+
+使用真实 Trace Meter 的 Linux Release 探针测试原始 WAV：68 个适用文件中 51 通过、17 失败，2 个多声道排除。112 项数值断言中 32 项失败，均为 3341 case 13/14 的 Max M 低读约 0.216–0.451 LU；两种输入分块的全部读数一致、EOF 帧数正确（136 项通过）。TP 15–23、两份节目的 I/LRA 与其余适用数值通过。同一底层库每 10 ms 查询 M 的独立诊断通过，指向 Trace 每 100 ms 查询 M 时漏过偏移窗口最大值。未改计量算法，不能记为 EBU 合规通过。新增 export-ignore 并实际检查源码归档排除内部素材；本轮未推送。
+
+下一项云端工作：原始 WAV runner 接入及 Max M 查询/统计节奏修复，保留既有历史/帧语义与资源边界，再补 Windows 实际文件路径。本次材料核验只包含 Meter，未验 addon/WavReader/UI/WASAPI。
+
 ### 应用与实机待办
 
 Windows 可用后，在仓库根执行 `.\Trace.ps1 -Action Engine`（构建并自动执行 CTest），随后运行 `.\Trace.ps1 -Action Check` 与主题 flow，确认新质量字段的原生边界及严格首帧断言，再按用户最初场景播放约三分钟在线视频，交叉操作监听/录音/回听/报告跳转/缓存保存。

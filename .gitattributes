@@ -7,3 +7,6 @@ references/ebu-loudness-test-set-v5/archive-parts/* binary
 references/ebu-loudness-test-set-v5/*.pdf binary
 # The extracted upstream readme keeps its original CRLFs and trailing blank lines.
 references/ebu-loudness-test-set-v5/readme.txt binary
+# Internal EBU material is available to private Git clones, not release source ZIPs.
+references/ebu-loudness-test-set-v5 export-ignore
+references/ebu-loudness-test-set-v5/** export-ignore
