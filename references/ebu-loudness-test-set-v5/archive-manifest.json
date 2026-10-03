@@ -1,0 +1,62 @@
+{
+  "archive_name": "ebu-loudness-test-setv05.zip",
+  "archive_bytes": 91631421,
+  "archive_sha256": "9cc500b4df83f7c21855c74dce795ef5209a752bf884253ae57d0ce512efb062",
+  "parts": [
+    {
+      "name": "ebu-loudness-test-setv05.zip.part-000",
+      "bytes": 8388608,
+      "sha256": "1a4c6dc5adfac267d74aa72718f8fd4f09877b3c66644bac4dec8d2d8c920d02"
+    },
+    {
+      "name": "ebu-loudness-test-setv05.zip.part-001",
+      "bytes": 8388608,
+      "sha256": "b86cd99b79c104d12b34071c331921b9d8b3dd2d3829ca8b40db0a0141b0bb40"
+    },
+    {
+      "name": "ebu-loudness-test-setv05.zip.part-002",
+      "bytes": 8388608,
+      "sha256": "3d679cdc1a9ffb203350c0a6acf28e7746acebc05f0bae02f6c41ff92a2735c3"
+    },
+    {
+      "name": "ebu-loudness-test-setv05.zip.part-003",
+      "bytes": 8388608,
+      "sha256": "57e057fe36fc2076d3f3e68c513e328354b603ae2ae6d4c3a68831a13ecf45c4"
+    },
+    {
+      "name": "ebu-loudness-test-setv05.zip.part-004",
+      "bytes": 8388608,
+      "sha256": "dff7b7c9d6b37ea6c111a3957e8f24fd074af3fd2f7b528183099ce63117e882"
+    },
+    {
+      "name": "ebu-loudness-test-setv05.zip.part-005",
+      "bytes": 8388608,
+      "sha256": "35eb68d2ce773b451e1c1cb1fe5e2438b9dab59026115b3be6a64c835b50f3d3"
+    },
+    {
+      "name": "ebu-loudness-test-setv05.zip.part-006",
+      "bytes": 8388608,
+      "sha256": "4988f3b5329201dba6b8bf8b80e8cfc5941eb68cacdb92b15c5f787da625d806"
+    },
+    {
+      "name": "ebu-loudness-test-setv05.zip.part-007",
+      "bytes": 8388608,
+      "sha256": "5c136eaf08a4ddd2f518d8b14306ff516916bf80d0c9e9d8425f10a93b1c7dcd"
+    },
+    {
+      "name": "ebu-loudness-test-setv05.zip.part-008",
+      "bytes": 8388608,
+      "sha256": "9c670bacc4669bbd39abcc8d9c66f791cb7c9ad5d7834d136417978045083b81"
+    },
+    {
+      "name": "ebu-loudness-test-setv05.zip.part-009",
+      "bytes": 8388608,
+      "sha256": "e7810963660736b0ea90da3704ca60d1b7436fa11e02a64b7fa3b384081c1357"
+    },
+    {
+      "name": "ebu-loudness-test-setv05.zip.part-010",
+      "bytes": 7745341,
+      "sha256": "daf3100aa2f20d43299fea66e0e6188fbd0475ebba3f521348100193e5333076"
+    }
+  ]
+}

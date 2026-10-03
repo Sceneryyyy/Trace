@@ -1,5 +1,16 @@
 # Third-Party Notices
 
+## EBU Loudness Test Set (internal research material)
+
+© EBU. The private development repository contains the EBU Loudness Test Set
+v5.0 and official reference documents under
+`references/ebu-loudness-test-set-v5/`. They retain their original rights and
+are not covered by the project's GPL license. Use is limited by the EBU Audio
+Test Sequences Terms of Use included in that directory. These files are internal
+technical test material and must not be included in application packages or
+public source/release distributions. See that directory's README for exact
+sources, SHA-256 values, and permitted-use information.
+
 ## FTXUI
 
 Prism TUI statically links [FTXUI](https://github.com/ArthurSonzogni/FTXUI),
