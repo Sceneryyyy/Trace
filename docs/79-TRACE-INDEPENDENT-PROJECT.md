@@ -87,6 +87,8 @@ node tools/release/candidate.cjs
 
 工程独立化已完成。GitHub 私有附件 `trace-windows-candidate`（ID `11267953983`，212,794,813 字节）绑定 preview.31 与 `db005b5`，详见 [13](13-HANDOFF.md)。随包提供项目源码、PDF、验证记录、manifest 与校验。依赖及 GPL 许可义务保留；独立工程不等于免除第三方依赖。
 
+实现及验证文档已随 `eae33e5` 提交并同步 GitHub `recorder/dev`，同步后分支身份与干净工作区已核验。后续文档补充不改变 `db005b5` 的候选和音频验证身份；环境恢复、证据保存及后续任务顺序见 [下一会话接力](13-HANDOFF.md#下一会话接力)。
+
 [可审查的验证记录](release/independence-verification.json) 保存实现提交、最终 run/job IDs、完成态 job 日志 SHA、三份附件的 GitHub 归档 metadata、从零/本地计量证明及范围。完成日志已读取；云端代理 403 阻止 Azure 附件 payload 下载，未把归档 digest 当作内含 JSON 的 digest。68/112/204 精确计数来自本地干净提交报告，其计量测试源码 SHA 与最终代码一致；远程原始 WAV CTest 的强制适用分母/数值门禁通过。最后文档提交只记录这些证据，不算新音频测试。
 
 正式发布仍需按 76 完成物理设备、实时/选区/导出全链路、96 kHz、三分钟在线视频、长录音、GPU/DPI、签名、依赖安全、FFmpeg 对应源码和用户验收；这些不再是脱离 Prism 工程构建的阻塞。

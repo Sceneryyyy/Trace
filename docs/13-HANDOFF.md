@@ -35,6 +35,28 @@
 
 工程独立化目标已达成。正式发布、物理设备/96 kHz、三分钟在线视频操作、长测/GPU/DPI、签名、安全修复、FFmpeg 对应源码及用户验收按 [76](76-RELEASE-CHECKLIST.md) 继续跟踪。本节是当前状态，下方阶段记录只保留当时证据。
 
+## 下一会话接力
+
+独立化实现、两次 CI 修复及验证文档已随 `eae33e592ae9d57bf5b6f2dfa4bf1faac7554fe1` 交付到 GitHub `recorder/dev`，当时已核对本地 HEAD、远程跟踪分支及 GitHub 分支完全一致，工作区干净。本次接力补充只更新文档；后续 checkout 的实际 HEAD 以 Git 为准。数值/Windows/候选验证仍绑定代码提交 `db005b5`，文档提交不改变候选身份，也不算新的音频测试。
+
+| 接力材料 | 位置与用途 |
+| --- | --- |
+| 当前工程入口与复现 | [79](79-TRACE-INDEPENDENT-PROJECT.md)、[开发入门](../CODEX-START.md)、[Windows 环境](09-WINDOWS-SETUP.md)；当前工具链用 `toolchain.trace.json`，M0 清单是历史记录 |
+| 可克隆的验证摘要 | [independence-verification.json](release/independence-verification.json)，包含源码/锁文件身份、测试范围、日志 SHA 和附件元数据 |
+| 远程原始证据与候选 | 本节顶部的 Actions run 与私有附件；下载后按附件内 `manifest.json`、`SHA256SUMS.txt` 核对实际包，GitHub 归档 digest 单独记录 |
+| 当前云工作区的完整本地证据 | 忽略目录 `artifacts/independence/`，包括 `ebu-wav-committed.json`、从零安装/本地原生日志、`ci-db005b-watch/` 完成日志；这些不会随 clone 下载 |
+| 原始 EBU 素材 | 私有仓库 `references/ebu-loudness-test-set-v5/`；执行 `python3 references/ebu-loudness-test-set-v5/prepare.py` 离线还原并核验；公开归档不含素材 |
+
+接力时先检查目录、分支与未提交修改；工作区干净且没有本地分叉时，再执行 `git switch recorder/dev` 和 `git pull --ff-only origin recorder/dev`。有分叉则保留两边历史，不能 reset 覆盖。按本次任务选择验证；仅更新文档检查链接与 diff，音频/构建/依赖有变化时重新运行对应门禁。
+
+后续发布工作的顺序：
+
+1. 只有云环境时，先处理 [安全基线](release/security-baseline.json) 的固定工具链公告和 FFmpeg 对应源码资料；依赖每次变更同步锁文件/SDK/清单，并重新取得同一源码提交的完整 CI 与候选证据。
+2. Windows 实机到位后，按 76 的 WIN/FLOW/DEV/METER 复验三分钟在线视频、录音/回听/缓存/选区/导出及真实设备/96 kHz，再补长测、故障收尾、GPU/DPI 和资源记录。
+3. 实机与依赖门禁关闭后，处理签名、下载后首次启动、独立用户和邀请测试，最后评估正式发布。preview.31 现有附件保持私有工程候选身份。
+
+维护本地 FFT 时同步来源/hash/许可和独立数值对照；构建图标保持输出到 `build/trace-icons/`。旧 Prism 测试文本、退役工程及历史脚本保留追溯用途，当前默认构建和验收入口按 79 执行。
+
 ## 历史云端发布准备（独立化之前）
 
 用户授权完成可独立执行的发布准备并提交本地 Git。交付见 [75](75-CLOUD-RELEASE-PREPARATION.md)，下一环境门禁见 [76](76-RELEASE-CHECKLIST.md)。
