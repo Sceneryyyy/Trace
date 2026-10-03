@@ -52,6 +52,8 @@ Trace 是 LeoMoon 系列的桌面音频录音与分析工作台。它把系统�
 
 本项目仍处于开发预览阶段。preview.30 有历史 Windows 自动化及打包证据；preview.31 的最新修复已通过 Linux 云端类型、可移植测试和应用资源构建，Windows 原生重编译与真实设备复验尚未执行。独立干净 Windows、不同声卡/驱动、真实 96 kHz 等验收仍需补充；Windows 分发包尚未签名。macOS 采集、权限、打包与签名/公证尚未完成实机验证。云端 CI/打包/退出与依赖收尾见 [75](docs/75-CLOUD-RELEASE-PREPARATION.md)，正式发布门禁见 [76](docs/76-RELEASE-CHECKLIST.md)。当前仍有 Electron/打包原生链安全公告待处理；具体证据与待办以 [当前交接记录](docs/13-HANDOFF.md) 为准。
 
+Meter v5 的适用 EBU 原始 WAV 已在云端通过 68/68；响度索引和报告峰值修复见 [78](docs/78-EBU-METER-RECALIBRATION.md)，Windows 新引擎/实际文件路径与设备验收仍待补充。
+
 ## 开发入口
 
 Trace 使用 Electron / React / TypeScript，Windows 音频后端使用原生 C++ / WASAPI，计量使用 libebur128，格式转换使用 FFmpeg。项目采用锁定依赖和本地构建工具，准备环境时先阅读 [工具链记录](toolchain.m0.json) 与 [开发交接](docs/13-HANDOFF.md)。

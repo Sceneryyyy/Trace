@@ -7,7 +7,7 @@
 | 协议/格式 | 当前版本与定义 |
 | --- | --- |
 | Request / Reply / native meter 的 protocolVersion | 1 |
-| 计量算法 | Meter v4，见 [03](03-AUDIO-METERING.md) |
+| 计量算法 | Meter v5，见 [03](03-AUDIO-METERING.md) |
 | 会话 | Session v2，兼容读取 v1，见 [04](04-DATA-FORMATS.md) |
 | 磁盘分析缓存 | 二进制 schema v1；分析缓存 key v3 |
 | 冻结内存历史 | ReplayFreeze 元数据 v3；quality v1，见 [ReplayBuffer.h](../native/src/recorder/ReplayBuffer.h) 与 [replaySaveTypes.ts](../src/trace/replaySaveTypes.ts) |
@@ -114,7 +114,7 @@ type Reply = {
 
 NativeMeterSnapshot 公开 sourceKind/sourceId/epochId/measurementEpoch、active/error、`format: SourceFormat`、measurementConfigId、positionFrame/measurementFrames、levelIndexFrame/loudnessIndexFrame、continuity、各声道 Peak/RMS/TP、M/S/I/LRA/MAX TP、lraProvisional 和有界历史。采样率在 `format.sampleRate`，不是快照顶层 sampleRate；文件整段 I 在 `fileView.wholeFileIntegrated`，原生输出代次在 `playback.generation`，没有草案中的顶层 playbackGeneration。
 
-电平/响度历史的实际索引分别对应 10 ms/100 ms 步长，不代表每个采样点都有独立 LUFS。录音会话视图使用 `timelineRate=1e9` 的纳秒坐标；不能按当前设备采样率解释跨区域时间轴。控制 revision 不因每帧音频刷新而改变，呈现快照另有有序 eventSequence。FILE 按已呈现位置查询确定历史，循环不累加 I。
+Meter v5 的电平与完整响度记录均为 10 ms 实际索引；曲线呈现可降采样并保持有界，不代表每个采样点都有独立 LUFS。录音会话视图使用 `timelineRate=1e9` 的纳秒坐标；不能按当前设备采样率解释跨区域时间轴。控制 revision 不因每帧音频刷新而改变，呈现快照另有有序 eventSequence。FILE 按已呈现位置查询确定历史，循环不累加 I。
 
 ## 原生所有权、质量与恢复
 

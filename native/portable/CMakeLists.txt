@@ -26,8 +26,10 @@ endif()
 enable_testing()
 # replay_buffer also exercises WaveSequence/WavReader and remains in Windows
 # CTest. This target never substitutes a fake reader for the Windows file path.
-foreach(case ebu_reference meter_init tp_time replay_quality instrument_analysis spectrogram_tile)
+foreach(case ebu_reference meter_cadence meter_init tp_time replay_quality instrument_analysis spectrogram_tile)
  add_executable(${case} ../../test/native/${case}_tests.cpp)
  target_link_libraries(${case} PRIVATE trace_portable)
  add_test(NAME ${case} COMMAND ${case})
 endforeach()
+include(../ebu-tests.cmake)
+trace_add_ebu_wav_gate(trace_portable ebu_wav_probe ebu_wav FALSE)

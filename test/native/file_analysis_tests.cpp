@@ -52,7 +52,7 @@ int main(){
             const auto first=Trace::analyzeFiles({input},root/"chunks-a",a),second=Trace::analyzeFiles({input},root/"chunks-b",b);
             REQUIRE(first.frames==data.size()/2&&first.streams.size()==8);
             REQUIRE(first.streams[0].records==1201&&first.streams[0].pages==2);
-            REQUIRE(first.streams[1].records==121&&first.summary.frame==first.frames&&first.summary.loudnessFrame==first.frames);
+            REQUIRE(first.streams[1].records==1201&&first.streams[1].stride==1&&first.summary.frame==first.frames&&first.summary.loudnessFrame==first.frames);
             for(const auto& stream:first.streams){REQUIRE(bytes(root/"chunks-a"/stream.file)==bytes(root/"chunks-b"/stream.file));records(root/"chunks-a"/stream.file,stream);}
             Trace::Meter reference(48000,2);reference.push(data.data(),static_cast<uint32_t>(data.size()/2));reference.finish();
             REQUIRE(first.summary.integrated.value==reference.values().integrated.value);

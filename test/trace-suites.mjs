@@ -28,6 +28,7 @@ export const portable = [
   'library-visibility.test.mjs',
   'm6-settings.test.mjs',
   'metric-readout.test.mjs',
+  'meter-cache-cadence.test.mjs',
   'native-analysis-queue.test.mjs',
   'operation-feedback.test.mjs',
   'playback-service.test.mjs',

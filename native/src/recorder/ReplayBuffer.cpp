@@ -73,11 +73,22 @@ ReplayView ReplayClip::view(uint64_t position,uint64_t start,uint64_t end,size_t
  auto row=std::upper_bound(history.begin(),history.end(),absolute,[](uint64_t f,const ReplayPoint& p){return f<p.meters.frame;});
  if(row!=history.begin()){result.meters=(--row)->meters;result.meters.frame-=originFrame;result.meters.loudnessFrame=result.meters.loudnessFrame>=originFrame?result.meters.loudnessFrame-originFrame:0;}
  if(!columns)return result;
+ const auto loudCount=static_cast<size_t>(std::count_if(history.begin(),history.end(),[&](const ReplayPoint& p){return p.loud&&p.wave.frame>=originFrame+start&&p.wave.frame<=originFrame+end;}));
+ const auto loudPoints=std::min<size_t>(600,loudCount);
+ result.loudness.reserve(loudPoints);
+ size_t loudIndex=0,loudEmitted=0;uint32_t loudFlags=0;
  std::vector<WavePoint> points;
  for(const auto& p:history){
   if(p.wave.frame<originFrame+start||p.wave.frame>originFrame+end)continue;
   auto wave=p.wave;wave.frame-=originFrame;points.push_back(wave);
-  if(p.loud)result.loudness.push_back({p.meters.loudnessFrame>=originFrame?p.meters.loudnessFrame-originFrame:0,p.meters.momentary,p.meters.shortTerm,p.meters.integrated,p.wave.flags});
+  if(p.loud&&loudPoints){
+   loudFlags|=p.wave.flags;
+   if(loudIndex==(loudEmitted+1)*loudCount/loudPoints-1){
+    result.loudness.push_back({p.meters.loudnessFrame>=originFrame?p.meters.loudnessFrame-originFrame:0,p.meters.momentary,p.meters.shortTerm,p.meters.integrated,loudFlags});
+    ++loudEmitted;loudFlags=0;
+   }
+   ++loudIndex;
+  }
  }
  const auto group=std::max<size_t>(1,(points.size()+columns-1)/columns);
  for(size_t i=0;i<points.size();i+=group){auto p=points[i];for(size_t j=i+1;j<std::min(points.size(),i+group);++j){p.frame=points[j].frame;p.flags|=points[j].flags;for(uint32_t c=0;c<format.channels;++c){p.minimum[c]=std::min(p.minimum[c],points[j].minimum[c]);p.maximum[c]=std::max(p.maximum[c],points[j].maximum[c]);}}result.waveform.push_back(p);}

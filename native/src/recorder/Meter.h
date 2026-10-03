@@ -16,10 +16,11 @@ class Meter {
     std::vector<double> squares_;
     size_t rmsCursor_ = 0, rmsCount_ = 0;
     std::array<float,2> minimum_{},maximum_{};
-    uint32_t hopFlags_ = 0,loudnessFlags_ = 0;
+    uint32_t hopFlags_ = 0;
     MeterValues raw_,current_;
     std::array<WavePoint,6000> waves_{};
-    std::array<LoudnessPoint,600> loudness_{};
+    // 60 seconds at the 10 ms measurement cadence; allocated once on owner init.
+    std::vector<LoudnessPoint> loudness_;
     uint64_t waveCount_ = 0,loudnessCount_ = 0;
     struct TpBin {uint64_t index=UINT64_MAX;std::array<double,2> peak{};};
     struct PendingFrame {MeterValues values;WavePoint wave;uint64_t window=0;uint32_t loudFlags=0;bool loud=false;};

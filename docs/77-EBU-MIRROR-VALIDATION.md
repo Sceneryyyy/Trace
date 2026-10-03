@@ -2,6 +2,8 @@
 
 2026-10-03。素材来源提交 `9c53e4a`，与本地发布准备 `2e26689` 合并为 `b83c9bd`。源码仍为 preview.31。本轮没有修改计量算法、协议或生成 Windows 包。
 
+本文保留修复前的失败基线。后续 Meter v5 已修复 Max M，适用原始素材 68/68 通过；当前结果与复现入口见 [78](78-EBU-METER-RECALIBRATION.md)。
+
 ## 素材可用性
 
 [EBU Loudness Test Set v5.0](../references/ebu-loudness-test-set-v5/README.md) 可用于私有研发中的数值回归。执行 `python3 references/ebu-loudness-test-set-v5/prepare.py` 成功：11 个分块、5 份 PDF、ZIP CRC、70 个 WAV 的大小/SHA-256 与原始 readme 均一致。

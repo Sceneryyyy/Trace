@@ -82,19 +82,26 @@ int main(){
     for(size_t i=0;i<ranges.size();++i)tests.push_back({"3342-"+std::to_string(i+1),[=]{near(segmented(ranges[i]).range.value,expected[i],1);}});
     tests.push_back({"LRA samples the 3-second window at 10 Hz",[&]{
         Trace::Meter meter(48000,2);std::vector<double> shortTerm;
-        feed(meter,48000,48000*60,[](uint64_t f){return (f%192000)<19200?static_cast<float>(.1*std::sin(2*pi*1000*f/48000)):0.0f;},
-            [&](const Trace::MeterValues& m){if(m.shortTerm.status==Trace::MetricStatus::Ready)shortTerm.push_back(m.shortTerm.value);});
+        // Sampling values() after a 100 ms push is not a 100 ms reference:
+        // TP lookahead leaves it one 10 ms endpoint before that boundary.
+        // Select actual 100 ms source endpoints, irrespective of publication lag.
+        meter.setFrameSink([&](const Trace::MeterValues& m,const Trace::WavePoint&,bool){
+            if(m.loudnessFrame%4800==0&&m.shortTerm.status==Trace::MetricStatus::Ready)shortTerm.push_back(m.shortTerm.value);
+        });
+        feed(meter,48000,48000*60,[](uint64_t f){return (f%192000)<19200?static_cast<float>(.1*std::sin(2*pi*1000*f/48000)):0.0f;});
         near(meter.values().range.value,referenceRange(shortTerm),0.21);
     }});
     tests.push_back({"EOF LRA includes 1.5 seconds of analysis context without adding audio frames",[&]{
         Trace::Meter result(48000,2),reference(48000,2);std::vector<double> shortTerm;
         const Signal signal=[](uint64_t f){const auto amplitude=f<240000?.1:.01;return static_cast<float>(amplitude*std::sin(2*pi*1000*f/48000));};
         feed(result,48000,288000,signal);result.finish();
-        const auto observe=[&](const Trace::MeterValues& m){if(m.shortTerm.status==Trace::MetricStatus::Ready)shortTerm.push_back(m.shortTerm.value);};
-        feed(reference,48000,288000,signal,observe);feed(reference,48000,72000,[](uint64_t){return 0.0f;},observe);
+        reference.setFrameSink([&](const Trace::MeterValues& m,const Trace::WavePoint&,bool){
+            if(m.loudnessFrame%4800==0&&m.loudnessFrame<=360000&&m.shortTerm.status==Trace::MetricStatus::Ready)shortTerm.push_back(m.shortTerm.value);
+        });
+        feed(reference,48000,288000,signal);feed(reference,48000,72000,[](uint64_t){return 0.0f;});
         // Complete the delayed 7.5 s reading; the reference distribution still
         // ends at 7.5 s, not at the extra lookahead input position.
-        feed(reference,48000,480,[](uint64_t){return 0.0f;},observe);
+        feed(reference,48000,480,[](uint64_t){return 0.0f;});
         near(result.values().range.value,referenceRange(shortTerm),0.21);
         REQUIRE(result.frames()==288000&&result.values().frame==288000&&result.values().loudnessFrame==288000);
     }});

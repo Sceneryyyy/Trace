@@ -158,7 +158,7 @@ FileAnalysisResult analyzeFiles(const std::vector<std::filesystem::path>& source
     if(!std::filesystem::create_directory(newDirectory))throw std::runtime_error("CACHE_DIRECTORY_EXISTS");
     auto meter=std::make_unique<Meter>(result.sampleRate,result.channels);
     PageWriter levels(newDirectory,"levels.bin",1,kLevelRecordBytes,1);
-    PageWriter loudness(newDirectory,"loudness.bin",2,kLoudnessRecordBytes,10);
+    PageWriter loudness(newDirectory,"loudness.bin",2,kLoudnessRecordBytes,1);
     Pyramid pyramid(newDirectory);
     std::vector<float> buffer(static_cast<size_t>(options.readFrames)*result.channels);
     uint64_t lastLevel=0,lastLoudness=0,nextProgress=result.sampleRate;

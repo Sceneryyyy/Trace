@@ -2,7 +2,7 @@ import type {Metric} from './shared'
 import type {TargetSettings} from './targetSettings'
 import type {ReportRow,ReportEvent} from './reportTypes'
 const valid=(v:Metric)=>v.status==='ready'&&v.value!==null&&Number.isFinite(v.value)
-/** Events describe cached windows (10 ms TP, 100 ms loudness), never inferred sample-exact crossings. */
+/** Events describe cached 10 ms observations, never inferred sample-exact crossings. */
 export class ReportEvents {
  private active=new Map<string,ReportEvent>()
  private lastLoudness='0'

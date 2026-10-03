@@ -29,6 +29,7 @@ Meter::Meter(uint32_t rate,uint32_t channels):rate_(rate),channels_(channels){
     try{
         hop_.resize((rate/100+1)*channels);
         squares_.resize(static_cast<size_t>(rate*3/10)*channels,0);
+        loudness_.resize(6000);
     }catch(...){ebur128_destroy(&state_);throw;}
 }
 Meter::~Meter(){if(state_)ebur128_destroy(&state_);}
@@ -109,14 +110,13 @@ void Meter::finishHop(){
         raw_.channels[c].rms=amplitudeMetric(std::sqrt(sum/static_cast<double>(rmsCount_)));
     }
     const auto window=hopIndex_++;
-    loudnessFlags_|=hopFlags_;
-    const bool loud=hopIndex_%10==0;
-    if(loud)measureLoudness();
+    // Measure every real 10 ms endpoint. A 100 ms query misses shifted 400 ms
+    // windows (EBU 3341 cases 13/14), including maxima in file reports.
+    measureLoudness();
     if(pendingCount_==pending_.size())throw std::runtime_error("METER_PENDING_OVERFLOW");
     auto& pending=pending_[(pendingHead_+pendingCount_)%pending_.size()];
-    pending={raw_,{frame_,minimum_,maximum_,hopFlags_},window,loud?loudnessFlags_:0,loud};
+    pending={raw_,{frame_,minimum_,maximum_,hopFlags_},window,hopFlags_,true};
     ++pendingCount_;
-    if(loud)loudnessFlags_=0;
     hopFrames_=hopFedFrames_=0;minimum_.fill(INFINITY);maximum_.fill(-INFINITY);hopFlags_=0;
     publishReady();
 }
@@ -138,9 +138,7 @@ void Meter::finish(){
     if(hopFrames_)finishHop();
     if(!pendingCount_)throw std::runtime_error("METER_EOF_FRAME_MISSING");
     auto& last=pending_[(pendingHead_+pendingCount_-1)%pending_.size()];
-    if(raw_.loudnessFrame!=frame_){
-        measureLoudness();last.values=raw_;last.loud=true;last.loudFlags=loudnessFlags_;loudnessFlags_=0;
-    }
+    // finishHop already measured the actual EOF, including a partial hop.
     // Zero extension resolves TP lookahead and the final LRA context. These
     // samples never change the real frame count or real-EOF M/S/I/RMS/Peak.
     finalizing_=true;
@@ -184,10 +182,19 @@ std::vector<WavePoint> Meter::waveform(unsigned seconds, size_t columns) const {
     return result;
 }
 std::vector<LoudnessPoint> Meter::loudnessHistory(unsigned seconds) const {
-    const auto count = std::min<uint64_t>(loudnessCount_, std::clamp(seconds, 1u, 60u) * 10);
+    const auto count = std::min<uint64_t>(loudnessCount_, std::clamp(seconds, 1u, 60u) * 100);
+    const auto points = std::min<uint64_t>(count,600);
     std::vector<LoudnessPoint> result;
-    result.reserve(static_cast<size_t>(count));
-    for (uint64_t i = loudnessCount_ - count; i < loudnessCount_; ++i) result.push_back(loudness_[i % loudness_.size()]);
+    result.reserve(static_cast<size_t>(points));
+    // Display sampling does not replace the dense records consumed by FILE
+    // analysis/reporting. Include the latest endpoint without enlarging IPC.
+    uint64_t begin=0;
+    for (uint64_t i = 0; i < points; ++i) {
+        const auto end=(i+1)*count/points;
+        auto point=loudness_[(loudnessCount_-count+end-1)%loudness_.size()];
+        for(auto j=begin;j<end;++j)point.flags|=loudness_[(loudnessCount_-count+j)%loudness_.size()].flags;
+        result.push_back(point);begin=end;
+    }
     return result;
 }
 }

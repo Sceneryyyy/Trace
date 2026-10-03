@@ -76,11 +76,13 @@ FFmpeg 参数使用固定程序路径和参数数组，避免 shell 字符串拼
 
 ## 缓存格式
 
-波形采用多分辨率 min/max 二进制块，按声道保存。计量历史采用独立块：10 ms 电平、100 ms 响度；记录索引原点、步长、长度、状态掩码和数据版本。建议按固定时长页分块并用磁盘索引查询；首版不需要把每 10 ms 样本写成庞大的 JSON 数组。
+波形采用多分辨率 min/max 二进制块，按声道保存。计量历史采用独立块：10 ms 电平、10 ms 完整响度（Meter v5）；记录索引原点、步长、长度、状态掩码和数据版本。建议按固定时长页分块并用磁盘索引查询；首版不需要把每 10 ms 样本写成庞大的 JSON 数组。
 
 测量缓存键至少包括：资产内容哈希、实际采样率/声道、分析引擎精确版本、模式/窗口/声道映射、边界处理、缓存格式版本。只改颜色或缩放不失效；文件内容、采样率或算法改变就失效。缓存损坏时隔离并重建，不能修改原始媒体“配合”旧缓存。
 
 JSON 禁止 NaN 和 Infinity；数值为空时附 ready/silence/insufficient/gap/error 状态。不同资产的历史不能只凭“文件名相同”共享。导入/转码后 decoder delay、padding 和实际解码帧原点进入索引映射。
+
+Meter v5 保留 page schema=1、128/96 字节电平/响度记录及缓存 key version=3，响度 stride 改为 1。measurementConfigId 与引擎 hash 使旧配置缓存重建；验证器拒绝旧 v4 或稀疏 stride=10 改标的缓存。显示最多 600 点，不用显示降采样数据计算报告最大值。见 [78](78-EBU-METER-RECALIBRATION.md)。
 
 ## 恢复与一致性
 
@@ -92,7 +94,7 @@ JSON 禁止 NaN 和 Infinity；数值为空时附 ready/silence/insufficient/gap
 
 ## M3 实际缓存布局
 
-当前 schema v1 的二进制布局、CRC、按页查询和内容绑定已在 20-M3-FILE-ANALYSIS.md 固定。正式实现为 native/src/recorder/FileAnalysis.cpp 与 src/trace/analysisCache.ts。当前计量配置 v4，旧 v2/v3 历史不能复用。原始 EBU 素材尚未验收；跨率会话使用独立的固定率 session 视图，见 23。
+schema v1 的二进制布局、CRC、按页查询和内容绑定最初记录在 20-M3-FILE-ANALYSIS.md。正式实现为 native/src/recorder/FileAnalysis.cpp 与 src/trace/analysisCache.ts。当前计量配置为 v5，响度 stride=1，旧 v2/v3/v4 历史不能复用。适用 EBU 素材已通过云端 Meter 数值门禁，Windows 实际文件全链路尚未验收，见 78；跨率会话使用独立的固定率 session 视图，见 23。
 
 ## 区域时间基础
 
@@ -104,7 +106,7 @@ JSON 禁止 NaN 和 Infinity；数值为空时附 ready/silence/insufficient/gap
 
 ## M4 选区缓存身份
 
-analysisCacheKeyVersion 升为 2，加入 sourceRange；选区本地原点 0、帧数 b-a，清单验证长度与边界。二进制页仍 schema 1，Meter 配置仍 v4。旧键版本拒绝复用，源 hash/原生 hash 保持绑定。源文件、整段缓存与选区缓存不互换；见 25。
+M4 阶段 analysisCacheKeyVersion 升为 2，加入 sourceRange；选区本地原点 0、帧数 b-a，清单验证长度与边界。当时二进制页为 schema 1、Meter 配置为 v4；当前 key v3、Meter v5 见上文。旧键版本拒绝复用，源 hash/原生 hash 保持绑定。源文件、整段缓存与选区缓存不互换；见 25。
 
 ## M5 导出记录
 

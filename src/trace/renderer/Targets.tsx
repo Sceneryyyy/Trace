@@ -12,7 +12,7 @@ export function TargetSettingsForm({value,apply}:{value:TargetSettings;apply:(s:
   {(['truePeakMax','momentaryMax','shortTermMax'] as const).map((key,i)=><label key={key}>{['TP 上限 · dBTP','M 上限 · LUFS','S 上限 · LUFS'][i]}<div className="target-optional"><input type="checkbox" aria-label={'启用 '+key} checked={draft[key]!==null} onChange={e=>edit({[key]:e.target.checked?(key==='truePeakMax'?-1:-18):null})}/>{draft[key]!==null&&<input aria-label={key} type="number" step=".1" value={draft[key]!} onChange={e=>edit({[key]:Number(e.target.value)})}/>}</div></label>)}
   <label>LRA 范围 · LU<input type="checkbox" aria-label="启用 LRA 目标" checked={Boolean(draft.lra)} onChange={e=>edit({lra:e.target.checked?{min:0,max:20}:null})}/></label>
   {draft.lra&&<><label>下限 · LU<input aria-label="LRA 下限" type="number" min="0" max="50" value={draft.lra.min} onChange={e=>edit({lra:{...draft.lra!,min:Number(e.target.value)}})}/></label><label>上限 · LU<input aria-label="LRA 上限" type="number" min="0" max="50" value={draft.lra.max} onChange={e=>edit({lra:{...draft.lra!,max:Number(e.target.value)}})}/></label></>}
-  <p className="small-note">目标只用于比较，不改变音频。短于 60 秒的 LRA 不用于目标判定。M/S 事件取 100 ms 快照；I 事件表示当时累计值。</p>
+  <p className="small-note">目标只用于比较，不改变音频。短于 60 秒的 LRA 不用于目标判定。M/S 事件取 10 ms 快照；I 事件表示当时累计值。</p>
   {draft.preset!=='custom'&&<p className="small-note">{targetPresets[draft.preset].revision} · 目标参考，完整标准验收单独进行。</p>}
   {error&&<p role="status">{error}</p>}<button onClick={()=>{try{const s=validateTargetSettings(draft);void apply(s).catch(e=>setError(String(e)))}catch{setError('请检查目标范围；启用后至少选择一项。')}}}>应用目标</button><button onClick={()=>setDraft(structuredClone(defaultTargetSettings))}>恢复默认</button>
  </div>

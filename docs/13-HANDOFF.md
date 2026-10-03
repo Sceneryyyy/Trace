@@ -6,8 +6,8 @@
 
 | 项目 | 当前记录 |
 | --- | --- |
-| 源码 | `0.1.0-preview.31`；上一轮修复 `2995174`，本轮云端发布收尾见 [75](75-CLOUD-RELEASE-PREPARATION.md) |
-| Git | `Sceneryyyy/Trace`，默认开发分支 `recorder/dev`。`2995174`、`37cd0ef` 和 EBU 素材 `9c53e4a` 已推送；云端发布准备 `2e26689` 与 `9c53e4a` 在本地合并，保留两边提交。本轮未推送 |
+| 源码 | `0.1.0-preview.31`；计量配置已升级 Meter v5，EBU 修复见 [78](78-EBU-METER-RECALIBRATION.md)；云端发布准备见 [75](75-CLOUD-RELEASE-PREPARATION.md) |
+| Git | `Sceneryyyy/Trace`，默认开发分支 `recorder/dev`。`2995174`、`37cd0ef` 和 EBU 素材 `9c53e4a` 已推送；云端发布准备 `2e26689` 与 `9c53e4a` 在本地合并为 `b83c9bd`，基线核验为 `e25dc2f`。本次 v5 修复随本交接提交本地，未推送 |
 | 仪表主题 | 实现 `2938c8e`、审计修复 `c67e9e9` 等已于 2026-09-30 合入 `recorder/dev`；用户已验收开发构建并接受 71-D5 差异 |
 | 最近已验证分发包 | Windows x64 preview.30 / InternalTest-r3，来源 `9c1ee21`，包名/校验见 [69](69-INTERNAL-TEST-R3.md) |
 | preview.31 分发 | Windows 包尚未重打包；preview.31 PDF 已生成（云端模拟界面插图），preview.28 PDF 和 R3 包仍是历史快照 |
@@ -35,11 +35,11 @@
 - 录音/缓存准备失败统一恢复后台服务，包括另存；退出、维护、活动录音状态保持暂停。
 - 显示估计静音/未知完整性提示；主题首帧缺失 paint 不再被计为通过。
 
-Session v2、Request v1、Meter v4、磁盘分析缓存 key v3 保持；新增质量字段向旧记录兼容。具体类型与边界见 [03](03-AUDIO-METERING.md)、[04](04-DATA-FORMATS.md)、[05](05-UI-UX.md)、[06](06-CONTRACTS.md)。
+上述修复当时保持 Session v2、Request v1、Meter v4、磁盘分析缓存 key v3；新增质量字段向旧记录兼容。本次 EBU 修复升级 Meter v5，其余协议版本保持。具体类型与边界见 [03](03-AUDIO-METERING.md)、[04](04-DATA-FORMATS.md)、[05](05-UI-UX.md)、[06](06-CONTRACTS.md)。
 
 ## 已运行与未运行
 
-本轮最终云端检查：typecheck、portable **243/243（50 文件，0 fail/skip）**、build:trace 通过；六项可移植 C++ CTest 在 ASan/UBSan 下 6/6；真实 React selector 和模拟 IPC 的五主题/质量/读数/键盘/取消恢复通过。新增两份工作流 actionlint 通过；PDF 8 页/8 书签/4 链接、字体/文字/页面边界与渲染通过。当前依赖公告记录绑定锁文件，见 [security-baseline](release/security-baseline.json)。
+75 发布准备阶段的云端检查：typecheck、portable **243/243（50 文件，0 fail/skip）**、build:trace 通过；当时六项可移植 C++ CTest 在 ASan/UBSan 下 6/6；真实 React selector 和模拟 IPC 的五主题/质量/读数/键盘/取消恢复通过。新增两份工作流 actionlint 通过；PDF 8 页/8 书签/4 链接、字体/文字/页面边界与渲染通过。当前依赖公告记录绑定锁文件，见 [security-baseline](release/security-baseline.json)。本次 v5 的检查见下节，不复用旧结果。
 
 `2995174` 提交前云端最终检查：`npm run typecheck`、`npm run test:trace` **233/233（47 文件，0 fail/skip）**、`npm run build:trace` 通过。真实 React + Chromium 订阅专项中，相同 30 次快照的额外 render 为 0，props/值变化仍更新；新增可移植 C++ ReplayQuality 10 cases 通过。业务回归含真实 DeliveryService 失败后另存、保存→重载→回听→报告质量链路。审计阶段其他 C++ 数值检查与具体证据见 73；本地日志在忽略目录 `artifacts/cloud-audit/`、`artifacts/cloud-regression/`。
 
@@ -65,12 +65,26 @@ Session v2、Request v1、Meter v4、磁盘分析缓存 key v3 保持；新增�
 
 使用真实 Trace Meter 的 Linux Release 探针测试原始 WAV：68 个适用文件中 51 通过、17 失败，2 个多声道排除。112 项数值断言中 32 项失败，均为 3341 case 13/14 的 Max M 低读约 0.216–0.451 LU；两种输入分块的全部读数一致、EOF 帧数正确（136 项通过）。TP 15–23、两份节目的 I/LRA 与其余适用数值通过。同一底层库每 10 ms 查询 M 的独立诊断通过，指向 Trace 每 100 ms 查询 M 时漏过偏移窗口最大值。未改计量算法，不能记为 EBU 合规通过。新增 export-ignore 并实际检查源码归档排除内部素材；本轮未推送。
 
-下一项云端工作：原始 WAV runner 接入及 Max M 查询/统计节奏修复，保留既有历史/帧语义与资源边界，再补 Windows 实际文件路径。本次材料核验只包含 Meter，未验 addon/WavReader/UI/WASAPI。
+上述失败是修复前的基线；原始 WAV runner 与 Max M 修复已在下节完成。77 的材料核验只包含 Meter，未验 addon/WavReader/UI/WASAPI。
+
+### 2026-10-03 Meter v5 修复与重新校准
+
+用户要求持续修复到通过率超过 99%。保持既有单/双声道范围，真实 Meter 每 10 ms 查询完整响度，并将 FILE 缓存、精确历史定位、报告最大值同步到同一密集索引；原始 PCM、libebur128、参考值与容差没有调整。结果与复现入口见 [78](78-EBU-METER-RECALIBRATION.md)。
+
+- 原始素材 Release：**68/68 适用 WAV 通过（100%）**，112/112 数值、204/204 两种分块/真实 EOF/实际索引一致性断言通过。原来的 17 个失败文件已修复。70 个原始 WAV 均验证完整性；其中两个 5.0/5.1 文件仍超出产品范围，适用覆盖率为 68/70，不能把它们算作通过。
+- 计量配置 `trace-meter-v5-ebur128-1.2.6-lra10hz-msi100hz-tpaligned`；schema=1/key v3 保持，通过配置身份及 native hash 重建旧缓存，拒绝伪装成 v5 的旧 stride=10 缓存。源码仍 preview.31，未生成新 Windows 包。
+- 60 s 密集响度环保留 6000 点并在初始化时一次分配；LIVE/Replay 显示最多 600 点并保留桶内短缺口 flags。每 Meter 增加约 0.33 MiB，Windows 资源与回调 deadline 尚未验证。
+- 新增 85 项原生 cadence 检查已在 Release 与 ASan/UBSan 下通过；覆盖四种采样率、全部起点偏移、连续 Max M、逐读数分块一致、部分 EOF、重复定位与历史容量。辅助独立参考 18/18 通过；LRA 参考观察器改为实际 100 ms 帧号，保留原信号、分位数计算及原容差。
+- 应用 typecheck、portable **246/246（51 文件，0 fail/skip）**、build:trace 通过；新增真实 AnalysisCache/buildReport 回归验证密集缓存的两页定位、中间峰值与旧缓存拒绝。两份工作流 actionlint 通过。
+- 最终 ASan/UBSan 原始素材复跑通过（712.00 s），68/68 文件、112/112 数值、204/204 一致性断言通过。原生七项生成信号 CTest 已在最终修复下通过；八项门禁全部完成通过证据来自七项通过加一项成功复跑，不能写成一次整轮 8/8。初次旧 LRA 观察器失败和探针重构漏返回值的失败日志均保留。
+- 最终单进程 Release 基准处理 30 s 双声道 PCM，四种采样率耗时约 0.80/0.87/1.63/1.69 s；只验证云端计量核心，不能作为 Windows 应用 CPU/deadline 证据。实际源码归档排除私有素材，缺素材时不注册原始 gate，强制模式正确失败；79 份 Markdown 本地链接无缺失。
+
+原始 WAV runner 已接入 Linux/Windows CTest：私有 checkout 为 8 项 portable / 18 项 Windows 原生测试，CI 强制取得素材；公开源码归档继续排除私有 EBU 数据。Linux 使用明确标识的测试 PCM 解码器；Windows gate 已接入真实 WavReader 和 Unicode 路径入口，但本轮未运行 Windows。云端证据在忽略目录 `artifacts/ebu-recalibration/`；旧失败基线仍在 77 的目录。最终提交后的 clean Release 原始素材报告绑定实际 commit 与源码 hash。
 
 ### 应用与实机待办
 
 Windows 可用后，在仓库根执行 `.\Trace.ps1 -Action Engine`（构建并自动执行 CTest），随后运行 `.\Trace.ps1 -Action Check` 与主题 flow，确认新质量字段的原生边界及严格首帧断言，再按用户最初场景播放约三分钟在线视频，交叉操作监听/录音/回听/报告跳转/缓存保存。
 
-继续单列：已取得 EBU 原始 WAV 的 Trace 引擎数值验收、真实 96 kHz/驱动矩阵、干净 Windows、混合 DPI/真实 GPU、看门狗验证；M13 的 Windows 3D 游标三角实机、实时帧时间、显示器/色弱用户体验及 preview.31 Windows 候选包（PDF 云端已生成）。公开测试 PB3–PB5 状态见 [59](59-PUBLIC-BETA-READINESS.md)，不能因工程评分或旧包通过自动放行。Mac 下一步在 Apple silicon 真机执行 70 的 M-MAC0/T00 探针。
+继续单列：Meter v5 的 Windows 18 项 CTest、真实文件缓存写入/读回及选区/导出全链路、真实 96 kHz/驱动矩阵、干净 Windows、混合 DPI/真实 GPU、看门狗验证；M13 的 Windows 3D 游标三角实机、实时帧时间、显示器/色弱用户体验及 preview.31 Windows 候选包（PDF 云端已生成）。云端适用 EBU 素材数值已通过，不等于完整 EBU Mode/设备/发布验收。公开测试 PB3–PB5 状态见 [59](59-PUBLIC-BETA-READINESS.md)，不能因工程评分或旧包通过自动放行。Mac 下一步在 Apple silicon 真机执行 70 的 M-MAC0/T00 探针。
 
 先处理 Windows 工具链安全升级，并取得 addon/三格式/新包复验；签名身份与物理用户验证仍阻塞。当前只有 Linux 云环境，75 的云端检查及历史 Windows 包证据各自保留范围。2026-10-02 文档检查单独记入 74，2026-10-03 EBU 文件检查见上节，两者均不复用为新的音频验收。

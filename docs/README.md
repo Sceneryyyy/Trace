@@ -17,6 +17,7 @@
 | [云端发布收尾](75-CLOUD-RELEASE-PREPARATION.md) | CI、打包、退出、依赖与新 PDF 的交付/阻塞 |
 | [发布验收清单](76-RELEASE-CHECKLIST.md) | 候选生成、Windows/测量/安全/用户门禁 |
 | [EBU 镜像数值检查](77-EBU-MIRROR-VALIDATION.md) | 完整性、独立 hash、真实 Meter 的通过/失败范围与 Max M 缺口 |
+| [Meter v5 校准修复](78-EBU-METER-RECALIBRATION.md) | 10 ms 完整响度索引、68/68 原始 WAV、缓存/报告与验证范围 |
 | [依赖安全盘点](release/security-baseline.json) | 锁文件绑定的剩余公告与工具链版本 |
 | [文档清理记录](74-DOCUMENTATION-CLEANUP.md) | 本轮删除、归档、勘误与检查 |
 

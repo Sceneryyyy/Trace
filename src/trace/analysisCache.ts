@@ -36,9 +36,9 @@ export function validateManifest(value:unknown,key?:string):AnalysisManifest {
      !Array.isArray(m.streams)||m.streams.length!==8)corrupt('manifest identity/format')
   if(m.mediaIdentity!==undefined&&!hex(m.mediaIdentity))corrupt('media identity')
   if(m.sourceRange&&(!u64(m.sourceRange.startFrame)||!u64(m.sourceRange.endFrame)||Object.keys(m.sourceRange).sort().join(',')!=='endFrame,startFrame'||BigInt(m.sourceRange.endFrame)<=BigInt(m.sourceRange.startFrame)||BigInt(m.sourceRange.endFrame)-BigInt(m.sourceRange.startFrame)!==BigInt(m.frames)))corrupt('selection range')
-  const levels=ceil(BigInt(m.frames)*100n,BigInt(m.sampleRate)),loudness=ceil(BigInt(m.frames)*10n,BigInt(m.sampleRate))
+  const levels=ceil(BigInt(m.frames)*100n,BigInt(m.sampleRate)),loudness=levels
   const expected=[{file:'levels.bin',kind:1,recordBytes:128,stride:1,records:levels},
-    {file:'loudness.bin',kind:2,recordBytes:96,stride:10,records:loudness},
+    {file:'loudness.bin',kind:2,recordBytes:96,stride:1,records:loudness},
     ...Array.from({length:6},(_,i)=>({file:'wave-'+i+'.bin',kind:3,recordBytes:40,stride:10**(i+1),records:ceil(levels,BigInt(10**(i+1)))}))]
   for(let i=0;i<expected.length;i++){
     const actual=m.streams[i],e=expected[i]

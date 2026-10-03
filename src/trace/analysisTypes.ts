@@ -1,7 +1,7 @@
 import type { Metric, NativeRecordSnapshot } from './shared'
 export const analysisCacheKeyVersion = 3
 export const analysisSchemaVersion = 1
-export const measurementConfigId = 'trace-meter-v4-ebur128-1.2.6-lra10hz-tpaligned'
+export const measurementConfigId = 'trace-meter-v5-ebur128-1.2.6-lra10hz-msi100hz-tpaligned'
 export const pageRecords = 1024
 export const pageHeaderBytes = 64
 export type AnalysisStream = {file:string;kind:1|2|3;recordBytes:number;stride:number;records:string;pages:string}
