@@ -67,3 +67,9 @@ node tools/release/candidate.cjs
 实现提交 `a986a0d` 的 [首轮 CI](https://github.com/Sceneryyyy/Trace/actions/runs/37101564015) 中，Linux 完整通过：8 个生成素材 sanitizer gate（317.19 s）、原始 EBU gate（814.60 s）、246 个 JS、类型/构建及两个真实 Chromium 回归。Windows 安装、独立性、Electron SDK 与诊断工具编译通过，随后固定 FFmpeg 原地址返回 404；尚未进入引擎/N-API/包验证，因此不算 Windows 完成。失败日志保留。
 
 已实际下载同一发布者 GyanD/codexffmpeg 的固定 9.0.1 ZIP，111,253,802 字节、SHA-256、ZIP CRC 与两份 EXE 的 SHA 均匹配原锁；仅改为官方版本镜像，保留原地址及校验来源。没有更换编解码器版本或放宽完整性验证。后续 CI 两端并行检查，但候选打包必须等本次 run、HEAD 与 attempt 对应的 Linux job 成功；错误、取消、缺失/身份不符都拒绝打包。最终 Windows/候选结果见 13。
+
+## 打包生成物的写盘边界
+
+[第二轮 CI](https://github.com/Sceneryyyy/Trace/actions/runs/37103351961) 在 `ab466d8` 上通过 Windows CTest 19/19、实际原生/FFmpeg 43/43、两端 JS 248/248、Linux sanitizer 8 + 1、Chromium、候选 ZIP、5 项包审计及包启动/重启。最后附件生成严格拒绝 dirty checkout：图标生成器原先重写受版本控制的 PNG/ICO。
+
+构建图标现输出到忽略目录 `build/trace-icons/`，Builder 资源与 EXE 图标补丁读取同一产物。源 LeoMoon PNG、渲染/缩放算法、dev 使用的 tracked 图标及清洁保护均保持。实际 Electron 40.8.3 headless 生成、256 PNG、ICO 六尺寸、ResEdit 解析和未改源码图标检查通过。此修复继续由远程候选复验，不把先前的最终失败写成整个工作流成功。

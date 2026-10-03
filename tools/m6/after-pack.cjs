@@ -3,7 +3,7 @@ module.exports=async context=>{
  const root=path.resolve(__dirname,'../..'),directory=path.resolve(context.appOutDir),allowed=path.join(root,'dist-trace')+path.sep
  if(!directory.startsWith(allowed))throw Error('Unexpected package output')
  const target=path.join(directory,'Trace.exe'),exe=PE.NtExecutable.from(fs.readFileSync(target),{ignoreCert:true}),resources=PE.NtExecutableResource.from(exe)
- const icon=ResEdit.Data.IconFile.from(fs.readFileSync(path.join(root,'resources/trace/icon.ico')))
+ const icon=ResEdit.Data.IconFile.from(fs.readFileSync(path.join(root,'build/trace-icons/icon.ico')))
  if(!icon.icons.length)throw Error('Trace icon missing')
  const groups=ResEdit.Resource.IconGroupEntry.fromEntries(resources.entries)
  for(const group of groups)ResEdit.Resource.IconGroupEntry.replaceIconsForResource(resources.entries,group.id,group.lang,icon.icons.map(i=>i.data))

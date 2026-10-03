@@ -15,11 +15,11 @@ module.exports={
   {from:'.tools/ffmpeg/bin/ffmpeg.exe',to:'ffmpeg/ffmpeg.exe'},
   {from:'.tools/ffmpeg/bin/ffprobe.exe',to:'ffmpeg/ffprobe.exe'},
   {from:'ffmpeg.lock.json',to:'ffmpeg.lock.json'},
-  {from:'resources/trace/icon.png',to:'icon.png'},
+  {from:'build/trace-icons/icon.png',to:'icon.png'},
   {from:'resources/trace/licenses',to:'licenses'},
   {from:'THIRD_PARTY_NOTICES.md',to:'THIRD_PARTY_NOTICES.md'}
  ],
- win:{target:[{target:'zip',arch:['x64']}],icon:'resources/trace/icon.ico',signAndEditExecutable:false},
+ win:{target:[{target:'zip',arch:['x64']}],icon:'build/trace-icons/icon.ico',signAndEditExecutable:false},
  artifactName:'Trace-${version}-Windows-x64.${ext}',
  afterPack:require('./tools/m6/after-pack.cjs'),
  publish:null
