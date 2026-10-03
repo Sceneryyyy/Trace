@@ -32,7 +32,7 @@ FFmpeg 仍为锁定的 Windows Gyan GPL/version3 静态构建；已有哈希、�
 - 未用替代 WavReader 或假平台 API 让 Windows 测试通过：ReplayBuffer/WaveSequence 文件路径及原生写盘测试仍留在 Windows CTest。
 - 实际 React + Chromium selector 回归：相同快照额外 render=0；值/props 更新及卸载行为正确。
 - 当前 React + 明确模拟 IPC 的界面：五主题入口/预览/应用、Home/End 焦点与单一 Tab 停靠、Esc 恢复、质量提示、同一数据的读数不变。无未处理界面异常；帧间隔仅记录无头模拟环境观察，不等于实时 WASAPI 性能验收。
-- actionlint 1.7.12 检查两份新增工作流；工具下载 SHA256 已对照发布校验清单。没有远程执行新增 Actions；本轮只提交本地，工作流尚未推送上线。
+- actionlint 1.7.12 检查两份新增工作流；工具下载 SHA256 已对照发布校验清单。该阶段没有远程执行新增 Actions，仅提交本地。2026-10-03 后续 GitHub 同步包含此发布准备，见 [当前交接](13-HANDOFF.md)；远程 CI 结果不属于本页的历史测试证据。
 - PDF：8 页、8 书签、4 内部链接、可检索文字、嵌入字体与页内文字边界通过，并渲染检查。新旧 PDF 身份分开。
 
 本地日志、审计原始 JSON、浏览器报告、CTest JUnit、PDF 渲染在忽略的 `artifacts/release-cloud`、`artifacts/release` 和 `build/trace-portable`。生成的界面数据和 mock 只能证明已列出的代码/显示行为。

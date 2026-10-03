@@ -40,7 +40,7 @@ ctest --test-dir build/trace-portable --parallel 2 --output-on-failure \
 
 仅复测原始素材：`ctest --test-dir build/trace-portable -R '^ebu_wav$' --output-on-failure`。报告在该 build 目录的 `ebu-wav-results.json`，记录实际 Git 状态、配置 ID、probe hash、测试源码 hash、各 WAV hash、参考/实测值和排除范围。
 
-Windows 继续执行 `npm run build:trace-engine` 或 `Trace.ps1 -Action Engine`；私有素材存在时，18 项 CTest 中包括 `trace-ebu-wav` 和 `trace-meter-cadence`。新的 Trace CI 强制 Linux 原始素材门禁，保留 JUnit 和数值 JSON；便于重现完整 sanitizer 检查，portable job 允许 30 分钟。新工作流仍未远程运行。
+Windows 继续执行 `npm run build:trace-engine` 或 `Trace.ps1 -Action Engine`；私有素材存在时，18 项 CTest 中包括 `trace-ebu-wav` 和 `trace-meter-cadence`。新的 Trace CI 强制 Linux 原始素材门禁，保留 JUnit 和数值 JSON；便于重现完整 sanitizer 检查，portable job 允许 30 分钟。本次提交未附远程 Actions 完成证据；状态以对应 SHA 的工作流记录为准。
 
 公开发布源码 ZIP 继续通过 export-ignore 排除内部 EBU 素材。未带素材的公开源码只注册生成信号测试，不宣称原始素材通过；`TRACE_REQUIRE_EBU=ON` 在素材缺失时拒绝配置。
 
@@ -55,5 +55,7 @@ Windows 继续执行 `npm run build:trace-engine` 或 `Trace.ps1 -Action Engine`
 辅助 LRA 独立参考原先在一次 100 ms push 后读取最新快照；更密集的发布使其受 TP 前视影响而落在边界前 10 ms。现改为从实际发布帧号选取确切的 100 ms 端点，保留原生成信号、EOF 范围、参考分位数计算和 0.21 LU 容差。最初的两项参考失败与修正后 Release 18/18 结果均保留在本地日志，不作为修改算法或放宽门槛的理由。
 
 最终 ASan/UBSan 原始素材复跑通过（712.00 s）：68/68、112/112 数值、204/204 一致性均通过。另七项生成信号 CTest 已在最终 Meter 修复下通过；探针重构曾遗漏正常返回值，sanitizer 检出后修复并单独复跑原始素材，因此记录为七项通过加一项成功复跑，不把此前整轮失败写成一次 8/8。应用 typecheck、portable 246/246（51 文件，0 fail/skip）、build:trace 通过；工作流 actionlint、79 份 Markdown 的本地链接检查通过。实际源码归档无私有素材时注册七项生成信号门禁，强制原始素材模式正确拒绝配置。
+
+修复提交 `f42aba71d69d3ecd55346b0df071a4d81b0930ba` 的干净 checkout 又完成一次 Release 原始素材门禁（80.25 s），同样 68/68、112/112、204/204 全部通过。报告 sourceDirty=false；记录的 Meter、配置、FILE writer、厂商库、probe 与 runner 的 hash 均核对一致。报告副本为 `artifacts/ebu-recalibration/ebu-wav-committed.json`；此后仅文档提交没有改变该数值测试的源码。
 
 最终结果也同步在 [当前交接](13-HANDOFF.md)。云端日志在忽略目录 `artifacts/ebu-recalibration/`，77 的旧失败日志保留。原始节目仅为 48 kHz；四种采样率的新增证据来自生成信号。Windows addon、实际文件缓存写入/读回、实时设备、选区/导出全链路及新分发包仍待实机验证。本轮通过的是适用素材的计量核心数值门禁，正式 EBU Mode 的界面/全标准及发布门禁仍单列。
