@@ -20,7 +20,8 @@
 - `check:independence` 已通过：120 源文件、570 导入，未依赖删除的上游工程。
 - 从源码归档建立全新目录、空 node_modules，普通 `npm ci` 成功（445 packages）；不设置 Prism 跳过变量或禁用安装脚本。云环境首次 Electron 下载直连失败已保留；启用下载器代理后成功，不修改证书验证。
 - 全新目录默认 `typecheck`、`npm test`（246/246，51 文件，0 fail/skip）及 `npm run build` 通过；独立性正例通过，并准确拒绝跨上游路径/未声明依赖反例。
-- 独立 Release CMake 生成信号 8/8 加原始 EBU 1/1 通过（原始 gate 87.10 s）：68/68、112/112 数值、204/204 帧数/分块/EOF；新的完整报告在 `artifacts/independence/`。GitHub Windows 19 项 CTest、8 份 N-API、诊断/候选包验证仍待运行，不能记为通过。
+- 独立 Release CMake 生成信号 8/8 加原始 EBU 1/1 通过（原始 gate 87.10 s）：68/68、112/112 数值、204/204 帧数/分块/EOF；新的完整报告在 `artifacts/independence/`。GitHub Windows 19 项 CTest、8 份原生/FFmpeg、候选包验证继续复验，不能记为通过。
+- 首轮远程 CI `37101564015`：Linux 全通过（8 sanitizer 核心、原始 EBU、类型/246 JS/构建、selector 与 renderer）；Windows SDK/诊断编译通过后遇到 FFmpeg 下载 404。已核验官方固定版本镜像的完整 ZIP 与两 EXE 均为原字节，修复下载锁并保留失败；CI 两端并行，候选生成仍强制本次 Linux 完整成功。
 - 计量配置仍 v5，68 个适用 WAV 的分母/参考/容差不变；新 FFT 门禁使私有 checkout 原生项数成为 portable 9 / Windows 19。公开源码归档仍排除私有 EBU 素材。
 - 旧 Actions 原始 WAV 在 900 秒墙钟上限超时；保留失败，核心和原始 WAV 现串开执行，原始 gate 上限 1800 秒，数值标准没有放宽。
 - 实际新依赖审计：18 个受影响包（17 high / 1 critical），生产依赖审计 0；公告与工具链记录绑定当前 lock。工程独立化不自动关闭安全、许可对应源码、设备、签名及正式发布门禁。

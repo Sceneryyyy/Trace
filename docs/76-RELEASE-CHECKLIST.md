@@ -4,7 +4,7 @@
 
 ## 工程候选生成
 
-选择 `recorder/dev` 手动执行 **Trace Candidate**，或在 Trace CI 手动勾选 `package_candidate`。它调用 Trace CI：Linux 检查通过后才在 Windows 独立准备 Trace SDK/诊断、构建引擎并执行 CTest/native，然后打包、审计与验证包内运行库加载/主题重启。
+选择 `recorder/dev` 手动执行 **Trace Candidate**，或在 Trace CI 手动勾选 `package_candidate`。它调用 Trace CI：Linux 与 Windows 并行检查；Windows 独立准备 Trace SDK/诊断、构建引擎并执行 CTest/native。生成候选前，脚本核对本次 run、提交及 attempt 的 Linux job 完整成功，然后打包、审计与验证包内运行库加载/主题重启。
 
 本地 Windows 等价入口（VS2022/CMake/Python 已准备，干净 checkout）：
 

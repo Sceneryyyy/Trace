@@ -19,6 +19,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 concurrency:
   group: trace-${{ github.workflow }}-${{ github.ref }}
@@ -67,7 +68,6 @@ jobs:
           if-no-files-found: warn
 
   windows:
-    needs: portable
     runs-on: windows-2022
     timeout-minutes: 60
     steps:
@@ -88,6 +88,11 @@ jobs:
         run: node tools/release/verify.cjs
         env:
           TRACE_REQUIRE_NATIVE: '1'
+      - name: Require this run's complete portable success before packing a candidate
+        if: inputs.package_candidate == true
+        run: node tools/release/wait-portable-ci.cjs
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
       - name: Build and inspect candidate package
         if: inputs.package_candidate == true
         run: |
@@ -104,6 +109,7 @@ jobs:
           name: trace-windows-evidence
           path: |
             artifacts/release/verification.json
+            artifacts/release/portable-ci-gate.json
             artifacts/release/package-load.json
             artifacts/m6/package-audit-latest.json
             build/trace-engine/Testing/Temporary/LastTest.log

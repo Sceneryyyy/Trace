@@ -12,7 +12,7 @@ Trace 的安装、构建、测试、诊断与打包只使用本仓库的 Trace �
 | 普通安装 | `npm ci` 无根目录 native postinstall；Electron/esbuild 自身安装步骤保留 |
 | Windows 原生 | `npm run install:trace-sdk` 独立下载固定 Electron 40.8.3 SDK；`build:trace-engine` 只构建 Trace CMake 目标 |
 | 诊断 | `build:trace-diagnostics` 与 `trace:diagnostics` 构建/运行独立 Windows 捕获探针；真实音频夹具仍可供实机验收 |
-| 应用测试 | 默认 51 份可移植测试；8 份实际 Trace N-API 测试使用 `trace_engine`，旧 Prism 数值测试逐字归档为文本 |
+| 应用测试 | 默认 51 份可移植测试；8 份 Trace 原生/FFmpeg 测试使用自身引擎或固定编码组件，旧 Prism 数值测试逐字归档为文本 |
 | 原生数值 | 8 项可移植生成信号与 FFT 门禁；有私有素材时加原始 EBU WAV，共 9 项；Windows 对应共 19 项 |
 | CI | 仅保留 Trace CI 与候选包工作流；Linux sanitizer 核心与原始 EBU 分开运行，Windows 构建独立诊断、引擎与候选包 |
 | 边界检查 | `npm run check:independence` 检查源码导入、包/TS/CMake/测试/CI 入口及 FFT 文件身份 |
@@ -61,3 +61,9 @@ node tools/release/candidate.cjs
 ## 本地验证记录
 
 全新源码归档从空 node_modules 普通安装成功（445 包），默认类型检查、246/246 可移植 JS（51 文件，0 fail/skip）、默认应用构建通过；独立性检查通过，跨上游目录与未声明依赖反例均拒绝。Release CMake 8 项生成信号加原始 WAV gate 全部通过，68/68、112/112 数值、204/204 帧数/分块/EOF；FFT 独立 DFT 对照 1590 项通过。忽略目录 `artifacts/independence` 保存 source tree、锁文件 SHA、安装/构建/测试日志、JUnit 和原始 WAV 数值报告。Windows 与 sanitizer 的最终状态继续同步 13，不将未运行记录算作通过。
+
+## 远程首次验证与固定下载地址修复
+
+实现提交 `a986a0d` 的 [首轮 CI](https://github.com/Sceneryyyy/Trace/actions/runs/37101564015) 中，Linux 完整通过：8 个生成素材 sanitizer gate（317.19 s）、原始 EBU gate（814.60 s）、246 个 JS、类型/构建及两个真实 Chromium 回归。Windows 安装、独立性、Electron SDK 与诊断工具编译通过，随后固定 FFmpeg 原地址返回 404；尚未进入引擎/N-API/包验证，因此不算 Windows 完成。失败日志保留。
+
+已实际下载同一发布者 GyanD/codexffmpeg 的固定 9.0.1 ZIP，111,253,802 字节、SHA-256、ZIP CRC 与两份 EXE 的 SHA 均匹配原锁；仅改为官方版本镜像，保留原地址及校验来源。没有更换编解码器版本或放宽完整性验证。后续 CI 两端并行检查，但候选打包必须等本次 run、HEAD 与 attempt 对应的 Linux job 成功；错误、取消、缺失/身份不符都拒绝打包。最终 Windows/候选结果见 13。
