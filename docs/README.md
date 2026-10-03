@@ -1,6 +1,6 @@
 # Trace 项目文档索引
 
-更新：2026-10-03。当前源码 **preview.31**，默认分支 `recorder/dev`；最近验证过的 Windows 内测包 **preview.30 / InternalTest-r3（9c1ee21）**，preview.31 Windows 包尚未打包，新 PDF 已生成（云端模拟界面插图）。
+更新：2026-10-03。当前源码 **preview.31**，默认分支 `recorder/dev`；来源 **db005b5** 的 preview.31 私有工程候选已由完整 Windows/Linux CI 生成。Windows CTest 19/19、原生/FFmpeg 43/43、两端 portable JS 248/248、Linux sanitizer 8 + 1 及包审计/加载/重启均通过；完整状态见 [13](13-HANDOFF.md) 和 [79](79-TRACE-INDEPENDENT-PROJECT.md)。**preview.30 / InternalTest-r3（9c1ee21）** 保留为历史同事内测交付包。新 PDF 已生成（云端模拟界面插图）。
 
 先读 [项目首页](../README.md)、[用户指南](28-USER-GUIDE.md) 或 [开发入门](../CODEX-START.md)。当前状态、未验证项和下一任务统一写在 [13-HANDOFF](13-HANDOFF.md)。带日期的阶段记录只证明当时版本的结果；旧“当前/下一步”不能覆盖 13。
 
@@ -15,10 +15,11 @@
 | [任务索引](07-BACKLOG.md) | 当前待办与早期任务 ID |
 | [当前交接](13-HANDOFF.md) | 源码/分发身份、最新验证、实机缺口 |
 | [云端发布收尾](75-CLOUD-RELEASE-PREPARATION.md) | CI、打包、退出、依赖与新 PDF 的交付/阻塞 |
-| [发布验收清单](76-RELEASE-CHECKLIST.md) | 候选生成、Windows/测量/安全/用户门禁 |
+| [发布验收清单](76-RELEASE-CHECKLIST.md) | 私有工程候选与正式发布的 Windows/测量/安全/用户门禁 |
 | [EBU 镜像数值检查](77-EBU-MIRROR-VALIDATION.md) | 完整性、独立 hash、真实 Meter 的通过/失败范围与 Max M 缺口 |
 | [Meter v5 校准修复](78-EBU-METER-RECALIBRATION.md) | 10 ms 完整响度索引、68/68 原始 WAV、缓存/报告与验证范围 |
-| [Trace 独立工程](79-TRACE-INDEPENDENT-PROJECT.md) | 专用入口、FFT 来源、清理边界与从零复现 |
+| [Trace 独立工程](79-TRACE-INDEPENDENT-PROJECT.md) | 专用入口、FFT 来源、清理边界、从零复现与 Windows CI 证据 |
+| [独立工程验证清单](release/independence-verification.json) | 绑定代码提交、完整 CI、检查结果和私有候选附件元数据；区分自动化与实机范围 |
 | [依赖安全盘点](release/security-baseline.json) | 锁文件绑定的剩余公告与工具链版本 |
 | [文档清理记录](74-DOCUMENTATION-CLEANUP.md) | 本轮删除、归档、勘误与检查 |
 
@@ -114,14 +115,14 @@
 | [Trace 声迹 / Prism 前端代码质量审计报告](66-FRONTEND-AUDIT.md) | 2026-09-20 前端审计；selector 性能结论有后续勘误 |
 | [Trace preview.29 全量代码质量审计](67-CODE-AUDIT-PREVIEW29.md) | preview.29 审计建议；后续结果见 68/73 |
 | [68 · 2026-09-23 三批变更的独立复核](68-INDEPENDENT-CHANGE-REVIEW.md) | 独立反例；P1 与估计静音提示已修，CI/看门狗待验 |
-| [69 · 同事内测分发包 R3（preview.30）](69-INTERNAL-TEST-R3.md) | 最近已验证包 preview.30 / R3；不含 preview.31 修复 |
+| [69 · 同事内测分发包 R3（preview.30）](69-INTERNAL-TEST-R3.md) | 历史同事交付包 preview.30 / R3；不含 preview.31 修复，不等于新工程候选 |
 
 ## macOS、M13 与最新云端审核
 
 | 文档 | 用途/状态 |
 | --- | --- |
 | [70 · Trace macOS 移植实施方案](70-MACOS-PORT-PLAN.md) | 待实施方案：需要 Apple silicon 真机完成采集探针 |
-| [71 · 仪表主题色（M13）开发方案](71-INSTRUMENT-THEMES-PLAN.md) | 主题已合入；首次验收范围已勘误，3D 三角/帧时间/PDF/打包待办 |
+| [71 · 仪表主题色（M13）开发方案](71-INSTRUMENT-THEMES-PLAN.md) | 主题已合入；3D 三角、preview.31 PDF 与工程候选已完成，实机首帧/帧时间等仍待验 |
 | [72 · M13 仪表主题独立审计](72-INSTRUMENT-THEMES-REVIEW.md) | R1/R2 已修；R3 断言已修，完整首帧专项仍待 Windows |
 | [73 · 云环境代码审核（2026-10-02）](73-CLOUD-CODE-REVIEW.md) | 五项问题与两项旧缺口已在 2995174 修复，233 个 portable 回归通过 |
 

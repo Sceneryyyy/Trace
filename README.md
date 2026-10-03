@@ -16,11 +16,11 @@ Audio Recorder & Analyzer
 
 Trace 是 LeoMoon 系列的桌面音频录音与分析工作台。它把系统声音采集、录音、历史回听和多种测量仪器放在同一个窗口，让你既能观察正在发生的声音，也能沿时间轴回到刚才的细节。
 
-当前源码为 **0.1.0-preview.31**，开发分支为 `recorder/dev`。最近完成打包验证的版本仍是 **Windows x64 0.1.0-preview.30 / InternalTest-r3**（来源提交 `9c1ee21`）；preview.31 Windows 包尚未打包；[新版 PDF 快速上手](output/pdf/LeoMoon-Trace-Quick-Start-preview.31-zh-CN.pdf) 已更新，界面插图明确使用云端模拟数据。macOS 移植方案已记录，当前分支的 Trace 音频后端仍为 Windows/WASAPI，Mac 采集实现与实机验收尚未完成。
+当前源码为 **0.1.0-preview.31**，开发分支为 `recorder/dev`。preview.31 独立工程已通过完整 Windows/Linux CI，并生成 **Windows x64 私有工程候选**（来源提交 `db005b5`）；产物身份见 [当前交接](docs/13-HANDOFF.md)。历史同事内测交付包为 **0.1.0-preview.30 / InternalTest-r3**（来源提交 `9c1ee21`）。[新版 PDF 快速上手](output/pdf/LeoMoon-Trace-Quick-Start-preview.31-zh-CN.pdf) 已更新，界面插图明确使用云端模拟数据。macOS 移植方案已记录，当前分支的 Trace 音频后端仍为 Windows/WASAPI，Mac 采集实现与实机验收尚未完成。
 
 ![Trace 工作台：波形、电平与响度共享时间轴](docs/assets/quick-start-preview28/workbench.png)
 
-*界面截图来自 preview.28 的演示信号；当前内测包为 preview.30。*
+*界面截图来自 preview.28 的演示信号；历史同事内测交付包为 preview.30 / R3。*
 
 ## 功能特点
 
@@ -40,7 +40,7 @@ Trace 是 LeoMoon 系列的桌面音频录音与分析工作台。它把系统�
 
 ## 快速开始
 
-1. 获取 **Windows x64 内测分发包**，完整解压后运行 `Trace.exe`。当前包名、内容与校验信息见 [InternalTest-r3 分发说明](docs/69-INTERNAL-TEST-R3.md)；当前分发包由维护者另行提供。
+1. 获取 **Windows x64 内测分发包**，完整解压后运行 `Trace.exe`。历史同事包见 [InternalTest-r3 分发说明](docs/69-INTERNAL-TEST-R3.md)；新的 preview.31 私有工程候选身份与可用状态见 [当前交接](docs/13-HANDOFF.md)，分发包由维护者另行提供。
 2. 选择系统播放设备，点击「开始监测」并播放声音，观察仪器；也可以直接点击录音按钮启动采集和录音。
 3. 点击停止录音后，在波形上定位回听；切换「选区」后拖出范围，启用循环试听。
 4. 点击「实时」回到最新声音。需要保留尚未录制的片段时，使用「保存缓存」。
@@ -50,9 +50,11 @@ Trace 是 LeoMoon 系列的桌面音频录音与分析工作台。它把系统�
 
 ### 当前验证边界
 
-本项目仍处于开发预览阶段。preview.30 有历史 Windows 自动化及打包证据；preview.31 的最新修复已通过 Linux 云端类型、可移植测试和应用资源构建，Windows 原生重编译与真实设备复验尚未执行。独立干净 Windows、不同声卡/驱动、真实 96 kHz 等验收仍需补充；Windows 分发包尚未签名。macOS 采集、权限、打包与签名/公证尚未完成实机验证。云端 CI/打包/退出与依赖收尾见 [75](docs/75-CLOUD-RELEASE-PREPARATION.md)，正式发布门禁见 [76](docs/76-RELEASE-CHECKLIST.md)。当前仍有 Electron/打包原生链安全公告待处理；具体证据与待办以 [当前交接记录](docs/13-HANDOFF.md) 为准。
+本项目仍处于开发预览阶段。preview.31 独立工程的 [完整 CI](https://github.com/Sceneryyyy/Trace/actions/runs/37104992986)（`db005b5`）已成功：Windows CTest **19/19**、Trace 原生/FFmpeg 测试 **43/43**、两端可移植 JS **248/248**，Linux ASan/UBSan 的 8 项核心测试与 1 项原始 EBU 门禁、浏览器回归、类型与应用构建均通过；Windows 私有工程候选已生成，包审计及加载/重启通过。完整证据见 [79](docs/79-TRACE-INDEPENDENT-PROJECT.md) 和 [当前交接](docs/13-HANDOFF.md)。
 
-Meter v5 的适用 EBU 原始 WAV 已在云端通过 68/68；响度索引和报告峰值修复见 [78](docs/78-EBU-METER-RECALIBRATION.md)，Windows 新引擎/实际文件路径与设备验收仍待补充。
+独立干净 Windows、不同声卡/驱动、真实 96 kHz 等实机验收仍需补充；Windows 分发包尚未签名。macOS 采集、权限、打包与签名/公证尚未完成实机验证。正式发布门禁见 [76](docs/76-RELEASE-CHECKLIST.md)，其中依赖安全记录仍有 18 个受影响包待处理。工程候选和自动测试不等于正式发布验收。
+
+Meter v5 的适用 EBU 原始 WAV 已在 Linux 与 Windows 工程检查中通过 68/68；Windows 实际文件读取与原生分析已验证。响度索引和报告峰值修复见 [78](docs/78-EBU-METER-RECALIBRATION.md)；真实设备、实时/选区/导出完整流程仍需实机验收。
 
 ## 开发入口
 

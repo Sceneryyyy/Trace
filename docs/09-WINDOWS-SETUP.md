@@ -52,7 +52,7 @@ npm start
 ctest --test-dir build/trace-engine -C Release --output-on-failure
 ```
 
-当前 Windows CMake 注册 18 项基础测试；私有原始 EBU 素材齐备时，再注册 `trace-ebu-wav`，共 19 项，包含新增的 FFT 独立数值回归。此数量来自源码，不表示本轮 19 项已在 Windows 全量通过，不能沿用历史结果。
+当前 Windows CMake 注册 18 项基础测试；私有原始 EBU 素材齐备时，再注册 `trace-ebu-wav`，共 19 项，包含新增的 FFT 独立数值回归。[完整 CI](https://github.com/Sceneryyyy/Trace/actions/runs/37104992986)（`db005b5`）已实际通过 19/19，实际 Trace 原生/FFmpeg 测试 43/43、portable JS 248/248、类型与应用构建也通过，均无 fail/skip。该轮工作流与私有工程候选生成均成功。
 
 可单独执行 `npm run test:trace`（portable）、`npm run test:trace-native`（Windows 原生）、`npm run test:trace-all`。native 层只测试实际 Trace API 与 FFmpeg；缺少引擎/编码组件时会明确跳过，在严格门禁中须设置 `$env:TRACE_REQUIRE_NATIVE='1'`，使缺失依赖直接失败。测试分层以 `scripts/run-trace-tests.mjs` 和 `test/trace-suites.mjs` 为准。
 
@@ -70,6 +70,8 @@ npm run trace:diagnostics -- raw --seconds 6 --fixture
 
 可用 `--device-index 0` 指定枚举索引。源码位于 `tools/diagnostics/`，两个可执行文件 `trace-capture-probe.exe` 与 `trace-render-fixture.exe` 输出到 `build/trace-diagnostics/Release/`；包元数据报告保存在 `artifacts/diagnostics/`。夹具会在选定系统播放端点发出低幅测试音，须在 Windows 实机执行。旧 M0 的上游模式与 addon smoke 已退役，历史证据保留在文档与 Git 来源中。
 
+独立诊断工具已在 Windows CI 编译通过；Actions runner 的编译/原生文件测试不执行真实播放端点采集，raw/list 实机运行仍须单独保留证据。
+
 ## Windows 分发
 
 ```powershell
@@ -79,7 +81,9 @@ npm run trace:diagnostics -- raw --seconds 6 --fixture
 
 `Package` 重建 Trace 引擎及应用，再调用 `tools/package-trace.cjs`。输出目录、产品版本与组件由 [electron-builder.trace.cjs](../electron-builder.trace.cjs) 和 [src/trace/product.ts](../src/trace/product.ts) 定义；应用资源构建成功不等于分发、真实音频或干净系统验证通过。
 
-同事内测 ZIP 的 R3 组装脚本为 `tools/package-internal-test-r3.cjs`，固定 preview.30 / InternalTest-r3；无后缀脚本固定 preview.28 / R1，`-r2` 固定 preview.29 / R2。这些脚本应在匹配的历史来源与素材下使用。preview.31 新候选入口已在 [76](76-RELEASE-CHECKLIST.md) 建立，匹配 PDF 已生成；本轮未构建 Windows 新包。新分发需同步来源提交、版本说明与校验，不能直接复用 R3 脚本或只改文件名。最近分发证据见 [69](69-INTERNAL-TEST-R3.md)；历史产物目录被 gitignore 排除，不随源码克隆提供。
+同事内测 ZIP 的 R3 组装脚本为 `tools/package-internal-test-r3.cjs`，固定 preview.30 / InternalTest-r3；无后缀脚本固定 preview.28 / R1，`-r2` 固定 preview.29 / R2。这些脚本应在匹配的历史来源与素材下使用。preview.31 的私有工程候选采用 [76](76-RELEASE-CHECKLIST.md) 的新流程与匹配 PDF；[完整 CI](https://github.com/Sceneryyyy/Trace/actions/runs/37104992986)（`db005b5`）在本轮 Linux sanitizer/原始 WAV 门禁成功后，已完成 ZIP、五项包审计、包加载/重启及候选附件生成。图标生成物写入忽略目录，候选工具的干净工作区检查保持严格；产物身份与完整结论见 [13](13-HANDOFF.md) 和 [79](79-TRACE-INDEPENDENT-PROJECT.md)。
+
+新分发需同步来源提交、版本说明与校验，不能直接复用 R3 脚本或只改文件名。历史 R3 交付证据见 [69](69-INTERNAL-TEST-R3.md)；历史产物目录被 gitignore 排除，不随源码克隆提供。
 
 ## 云端检查与未验证边界
 
@@ -104,4 +108,4 @@ ctest --test-dir build/trace-portable -R '^ebu_wav$' --output-on-failure
 
 私有完整 checkout 当前注册 9 项 portable CTest：8 项核心数值/边界回归（含 FFT）与 1 项原始 EBU WAV 门禁。Sanitizer 下将原始 WAV 单独运行，避免与其余测试争抢 CPU 导致超时。`TRACE_REQUIRE_EBU=ON` 会在缺少原始素材时失败；公开源码归档不包含私有 EBU 素材，不能报告该门禁已通过。门禁数量仅描述当前配置，本轮实际结果以 [79](79-TRACE-INDEPENDENT-PROJECT.md) 和 13 为准。未运行 Windows 原生加载、真实采集、96 kHz 或打包时须记录未验证。
 
-签名/公开发布、干净 Windows、硬件矩阵、Windows EBU 文件/设备全链路、工具链安全与真实包等剩余工作见 [当前交接](13-HANDOFF.md)。macOS 实施计划见 [70](70-MACOS-PORT-PLAN.md)。
+签名/公开发布、干净 Windows 普通用户、硬件矩阵、真实设备/实时/选区/导出全链路与工具链安全等剩余工作见 [当前交接](13-HANDOFF.md)。Windows 实际文件读取、原生分析及候选包加载已通过上述 CI；包的实机录音流程仍需验证。macOS 实施计划见 [70](70-MACOS-PORT-PLAN.md)。

@@ -7,26 +7,33 @@
 | 项目 | 当前记录 |
 | --- | --- |
 | 源码 | `0.1.0-preview.31`；计量配置已升级 Meter v5，EBU 修复见 [78](78-EBU-METER-RECALIBRATION.md)；云端发布准备见 [75](75-CLOUD-RELEASE-PREPARATION.md) |
-| Git | `Sceneryyyy/Trace`，默认 `recorder/dev`；保留提交身份及合并历史。本轮工程独立化接在 `b1a1644` 之后；实际提交与远程状态以 Git/Actions 为准 |
+| Git | `Sceneryyyy/Trace`，默认 `recorder/dev`；保留提交身份及合并历史。工程独立化 `a986a0d`，下载/CI 修复 `ab466d8`，图标产物修复 `db005b5`；最后文档提交不算新音频测试，远程身份以 Git 为准 |
 | 仪表主题 | 实现 `2938c8e`、审计修复 `c67e9e9` 等已于 2026-09-30 合入 `recorder/dev`；用户已验收开发构建并接受 71-D5 差异 |
-| 最近已验证分发包 | Windows x64 preview.30 / InternalTest-r3，来源 `9c1ee21`，包名/校验见 [69](69-INTERNAL-TEST-R3.md) |
-| preview.31 分发 | Windows 包尚未重打包；preview.31 PDF 已生成（云端模拟界面插图），preview.28 PDF 和 R3 包仍是历史快照 |
+| 当前工程候选 | Windows x64 preview.31，来源 `db005b5`；[CI 37104992986](https://github.com/Sceneryyyy/Trace/actions/runs/37104992986) 全部成功，私有附件 `trace-windows-candidate` 已生成，未签名 |
+| 历史同事内测包 | Windows x64 preview.30 / InternalTest-r3，来源 `9c1ee21`，包名/校验见 [69](69-INTERNAL-TEST-R3.md) |
+| preview.31 分发 | 私有工程候选含当前应用、项目源码、PDF、校验及验证记录；无声卡 CI 加载/重启已通过。PDF 插图为云端模拟界面，实机/公开发布门禁仍开放；preview.28 PDF 和 R3 为历史快照 |
 | macOS | [70](70-MACOS-PORT-PLAN.md) 方案已记录；当前分支的 Trace 后端仍为 Windows/WASAPI，Mac 实现/实机验收未完成 |
 
-## 当前：工程独立化
+## 当前：工程独立化已完成
 
-2026-10-03 用户要求按既定顺序推进直到达成独立化。实现与复现见 [79](79-TRACE-INDEPENDENT-PROJECT.md)。根包改为 Trace，默认安装/构建/测试只指向 Trace；独立 SDK 下载不编译 Prism addon。退役主程序、插件、TUI 等 311 文件（约 54 MB）已删除；仅复用的 FFT 本地组件保留原算法、固定来源、hash 和 GPL 全文。默认数值测试使用实际 `trace_engine`，旧 Prism 用例逐字归档为文本；历史文档与源文件可按固定 Git 提交追溯。
+2026-10-03 按用户指定顺序完成 Trace 专用入口、测试/CI 迁移、FFT 本地维护及退役上游清理。复现与来源见 [79](79-TRACE-INDEPENDENT-PROJECT.md)，可审查的提交/日志 SHA/产物元数据见 [验证记录](release/independence-verification.json)。根包及默认安装、构建、测试、诊断、打包均只使用 Trace 与锁定第三方依赖，无需检出或构建 Prism。已删除退役桌面、原 addon、插件、TUI 等 311 文件（53,989,426 字节）；FFT 原算法、固定来源、hash、署名及 GPL 全文保留，历史源码仍可从 Git 追溯。
 
-- `check:independence` 已通过：120 源文件、570 导入，未依赖删除的上游工程。
-- 从源码归档建立全新目录、空 node_modules，普通 `npm ci` 成功（445 packages）；不设置 Prism 跳过变量或禁用安装脚本。云环境首次 Electron 下载直连失败已保留；启用下载器代理后成功，不修改证书验证。
-- 全新目录默认 `typecheck`、`npm test`（246/246，51 文件，0 fail/skip）及 `npm run build` 通过；独立性正例通过，并准确拒绝跨上游路径/未声明依赖反例。
-- 独立 Release CMake 生成信号 8/8 加原始 EBU 1/1 通过（原始 gate 87.10 s）：68/68、112/112 数值、204/204 帧数/分块/EOF；新的完整报告在 `artifacts/independence/`。run `37103351961`：Windows CTest 19/19、原生/FFmpeg 43/43、JS 248/248、类型/构建通过；Linux sanitizer 8 核心 + 1 原始 WAV、selector 与 renderer 通过。候选 ZIP、5 项包审计和实际启动/重启通过，附件生成被干净工作区检查拒绝。原因是图标生成覆盖 tracked PNG/ICO；已将构建产物与 Builder/EXE 补丁输入统一到 `build/trace-icons/`，原品牌/算法/源码图标未改，严格清洁检查保留，继续复验附件。
-- 首轮远程 CI `37101564015`：Linux 全通过（8 sanitizer 核心、原始 EBU、类型/246 JS/构建、selector 与 renderer）；Windows SDK/诊断编译通过后遇到 FFmpeg 下载 404。已核验官方固定版本镜像的完整 ZIP 与两 EXE 均为原字节，修复下载锁并保留失败；CI 两端并行，候选生成仍强制本次 Linux 完整成功。
-- 计量配置仍 v5，68 个适用 WAV 的分母/参考/容差不变；新 FFT 门禁使私有 checkout 原生项数成为 portable 9 / Windows 19。公开源码归档仍排除私有 EBU 素材。
-- 旧 Actions 原始 WAV 在 900 秒墙钟上限超时；保留失败，核心和原始 WAV 现串开执行，原始 gate 上限 1800 秒，数值标准没有放宽。
-- 实际新依赖审计：18 个受影响包（17 high / 1 critical），生产依赖审计 0；公告与工具链记录绑定当前 lock。工程独立化不自动关闭安全、许可对应源码、设备、签名及正式发布门禁。
+| 验证范围 | 最终结果及身份 |
+| --- | --- |
+| 从零安装 | 全新源码归档、空 node_modules、普通 `npm ci` 安装 445 包；无 Prism 跳过变量，不禁用安装脚本；typecheck、51 文件 246/246 JS、默认构建通过。之后新增两项 CI 门禁用例，当前 JS 为 248/248 |
+| 依赖边界 | `check:independence` 通过：120 源文件、570 导入；跨上游路径与未声明包反例正确拒绝；普通公开归档无需私有素材也能独立编译 |
+| 本地原生 | Release 8 个生成 gate + 原始 WAV gate 通过；干净提交 `a986a0d` 原始 gate 79.51 s，68/68 适用 WAV、112/112 数值、204/204 分块/帧数/EOF 一致性；源码 hash 与最终代码一致。ASan/UBSan 生成 gate 8/8，274.90 s；独立 FFT 对照 1590 项 |
+| 最终 Linux CI | `db005b5` / run `37104992986`：JS 248/248，ASan/UBSan 核心 8/8（317.88 s）及原始 WAV 1/1（814.75 s），类型/构建、真实 React selector 与 9 项模拟 IPC Chromium 回归通过 |
+| 最终 Windows CI | 同次 run：独立 SDK 和诊断编译、CTest 19/19（251.28 s，含实际 WavReader 原始 WAV）、实际原生/FFmpeg 43/43（7 份 N-API + 1 份 FFmpeg 用例文件）、JS 248/248、类型/构建通过；JS 均 0 fail/skip |
+| 候选包闭环 | 严格核对同次 run、HEAD、attempt 的 Linux 完整成功后，ZIP 内容、5 项包审计、自身原生模块加载与主题重启持久化通过，clean-checkout 保护保留；最终候选生成及附件上传成功 |
 
-本节覆盖当前工程状态，下方日期/阶段记录保留当时证据。硬件、96 kHz 采集、真实三分钟在线视频操作、长测/GPU/DPI 与用户测试继续按 [76](76-RELEASE-CHECKLIST.md) 跟踪。
+私有候选可从 [GitHub Actions 附件](https://github.com/Sceneryyyy/Trace/actions/runs/37104992986/artifacts/11267953983) 获取：`trace-windows-candidate`，ID `11267953983`，GitHub 附件归档大小 212,794,813 字节，归档 SHA-256 `bc7b385c33aa9a81c4fd1537a707089a7265950a4f7892b69688a2771e4bf658`。这个 hash 是 GitHub 附件归档的 digest，不是内含应用 ZIP 或数值 JSON 的 hash。已读取完成态 job 日志和附件元数据；云端代理拒绝 Azure 附件 blob 的 CONNECT（403），没有下载/读取附件 payload。包内部的校验与 manifest 由成功的候选生成步骤产生。
+
+两次发现并修复的 CI 问题保留原失败：`37101564015` 的 Windows 固定 FFmpeg 地址 404，改为同发布者固定版本镜像，实际 ZIP/两 EXE 字节与原锁完全一致；`37103351961` 最后附件生成因图标改写 tracked 源文件而失败，构建图标现写入忽略目录 `build/trace-icons/`，品牌与算法未变。旧原始 WAV gate 的 900 秒超时则通过核心与原始测试串开、墙钟上限 1800 秒解决；数值标准、单探针限制未放宽。
+
+计量配置仍 Meter v5，产品 preview.31。70 个原始 WAV 均保留完整性；68 个单/双声道适用文件为通过分母，两个 5.0/5.1 文件仍排除。公开源码归档继续排除私有 EBU 素材，缺素材的强制模式拒绝配置。新的锁文件安全审计仍有 18 个受影响包（17 high / 1 critical），生产依赖审计 0 不代表 Electron 运行时安全。
+
+工程独立化目标已达成。正式发布、物理设备/96 kHz、三分钟在线视频操作、长测/GPU/DPI、签名、安全修复、FFmpeg 对应源码及用户验收按 [76](76-RELEASE-CHECKLIST.md) 继续跟踪。本节是当前状态，下方阶段记录只保留当时证据。
 
 ## 历史云端发布准备（独立化之前）
 
@@ -58,13 +65,13 @@
 
 `2995174` 提交前云端最终检查：`npm run typecheck`、`npm run test:trace` **233/233（47 文件，0 fail/skip）**、`npm run build:trace` 通过。真实 React + Chromium 订阅专项中，相同 30 次快照的额外 render 为 0，props/值变化仍更新；新增可移植 C++ ReplayQuality 10 cases 通过。业务回归含真实 DeliveryService 失败后另存、保存→重载→回听→报告质量链路。审计阶段其他 C++ 数值检查与具体证据见 73；本地日志在忽略目录 `artifacts/cloud-audit/`、`artifacts/cloud-regression/`。
 
-最新修复未执行 Windows 原生 addon、全量 CTest/native、WAV 写盘质量日志及真实设备资源验收；未运行完整主题 flow、真实首帧、YouTube 三分钟、物理拔插/96 kHz、磁盘拥塞、GPU/DPI、退出看门狗实机故障收尾或 preview.31 分发包。新增按帧质量环每对象最高约 5.49 MiB，需要实机资源检查。历史 Windows 通过记录仅适用于各自的源码和包。
+该历史修复阶段尚未执行 Windows 全量 CTest/native、WAV 写盘质量日志及真实设备资源验收；未运行完整主题 flow、真实首帧、YouTube 三分钟、物理拔插/96 kHz、磁盘拥塞、GPU/DPI、退出看门狗实机故障收尾或 preview.31 分发包。新增按帧质量环每对象最高约 5.49 MiB，需要实机资源检查。历史 Windows 通过记录仅适用于各自的源码和包。
 
 ## 上一轮文档整理（已提交推送）
 
 已按用户要求盘点所有受版本控制的说明文档，清理兼容入口 `TRACE-README.md`、开工包自检 15 和已被后续提交替代的临时交接 65；保留来源、许可、阶段设计/数值证据及发布校验。重写开发入口/环境/当前接口，勘误分支、版本、提交时态和过度的性能验收结论，建立文档索引。清理范围与检查结果见 [74](74-DOCUMENTATION-CLEANUP.md)，由 `37cd0ef` 提交并与 `2995174` 一起推送；当时未构建新包。
 
-## 下一项可执行工作
+## 历史 EBU 素材取得、修复与同步
 
 ### 2026-10-03 EBU 素材到位
 
@@ -102,10 +109,8 @@
 
 Git HTTPS 上传缺少可用凭据，接入已登录的 GitHub CLI 后仍返回 HTTP 401；GitHub Git Data API 的实际 blob 上传已验证可用。此次同步使用该 API 校验每个 blob/tree/commit 的 SHA，保留本地提交身份、双亲合并与素材历史；不强制覆盖远程分支。推送完成后核对远程分支 HEAD 与本地 HEAD 一致。远程 Actions 与 Windows 实机验收仍按各自证据范围记录。
 
-### 应用与实机待办
+## 后续应用与实机工作
 
-Windows 可用后，在仓库根执行 `.\Trace.ps1 -Action Engine`（构建并自动执行 CTest），随后运行 `.\Trace.ps1 -Action Check` 与主题 flow，确认新质量字段的原生边界及严格首帧断言，再按用户最初场景播放约三分钟在线视频，交叉操作监听/录音/回听/报告跳转/缓存保存。
+Windows 工程编译、19 项 CTest、43 项原生/FFmpeg、248 项 JS、无声卡包审计/加载/重启与 preview.31 私有候选已经通过本节顶部对应 CI，不需要以“尚未执行 Windows”重做这些记录。实际 Windows 设备上继续执行主题 flow 和严格首帧，再播放约三分钟在线视频，交叉操作监听/录音/回听/报告跳转/缓存及选区保存，保留设备与包身份。
 
-继续单列：Meter v5 的 Windows 18 项 CTest、真实文件缓存写入/读回及选区/导出全链路、真实 96 kHz/驱动矩阵、干净 Windows、混合 DPI/真实 GPU、看门狗验证；M13 的 Windows 3D 游标三角实机、实时帧时间、显示器/色弱用户体验及 preview.31 Windows 候选包（PDF 云端已生成）。云端适用 EBU 素材数值已通过，不等于完整 EBU Mode/设备/发布验收。公开测试 PB3–PB5 状态见 [59](59-PUBLIC-BETA-READINESS.md)，不能因工程评分或旧包通过自动放行。Mac 下一步在 Apple silicon 真机执行 70 的 M-MAC0/T00 探针。
-
-先处理 Windows 工具链安全升级，并取得 addon/三格式/新包复验；签名身份与物理用户验证仍阻塞。当前只有 Linux 云环境，75 的云端检查及历史 Windows 包证据各自保留范围。2026-10-02 文档检查单独记入 74，2026-10-03 EBU 文件检查见上节，两者均不复用为新的音频验收。
+待实机验收：实时采集及真实文件缓存/选区/导出完整链路、96 kHz/驱动矩阵、干净普通 Windows、物理 GPU/混合 DPI、实时帧时间与回调 deadline、长录音及看门狗故障收尾、3D 游标与色弱用户体验。工程原始 EBU WAV 与无声卡启动通过，不等于完整 EBU Mode 或物理设备/发布验收。正式发布还需处理 18 个受影响安全依赖、FFmpeg 对应源码、签名及独立用户验收。PB3–PB5 见 [59](59-PUBLIC-BETA-READINESS.md)；Mac 下一步仍须 Apple silicon 真机执行 [70](70-MACOS-PORT-PLAN.md) 的 M-MAC0/T00 探针。

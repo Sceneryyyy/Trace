@@ -1,0 +1,618 @@
+{
+  "schemaVersion": 1,
+  "checkedOn": "2026-10-03",
+  "scope": "Engineering independence: installation, Trace build/test/diagnostics, Windows candidate packaging. No physical-device or formal-release approval.",
+  "implementationCommits": [
+    {
+      "sha": "a986a0db1d46cda3f27b79c98f92c32a60367f27",
+      "change": "Trace-only entry, native/test boundaries, local licensed FFT, retired upstream cleanup"
+    },
+    {
+      "sha": "ab466d88d3dd7a2041e5c2d07f4ced37a79dfdd7",
+      "change": "Byte-identical publisher codec mirror, parallel checks with strict same-run portable gate"
+    },
+    {
+      "sha": "db005b5a79b1f614a23d5af91d8c3dcc3f277b78",
+      "change": "Generated package icons moved to ignored build directory; clean-checkout guard retained"
+    }
+  ],
+  "verifiedCodeCommit": "db005b5a79b1f614a23d5af91d8c3dcc3f277b78",
+  "packageLockSha256": "2a98a88d1fb88068aab93a4408f83c33d19d0a7a44ef1bc72ba65ce63db18c68",
+  "productVersion": "0.1.0-preview.31",
+  "measurementConfigId": "trace-meter-v5-ebur128-1.2.6-lra10hz-msi100hz-tpaligned",
+  "local": {
+    "freshSource": {
+      "status": "pass",
+      "scope": "Fresh git source archive, empty node_modules, normal install scripts retained; no upstream source/addon",
+      "snapshotTree": "cddf91edaea901082cda744a38840e291996f5e0",
+      "packageLockSha256": "2a98a88d1fb88068aab93a4408f83c33d19d0a7a44ef1bc72ba65ce63db18c68",
+      "node": "v24.19.0",
+      "npm": "11.9.0",
+      "installation": "ELECTRON_GET_USE_PROXY=1 npm ci --no-audit --no-fund",
+      "installedPackages": 445,
+      "commands": [
+        "npm run check:independence",
+        "npm run typecheck",
+        "npm test",
+        "npm run build"
+      ],
+      "portableTests": {
+        "files": 51,
+        "pass": 246,
+        "fail": 0,
+        "skip": 0
+      },
+      "rejectedBoundaryCases": [
+        {
+          "case": "upstream-source",
+          "exitCode": 1,
+          "failures": [
+            "src/trace/independence-rejection-check.ts imports outside Trace: ../../../src/main/retired"
+          ]
+        },
+        {
+          "case": "undeclared-dependency",
+          "exitCode": 1,
+          "failures": [
+            "src/trace/independence-rejection-check.ts imports undeclared dependency: undeclared-prism-extension"
+          ]
+        }
+      ],
+      "logs": [
+        "fresh-install-proxy.log",
+        "fresh-independence.log",
+        "fresh-typecheck.log",
+        "fresh-tests.log",
+        "fresh-build.log"
+      ]
+    },
+    "latestPortableTests": {
+      "passed": 248,
+      "failed": 0,
+      "skipped": 0,
+      "files": 51,
+      "scope": "Includes two CI gate regression cases added after fresh archive verification"
+    },
+    "releaseOriginalEbu": {
+      "commit": "a986a0db1d46cda3f27b79c98f92c32a60367f27",
+      "sourceDirty": false,
+      "platform": "linux",
+      "seconds": 79.51,
+      "summary": {
+        "passed": 68,
+        "failed": 0,
+        "excluded": 2,
+        "supported": 68,
+        "checks": {
+          "total": 112,
+          "passed": 112,
+          "failed": 0
+        },
+        "invariants": {
+          "total": 204,
+          "passed": 204,
+          "failed": 0
+        },
+        "supportedPassRate": 1.0
+      },
+      "sourceSha256": {
+        "native/src/recorder/Meter.cpp": "d77d0d2f948d576977935ba0990a98fddc0738f3fc5219f6895a38a2597e2e42",
+        "native/src/recorder/Meter.h": "532a775edae2000a6f132db39b1684c7f7138484706dc6268999a2d4c1835cad",
+        "native/src/recorder/MeasurementConfig.h": "0a3619610a959edc91172767203f7695649c79573edd406e4185a6cdd49e8078",
+        "native/src/recorder/FileAnalysis.cpp": "5151b30051df30202880bb10b6a28417ce78e6284d9fa9da50f75d1d2de9ce5d",
+        "native/vendor/libebur128/ebur128.c": "9d3d75d880e7f514b0669341501ce55b159d86c25012b6d8c9340ad7ed8e7d5f",
+        "test/native/ebu_wav_probe.cpp": "15b983a60ee21cc86277d17707fad87f04b03f87e9d302d439c623befac23aa0",
+        "tools/metering/run-ebu-wav-tests.py": "872930365b8ff8e16f468fe85b0abbc436ff37ed5c41d6cb6d399ccc84f5cba6"
+      },
+      "sourceHashesMatchVerifiedCode": true,
+      "reportSha256": "9f1259acb2dd6d988b342e84b0382b373b01d3d790aa683835440a71cdb623a6",
+      "reader": "test-only PCM decoder; Windows real WavReader verification is recorded separately in remote CI",
+      "logLocation": "ignored artifacts/independence/ebu-wav-committed.json"
+    },
+    "nativeGenerated": {
+      "release": {
+        "passed": 8,
+        "failed": 0
+      },
+      "asanUbsan": {
+        "passed": 8,
+        "failed": 0,
+        "seconds": 274.9
+      },
+      "standaloneDftAssertions": 1590
+    },
+    "publicSourceArchive": {
+      "privateEbuAssetsPresent": false,
+      "generatedCTestCount": 8,
+      "generatedCTestNames": [
+        "ebu_reference",
+        "meter_cadence",
+        "meter_init",
+        "tp_time",
+        "replay_quality",
+        "fft",
+        "instrument_analysis",
+        "spectrogram_tile"
+      ],
+      "requireEbuRejectedMissingAssets": true,
+      "requireEbuConfigureExitCode": 1,
+      "claimsOriginalEbuPass": false,
+      "allLibrarySourcesWithinExportedSnapshot": true,
+      "compiledLibrarySources": [
+        "native/vendor/libebur128/ebur128.c",
+        "native/src/recorder/EburConstants.cpp",
+        "native/src/recorder/InstrumentAnalysis.cpp",
+        "native/src/recorder/Meter.cpp",
+        "native/src/recorder/ReplayBuffer.cpp",
+        "native/src/recorder/SpectrogramTile.cpp",
+        "native/vendor/prism-fft/FFT.cpp"
+      ],
+      "standaloneBuildSucceeded": true,
+      "standaloneFftGatePassed": true
+    },
+    "archiveAndLicensing": {
+      "commit": "a986a0db1d46cda3f27b79c98f92c32a60367f27",
+      "trackedFiles": 560,
+      "bytes": 7208960,
+      "privateEbuFilesExcluded": 24,
+      "trackedMarkdownFiles": 94,
+      "localLinksChecked": 500,
+      "originalReadmeAndArchivedPrismTestsByteIdentical": true,
+      "windowsLineEndingProtectionVerified": true,
+      "licenseAuditPositiveAndTamperRejectionVerified": true
+    }
+  },
+  "independence": {
+    "requiresPrismCheckout": false,
+    "requiresPrismAddonBuild": false,
+    "retiredFilesRemoved": 311,
+    "retiredFileBytesRemoved": 53989426,
+    "fft": "Locally maintained original DSP::FFT with fixed provenance and GPL retained",
+    "thirdPartyDependenciesRemain": true,
+    "gplObligationsRemain": true
+  },
+  "remote": {
+    "schemaVersion": 1,
+    "checkedAt": "2026-10-03T12:49:02.571317+00:00",
+    "runId": 37104992986,
+    "commit": "db005b5a79b1f614a23d5af91d8c3dcc3f277b78",
+    "workflowUrl": "https://github.com/Sceneryyyy/Trace/actions/runs/37104992986",
+    "evidenceScope": "Completed GitHub job logs and GitHub artifact metadata; numerical report and packaged artifact payloads were not downloaded or read.",
+    "artifactPayloadRead": false,
+    "artifactPayloadLimitation": "Configured proxy denied CONNECT to the Azure artifact blob destination (HTTP 403). First and second round payloads were not read; third round blob fetch was not retried. Archive metadata digest is not an internal JSON digest.",
+    "originalWaveGateScopeFromSource": {
+      "mandatorySupportedFiles": 68,
+      "explicitExcludedFiles": 2,
+      "invariantsPerFile": 3,
+      "observedJsonNumericalCounts": null,
+      "note": "The original WAV CTest must pass its unchanged numerical checks and mandatory file coverage; 112/checks and 204/invariants are not independently re-read from the inaccessible JSON here."
+    },
+    "jobs": {
+      "windows": {
+        "jobId": 111151681740,
+        "conclusion": "success",
+        "startedAt": "2026-10-03T07:02:16Z",
+        "completedAt": "2026-10-03T07:25:40Z",
+        "logPath": "artifacts/independence/ci-db005b-watch/windows-job.log (ignored local evidence)",
+        "logBytes": 105563,
+        "logSha256": "f06d7b4e0b864fe17eaa75ec0d80a52e5c2c1a85ffb4e9b0d37d5987c0935bc5",
+        "ctest": [
+          {
+            "index": 1,
+            "total": 19,
+            "testId": 1,
+            "name": "trace-fft",
+            "result": "Passed",
+            "seconds": 0.08
+          },
+          {
+            "index": 2,
+            "total": 19,
+            "testId": 2,
+            "name": "trace-spectrogram-tile",
+            "result": "Passed",
+            "seconds": 0.42
+          },
+          {
+            "index": 3,
+            "total": 19,
+            "testId": 3,
+            "name": "trace-instruments",
+            "result": "Passed",
+            "seconds": 0.15
+          },
+          {
+            "index": 4,
+            "total": 19,
+            "testId": 4,
+            "name": "trace-core",
+            "result": "Passed",
+            "seconds": 5.39
+          },
+          {
+            "index": 5,
+            "total": 19,
+            "testId": 5,
+            "name": "trace-wav",
+            "result": "Passed",
+            "seconds": 0.06
+          },
+          {
+            "index": 6,
+            "total": 19,
+            "testId": 6,
+            "name": "trace-recorder",
+            "result": "Passed",
+            "seconds": 4.2
+          },
+          {
+            "index": 7,
+            "total": 19,
+            "testId": 7,
+            "name": "trace-analysis",
+            "result": "Passed",
+            "seconds": 3.6
+          },
+          {
+            "index": 8,
+            "total": 19,
+            "testId": 8,
+            "name": "trace-reference",
+            "result": "Passed",
+            "seconds": 28.86
+          },
+          {
+            "index": 9,
+            "total": 19,
+            "testId": 9,
+            "name": "trace-tp-time",
+            "result": "Passed",
+            "seconds": 3.66
+          },
+          {
+            "index": 10,
+            "total": 19,
+            "testId": 10,
+            "name": "trace-init",
+            "result": "Passed",
+            "seconds": 1.12
+          },
+          {
+            "index": 11,
+            "total": 19,
+            "testId": 11,
+            "name": "trace-region-clock",
+            "result": "Passed",
+            "seconds": 0.08
+          },
+          {
+            "index": 12,
+            "total": 19,
+            "testId": 12,
+            "name": "trace-recorder-snapshot",
+            "result": "Passed",
+            "seconds": 41.38
+          },
+          {
+            "index": 13,
+            "total": 19,
+            "testId": 13,
+            "name": "trace-precision",
+            "result": "Passed",
+            "seconds": 0.06
+          },
+          {
+            "index": 14,
+            "total": 19,
+            "testId": 14,
+            "name": "trace-playback",
+            "result": "Passed",
+            "seconds": 0.02
+          },
+          {
+            "index": 15,
+            "total": 19,
+            "testId": 15,
+            "name": "trace-replay",
+            "result": "Passed",
+            "seconds": 0.58
+          },
+          {
+            "index": 16,
+            "total": 19,
+            "testId": 16,
+            "name": "trace-replay-quality",
+            "result": "Passed",
+            "seconds": 0.13
+          },
+          {
+            "index": 17,
+            "total": 19,
+            "testId": 17,
+            "name": "trace-replay-save",
+            "result": "Passed",
+            "seconds": 1.16
+          },
+          {
+            "index": 18,
+            "total": 19,
+            "testId": 18,
+            "name": "trace-meter-cadence",
+            "result": "Passed",
+            "seconds": 22.44
+          },
+          {
+            "index": 19,
+            "total": 19,
+            "testId": 19,
+            "name": "trace-ebu-wav",
+            "result": "Passed",
+            "seconds": 137.8
+          }
+        ],
+        "ctestTotalSecondsInLogOrder": [
+          251.28
+        ],
+        "javascriptTestBlocks": [
+          {
+            "context": "portable JS",
+            "tests": 248,
+            "suites": 0,
+            "pass": 248,
+            "fail": 0,
+            "cancelled": 0,
+            "skipped": 0,
+            "todo": 0,
+            "duration_ms": 17840.6041
+          },
+          {
+            "context": "required native JS",
+            "tests": 43,
+            "suites": 0,
+            "pass": 43,
+            "fail": 0,
+            "cancelled": 0,
+            "skipped": 0,
+            "todo": 0,
+            "duration_ms": 6049.3583
+          }
+        ],
+        "checkMarkers": [
+          "2026-10-03T07:23:20.8670364Z TRACE_PORTABLE_CI_GATE_PASS 37104992986 db005b5a79b1f614a23d5af91d8c3dcc3f277b78 111151681920",
+          "2026-10-03T07:25:13.8637408Z M6_AUDIT pass 5",
+          "2026-10-03T07:25:16.8847530Z TRACE_PACKAGE_LOAD pass",
+          "2026-10-03T07:25:22.5698288Z TRACE_CANDIDATE 0.1.0-preview.31 db005b5a79b1f614a23d5af91d8c3dcc3f277b78 engineering-candidate"
+        ],
+        "failedSteps": []
+      },
+      "portable": {
+        "jobId": 111151681920,
+        "conclusion": "success",
+        "startedAt": "2026-10-03T07:02:17Z",
+        "completedAt": "2026-10-03T07:23:15Z",
+        "logPath": "artifacts/independence/ci-db005b-watch/portable-job.log (ignored local evidence)",
+        "logBytes": 81158,
+        "logSha256": "a0eeb348ffa39db5eece0f62ebda7ddc2ad7e8a3696e8ec035c972384fdfdc19",
+        "ctest": [
+          {
+            "index": 1,
+            "total": 8,
+            "testId": 2,
+            "name": "meter_cadence",
+            "result": "Passed",
+            "seconds": 247.26
+          },
+          {
+            "index": 2,
+            "total": 8,
+            "testId": 3,
+            "name": "meter_init",
+            "result": "Passed",
+            "seconds": 10.27
+          },
+          {
+            "index": 3,
+            "total": 8,
+            "testId": 4,
+            "name": "tp_time",
+            "result": "Passed",
+            "seconds": 33.07
+          },
+          {
+            "index": 4,
+            "total": 8,
+            "testId": 5,
+            "name": "replay_quality",
+            "result": "Passed",
+            "seconds": 0.8
+          },
+          {
+            "index": 5,
+            "total": 8,
+            "testId": 6,
+            "name": "fft",
+            "result": "Passed",
+            "seconds": 0.78
+          },
+          {
+            "index": 6,
+            "total": 8,
+            "testId": 7,
+            "name": "instrument_analysis",
+            "result": "Passed",
+            "seconds": 1.93
+          },
+          {
+            "index": 7,
+            "total": 8,
+            "testId": 8,
+            "name": "spectrogram_tile",
+            "result": "Passed",
+            "seconds": 4.07
+          },
+          {
+            "index": 8,
+            "total": 8,
+            "testId": 1,
+            "name": "ebu_reference",
+            "result": "Passed",
+            "seconds": 317.81
+          },
+          {
+            "index": 1,
+            "total": 1,
+            "testId": 9,
+            "name": "ebu_wav",
+            "result": "Passed",
+            "seconds": 814.75
+          }
+        ],
+        "ctestTotalSecondsInLogOrder": [
+          317.88,
+          814.75
+        ],
+        "javascriptTestBlocks": [
+          {
+            "context": "portable JS",
+            "tests": 248,
+            "suites": 0,
+            "pass": 248,
+            "fail": 0,
+            "cancelled": 0,
+            "skipped": 0,
+            "todo": 0,
+            "duration_ms": 14798.191524
+          }
+        ],
+        "checkMarkers": [
+          "2026-10-03T07:23:04.8366126Z SNAPSHOT_SELECTOR_PASS {\"stable\":0,\"chromeStable\":0,\"changed\":1,\"propValue\":\"2\",\"stableAfterProps\":0,\"nextValue\":\"4\",\"afterUnmount\":0} /home/runner/work/Trace/Trace/artifacts/cloud-regression/selector-MbmAZN",
+          "2026-10-03T07:23:10.5546895Z TRACE_RENDERER pass 9 /home/runner/work/Trace/Trace/artifacts/release-cloud/renderer-6C722h"
+        ],
+        "failedSteps": []
+      }
+    },
+    "artifacts": [
+      {
+        "name": "trace-windows-candidate",
+        "id": 11267953983,
+        "sizeInBytes": 212794813,
+        "archiveDigest": "sha256:bc7b385c33aa9a81c4fd1537a707089a7265950a4f7892b69688a2771e4bf658",
+        "expiredAtMetadataCollection": false,
+        "createdAt": "2026-10-03T07:25:32Z",
+        "payloadRead": false,
+        "internalJsonDigest": null
+      },
+      {
+        "name": "trace-portable-evidence",
+        "id": 11267402750,
+        "sizeInBytes": 13868,
+        "archiveDigest": "sha256:a29dbba9b31bf3a7c7f728f3bbf2f3100ce4f7d9b67c7273ddffb80e79c7fcd3",
+        "expiredAtMetadataCollection": false,
+        "createdAt": "2026-10-03T07:23:11Z",
+        "payloadRead": false,
+        "internalJsonDigest": null
+      },
+      {
+        "name": "trace-windows-evidence",
+        "id": 11267344462,
+        "sizeInBytes": 22294,
+        "archiveDigest": "sha256:38944a4ac0d1c6fd187c9662d2eb82f5a1d3956134c144443cb6c593c903c6bf",
+        "expiredAtMetadataCollection": false,
+        "createdAt": "2026-10-03T07:25:23Z",
+        "payloadRead": false,
+        "internalJsonDigest": null
+      }
+    ],
+    "priorRounds": [
+      {
+        "runId": 37101564015,
+        "commit": "a986a0db1d46cda3f27b79c98f92c32a60367f27",
+        "workflowConclusion": "failure",
+        "artifactPayloadRead": false,
+        "internalJsonDigest": null,
+        "artifacts": [
+          {
+            "name": "trace-portable-evidence",
+            "id": 11266023576,
+            "sizeInBytes": 13867,
+            "archiveDigest": "sha256:ae3040d80e7d6567b619517fb7aa26e1e3d2267dd3ce0f7130221e28c03cb65c",
+            "payloadRead": false,
+            "internalJsonDigest": null
+          }
+        ]
+      },
+      {
+        "runId": 37103351961,
+        "commit": "ab466d88d3dd7a2041e5c2d07f4ced37a79dfdd7",
+        "workflowConclusion": "failure",
+        "artifactPayloadRead": false,
+        "internalJsonDigest": null,
+        "artifacts": [
+          {
+            "name": "trace-windows-evidence",
+            "id": 11268030455,
+            "sizeInBytes": 22300,
+            "archiveDigest": "sha256:30795a3ac9814d3c8009e76a6bdc71834df115bd7032b5978e7284d3209dbe33",
+            "payloadRead": false,
+            "internalJsonDigest": null
+          },
+          {
+            "name": "trace-portable-evidence",
+            "id": 11267491475,
+            "sizeInBytes": 13865,
+            "archiveDigest": "sha256:9092eed655940606fc6b8ead381867e1b4981bf353f8d1422f53965885484721",
+            "payloadRead": false,
+            "internalJsonDigest": null
+          }
+        ]
+      }
+    ],
+    "logCollection": {
+      "method": "Completed GitHub log ZIP retrieved by gh run view and read from its local cache; gh 2.46.0 rendered no text for current ZIP entry naming",
+      "archiveSha256": "d7363572f59dcdf3a30dc1cd097f98108fb128116bd95b806a6132ea91b2e077",
+      "entries": {
+        "windows": "1_windows.txt",
+        "portable": "0_portable.txt"
+      },
+      "crcPassed": true
+    },
+    "conclusion": "success",
+    "workflowName": "Trace CI"
+  },
+  "releaseBoundaries": {
+    "formalReleaseReady": false,
+    "physicalWindowsDeviceTestedThisSession": false,
+    "originalEbuSupportedFiles": 68,
+    "originalEbuExcludedMultichannelFiles": 2,
+    "privateEbuAssetsNotDistributed": true,
+    "securityBaseline": {
+      "affectedPackages": 18,
+      "high": 17,
+      "critical": 1,
+      "productionDependencyAuditAffectedPackages": 0,
+      "formalReleaseReady": false
+    },
+    "remaining": [
+      "Actual device/driver and 96 kHz capture matrix",
+      "Three-minute online-video user flow and long recordings",
+      "Physical GPU/DPI/resource/deadline tests",
+      "Signing and user acceptance",
+      "Toolchain security remediation and FFmpeg corresponding-source release requirements",
+      "Full EBU Mode and application selection/export/device-chain acceptance"
+    ]
+  },
+  "documentationOnlyFinalCommitRequiresNewAudioRun": false,
+  "documentationProofScope": "Final documentation records verifiedCodeCommit; later documentation-only commits are not new numerical tests.",
+  "finalDocumentationAudit": {
+    "scope": "Current working checkout, including private EBU reference files; archive exclusions separately verified",
+    "markdownFiles": 94,
+    "existingLocalLinks": 517,
+    "missingLocalLinks": 0,
+    "diffCheckPassed": true,
+    "independenceCheck": {
+      "status": "pass",
+      "traceFiles": 120,
+      "imports": 570
+    }
+  }
+}

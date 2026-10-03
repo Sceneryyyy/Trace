@@ -1,6 +1,6 @@
 # Trace 声迹 · 开发入门
 
-2026-10-03 更新。本目录已经是完整源码仓库；默认开发分支为 `recorder/dev`。当前源码 preview.31，最近验证过的分发包 preview.30 / InternalTest-r3。版本与验证边界见 [当前交接](docs/13-HANDOFF.md)，独立工程边界见 [79](docs/79-TRACE-INDEPENDENT-PROJECT.md)。
+2026-10-03 更新。本目录已经是完整源码仓库；默认开发分支为 `recorder/dev`。当前源码 preview.31；来源 `db005b5` 的 preview.31 私有工程候选已由完整 CI 生成，preview.30 / InternalTest-r3 保留为历史同事内测交付包。版本、产物身份与验证边界见 [当前交接](docs/13-HANDOFF.md)，独立工程与远程验证见 [79](docs/79-TRACE-INDEPENDENT-PROJECT.md)。
 
 ## 开始工作
 
@@ -22,6 +22,8 @@
 ```
 
 `Setup` 准备锁定依赖、Electron SDK 和 FFmpeg；`Engine` 构建 Trace 音频后端并运行原生 CTest。默认 `dev`、`build`、`test`、`dist` 均属于 Trace；`build:trace`/`start:trace` 保留兼容入口。单独获取 SDK 使用 `npm run install:trace-sdk`，无需编译上游 addon。原生 CTest、SDK-only WASAPI 诊断与分发入口见 [09](docs/09-WINDOWS-SETUP.md)。
+
+preview.31 的 [完整 CI](https://github.com/Sceneryyyy/Trace/actions/runs/37104992986)（`db005b5`）已通过 Windows CTest 19/19、实际 Trace 原生/FFmpeg 测试 43/43、两端 portable JS 248/248、Linux ASan/UBSan 核心 8 项与原始 EBU 1 项，以及浏览器回归、类型与应用构建。候选生成、包审计和加载/重启也已成功。真实 WASAPI 采集、声卡矩阵、长录音与正式发布验收继续单列，不能沿用历史 R3 或无声卡包启动替代。
 
 ## Linux 云端可执行检查
 

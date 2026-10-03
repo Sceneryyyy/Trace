@@ -1,6 +1,6 @@
 # 76 · Trace Windows 发布验收清单
 
-2026-10-03。本清单适用于包含本轮修复的 preview.31 候选；支持范围先限定 Windows x64、单/双声道。macOS 单列 [70](70-MACOS-PORT-PLAN.md)。当前状态见 [13](13-HANDOFF.md)，云端交付范围见 [75](75-CLOUD-RELEASE-PREPARATION.md)。
+2026-10-03。本清单适用于包含本轮修复的 preview.31 私有工程候选；历史 preview.30 / InternalTest-r3 保持原交付身份。支持范围先限定 Windows x64、单/双声道。macOS 单列 [70](70-MACOS-PORT-PLAN.md)。当前状态见 [13](13-HANDOFF.md)，独立工程与 CI 证据见 [79](79-TRACE-INDEPENDENT-PROJECT.md)，先前云端收尾记录见 [75](75-CLOUD-RELEASE-PREPARATION.md)。
 
 ## 工程候选生成
 
@@ -21,17 +21,21 @@ node tools/release/candidate.cjs
 
 候选包内 manifest 的 `engineering-candidate` 与 `signed:false` 保持真实身份。Actions runner 的包加载检查不要求声卡，不能替代原有 `tools/m6/package-smoke.cjs` 的音频流程或下面的实机门禁。
 
+[完整 CI](https://github.com/Sceneryyyy/Trace/actions/runs/37104992986)（`db005b5`）已成功：Windows CTest 19/19、实际 Trace 原生/FFmpeg 43/43、两端 portable JS 248/248、Linux ASan/UBSan 核心 8 项与原始 EBU 1 项、浏览器回归、类型与应用构建全部通过；ZIP、五项包审计、包加载/重启及最终私有候选附件也已完成。第二轮曾因受追踪图标被改写而在候选清洁检查失败；图标生成物已转到忽略目录，并在本轮通过原有严格检查，失败及修复证据见 [79](79-TRACE-INDEPENDENT-PROJECT.md)。
+
+GitHub 私有附件 `trace-windows-candidate` 的 ID 为 `11267953983`，大小 `212794813` 字节，创建于 `2026-10-03 07:25:32 UTC`；GitHub 所报附件归档 SHA-256 为 `bc7b385c33aa9a81c4fd1537a707089a7265950a4f7892b69688a2771e4bf658`。这是 Actions 附件归档身份，不能当成包内 ZIP 或 manifest 的 hash。云端代理对附件存储目的地返回 403，本地未下载或读取附件内部文件；工作流日志与 GitHub 元数据已确认生成及验证成功，记录见 [独立工程验证清单](release/independence-verification.json)。
+
 ## 必须关闭的发布门禁
 
 | 门禁 | 操作与预期 | 当前状态 |
 | --- | --- | --- |
-| SEC | 处理 [依赖安全记录](release/security-baseline.json) 的 Electron、tar/打包原生链问题；在新固定 SDK 下重建 addon、跑 CTest/native 与三格式/新包。再核对 Electron/Chromium、FFmpeg/VC 安全公告 | 阻塞：18 个受影响包（17 high / 1 critical），升级与复验待办 |
-| WIN | 未装开发工具的 Windows 11 x64 普通用户；中文/空格路径、断网，解压→启动→选设备→录音→回听→三格式导出→重启 | 未运行最新包 |
+| SEC | 处理 [依赖安全记录](release/security-baseline.json) 的 Electron、tar/打包原生链问题；在新固定 SDK 下重建 Trace 引擎、跑 CTest/native 与三格式/新包。再核对 Electron/Chromium、FFmpeg/VC 安全公告 | 阻塞：18 个受影响包（17 high / 1 critical），升级与复验待办 |
+| WIN | 未装开发工具的 Windows 11 x64 普通用户；中文/空格路径、断网，解压→启动→选设备→录音→回听→三格式导出→重启 | CI 候选加载/重启通过；普通用户干净 Windows 与真实音频流程未运行 |
 | DEV | 内置输出、USB 声卡，真实 44.1/48/96 kHz；拔插、默认设备变化、修改格式、设备占用与睡眠恢复 | 未验证矩阵；96 kHz 文件不算采集 |
 | FLOW | 播放约三分钟 YouTube；交叉进行 REC、静默历史查看、停止后回听、报告跳转、缓存/选区保存、另存。按钮与监听状态一致，来源质量贯穿保存/重载/报告 | 未运行 |
 | DATA | 至少两小时实际使用/录音，检查帧数与重开；以隔离目录注入空间不足/只读、慢盘/队列拥塞、worker/进程退出及重启恢复 | 未运行最新实机长测 |
 | QUIT | 真实录音/编码时退出；慢任务、worker 卡住、支持日志不可写等情况；看门狗退出后可恢复，文件尾部未知时不标完整 | 云端编排/持久化反例通过；实机收尾未验 |
-| METER | 取得官方 EBU 原始素材并保留来源/hash；通过响度/LRA/TP 容差；跨率、实时/文件/选区/导出范围一致，EOF 不增加音频帧 | [78](78-EBU-METER-RECALIBRATION.md) 云端 Meter v5：68/68 适用原始 WAV 通过；Windows 文件路径/全链路待验 |
+| METER | 取得官方 EBU 原始素材并保留来源/hash；通过响度/LRA/TP 容差；跨率、实时/文件/选区/导出范围一致，EOF 不增加音频帧 | [78](78-EBU-METER-RECALIBRATION.md)/[79](79-TRACE-INDEPENDENT-PROJECT.md)：Meter v5 的 68/68 适用 WAV、Windows 实际文件读取与原生文件分析已工程通过；真实设备/实时/选区/导出全链路待验 |
 | GPU | 核显/普通独显，3D 故障降级与恢复；真实混合 DPI 跨屏；五主题冷启动/恢复的实际 paint、实时帧时间及资源增长 | 云端显示回归通过；物理验证缺失 |
 | UX | 建议至少五名未参与开发的用户，无口头指导完成录音导出、保存缓存、布局、范围报告和 A/B；检查统计/来源/删除范围误判 | 未运行；人数是建议指标 |
 | DIST | 签名、实际浏览器下载后的首次启动、手动升级/回退、配置迁移；版本下载页、SHA256、已知限制与反馈入口 | 未签名；公开分发未生成 |
