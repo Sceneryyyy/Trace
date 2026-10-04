@@ -7,12 +7,19 @@ on:
     branches: [recorder/dev, main]
   workflow_dispatch:
     inputs:
+      codec_only:
+        description: Build and inspect the pinned source codec without packaging Trace
+        type: boolean
+        default: false
       package_candidate:
         description: Build and inspect a private Windows engineering candidate
         type: boolean
         default: false
   workflow_call:
     inputs:
+      codec_only:
+        type: boolean
+        default: false
       package_candidate:
         type: boolean
         default: false
@@ -26,7 +33,11 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  codec:
+    if: inputs.codec_only == true
+    uses: ./.github/workflows/codec-source.yml
   portable:
+    if: inputs.codec_only != true
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -69,6 +80,7 @@ jobs:
           if-no-files-found: warn
 
   windows:
+    if: inputs.codec_only != true
     runs-on: windows-2022
     timeout-minutes: 60
     steps:
