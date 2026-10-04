@@ -13,8 +13,14 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: 24.19.0
+      - run: npm ci
       - name: Build minimal FFmpeg and LAME from verified source
         run: node tools/codec/build.cjs
+      - name: Exercise actual production imports and exports with the source codec
+        run: node --test test/codec-runtime.test.mjs
+        env:
+          TRACE_CODEC_CANDIDATE: '1'
+          TRACE_REQUIRE_NATIVE: '1'
       - uses: actions/upload-artifact@v4
         if: always()
         with:

@@ -10,7 +10,7 @@ const quote=value=>"'"+value.replaceAll("'","'\\''")+"'"
 async function main(){
  if(process.platform!=='win32'||process.arch!=='x64')throw Error('WINDOWS_X64_BUILD_REQUIRED')
  const cache=path.join(root,'.tools/ffmpeg-source');fs.mkdirSync(cache,{recursive:true})
- for(const source of lock.sources){const file=path.join(cache,source.archiveFile);if(!fs.existsSync(file))await downloadArchive(source,file);await validateArchive(file,source)}
+ for(const source of [...lock.sources,...lock.buildTools]){const file=path.join(cache,source.archiveFile);if(!fs.existsSync(file))await downloadArchive(source,file);await validateArchive(file,source)}
  fs.mkdirSync(work,{recursive:true})
  if(!process.argv.includes('--worker')){
   const vcvars='C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Auxiliary\\Build\\vcvarsall.bat'
@@ -20,9 +20,12 @@ async function main(){
  }
  process.env.VSLANG='1033';process.env.SOURCE_DATE_EPOCH=String(lock.sourceDateEpoch)
  const bin=path.join(process.env.VCToolsInstallDir,'bin/Hostx64/x64')
- const bash='C:\\msys64\\usr\\bin\\bash.exe',make='C:\\msys64\\usr\\bin\\make.exe'
+ const bash='C:\\msys64\\usr\\bin\\bash.exe',tooling=path.join(work,'tooling')
+ fs.mkdirSync(tooling,{recursive:true})
+ for(const tool of lock.buildTools)run('tar.exe',['-xf',path.join(cache,tool.archiveFile),'-C',tooling])
+ const make=path.join(tooling,'usr/bin/make.exe')
  // MSYS link.exe must never shadow Microsoft's linker.
- process.env.PATH=bin+';C:\\msys64\\usr\\bin;'+process.env.PATH
+ process.env.PATH=bin+';'+path.dirname(make)+';C:\\msys64\\usr\\bin;'+process.env.PATH
  const cl=spawnSync(path.join(bin,'cl.exe'),[],{encoding:'utf8'}),compiler=(cl.stdout||'')+(cl.stderr||'')
  if(cl.error)throw cl.error
  if(!compiler.includes(lock.toolchain.compilerVersion))throw Error('MSVC_COMPILER_VERSION_MISMATCH: '+compiler)

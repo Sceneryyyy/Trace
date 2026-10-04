@@ -13,8 +13,10 @@ await build({entryPoints:['src/trace/wavInput.ts','src/trace/importMedia.ts','sr
 const {wavInputOptions}=(await import(pathToFileURL(join(compiled,'wavInput.js')))).default
 const {probeImport,decodeImport}=(await import(pathToFileURL(join(compiled,'importMedia.js')))).default
 const {encodeMedia}=(await import(pathToFileURL(join(compiled,'mediaTasks.js')))).default
-const lock=JSON.parse(readFileSync(new URL('../ffmpeg.lock.json',import.meta.url),'utf8'))
-const ffmpeg=resolve('.tools/ffmpeg/bin/ffmpeg.exe'),ffprobe=resolve('.tools/ffmpeg/bin/ffprobe.exe')
+const candidate=process.env.TRACE_CODEC_CANDIDATE==='1',folder=candidate?'.tools/trace-ffmpeg':'.tools/ffmpeg'
+const report=candidate?JSON.parse(readFileSync(resolve(folder,'build-report.json'),'utf8')):undefined
+const lock=candidate?{version:report.sources[0].release,ffmpegSha256:report.outputs.ffmpeg.sha256,ffprobeSha256:report.outputs.ffprobe.sha256,configuration:report.configuration,requiredEncoders:['aac','libmp3lame','pcm_s16le','pcm_s24le','pcm_f32le']}:JSON.parse(readFileSync(new URL('../ffmpeg.lock.json',import.meta.url),'utf8'))
+const ffmpeg=resolve(folder,'bin/ffmpeg.exe'),ffprobe=resolve(folder,'bin/ffprobe.exe')
 const ready=process.platform==='win32'&&existsSync(ffmpeg)&&existsSync(ffprobe)
 if(!ready&&process.env.TRACE_REQUIRE_NATIVE==='1')throw Error('LOCKED_CODEC_REQUIRED')
 const options={skip:!ready,timeout:60000}
@@ -26,8 +28,8 @@ test('locked FFmpeg and ffprobe hashes, versions, configuration and required enc
  const encoders=run(ffmpeg,['-hide_banner','-encoders'])
  for(const encoder of lock.requiredEncoders)assert(new RegExp('\\b'+encoder+'\\b').test(encoders),encoder)
 })
-function fixture(file){
- const frames=96000,channels=2,rate=48000,bytes=Buffer.alloc(44+frames*channels*2)
+function fixture(file,rate=48000,channels=2,frames=96000){
+ const bytes=Buffer.alloc(44+frames*channels*2)
  bytes.write('RIFF');bytes.writeUInt32LE(bytes.length-8,4);bytes.write('WAVEfmt ',8);bytes.writeUInt32LE(16,16);bytes.writeUInt16LE(1,20);bytes.writeUInt16LE(channels,22)
  bytes.writeUInt32LE(rate,24);bytes.writeUInt32LE(rate*channels*2,28);bytes.writeUInt16LE(channels*2,32);bytes.writeUInt16LE(16,34);bytes.write('data',36);bytes.writeUInt32LE(frames*channels*2,40)
  for(let n=0;n<frames;n++)for(let c=0;c<channels;c++)bytes.writeInt16LE(Math.round(8191*Math.sin(2*Math.PI*(c?500:1000)*n/rate)),44+(n*channels+c)*2)
@@ -69,5 +71,41 @@ test('production import and three-format export preserve the unchanged periodic 
   assert.equal(result.frames,String(frames));assert.equal(result.sampleRate,48000);assert.equal(result.channelCount,2)
   assert.equal(result.decoded.reduce((n,file)=>n+BigInt(file.frames),0n),BigInt(result.decodeRecipe.physicalFrames))
   assert.equal(BigInt(result.decodeRecipe.physicalFrames)-BigInt(result.decodeRecipe.startFrame)-BigInt(result.decodeRecipe.endPaddingFrames),BigInt(frames))
+ }
+})
+test('production WAV import retains precision, channels and exact odd frame counts at 44.1/48/96 kHz',options,async()=>{
+ const dir=mkdtempSync(join(tmpdir(),'trace-codec-matrix-'))
+ const tools={ffmpeg,ffprobe,nativePath:'unused',ffmpegSha256:await hash(ffmpeg),ffprobeSha256:await hash(ffprobe)}
+ for(const rate of [44100,48000,96000])for(const channels of [1,2])for(const codec of ['pcm_s16le','pcm_s24le','pcm_f32le']){
+  const frames=rate/10+137,source=join(dir,`${rate}-${channels}-${codec}.wav`),input=source+'.input.wav';fixture(input,rate,channels,frames)
+  run(ffmpeg,['-v','error','-f','wav','-i',input,'-c:a',codec,source])
+  const metadata=await probeImport(tools,source);assert.equal(metadata.exactFrames,String(frames));assert.equal(metadata.format.sampleRate,rate);assert.equal(metadata.format.channelCount,channels)
+  const imported=await decodeImport(tools,source,source+'.cache',{capacity:async()=>10000000000n,segmentBytes:8192})
+  assert.equal(imported.frames,String(frames));assert.equal(imported.files.reduce((n,f)=>n+BigInt(f.frames),0n),BigInt(frames))
+ }
+})
+
+// Synthetic 2x2 covers: create APIC bytes directly, so the codec does not need
+// image demuxers or image encoders just to retain existing audio import scope.
+const covers={"PNG": "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAFklEQVR4nGPUmNbEwMDAxMDAwMDAAAAO0AFEN8nKWAAAAABJRU5ErkJggg==", "JPEG": "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAACAAIDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwClRRRXQfIH/9k="}
+function synchsafe(n){return Buffer.from([(n>>>21)&127,(n>>>14)&127,(n>>>7)&127,n&127])}
+function attachCover(mp3,mime,image){
+ const original=readFileSync(mp3),old=original.toString('ascii',0,3)==='ID3'?10+((original[6]<<21)|(original[7]<<14)|(original[8]<<7)|original[9]):0
+ const body=Buffer.concat([Buffer.from([0]),Buffer.from(mime+'\0'),Buffer.from([3,0]),image]),header=Buffer.alloc(10);header.write('APIC');header.writeUInt32BE(body.length,4)
+ const frames=Buffer.concat([header,body]);writeFileSync(mp3,Buffer.concat([Buffer.from([73,68,51,3,0,0]),synchsafe(frames.length),frames,original.subarray(old)]))
+}
+test('production MP3 and M4A imports accept JPEG/PNG attached covers while retaining exact decoded audio',options,async()=>{
+ const dir=mkdtempSync(join(tmpdir(),'trace-codec-covers-')),input=join(dir,'source.wav'),frames=fixture(input)
+ const tools={ffmpeg,ffprobe,nativePath:'unused',ffmpegSha256:await hash(ffmpeg),ffprobeSha256:await hash(ffprobe)}
+ for(const [kind,base64]of Object.entries(covers)){
+  const mp3=join(dir,kind+'.mp3'),m4a=join(dir,kind+'.m4a')
+  run(ffmpeg,['-v','error','-f','wav','-i',input,'-c:a','libmp3lame','-b:a','192k',mp3]);attachCover(mp3,'image/'+(kind==='JPEG'?'jpeg':'png'),Buffer.from(base64,'base64'))
+  run(ffmpeg,['-v','error','-i',mp3,'-map','0','-c:a','aac','-b:a','192k','-c:v','copy','-disposition:v','attached_pic',m4a])
+  for(const file of [mp3,m4a]){
+   const raw=JSON.parse(run(ffprobe,['-v','error','-show_streams','-of','json',file]));assert.equal(raw.streams.filter(s=>s.disposition.attached_pic===1).length,1)
+   const metadata=await probeImport(tools,file);assert.equal(metadata.format.channelCount,2)
+   const imported=await decodeImport(tools,file,file+'.cache',{capacity:async()=>10000000000n,segmentBytes:8192})
+   const actual=BigInt(imported.frames);if(file===mp3)assert.equal(actual,BigInt(frames));else assert(actual>=BigInt(frames)&&actual<BigInt(frames+1024))
+  }
  }
 })
