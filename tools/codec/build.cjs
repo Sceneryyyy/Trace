@@ -1,5 +1,5 @@
 // Windows source build. Nothing is fetched by configure or linked from MSYS2.
-const fs=require('node:fs'),path=require('node:path'),{execFileSync}=require('node:child_process'),{createHash}=require('node:crypto')
+const fs=require('node:fs'),path=require('node:path'),{execFileSync,spawnSync}=require('node:child_process'),{createHash}=require('node:crypto')
 const {downloadArchive,validateArchive}=require('../release/dependency-sources.cjs')
 const root=path.resolve(__dirname,'../..'),lockPath=path.join(root,'references/trace-ffmpeg/build-lock.json')
 const lock=JSON.parse(fs.readFileSync(lockPath,'utf8')),work='C:\\trace-codec'
@@ -23,7 +23,8 @@ async function main(){
  const bash='C:\\msys64\\usr\\bin\\bash.exe',make='C:\\msys64\\usr\\bin\\make.exe'
  // MSYS link.exe must never shadow Microsoft's linker.
  process.env.PATH=bin+';C:\\msys64\\usr\\bin;'+process.env.PATH
- const compiler=execFileSync(path.join(bin,'cl.exe'),[],{encoding:'utf8',stdio:['ignore','pipe','pipe']})
+ const cl=spawnSync(path.join(bin,'cl.exe'),[],{encoding:'utf8'}),compiler=(cl.stdout||'')+(cl.stderr||'')
+ if(cl.error)throw cl.error
  if(!compiler.includes(lock.toolchain.compilerVersion))throw Error('MSVC_COMPILER_VERSION_MISMATCH: '+compiler)
  if(process.env.VCToolsVersion?.replace(/\\$/,'')!==lock.toolchain.msvcToolsVersion||process.env.WindowsSDKVersion?.replace(/\\$/,'')!==lock.toolchain.windowsSdkVersion)throw Error('MSVC_SDK_VERSION_MISMATCH')
  const tools=[bash,make,...['cl.exe','link.exe','lib.exe','nmake.exe','dumpbin.exe'].map(n=>path.join(bin,n))].map(file=>({file:file.replaceAll('\\','/'),sha256:hash(file)}))
