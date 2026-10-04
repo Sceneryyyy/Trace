@@ -15,15 +15,13 @@
       "releaseFileValidated": true
     },
     {
+      "name": "LAME",
       "version": "3.100",
-      "archiveBytes": 1524133,
-      "archiveSha256": "ddfe36cab873794038ae2c1210557ad34857a4b6bdc515785d1da9e175b1da1e",
       "archiveUrl": "https://downloads.sourceforge.net/project/lame/lame/3.100/lame-3.100.tar.gz",
       "archiveFile": "LAME-3.100-Upstream-Source.tar.gz",
-      "name": "LAME",
-      "publisherRecordName": "lame",
-      "publisherVersion": "3.100",
-      "sourceCorrespondence": "Official upstream version matches publisher record; producer modifications/build recipe unreported"
+      "archiveBytes": 1524133,
+      "archiveSha256": "ddfe36cab873794038ae2c1210557ad34857a4b6bdc515785d1da9e175b1da1e",
+      "sourceCorrespondence": "Unmodified official source compiled by the Trace recipe; no producer patches"
     }
   ],
   "toolchain": {

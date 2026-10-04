@@ -21,13 +21,23 @@ function validateBuildReport(codec,lock,lockBytes,report,{recipeHashes}={}){
  if(!recipeHashes||!same(report.recipes,recipeHashes)||!same(codec.recipeHashes,recipeHashes))throw Error('CODEC_RECIPE_CHANGED')
  if(!Array.isArray(lock.toolchain.tools)||!lock.toolchain.tools.length||!same(report.tools,lock.toolchain.tools))throw Error('CODEC_TOOL_HASH_CHANGED')
  if(!lock.toolchain.systemInputs||!same(report.systemInputs,lock.toolchain.systemInputs))throw Error('CODEC_SYSTEM_INPUT_CHANGED')
+ for(const key of ['systemInventorySha256','configHeaderSha256','configMakSha256'])if(!/^[a-f0-9]{64}$/.test(report[key]||''))throw Error('CODEC_BUILD_ATTACHMENT_MISSING: '+key)
  for(const name of ['ffmpeg','ffprobe']){
   const output=report.outputs?.[name]
   if(!/^[a-f0-9]{64}$/.test(output?.sha256||'')||output.sha256!==codec[name+'Sha256']||!Number.isSafeInteger(output.bytes)||output.bytes<=0||!output.version?.includes('version '+codec.version))throw Error('CODEC_OUTPUT_CHANGED: '+name)
   if(!output.version.split('\n').includes(codec.configuration)||report.configuration!==codec.configuration)throw Error('CODEC_CONFIGURATION_CHANGED')
+  if(typeof output.dependents!=='string')throw Error('CODEC_DLL_REPORT_REQUIRED')
   const dlls=[...output.dependents.matchAll(/^\s+(\S+\.dll)\s*$/gmi)].map(m=>m[1].toLowerCase())
   if(!dlls.length||dlls.some(d=>!lock.systemDlls?.includes(d)))throw Error('CODEC_UNEXPECTED_DLL: '+name)
  }
  return {correspondingSourceComplete:true,scope:'FFmpeg and LAME source plus unmodified build recipe; pinned Microsoft system/toolchain inputs are recorded separately'}
 }
-module.exports={sha,validateBuildLock,validateBuildReport}
+function validateSystemInventory(report,inventory){
+ if(!same(Object.keys(report.systemInputs),Object.keys(inventory)))throw Error('CODEC_SYSTEM_INVENTORY_CHANGED')
+ for(const [name,input]of Object.entries(inventory)){
+  const files=input.inventory,expected=report.systemInputs[name]
+  if(!Array.isArray(files)||files.length!==expected.files||files.reduce((n,f)=>n+f.bytes,0)!==expected.bytes||sha(JSON.stringify(files))!==expected.sha256)throw Error('CODEC_SYSTEM_INVENTORY_CHANGED: '+name)
+ }
+ return true
+}
+module.exports={sha,validateBuildLock,validateBuildReport,validateSystemInventory}

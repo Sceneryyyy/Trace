@@ -28,6 +28,13 @@ test('locked FFmpeg and ffprobe hashes, versions, configuration and required enc
  const encoders=run(ffmpeg,['-hide_banner','-encoders'])
  for(const encoder of lock.requiredEncoders)assert(new RegExp('\\b'+encoder+'\\b').test(encoders),encoder)
 })
+test('Trace source codec exposes only local file/pipe protocols and the pinned external encoder',options,()=>{
+ if(!candidate&&lock.build!=='Trace source build')return
+ const protocols=run(ffmpeg,['-v','error','-protocols']).split(/\r?\n/).map(s=>s.trim()).filter(s=>s&&!['Supported file protocols:','Input:','Output:'].includes(s))
+ assert.deepEqual([...new Set(protocols)].sort(),['file','pipe'])
+ const external=readFileSync(resolve(folder,'config.h'),'utf8').split(/\r?\n/).filter(s=>/^#define CONFIG_LIB[A-Z0-9_]+ 1$/.test(s))
+ assert.deepEqual(external,['#define CONFIG_LIBMP3LAME 1'])
+})
 function fixture(file,rate=48000,channels=2,frames=96000){
  const bytes=Buffer.alloc(44+frames*channels*2)
  bytes.write('RIFF');bytes.writeUInt32LE(bytes.length-8,4);bytes.write('WAVEfmt ',8);bytes.writeUInt32LE(16,16);bytes.writeUInt16LE(1,20);bytes.writeUInt16LE(channels,22)
@@ -94,13 +101,29 @@ function attachCover(mp3,mime,image){
  const body=Buffer.concat([Buffer.from([0]),Buffer.from(mime+'\0'),Buffer.from([3,0]),image]),header=Buffer.alloc(10);header.write('APIC');header.writeUInt32BE(body.length,4)
  const frames=Buffer.concat([header,body]);writeFileSync(mp3,Buffer.concat([Buffer.from([73,68,51,3,0,0]),synchsafe(frames.length),frames,original.subarray(old)]))
 }
+function box(type,data){const header=Buffer.alloc(8);header.writeUInt32BE(8+data.length);header.write(type,4);return Buffer.concat([header,data])}
+function attachM4aCover(file,kind,image){
+ const original=readFileSync(file),type=Buffer.alloc(8);type.writeUInt32BE(kind==='PNG'?14:13)
+ const cover=box('covr',box('data',Buffer.concat([type,image])))
+ function append(bytes,path){
+  const items=[];let found=false
+  for(let o=0;o<bytes.length;){const size=bytes.readUInt32BE(o),tag=bytes.toString('ascii',o+4,o+8);assert(size>=8&&o+size<=bytes.length)
+   if(tag===path[0]){found=true;const payload=bytes.subarray(o+8,o+size),skip=tag==='meta'?4:0;items.push(box(tag,path.length===1?Buffer.concat([payload,cover]):Buffer.concat([payload.subarray(0,skip),append(payload.subarray(skip),path.slice(1))])))}else items.push(bytes.subarray(o,o+size));o+=size
+  }
+  assert(found,'M4A fixture metadata path missing');return Buffer.concat(items)
+ }
+ // Default MP4 writes moov last, so extending metadata cannot move mdat or
+ // invalidate audio chunk offsets. Assert this instead of rewriting offsets.
+ let last;for(let o=0;o<original.length;){last=original.toString('ascii',o+4,o+8);o+=original.readUInt32BE(o)}assert.equal(last,'moov')
+ writeFileSync(file,append(original,['moov','udta','meta','ilst']))
+}
 test('production MP3 and M4A imports accept JPEG/PNG attached covers while retaining exact decoded audio',options,async()=>{
  const dir=mkdtempSync(join(tmpdir(),'trace-codec-covers-')),input=join(dir,'source.wav'),frames=fixture(input)
  const tools={ffmpeg,ffprobe,nativePath:'unused',ffmpegSha256:await hash(ffmpeg),ffprobeSha256:await hash(ffprobe)}
  for(const [kind,base64]of Object.entries(covers)){
   const mp3=join(dir,kind+'.mp3'),m4a=join(dir,kind+'.m4a')
   run(ffmpeg,['-v','error','-f','wav','-i',input,'-c:a','libmp3lame','-b:a','192k',mp3]);attachCover(mp3,'image/'+(kind==='JPEG'?'jpeg':'png'),Buffer.from(base64,'base64'))
-  run(ffmpeg,['-v','error','-i',mp3,'-map','0','-c:a','aac','-b:a','192k','-c:v','copy','-disposition:v','attached_pic',m4a])
+  run(ffmpeg,['-v','error','-f','wav','-i',input,'-c:a','aac','-b:a','192k',m4a]);attachM4aCover(m4a,kind,Buffer.from(base64,'base64'))
   for(const file of [mp3,m4a]){
    const raw=JSON.parse(run(ffprobe,['-v','error','-show_streams','-of','json',file]));assert.equal(raw.streams.filter(s=>s.disposition.attached_pic===1).length,1)
    const metadata=await probeImport(tools,file);assert.equal(metadata.format.channelCount,2)

@@ -28,5 +28,5 @@ jobs:
           path: |
             .tools/trace-ffmpeg/*
             .tools/trace-ffmpeg/bin/*
-            C:/trace-codec/source/FFmpeg-*/ffbuild/config.log
           if-no-files-found: warn
+          include-hidden-files: true

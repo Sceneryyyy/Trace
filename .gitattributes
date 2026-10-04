@@ -22,3 +22,11 @@ references/ffmpeg-9.0.2/LICENSE.upstream.md -text
 
 references/ffmpeg-9.0.2/LAME-LGPL.txt -text whitespace=-blank-at-eol,-blank-at-eof,-space-before-tab
 references/ffmpeg-9.0.2/LAME-README.txt -text whitespace=-blank-at-eol,-blank-at-eof
+references/trace-ffmpeg/*.json -text
+references/trace-ffmpeg/*.txt -text
+references/trace-ffmpeg/COPYING.GPLv3 -text
+references/trace-ffmpeg/LICENSE.upstream.md -text
+references/trace-ffmpeg/LAME-LGPL.txt -text whitespace=-blank-at-eol,-blank-at-eof,-space-before-tab
+references/trace-ffmpeg/LAME-README.txt -text whitespace=-blank-at-eol,-blank-at-eof
+tools/codec/*.cjs text eol=lf
+tools/release/dependency-sources.cjs text eol=lf

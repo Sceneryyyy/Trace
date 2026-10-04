@@ -45,7 +45,14 @@ try{
  const sourceManifest=JSON.parse(fs.readFileSync(path.join(dir,'resources/licenses/ffmpeg-source-manifest.json'),'utf8'))
  require('../release/dependency-sources.cjs').validateManifest(codec,sourceManifest)
  assert.equal(sha(path.join(dir,'resources/licenses/ffmpeg-source-manifest.json')),sha(path.join(root,codec.correspondingSourceManifest)))
- for(const [source,target]of [['LICENSE.publisher.txt','FFmpeg-GPL.txt'],['README.publisher.txt','FFmpeg-build.txt']])assert.equal(sha(path.join(dir,'resources/licenses',target)),sha(path.join(root,'references/ffmpeg-9.0.2',source)))
+ for(const [source,target]of [[sourceManifest.notices?.license||'LICENSE.publisher.txt','FFmpeg-GPL.txt'],[sourceManifest.notices?.build||'README.publisher.txt','FFmpeg-build.txt']])assert.equal(sha(path.join(dir,'resources/licenses',target)),sha(path.join(root,path.dirname(codec.correspondingSourceManifest),source)))
+ if(codec.build==='Trace source build'){
+  const codecReport=JSON.parse(fs.readFileSync(path.join(dir,'resources/licenses/ffmpeg-build-report.json'),'utf8'))
+  assert.equal(sha(path.join(dir,'resources/licenses/ffmpeg-build-report.json')),codec.buildReportSha256)
+  assert.equal(sha(path.join(dir,'resources/licenses/ffmpeg-build-lock.json')),codec.buildLockSha256)
+  for(const [name,key]of [['ffmpeg-config.h','configHeaderSha256'],['ffmpeg-config.mak','configMakSha256'],['ffmpeg-system-inputs.json','systemInventorySha256']])assert.equal(sha(path.join(dir,'resources/licenses',name)),codecReport[key])
+  require('../codec/identity.cjs').validateSystemInventory(codecReport,JSON.parse(fs.readFileSync(path.join(dir,'resources/licenses/ffmpeg-system-inputs.json'),'utf8')))
+ }
  const provenance=JSON.parse(fs.readFileSync(path.join(dir,'resources/licenses/runtime-provenance.json'),'utf8'))
  for(const [file,hash]of Object.entries(provenance.dlls))assert.equal(sha(path.join(dir,'resources/native',file)),hash)
  report.runtime=provenance;report.codec={version:codec.version,ffmpegSha256:codec.ffmpegSha256,ffprobeSha256:codec.ffprobeSha256,correspondingSourceComplete:sourceManifest.correspondingSourceComplete}

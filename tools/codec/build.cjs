@@ -6,7 +6,7 @@ const root=path.resolve(__dirname,'../..'),lockPath=path.join(root,'references/t
 const lock=JSON.parse(fs.readFileSync(lockPath,'utf8')),work='C:\\trace-codec'
 const hash=file=>createHash('sha256').update(fs.readFileSync(file)).digest('hex')
 const run=(program,args,options={})=>execFileSync(program,args,{cwd:work,stdio:'inherit',...options})
-const capture=(program,args,options={})=>execFileSync(program,args,{cwd:work,encoding:'utf8',...options}).trim()
+const capture=(program,args,options={})=>execFileSync(program,args,{cwd:work,encoding:'utf8',...options}).trim().replaceAll('\r\n','\n')
 const quote=value=>"'"+value.replaceAll("'","'\\''")+"'"
 function inventory(directory){
  const files=[]
@@ -26,7 +26,10 @@ async function main(){
  if(!fs.existsSync(marker)&&fs.readdirSync(work).length)throw Error('CODEC_BUILD_DIRECTORY_NOT_OWNED')
  fs.writeFileSync(marker,'Trace source codec build\n')
  if(!process.argv.includes('--worker')){
-  const vcvars='C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Auxiliary\\Build\\vcvarsall.bat'
+  const vswhere=path.join(process.env['ProgramFiles(x86)'],'Microsoft Visual Studio/Installer/vswhere.exe')
+  const installation=capture(vswhere,['-latest','-version','[17.0,18.0)','-products','*','-requires','Microsoft.VisualStudio.Component.VC.Tools.x86.x64','-property','installationPath'])
+  if(!installation||installation.includes('\n'))throw Error('MSVC_2022_INSTALLATION_REQUIRED')
+  const vcvars=path.join(installation,'VC/Auxiliary/Build/vcvarsall.bat')
   const batch=path.join(work,'build.cmd')
   fs.writeFileSync(batch,`@echo off\r\ncall "${vcvars}" x64 ${lock.toolchain.windowsSdkVersion} -vcvars_ver=${lock.toolchain.msvcToolsVersion}\r\nif errorlevel 1 exit /b %errorlevel%\r\n"${process.execPath}" "${__filename}" --worker\r\nexit /b %errorlevel%\r\n`)
   run('cmd.exe',['/d','/c',batch]);return
@@ -40,14 +43,17 @@ async function main(){
  const make=path.join(tooling,'usr/bin/make.exe')
  // MSYS link.exe must never shadow Microsoft's linker.
  process.env.PATH=bin+';'+path.dirname(make)+';C:\\msys64\\usr\\bin;'+process.env.PATH
- const cl=spawnSync(path.join(bin,'cl.exe'),[],{encoding:'utf8'}),compiler=(cl.stdout||'')+(cl.stderr||'')
+ const cl=spawnSync(path.join(bin,'cl.exe'),[],{encoding:'utf8'}),compiler=((cl.stdout||'')+(cl.stderr||'')).replaceAll('\r\n','\n')
  if(cl.error)throw cl.error
  if(!compiler.includes(lock.toolchain.compilerVersion))throw Error('MSVC_COMPILER_VERSION_MISMATCH: '+compiler)
  if(process.env.VCToolsVersion?.replace(/\\$/,'')!==lock.toolchain.msvcToolsVersion||process.env.WindowsSDKVersion?.replace(/\\$/,'')!==lock.toolchain.windowsSdkVersion)throw Error('MSVC_SDK_VERSION_MISMATCH')
- const tools=[bash,make,tar,...['msys-2.0.dll','sed.exe','grep.exe','gawk.exe','uname.exe','sh.exe','coreutils.exe'].map(n=>'C:\\msys64\\usr\\bin\\'+n).filter(fs.existsSync),...['cl.exe','link.exe','lib.exe','nmake.exe','dumpbin.exe'].map(n=>path.join(bin,n))].map(file=>({file:file.replaceAll('\\','/'),sha256:hash(file)}))
+ const tools=[['msys/bash.exe',bash],['msys/make.exe',make],['windows/tar.exe',tar],...['msys-2.0.dll','sed.exe','grep.exe','gawk.exe','awk.exe','uname.exe','sh.exe','cat.exe','cp.exe','rm.exe','mkdir.exe','touch.exe','tr.exe','head.exe','tail.exe','sort.exe','wc.exe','cut.exe','od.exe','expr.exe','dirname.exe','basename.exe','tee.exe','cmp.exe','diff.exe'].map(n=>['msys/'+n,'C:\\msys64\\usr\\bin\\'+n]).filter(([,file])=>fs.existsSync(file)),...['cl.exe','link.exe','lib.exe','nmake.exe','dumpbin.exe'].map(n=>['msvc/'+n,path.join(bin,n)])].map(([file,actual])=>({file,sha256:hash(actual)}))
  const versions={compiler:compiler.trim(),bash:capture(bash,['--version']).split('\n')[0],make:capture(make,['--version']).split('\n')[0]}
  console.log('TRACE_CODEC_TOOLCHAIN',JSON.stringify({tools,versions,msvc:process.env.VCToolsVersion,sdk:process.env.WindowsSDKVersion}))
  const inputDirectories={compiler:bin,msvcInclude:path.join(process.env.VCToolsInstallDir,'include'),msvcLib:path.join(process.env.VCToolsInstallDir,'lib/x64'),sdkInclude:path.join(process.env.WindowsSdkDir,'Include',lock.toolchain.windowsSdkVersion),sdkUcrtLib:path.join(process.env.WindowsSdkDir,'Lib',lock.toolchain.windowsSdkVersion,'ucrt/x64'),sdkUmLib:path.join(process.env.WindowsSdkDir,'Lib',lock.toolchain.windowsSdkVersion,'um/x64')}
+ process.env.LIB=[inputDirectories.msvcLib,inputDirectories.sdkUcrtLib,inputDirectories.sdkUmLib].join(';')
+ process.env.INCLUDE=[inputDirectories.msvcInclude,...['ucrt','shared','um','winrt','cppwinrt'].map(d=>path.join(inputDirectories.sdkInclude,d))].join(';')
+ delete process.env.LIBPATH
  const inputInventory=Object.fromEntries(Object.entries(inputDirectories).map(([name,dir])=>[name,inventory(dir)])),systemInputs=Object.fromEntries(Object.entries(inputInventory).map(([name,{inventory,...identity}])=>[name,identity]))
  console.log('TRACE_CODEC_SYSTEM_INPUTS',JSON.stringify(systemInputs))
  if(lock.toolchain.tools&&JSON.stringify(lock.toolchain.tools)!==JSON.stringify(tools))throw Error('CODEC_TOOL_HASH_CHANGED')
@@ -56,6 +62,7 @@ async function main(){
  fs.mkdirSync(path.join(work,'source'),{recursive:true})
  for(const source of lock.sources)run(tar,['-xf',path.join(cache,source.archiveFile),'-C',path.join(work,'source')])
  const lame=path.join(work,'source/lame-3.100'),ff=path.join(work,'source/FFmpeg-'+lock.sources[0].commit)
+ if(fs.readFileSync(path.join(ff,'RELEASE'),'utf8').trim()!==lock.version)throw Error('CODEC_SOURCE_RELEASE_MISMATCH')
  const macros=Object.entries(lock.lame.macros).map(([key,value])=>key+'='+value)
  run(path.join(bin,'nmake.exe'),['/nologo','/f','Makefile.MSVC',...macros,'config.h'],{cwd:lame})
  run(path.join(bin,'nmake.exe'),['/nologo','/f','Makefile.MSVC',...macros,lock.lame.target],{cwd:lame})
@@ -78,6 +85,8 @@ async function main(){
  const report={schemaVersion:1,buildLockSha256:hash(lockPath),sources:lock.sources,tools,versions,systemInputs,recipes,outputs,configuration:outputs.ffmpeg.version.split('\n').find(s=>s.startsWith('configuration:')),patches:[],crtLinkage:lock.toolchain.crtLinkage,sourceDateEpoch:lock.sourceDateEpoch}
  fs.writeFileSync(path.join(folder,'system-inputs.json'),JSON.stringify(inputInventory,null,2)+'\n')
  fs.copyFileSync(path.join(ff,'config.h'),path.join(folder,'config.h'));fs.copyFileSync(path.join(ff,'ffbuild/config.mak'),path.join(folder,'config.mak'))
+ fs.copyFileSync(path.join(ff,'ffbuild/config.log'),path.join(folder,'configure.log'))
+ Object.assign(report,{systemInventorySha256:hash(path.join(folder,'system-inputs.json')),configHeaderSha256:hash(path.join(folder,'config.h')),configMakSha256:hash(path.join(folder,'config.mak'))})
  fs.writeFileSync(path.join(folder,'build-report.json'),JSON.stringify(report,null,2)+'\n')
  console.log('TRACE_CODEC_BUILD_REPORT',JSON.stringify(report))
 }

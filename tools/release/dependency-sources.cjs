@@ -6,8 +6,8 @@ const {Transform}=require('node:stream'),{pipeline}=require('node:stream/promise
 const root=path.resolve(__dirname,'../..')
 const sha=bytes=>createHash('sha256').update(bytes).digest('hex')
 function validateManifest(codec,manifest,{requireComplete=false}={}){
- if(manifest.schemaVersion!==1)throw Error('SOURCE_MANIFEST_SCHEMA')
- for(const key of ['version','platform','archiveSha256','ffmpegSha256','ffprobeSha256','configuration']){
+ if(![1,2].includes(manifest.schemaVersion))throw Error('SOURCE_MANIFEST_SCHEMA')
+ for(const key of ['version','platform','ffmpegSha256','ffprobeSha256','configuration',...(manifest.schemaVersion===1?['archiveSha256']:[])]){
   if(manifest.binary?.[key]!==codec[key])throw Error('STALE_CODEC_SOURCE: '+key)
  }
  const upstream=manifest.upstream
@@ -16,8 +16,18 @@ function validateManifest(codec,manifest,{requireComplete=false}={}){
  if(!Number.isSafeInteger(upstream.archiveBytes)||upstream.archiveBytes<=0||!/^[a-f0-9]{64}$/.test(upstream.archiveSha256||''))throw Error('SOURCE_INTEGRITY_MISSING')
  if(upstream.archiveFile!==`FFmpeg-${codec.version}-Upstream-Source.tar.gz`)throw Error('SOURCE_FILENAME_MISMATCH')
  for(const source of manifest.additionalUpstreams||[]){
-  if(source.publisherVersion!==manifest.publisherVersionRecords?.[source.publisherRecordName])throw Error('DEPENDENCY_SOURCE_VERSION_MISMATCH')
+  if(manifest.schemaVersion===1&&source.publisherVersion!==manifest.publisherVersionRecords?.[source.publisherRecordName])throw Error('DEPENDENCY_SOURCE_VERSION_MISMATCH')
   if(!/^https:\/\//.test(source.archiveUrl)||!Number.isSafeInteger(source.archiveBytes)||source.archiveBytes<=0||!/^[a-f0-9]{64}$/.test(source.archiveSha256||'')||!/^[A-Za-z0-9._-]+-Upstream-Source\.tar\.gz$/.test(source.archiveFile||''))throw Error('DEPENDENCY_SOURCE_INTEGRITY_MISSING')
+ }
+ if(manifest.schemaVersion===2){
+  if(codec.build!=='Trace source build'||codec.buildLock!=='references/trace-ffmpeg/build-lock.json'||codec.buildReport!=='references/trace-ffmpeg/build-report.json'||manifest.correspondingSourceComplete!==true||!Array.isArray(manifest.missingProducerInputs)||manifest.missingProducerInputs.length)throw Error('UNVERIFIED_COMPLETE_SOURCE_CLAIM')
+  const lockBytes=fs.readFileSync(path.join(root,codec.buildLock)),buildLock=JSON.parse(lockBytes),reportBytes=fs.readFileSync(path.join(root,codec.buildReport)),report=JSON.parse(reportBytes)
+  if(sha(reportBytes)!==codec.buildReportSha256||manifest.buildReportSha256!==codec.buildReportSha256)throw Error('CODEC_BUILD_REPORT_CHANGED')
+  const names=['tools/codec/build.cjs','tools/codec/identity.cjs','tools/release/dependency-sources.cjs']
+  const recipeHashes=Object.fromEntries(names.map(name=>[name,sha(fs.readFileSync(path.join(root,name)))]))
+  if(JSON.stringify([upstream,...(manifest.additionalUpstreams||[])])!==JSON.stringify(buildLock.sources))throw Error('CODEC_SOURCE_SET_CHANGED')
+  const result=require('../codec/identity.cjs').validateBuildReport(codec,buildLock,lockBytes,report,{recipeHashes})
+  return {upstreamVerified:true,...result,missingProducerInputs:[]}
  }
  // This tool verifies the upstream archive only. Claiming correspondence for
  // the static binary requires a separate verified dependency/build bundle.
@@ -92,6 +102,6 @@ if(require.main===module){
  const args=process.argv.slice(2)
  if(args.some(arg=>!['--fetch','--require-complete'].includes(arg))){console.error('Usage: dependency-sources.cjs [--fetch] [--require-complete]');process.exitCode=1}
  else prepareSources({fetch:args.includes('--fetch'),requireComplete:args.includes('--require-complete')}).then(result=>{
-  console.log('TRACE_FFMPEG_SOURCE',result.manifest.upstream.commit,result.archiveVerified?'archive-verified':'inventory-verified','static-dependencies-incomplete')
+  console.log('TRACE_FFMPEG_SOURCE',result.manifest.upstream.commit,result.archiveVerified?'archive-verified':'inventory-verified',result.correspondingSourceComplete?'corresponding-source-verified':'static-dependencies-incomplete')
  }).catch(error=>{console.error(error.message);process.exitCode=1})
 }
