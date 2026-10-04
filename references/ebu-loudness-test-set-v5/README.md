@@ -48,9 +48,9 @@ cd Trace
 
 素材取得与存储完成，不代表 Trace 的 EBU 数值验收已经通过。本轮只检查文件完整性，未构建应用/原生 addon，也未运行 M/S/I/LRA/TP 计量测试。
 
-仓库现有 `npm run test:lufsmeter-ebu -- artifacts/ebu-loudness-v5` 需先构建 `native/build/Release/visualizer_dsp.node`，只覆盖上游 Prism `lufsmeter` 的 Tech 3341 真峰值 15–23；它不能替代 `Trace::Meter` 全部适用素材的验收。`test/native/ebu_reference_tests.cpp` 使用生成信号；原始 WAV 的 Trace 引擎门禁现为 `tools/metering/run-ebu-wav-tests.py`，固定引擎配置、声道映射、素材 SHA-256 与 Tech 3341/3342 的原始参考值和容差。
+素材取得阶段曾使用 Prism 的 `test:lufsmeter-ebu`，只覆盖 Tech 3341 真峰值 15–23；该命令与上游 addon 已随独立化退役，当前不再构建 `visualizer_dsp.node`。当前使用本仓库 Trace 引擎的 CTest：Windows 执行 `npm run build:trace-engine`，Linux 配置 `native/portable` 并启用 `TRACE_REQUIRE_EBU=ON`；复现见 [09](../../docs/09-WINDOWS-SETUP.md)。`test/native/ebu_reference_tests.cpp` 使用生成信号；原始 WAV 的 Trace 引擎门禁现为 `tools/metering/run-ebu-wav-tests.py`，固定引擎配置、声道映射、素材 SHA-256 与 Tech 3341/3342 的原始参考值和容差。
 
-2026-10-03 后续修复：实际 Trace Meter v5 已在 Linux 通过 68/68 适用原始 WAV，包含原先失败的 Max M；2 个多声道文件仍超出产品范围。已接入原始素材 CTest/CI runner，校准、完整密集历史与未验证的 Windows 路径见 [78](../../docs/78-EBU-METER-RECALIBRATION.md)。前文“未运行”描述的是素材取得轮，不代表本次修复后的状态。
+2026-10-03 后续修复：实际 Trace Meter v5 已在 Linux 通过 68/68 适用原始 WAV，包含原先失败的 Max M；2 个多声道文件仍超出产品范围。已接入原始素材 CTest/CI runner，校准与完整密集历史见 [78](../../docs/78-EBU-METER-RECALIBRATION.md)；后续 Windows 实际 WavReader/原生文件分析已通过，旧工具链独立化记录见 [79](../../docs/79-TRACE-INDEPENDENT-PROJECT.md)，当前完整 CI 见 [80](../../docs/80-RELEASE-DEPENDENCY-HARDENING.md)。前文“未运行”描述的是素材取得轮，不代表本次修复后的状态。
 
 ## 使用范围
 

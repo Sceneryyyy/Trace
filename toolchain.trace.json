@@ -48,8 +48,10 @@
   "codecLock": "ffmpeg.lock.json",
   "meterConfiguration": "trace-meter-v5-ebur128-1.2.6-lra10hz-msi100hz-tpaligned",
   "historicalMachineSnapshot": "toolchain.m0.json",
-  "validation": "docs/79-TRACE-INDEPENDENT-PROJECT.md",
+  "validation": "docs/80-RELEASE-DEPENDENCY-HARDENING.md",
   "overrides": {
     "@electron/get": "5.1.0"
-  }
+  },
+  "verification": "docs/release/dependency-verification.json",
+  "lastValidatedOn": "2026-10-04"
 }

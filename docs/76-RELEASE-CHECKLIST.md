@@ -1,6 +1,6 @@
 # 76 · Trace Windows 发布验收清单
 
-2026-10-03。本清单适用于 preview.31 私有工程候选；历史 preview.30 / InternalTest-r3 保持原交付身份。支持范围先限定 Windows x64、单/双声道。macOS 单列 [70](70-MACOS-PORT-PLAN.md)。候选附件内清单为生成时的阶段快照，最终提交/CI/门禁状态见 [13](13-HANDOFF.md) 与 [80](80-RELEASE-DEPENDENCY-HARDENING.md)；独立化证据见 [79](79-TRACE-INDEPENDENT-PROJECT.md)，先前云端记录见 [75](75-CLOUD-RELEASE-PREPARATION.md)。
+2026-10-04。本清单适用于 preview.31 私有工程候选；历史 preview.30 / InternalTest-r3 保持原交付身份。支持范围先限定 Windows x64、单/双声道。macOS 单列 [70](70-MACOS-PORT-PLAN.md)。候选附件内清单为生成时的阶段快照，最终提交/CI/门禁状态见 [13](13-HANDOFF.md) 与 [80](80-RELEASE-DEPENDENCY-HARDENING.md)；独立化证据见 [79](79-TRACE-INDEPENDENT-PROJECT.md)，先前云端记录见 [75](75-CLOUD-RELEASE-PREPARATION.md)。
 
 ## 工程候选生成
 
@@ -21,15 +21,15 @@ node tools/release/candidate.cjs
 
 候选包内 manifest 的 `engineering-candidate` 与 `signed:false` 保持真实身份。Actions runner 的包加载检查不要求声卡，不能替代原有 `tools/m6/package-smoke.cjs` 的音频流程或下面的实机门禁。
 
-升级前的 [完整 CI](https://github.com/Sceneryyyy/Trace/actions/runs/37104992986)（`db005b5`）已成功：Windows CTest 19/19、实际 Trace 原生/FFmpeg 43/43、两端 portable JS 248/248、Linux ASan/UBSan 核心 8 项与原始 EBU 1 项、浏览器回归、类型与应用构建全部通过；ZIP、五项包审计、包加载/重启及最终私有候选附件也已完成。后续工具链与 codec 必须用新 CI 复验，见 80。历史图标清洁检查失败及修复证据见 [79](79-TRACE-INDEPENDENT-PROJECT.md)。
+[最新完整 CI](https://github.com/Sceneryyyy/Trace/actions/runs/37164188081)（`6835af9`）已成功：Windows CTest 19/19、原生/媒体 48/48、两端 JS 258/258、Linux ASan/UBSan 核心 8 + 原始 EBU 1、实际浏览器、类型/构建、安全门禁，以及 ZIP、5 项包审计、加载/重启、clean-checkout 与最终候选上传通过。失败与修复见 [80](80-RELEASE-DEPENDENCY-HARDENING.md)。
 
-GitHub 私有附件 `trace-windows-candidate` 的 ID 为 `11267953983`，大小 `212794813` 字节，创建于 `2026-10-03 07:25:32 UTC`；GitHub 所报附件归档 SHA-256 为 `bc7b385c33aa9a81c4fd1537a707089a7265950a4f7892b69688a2771e4bf658`。这是 Actions 附件归档身份，不能当成包内 ZIP 或 manifest 的 hash。云端代理对附件存储目的地返回 403，本地未下载或读取附件内部文件；工作流日志与 GitHub 元数据已确认生成及验证成功，记录见 [独立工程验证清单](release/independence-verification.json)。
+私有 [trace-windows-candidate](https://github.com/Sceneryyyy/Trace/actions/runs/37164188081/artifacts/11289018197)，ID `11289018197`，归档 `244857038` 字节，创建于 `2026-10-04T00:35:10Z`。GitHub 附件归档 SHA-256 `166ac58b6926fe5d3e325d85b8cc8cbf04260ec8f3b3fdb28df895ee3d8f9c2e`；它不是内含应用 ZIP/JSON 的 hash。本地读取了完成日志和元数据，未读取附件 payload；完整证据见 [依赖验证记录](release/dependency-verification.json)。
 
 ## 必须关闭的发布门禁
 
 | 门禁 | 操作与预期 | 当前状态 |
 | --- | --- | --- |
-| SEC | 完整和生产 `npm audit` 必须均为零；新固定 SDK 重建引擎、CTest/native、三格式及新候选必须通过；继续核对 FFmpeg 静态组件/VC 安全来源 | npm 18→0，已加入实时强制门禁；固定工具链完整复验见 80，静态 FFmpeg 依赖精确来源/安全核查仍阻塞 |
+| SEC | 完整和生产 `npm audit` 必须均为零；新固定 SDK 重建引擎、CTest/native、三格式及新候选必须通过；继续核对 FFmpeg 静态组件/VC 安全来源 | npm 18→0，已加入实时强制门禁；固定工具链、原生、双 AAC 封装及新候选完整复验已通过，见 80，静态 FFmpeg 依赖精确来源/安全核查仍阻塞 |
 | WIN | 未装开发工具的 Windows 11 x64 普通用户；中文/空格路径、断网，解压→启动→选设备→录音→回听→三格式导出→重启 | CI 候选加载/重启通过；普通用户干净 Windows 与真实音频流程未运行 |
 | DEV | 内置输出、USB 声卡，真实 44.1/48/96 kHz；拔插、默认设备变化、修改格式、设备占用与睡眠恢复 | 未验证矩阵；96 kHz 文件不算采集 |
 | FLOW | 播放约三分钟 YouTube；交叉进行 REC、静默历史查看、停止后回听、报告跳转、缓存/选区保存、另存。按钮与监听状态一致，来源质量贯穿保存/重载/报告 | 未运行 |

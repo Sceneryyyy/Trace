@@ -9,9 +9,9 @@
 | 输入 | 原值 | 当前固定值与理由 |
 | --- | --- | --- |
 | Electron/SDK | 40.8.3 | 42.11.10，仍受支持的稳定分支；40 系列最后补丁仍落在部分公告范围内 |
-| electron-builder | 26.8.1 | 26.15.3，修复构建器/下载凭据公告，实际打包需复验 |
+| electron-builder | 26.8.1 | 26.15.3，修复构建器/下载凭据公告，实际打包已复验 |
 | node-gyp | 10.3.1 | 13.1.0，与 Node 24.19.0 兼容，移除旧 tar/下载缓存链 |
-| 下载器 | @electron/get 2/3 | 统一覆盖为官方 5.1.0，接口加载已实测，Windows 构建/打包继续验收 |
+| 下载器 | @electron/get 2/3 | 统一覆盖为官方 5.1.0，接口加载及 Windows 构建/打包已实测 |
 | FFmpeg | Gyan 9.0.1 | Gyan 9.0.2 essentials，同一功能配置的稳定补丁版；ZIP CRC、大小、两 EXE 与发布者 digest 已核验 |
 
 完整 npm 审计由 18 个受影响包（17 high / 1 critical）降至 **0**，生产依赖
@@ -44,7 +44,7 @@
 发布者列出 42 个外部组件、13 个硬件特性；README 末尾另有 37 条版本/
 提交后缀记录，已逐项归入清单。但八项基础库版本、完整传递依赖与许可、
 生产者补丁、构建脚本及工具链清单未提供。系统 API 和第三方 SDK 仍需区分。
-当前发布仓库只有支持 README 和 FUNDING，不能从最新 MSYS2 包推断此 EXE。
+发布仓库只有支持 README 和 FUNDING。另找到 [公开通用构建 fork](https://github.com/GyanD/media-autobuild_suite)，默认分支及 GPL 分支所查提交分别为 2020-12-20/2020-03-07，尚无绑定本 9.0.2 发布二进制的准确 revision/settings/toolchain/package 记录；不能从最新 MSYS2 包推断此 EXE。
 **完整静态构建对应源码门禁仍阻塞**，`--require-complete` 必须失败，候选
 保留 `correspondingSourceComplete:false`。这些缺失信息需要发布者提供，或
 另行建立、验收拥有完整来源的 codec 构建；本轮没有缩减既有编码/导入范围。
@@ -77,9 +77,15 @@ Windows job 仍为 failure，不作为候选通过证据。
 冲突或异常元数据。有效帧等式、MP3 零额外填充规则及数值容差保持。
 
 本地补充用 Linux FFmpeg 7.1.5 跑原回归信号和真实生产流程：4 项通过；
-固定 Windows EXE 身份用例明确跳过 1 项，这不算 Windows 通过。最终源码的
-Windows 引擎/19 CTest/**48 项 native**、Linux ASan/UBSan 与浏览器、新候选
-全流程仍须新 CI 收齐。上一轮 `db005b5` 只证明旧工具链，不能沿用为本轮通过。
+固定 Windows EXE 身份用例明确跳过 1 项，这不算 Windows 通过。
+最终 [`6835af9` 的完整 CI](https://github.com/Sceneryyyy/Trace/actions/runs/37164188081) 已收齐：Windows CTest **19/19**、
+原生/媒体 **48/48**、两端 JS **258/258**、Linux ASan/UBSan 核心 **8/8** 与原始
+EBU **1/1**、浏览器/类型/构建均通过。新候选 ZIP、5 项包审计、实际原生加载
+及主题重启、clean-checkout、生成/上传通过；两份源码归档由成功的候选生成器
+校验并附带。CRT 实际 **14.44.35112 x64** 与 DLL hash 留存在完成日志/验证摘要。
+旧 `db005b5` 保持旧工具链证据，当前身份为 `6835af9` / run `37164188081`。
+已读取完成日志与附件元数据；附件 payload 未下载/读取，内部 JSON hash 未独立复读。
+详细证据见 [dependency-verification.json](release/dependency-verification.json)。
 
 完成后的 run/commit 与候选身份同步 [13](13-HANDOFF.md)。即使 npm 归零、
 工程候选通过，也不关闭静态 FFmpeg 对应源码与相关库安全核查、真实设备、
@@ -98,4 +104,4 @@ Windows 引擎/19 CTest/**48 项 native**、Linux ASan/UBSan 与浏览器、新�
 只有准确大小/SHA-256 校验成功才发布缓存，失败清理临时文件。新增四项
 实际本机 HTTP 流反例（测试仅映射 loopback，生产仍严格 HTTPS），专项
 11/11、完整 JS 258/258 和类型检查通过。已用新实现重新下载官方
-FFmpeg/LAME 归档，两个实际大小/hash 与原锁一致；需要再取得修复后完整 CI。
+FFmpeg/LAME 归档，两个实际大小/hash 与原锁一致；修复后的完整 CI `37164188081` 及候选生成/上传已通过，最终复验于 2026-10-04。

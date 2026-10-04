@@ -1,6 +1,6 @@
 # Trace 声迹 · 开发入门
 
-2026-10-03 更新。本目录已经是完整源码仓库；默认开发分支为 `recorder/dev`。当前源码 preview.31；来源 `db005b5` 的 preview.31 私有工程候选已由完整 CI 生成，preview.30 / InternalTest-r3 保留为历史同事内测交付包。版本、产物身份与验证边界见 [当前交接](docs/13-HANDOFF.md)，独立工程与远程验证见 [79](docs/79-TRACE-INDEPENDENT-PROJECT.md)。
+2026-10-04 更新。本目录已经是完整源码仓库；默认开发分支为 `recorder/dev`。当前源码 preview.31；来源 `6835af9` 的 preview.31 私有工程候选已由完整 CI 生成，preview.30 / InternalTest-r3 保留为历史同事内测交付包。版本、产物身份与验证边界见 [当前交接](docs/13-HANDOFF.md)，独立工程边界见 [79](docs/79-TRACE-INDEPENDENT-PROJECT.md)，最新依赖与远程验证见 [80](docs/80-RELEASE-DEPENDENCY-HARDENING.md)。
 
 ## 开始工作
 
@@ -9,7 +9,7 @@
 3. 按 [Windows 开发环境](docs/09-WINDOWS-SETUP.md) 准备依赖与引擎；本仓库根即构建工作目录，无需重新克隆 Prism 或建立第二层 `app/`。
 4. 根据任务实现、运行对应验证，更新相关契约与当前交接。历史记录不能替代本次版本的验证。
 
-独立化和验证文档已随 `eae33e5` 交付到 `recorder/dev`；通过 CI 的代码与候选仍绑定 `db005b5`。下一会话的同步检查、证据位置和云端/实机后续顺序见 [接力说明](docs/13-HANDOFF.md#下一会话接力)。忽略目录里的原始日志不会随 clone 下载，可从已提交的验证摘要和 Actions 继续核查。
+依赖、编码与下载回归修复已交付到 `recorder/dev`；完整 CI 与新候选绑定 `6835af9`，证据见 [80](docs/80-RELEASE-DEPENDENCY-HARDENING.md)。下一会话的同步检查、证据位置和云端/实机后续顺序见 [接力说明](docs/13-HANDOFF.md#下一会话接力)。忽略目录里的原始日志不会随 clone 下载，可从已提交的验证摘要和 Actions 继续核查。
 
 ## Windows 构建入口
 
@@ -25,19 +25,20 @@
 
 `Setup` 准备锁定依赖、Electron SDK 和 FFmpeg；`Engine` 构建 Trace 音频后端并运行原生 CTest。默认 `dev`、`build`、`test`、`dist` 均属于 Trace；`build:trace`/`start:trace` 保留兼容入口。单独获取 SDK 使用 `npm run install:trace-sdk`，无需编译上游 addon。原生 CTest、SDK-only WASAPI 诊断与分发入口见 [09](docs/09-WINDOWS-SETUP.md)。
 
-preview.31 的 [完整 CI](https://github.com/Sceneryyyy/Trace/actions/runs/37104992986)（`db005b5`）已通过 Windows CTest 19/19、实际 Trace 原生/FFmpeg 测试 43/43、两端 portable JS 248/248、Linux ASan/UBSan 核心 8 项与原始 EBU 1 项，以及浏览器回归、类型与应用构建。候选生成、包审计和加载/重启也已成功。真实 WASAPI 采集、声卡矩阵、长录音与正式发布验收继续单列，不能沿用历史 R3 或无声卡包启动替代。
+preview.31 的 [完整 CI](https://github.com/Sceneryyyy/Trace/actions/runs/37164188081)（`6835af9`）已通过 Windows CTest 19/19、实际 Trace 原生/FFmpeg 测试 48/48、两端 portable JS 258/258、Linux ASan/UBSan 核心 8 项与原始 EBU 1 项，以及浏览器回归、类型与应用构建。候选生成、包审计和加载/重启也已成功。真实 WASAPI 采集、声卡矩阵、长录音与正式发布验收继续单列，不能沿用历史 R3 或无声卡包启动替代。
 
 ## Linux 云端可执行检查
 
 ```bash
 npm ci
 npm run check:independence
+npm run check:security
 npm run typecheck
 npm test
 npm run build
 ```
 
-这组命令验证工程依赖边界、静态类型、可移植业务逻辑和应用资源；`npm ci` 安装声明的依赖，不构建本项目或上游的原生 addon。可移植 C++、FFT 与原始 EBU 素材检查使用 `native/portable`，命令见 [09](docs/09-WINDOWS-SETUP.md)。Windows WASAPI、原生引擎加载与分发包须另验；最新本轮结果以 [79](docs/79-TRACE-INDEPENDENT-PROJECT.md) 和当前交接为准。macOS 路线见 [70](docs/70-MACOS-PORT-PLAN.md)，当前分支没有完成 Trace 的 Mac 采集实现。
+这组命令验证工程依赖边界、静态类型、可移植业务逻辑和应用资源；`npm ci` 安装声明的依赖，不构建本项目或上游的原生 addon。可移植 C++、FFT 与原始 EBU 素材检查使用 `native/portable`，命令见 [09](docs/09-WINDOWS-SETUP.md)。Windows WASAPI、原生引擎加载与分发包须另验；最新本轮结果以 [80](docs/80-RELEASE-DEPENDENCY-HARDENING.md) 和当前交接为准。macOS 路线见 [70](docs/70-MACOS-PORT-PLAN.md)，当前分支没有完成 Trace 的 Mac 采集实现。
 
 ## 项目来源与约定
 

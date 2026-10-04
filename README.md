@@ -16,7 +16,7 @@ Audio Recorder & Analyzer
 
 Trace 是 LeoMoon 系列的桌面音频录音与分析工作台。它把系统声音采集、录音、历史回听和多种测量仪器放在同一个窗口，让你既能观察正在发生的声音，也能沿时间轴回到刚才的细节。
 
-当前源码为 **0.1.0-preview.31**，开发分支为 `recorder/dev`。preview.31 独立工程已通过完整 Windows/Linux CI，并生成 **Windows x64 私有工程候选**（来源提交 `db005b5`）；产物身份见 [当前交接](docs/13-HANDOFF.md)。历史同事内测交付包为 **0.1.0-preview.30 / InternalTest-r3**（来源提交 `9c1ee21`）。[新版 PDF 快速上手](output/pdf/LeoMoon-Trace-Quick-Start-preview.31-zh-CN.pdf) 已更新，界面插图明确使用云端模拟数据。macOS 移植方案已记录，当前分支的 Trace 音频后端仍为 Windows/WASAPI，Mac 采集实现与实机验收尚未完成。
+当前源码为 **0.1.0-preview.31**，开发分支为 `recorder/dev`。preview.31 独立工程已通过完整 Windows/Linux CI，并生成 **Windows x64 私有工程候选**（来源提交 `6835af9`）；产物身份见 [当前交接](docs/13-HANDOFF.md)。历史同事内测交付包为 **0.1.0-preview.30 / InternalTest-r3**（来源提交 `9c1ee21`）。[新版 PDF 快速上手](output/pdf/LeoMoon-Trace-Quick-Start-preview.31-zh-CN.pdf) 已更新，界面插图明确使用云端模拟数据。macOS 移植方案已记录，当前分支的 Trace 音频后端仍为 Windows/WASAPI，Mac 采集实现与实机验收尚未完成。
 
 ![Trace 工作台：波形、电平与响度共享时间轴](docs/assets/quick-start-preview28/workbench.png)
 
@@ -50,7 +50,7 @@ Trace 是 LeoMoon 系列的桌面音频录音与分析工作台。它把系统�
 
 ### 当前验证边界
 
-本项目仍处于开发预览阶段。preview.31 独立工程的 [完整 CI](https://github.com/Sceneryyyy/Trace/actions/runs/37104992986)（`db005b5`）已成功：Windows CTest **19/19**、Trace 原生/FFmpeg 测试 **43/43**、两端可移植 JS **248/248**，Linux ASan/UBSan 的 8 项核心测试与 1 项原始 EBU 门禁、浏览器回归、类型与应用构建均通过；Windows 私有工程候选已生成，包审计及加载/重启通过。完整证据见 [79](docs/79-TRACE-INDEPENDENT-PROJECT.md) 和 [当前交接](docs/13-HANDOFF.md)。
+本项目仍处于开发预览阶段。preview.31 独立工程的 [完整 CI](https://github.com/Sceneryyyy/Trace/actions/runs/37164188081)（`6835af9`）已成功：Windows CTest **19/19**、Trace 原生/FFmpeg 测试 **48/48**、两端可移植 JS **258/258**，Linux ASan/UBSan 的 8 项核心测试与 1 项原始 EBU 门禁、浏览器回归、类型与应用构建均通过；Windows 私有工程候选已生成，包审计及加载/重启通过。完整证据见 [80](docs/80-RELEASE-DEPENDENCY-HARDENING.md) 和 [当前交接](docs/13-HANDOFF.md)。
 
 完整与生产 npm 审计均已归零；固定 SDK、编码回归与新候选复验见 [80](docs/80-RELEASE-DEPENDENCY-HARDENING.md)。完整 FFmpeg 静态构建对应源码仍缺发布者资料。独立干净 Windows、不同声卡/驱动、真实 96 kHz 等实机验收仍需补充，Windows 分发包尚未签名；macOS 采集、权限、打包与签名/公证尚未完成实机验证。正式发布门禁见 [76](docs/76-RELEASE-CHECKLIST.md)。
 
@@ -65,6 +65,7 @@ Trace 使用 Electron / React / TypeScript，Windows 音频后端使用原生 C+
 ```bash
 npm ci
 npm run check:independence
+npm run check:security
 npm run typecheck
 npm test
 npm run build

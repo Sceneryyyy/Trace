@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-10-03T18:01:39.809826+00:00",
+  "checkedAt": "2026-10-04T00:35:31.528804+00:00",
   "packageLockSha256": "48ad7852ae6c69fca695ec3cdbf61d5686eca73775e81bf0f5b683696fb21ba4",
   "releaseReady": false,
   "npmDependencyGateReady": true,
@@ -21,7 +21,7 @@
     "total": 0
   },
   "scope": "Full npm advisory inventory and required current-run gate. Electron runtime ships despite devDependency classification. No complete static-FFmpeg provenance or physical-release approval.",
-  "inventorySource": "npm audit against the exact installed and locked graph; toolchain compatibility remains subject to actual Windows CI and candidate proof",
+  "inventorySource": "Full locked npm inventory with clean committed local re-audit and actual exact-source Windows/Linux security gates; see dependency-verification.json",
   "directToolchain": {
     "@electron/asar": "3.4.1",
     "@types/node": "24.12.0",
@@ -57,9 +57,9 @@
     }
   ],
   "pending": [
-    "Windows native/candidate compatibility proof for the upgraded toolchain",
-    "FFmpeg static libraries/headers exact versions, full dependency licenses and producer build recipe unavailable",
-    "VC runtime package version/hash retained in actual candidate; package/runtime advisory review is distinct from npm"
+    "Eight base-library versions and exact source/patch/build/transitive inventory for the static FFmpeg binary remain unidentified despite 37 known publisher version records",
+    "Complete static codec component security/source review; npm zero does not establish this scope",
+    "VC runtime version/DLL hashes are observed by the package audit; Windows/CRT advisory coverage remains separate from the npm gate"
   ],
   "remaining": [],
   "previousInventory": {
@@ -71,5 +71,18 @@
     },
     "packageLockSha256": "2a98a88d1fb88068aab93a4408f83c33d19d0a7a44ef1bc72ba65ce63db18c68"
   },
-  "ffmpegSourceInventory": "references/ffmpeg-9.0.2/source-manifest.json"
+  "ffmpegSourceInventory": "references/ffmpeg-9.0.2/source-manifest.json",
+  "verifiedCodeCommit": "6835af98ac4e51841fb1e78564c02105d4e5bb13",
+  "verifiedCiRunId": 37164188081,
+  "runtimeProvenanceFromCompletedLog": {
+    "electron": "42.11.10",
+    "electronBuilder": "26.15.3",
+    "vcRedist": "14.44.35112 x64",
+    "dlls": {
+      "msvcp140.dll": "0f885b509a685d2bbfa652fed26b5fb31d88fbdab0a978c641d1c7b8aa460aa9",
+      "vcruntime140.dll": "d5e4d9a3e835fa679450145d6a7d94e36573a509317111904d9b3712c30d9066",
+      "vcruntime140_1.dll": "1f2d41c4aa5db0bc33ebf7b66d72943a817d7ce6cbe880502a9403823633093f"
+    }
+  },
+  "verification": "docs/release/dependency-verification.json"
 }

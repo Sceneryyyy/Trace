@@ -1,0 +1,666 @@
+{
+  "schemaVersion": 1,
+  "checkedAt": "2026-10-04T00:35:31.528804+00:00",
+  "scope": "Dependency/source inventory and exact-source cloud CI/candidate logs and metadata; no artifact payload, physical hardware or complete static corresponding-source approval",
+  "npm": {
+    "before": {
+      "high": 17,
+      "critical": 1,
+      "total": 18
+    },
+    "after": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 0,
+      "critical": 0,
+      "total": 0
+    },
+    "production": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 0,
+      "critical": 0,
+      "total": 0
+    },
+    "packageLockSha256": "48ad7852ae6c69fca695ec3cdbf61d5686eca73775e81bf0f5b683696fb21ba4",
+    "commands": [
+      {
+        "command": "npm audit --json",
+        "exitCode": 0,
+        "reportSha256": "c32ca030b773f94f2850f3e61a8a942058b82cd928537441fbaf310ea318997a"
+      },
+      {
+        "command": "npm audit --omit=dev --json",
+        "exitCode": 0,
+        "reportSha256": "c32ca030b773f94f2850f3e61a8a942058b82cd928537441fbaf310ea318997a"
+      }
+    ],
+    "freshInstallCommand": "NODE_USE_ENV_PROXY=1 ELECTRON_GET_USE_PROXY=true npm ci --no-audit --no-fund",
+    "installedPackages": 316,
+    "firstOldProxyFlagInstallFailed": true,
+    "electronBinaryVersion": "42.11.10",
+    "actualLinuxElectronIconRuntimeExitCode": 0,
+    "committedLocalAudit": {
+      "schemaVersion": 1,
+      "commit": "6835af98ac4e51841fb1e78564c02105d4e5bb13",
+      "sourceDirty": false,
+      "packageLockSha256": "48ad7852ae6c69fca695ec3cdbf61d5686eca73775e81bf0f5b683696fb21ba4",
+      "status": "pass",
+      "scope": "Current npm advisory gate for full locked dependencies; not physical-device, FFmpeg static-dependency or release approval",
+      "checks": [
+        {
+          "command": "npm audit --json",
+          "exitCode": 0,
+          "counts": {
+            "info": 0,
+            "low": 0,
+            "moderate": 0,
+            "high": 0,
+            "critical": 0,
+            "total": 0
+          },
+          "reportSha256": "c32ca030b773f94f2850f3e61a8a942058b82cd928537441fbaf310ea318997a"
+        },
+        {
+          "command": "npm audit --omit=dev --json",
+          "exitCode": 0,
+          "counts": {
+            "info": 0,
+            "low": 0,
+            "moderate": 0,
+            "high": 0,
+            "critical": 0,
+            "total": 0
+          },
+          "reportSha256": "c32ca030b773f94f2850f3e61a8a942058b82cd928537441fbaf310ea318997a"
+        }
+      ]
+    }
+  },
+  "application": {
+    "portableJs": {
+      "files": 51,
+      "passed": 258,
+      "failed": 0,
+      "skipped": 0
+    },
+    "typecheck": "pass",
+    "build": "pass",
+    "independence": {
+      "status": "pass",
+      "traceFiles": 121,
+      "imports": 573
+    },
+    "applicationDependenciesUnchanged": true,
+    "meterSourcesUnchanged": true
+  },
+  "codec": {
+    "version": "9.0.2",
+    "zipCrcVerified": true,
+    "configurationUnchanged": true,
+    "mandatoryEncodersUnchanged": true,
+    "upstreamCommit": "946fcce07b6dcd0331c8cc609192aeff5e1924f8",
+    "mainSource": {
+      "repository": "https://github.com/FFmpeg/FFmpeg",
+      "commit": "946fcce07b6dcd0331c8cc609192aeff5e1924f8",
+      "release": "9.0.2",
+      "archiveUrl": "https://codeload.github.com/FFmpeg/FFmpeg/tar.gz/946fcce07b6dcd0331c8cc609192aeff5e1924f8",
+      "archiveBytes": 17333895,
+      "archiveSha256": "0aa2b1de2a5698b20a23e93d539a9a8e82ca0117496c5bdf05d198805f42bb3b",
+      "archiveFile": "FFmpeg-9.0.2-Upstream-Source.tar.gz",
+      "releaseFileValidated": true
+    },
+    "additionalSources": [
+      {
+        "version": "3.100",
+        "archiveBytes": 1524133,
+        "archiveSha256": "ddfe36cab873794038ae2c1210557ad34857a4b6bdc515785d1da9e175b1da1e",
+        "archiveUrl": "https://downloads.sourceforge.net/project/lame/lame/3.100/lame-3.100.tar.gz",
+        "archiveFile": "LAME-3.100-Upstream-Source.tar.gz",
+        "name": "LAME",
+        "publisherRecordName": "lame",
+        "publisherVersion": "3.100",
+        "sourceCorrespondence": "Official upstream version matches publisher record; producer modifications/build recipe unreported"
+      }
+    ],
+    "publisherVersionRecords": 37,
+    "reportedExternalComponents": 42,
+    "reportedHardwareFeatures": 13,
+    "mainSourceReleaseFileChecked": "9.0.2",
+    "correspondingSourceComplete": false,
+    "unresolved": [
+      "Versions of unlisted base/system/transitive libraries; full source identities and producer patch mapping for listed versions",
+      "Full transitive dependency and license inventory",
+      "Producer patches and scripts used to configure, compile and link this binary",
+      "Exact compiler/toolchain/package inventory and source mapping"
+    ],
+    "osvCommitQuery": {
+      "commit": "946fcce07b6dcd0331c8cc609192aeff5e1924f8",
+      "queriedAt": "2026-10-03T18:17:20.542857+00:00",
+      "returnedAdvisoryCount": 0,
+      "reportSha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "scope": "OSV indexed commit result only; does not establish all static-dependency security"
+    },
+    "availableBuildReferences": {
+      "repository": "https://github.com/GyanD/media-autobuild_suite",
+      "defaultBranchCommit": "05070f3f3151140a5c644ccd175c824cbf3513c9",
+      "defaultBranchCommitDate": "2020-12-20T09:51:29Z",
+      "gplBranchCommit": "acd9fb7188adbc9ffe22f13f4846703dd7fd4d58",
+      "gplBranchCommitDate": "2020-03-07T05:56:37Z",
+      "productionBinaryBindingVerified": false,
+      "note": "Public general build scripts exist; exact revision/settings/toolchain/packages used for the 9.0.2 release remain unidentified."
+    }
+  },
+  "remote": {
+    "schemaVersion": 1,
+    "checkedAt": "2026-10-04T00:35:26.609342+00:00",
+    "runId": 37164188081,
+    "attempt": 1,
+    "commit": "6835af98ac4e51841fb1e78564c02105d4e5bb13",
+    "workflowConclusion": "success",
+    "workflowUrl": "https://github.com/Sceneryyyy/Trace/actions/runs/37164188081",
+    "evidenceScope": "Completed GitHub job logs and artifact metadata; artifact payloads were not downloaded or read.",
+    "artifactPayloadRead": false,
+    "artifactPayloadLimitation": "Earlier proxy CONNECT 403 for Azure artifact storage; no retry or bypass. Archive digest is not an internal JSON/application ZIP digest.",
+    "originalWaveGateScopeFromSource": {
+      "mandatorySupportedFiles": 68,
+      "explicitExcludedFiles": 2,
+      "observedJsonNumericalCounts": null,
+      "note": "Passing CTest enforces unchanged coverage/tolerances. This collection did not read the artifact numerical JSON."
+    },
+    "logCollection": {
+      "method": "Official completed job log ZIP cached by gh run view; numbered entries read locally after CRC validation",
+      "archiveSha256": "94f8b2ff4498951e86e9c9b0028479b9a7d7cc71c2ee62e0698c643ca1e85bba",
+      "crcPassed": true,
+      "entries": {
+        "portable": "0_portable.txt",
+        "windows": "1_windows.txt"
+      }
+    },
+    "jobs": {
+      "portable": {
+        "jobId": 111323656877,
+        "conclusion": "success",
+        "startedAt": "2026-10-04T00:11:58Z",
+        "completedAt": "2026-10-04T00:32:39Z",
+        "logPath": "artifacts/release-security/portable-job.log (ignored local evidence)",
+        "logBytes": 80992,
+        "logSha256": "fa9164e4059e1584f3b80475636b635e78b039c626005756977dbf1d837b3d3f",
+        "ctest": [
+          {
+            "index": 1,
+            "total": 8,
+            "testId": 2,
+            "name": "meter_cadence",
+            "result": "Passed",
+            "seconds": 246.13
+          },
+          {
+            "index": 2,
+            "total": 8,
+            "testId": 3,
+            "name": "meter_init",
+            "result": "Passed",
+            "seconds": 10.13
+          },
+          {
+            "index": 3,
+            "total": 8,
+            "testId": 4,
+            "name": "tp_time",
+            "result": "Passed",
+            "seconds": 33.01
+          },
+          {
+            "index": 4,
+            "total": 8,
+            "testId": 5,
+            "name": "replay_quality",
+            "result": "Passed",
+            "seconds": 0.84
+          },
+          {
+            "index": 5,
+            "total": 8,
+            "testId": 6,
+            "name": "fft",
+            "result": "Passed",
+            "seconds": 0.71
+          },
+          {
+            "index": 6,
+            "total": 8,
+            "testId": 7,
+            "name": "instrument_analysis",
+            "result": "Passed",
+            "seconds": 1.96
+          },
+          {
+            "index": 7,
+            "total": 8,
+            "testId": 8,
+            "name": "spectrogram_tile",
+            "result": "Passed",
+            "seconds": 4.12
+          },
+          {
+            "index": 8,
+            "total": 8,
+            "testId": 1,
+            "name": "ebu_reference",
+            "result": "Passed",
+            "seconds": 316.69
+          },
+          {
+            "index": 1,
+            "total": 1,
+            "testId": 9,
+            "name": "ebu_wav",
+            "result": "Passed",
+            "seconds": 815.4
+          }
+        ],
+        "ctestTotalSecondsInLogOrder": [
+          316.75,
+          815.4
+        ],
+        "javascriptTestBlocks": [
+          {
+            "context": "portable JS",
+            "tests": 258,
+            "suites": 0,
+            "pass": 258,
+            "fail": 0,
+            "cancelled": 0,
+            "skipped": 0,
+            "todo": 0,
+            "duration_ms": 14760.712065
+          }
+        ],
+        "checkMarkers": [
+          "2026-10-04T00:12:33.7737430Z TRACE_NPM_SECURITY pass 48ad7852ae6c69fca695ec3cdbf61d5686eca73775e81bf0f5b683696fb21ba4",
+          "2026-10-04T00:32:30.5957677Z SNAPSHOT_SELECTOR_PASS {\"stable\":0,\"chromeStable\":0,\"changed\":1,\"propValue\":\"2\",\"stableAfterProps\":0,\"nextValue\":\"4\",\"afterUnmount\":0} /home/runner/work/Trace/Trace/artifacts/cloud-regression/selector-ZcoUIJ",
+          "2026-10-04T00:32:36.4363990Z TRACE_RENDERER pass 9 /home/runner/work/Trace/Trace/artifacts/release-cloud/renderer-q0uxGL"
+        ],
+        "runtimeProvenance": null,
+        "failedSteps": []
+      },
+      "windows": {
+        "jobId": 111323656960,
+        "conclusion": "success",
+        "startedAt": "2026-10-04T00:11:57Z",
+        "completedAt": "2026-10-04T00:35:15Z",
+        "logPath": "artifacts/release-security/windows-job.log (ignored local evidence)",
+        "logBytes": 106764,
+        "logSha256": "bab16cc8a8cdd759d6ba8954e9c25f8d19d6ff69b765eb3e56f57d45772b415b",
+        "ctest": [
+          {
+            "index": 1,
+            "total": 19,
+            "testId": 1,
+            "name": "trace-fft",
+            "result": "Passed",
+            "seconds": 0.07
+          },
+          {
+            "index": 2,
+            "total": 19,
+            "testId": 2,
+            "name": "trace-spectrogram-tile",
+            "result": "Passed",
+            "seconds": 0.33
+          },
+          {
+            "index": 3,
+            "total": 19,
+            "testId": 3,
+            "name": "trace-instruments",
+            "result": "Passed",
+            "seconds": 0.11
+          },
+          {
+            "index": 4,
+            "total": 19,
+            "testId": 4,
+            "name": "trace-core",
+            "result": "Passed",
+            "seconds": 4.65
+          },
+          {
+            "index": 5,
+            "total": 19,
+            "testId": 5,
+            "name": "trace-wav",
+            "result": "Passed",
+            "seconds": 0.04
+          },
+          {
+            "index": 6,
+            "total": 19,
+            "testId": 6,
+            "name": "trace-recorder",
+            "result": "Passed",
+            "seconds": 4.18
+          },
+          {
+            "index": 7,
+            "total": 19,
+            "testId": 7,
+            "name": "trace-analysis",
+            "result": "Passed",
+            "seconds": 3.16
+          },
+          {
+            "index": 8,
+            "total": 19,
+            "testId": 8,
+            "name": "trace-reference",
+            "result": "Passed",
+            "seconds": 24.85
+          },
+          {
+            "index": 9,
+            "total": 19,
+            "testId": 9,
+            "name": "trace-tp-time",
+            "result": "Passed",
+            "seconds": 2.9
+          },
+          {
+            "index": 10,
+            "total": 19,
+            "testId": 10,
+            "name": "trace-init",
+            "result": "Passed",
+            "seconds": 0.93
+          },
+          {
+            "index": 11,
+            "total": 19,
+            "testId": 11,
+            "name": "trace-region-clock",
+            "result": "Passed",
+            "seconds": 0.04
+          },
+          {
+            "index": 12,
+            "total": 19,
+            "testId": 12,
+            "name": "trace-recorder-snapshot",
+            "result": "Passed",
+            "seconds": 43.07
+          },
+          {
+            "index": 13,
+            "total": 19,
+            "testId": 13,
+            "name": "trace-precision",
+            "result": "Passed",
+            "seconds": 0.04
+          },
+          {
+            "index": 14,
+            "total": 19,
+            "testId": 14,
+            "name": "trace-playback",
+            "result": "Passed",
+            "seconds": 0.01
+          },
+          {
+            "index": 15,
+            "total": 19,
+            "testId": 15,
+            "name": "trace-replay",
+            "result": "Passed",
+            "seconds": 0.5
+          },
+          {
+            "index": 16,
+            "total": 19,
+            "testId": 16,
+            "name": "trace-replay-quality",
+            "result": "Passed",
+            "seconds": 0.11
+          },
+          {
+            "index": 17,
+            "total": 19,
+            "testId": 17,
+            "name": "trace-replay-save",
+            "result": "Passed",
+            "seconds": 1.58
+          },
+          {
+            "index": 18,
+            "total": 19,
+            "testId": 18,
+            "name": "trace-meter-cadence",
+            "result": "Passed",
+            "seconds": 19.23
+          },
+          {
+            "index": 19,
+            "total": 19,
+            "testId": 19,
+            "name": "trace-ebu-wav",
+            "result": "Passed",
+            "seconds": 114.62
+          }
+        ],
+        "ctestTotalSecondsInLogOrder": [
+          220.47
+        ],
+        "javascriptTestBlocks": [
+          {
+            "context": "portable JS",
+            "tests": 258,
+            "suites": 0,
+            "pass": 258,
+            "fail": 0,
+            "cancelled": 0,
+            "skipped": 0,
+            "todo": 0,
+            "duration_ms": 16786.1646
+          },
+          {
+            "context": "required native/codec JS",
+            "tests": 48,
+            "suites": 0,
+            "pass": 48,
+            "fail": 0,
+            "cancelled": 0,
+            "skipped": 0,
+            "todo": 0,
+            "duration_ms": 14068.8937
+          }
+        ],
+        "checkMarkers": [
+          "2026-10-04T00:17:52.6420038Z TRACE_NPM_SECURITY pass 48ad7852ae6c69fca695ec3cdbf61d5686eca73775e81bf0f5b683696fb21ba4",
+          "2026-10-04T00:32:50.2902191Z TRACE_PORTABLE_CI_GATE_PASS 37164188081 6835af98ac4e51841fb1e78564c02105d4e5bb13 111323656877",
+          "2026-10-04T00:34:50.6068855Z TRACE_RUNTIME_PROVENANCE {\"electron\":\"42.11.10\",\"electronBuilder\":\"26.15.3\",\"vcRedist\":\"14.44.35112 x64\",\"dlls\":{\"msvcp140.dll\":\"0f885b509a685d2bbfa652fed26b5fb31d88fbdab0a978c641d1c7b8aa460aa9\",\"vcruntime140.dll\":\"d5e4d9a3e835fa679450145d6a7d94e36573a509317111904d9b3712c30d9066\",\"vcruntime140_1.dll\":\"1f2d41c4aa5db0bc33ebf7b66d72943a817d7ce6cbe880502a9403823633093f\"}}",
+          "2026-10-04T00:34:51.1663568Z M6_AUDIT pass 5",
+          "2026-10-04T00:34:53.6213374Z TRACE_PACKAGE_LOAD pass",
+          "2026-10-04T00:35:01.4851102Z TRACE_CANDIDATE 0.1.0-preview.31 6835af98ac4e51841fb1e78564c02105d4e5bb13 engineering-candidate"
+        ],
+        "runtimeProvenance": {
+          "electron": "42.11.10",
+          "electronBuilder": "26.15.3",
+          "vcRedist": "14.44.35112 x64",
+          "dlls": {
+            "msvcp140.dll": "0f885b509a685d2bbfa652fed26b5fb31d88fbdab0a978c641d1c7b8aa460aa9",
+            "vcruntime140.dll": "d5e4d9a3e835fa679450145d6a7d94e36573a509317111904d9b3712c30d9066",
+            "vcruntime140_1.dll": "1f2d41c4aa5db0bc33ebf7b66d72943a817d7ce6cbe880502a9403823633093f"
+          }
+        },
+        "failedSteps": []
+      }
+    },
+    "artifacts": [
+      {
+        "name": "trace-portable-evidence",
+        "id": 11289651032,
+        "sizeInBytes": 13865,
+        "archiveDigest": "sha256:f50a21c56cfecaea7a29cea2483a68bb4795925ee7be2f3d498bd202646c8596",
+        "expiredAtMetadataCollection": false,
+        "createdAt": "2026-10-04T00:32:37Z",
+        "payloadRead": false,
+        "internalJsonDigest": null
+      },
+      {
+        "name": "trace-windows-evidence",
+        "id": 11289581606,
+        "sizeInBytes": 23978,
+        "archiveDigest": "sha256:31dad4ef50cd1f3b6145a8c3eb4c52d53623463a0e8c9102b19023507148d28f",
+        "expiredAtMetadataCollection": false,
+        "createdAt": "2026-10-04T00:35:02Z",
+        "payloadRead": false,
+        "internalJsonDigest": null
+      },
+      {
+        "name": "trace-windows-candidate",
+        "id": 11289018197,
+        "sizeInBytes": 244857038,
+        "archiveDigest": "sha256:166ac58b6926fe5d3e325d85b8cc8cbf04260ec8f3b3fdb28df895ee3d8f9c2e",
+        "expiredAtMetadataCollection": false,
+        "createdAt": "2026-10-04T00:35:10Z",
+        "payloadRead": false,
+        "internalJsonDigest": null
+      }
+    ],
+    "candidateSourceScope": {
+      "basis": "Successful candidate packer at the exact verified commit awaits prepareSources(fetch:true), validates all archive sizes/SHA256 and copies both locked upstream archives. Contents were not independently re-read from the artifact.",
+      "artifactPayloadRead": false,
+      "correspondingSourceComplete": false,
+      "verifiedSourceCode": {
+        "tools/release/candidate.cjs": "37416f90badddad594c8a9a165b5aa8d7b80c7109967a80607f50a64cfa0515a",
+        "tools/release/dependency-sources.cjs": "ee4285f0deea1e5abf3c27c74fc55e589b8aaf5b6d51b50810fb43b1772f2768",
+        "references/ffmpeg-9.0.2/source-manifest.json": "7c11ac4398a0c1ff1c261d566013990badaa378f8a82b44d63e8888c67a50e15"
+      }
+    }
+  },
+  "releaseReady": false,
+  "initialDependencyFixCommit": "3d63d8f2910c6e897789a1a1805a68d889e36369",
+  "verifiedCodeCommit": "6835af98ac4e51841fb1e78564c02105d4e5bb13",
+  "audioFixes": {
+    "implementationCommit": "ef516030772c51e4c4f93676089304b6aad4aee9",
+    "wav": "Bounded 16-byte signature selects the WAV demuxer; unchanged periodic PCM regression and stream/content validation retained",
+    "m4a": "Exact container time base and audible frame metadata required; physical AAC-LC tail remains bounded below 1024 frames and excluded by the existing recipe/range",
+    "adts": "Actual first-packet negative PTS and Skip Samples identify priming; missing/conflicting timing rejected",
+    "schema": "Existing ExportResult/DecodeRecipe v1 retained; no Meter v5 numerical tolerance change",
+    "committedPortableCounterexamples": {
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0
+    },
+    "precommitLinuxSupplementary": {
+      "ffmpeg": "7.1.5",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 1,
+      "skipScope": "Fixed Windows executable identity requires Windows CI",
+      "productionFormats": [
+        "WAV float32",
+        "MP3",
+        "AAC M4A",
+        "AAC ADTS"
+      ]
+    }
+  },
+  "sourceDownloadFix": {
+    "implementationCommit": "6835af98ac4e51841fb1e78564c02105d4e5bb13",
+    "transport": "Native Node HTTPS streams with environmental proxy and CA trust",
+    "retainedGuards": [
+      "HTTPS-only redirects, at most five",
+      "240-second overall download deadline",
+      "Streaming size bound",
+      "Exact bytes and SHA256 before cache publication",
+      "Partial-file cleanup"
+    ],
+    "localFocusedTests": {
+      "passed": 11,
+      "failed": 0,
+      "skipped": 0
+    },
+    "actualFreshHttpsDownloadsVerified": [
+      "FFmpeg 9.0.2",
+      "LAME 3.100"
+    ],
+    "freshDownloadLogSha256": "ebdcac29d936b0fae264369566a7637f60363a3cb0f4a224416e83967ad18de7",
+    "committedCombinedCodecDownloadCounterexamples": {
+      "passed": 18,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "publicSourceArchive": {
+    "commit": "6835af98ac4e51841fb1e78564c02105d4e5bb13",
+    "scope": "Git source archive contents and byte identity, not Actions artifact payload",
+    "entries": 639,
+    "privateEbuAssetsPresent": false,
+    "requiredFiles": {
+      "src/trace/wavInput.ts": "3e2116bd22b07e0631e75da9cf84a83fc3ed9a6b166dddbf176e5ff80adb6d69",
+      "tools/release/dependency-sources.cjs": "ee4285f0deea1e5abf3c27c74fc55e589b8aaf5b6d51b50810fb43b1772f2768",
+      "references/ffmpeg-9.0.2/source-manifest.json": "7c11ac4398a0c1ff1c261d566013990badaa378f8a82b44d63e8888c67a50e15",
+      "references/ffmpeg-9.0.2/LICENSE.publisher.txt": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903",
+      "references/ffmpeg-9.0.2/LAME-LGPL.txt": "bfe4a52dc4645385f356a8e83cc54216a293e3b6f1cb4f79f5fc0277abf937fd"
+    }
+  },
+  "previousRun": {
+    "runId": 37143481325,
+    "commit": "3d63d8f2910c6e897789a1a1805a68d889e36369",
+    "workflowConclusion": "cancelled",
+    "windowsConclusion": "failure",
+    "portableConclusion": "cancelled",
+    "windowsCtestPassed": 19,
+    "windowsCtestSeconds": 255.94,
+    "portableJsPassedOnWindows": 251,
+    "nativePassed": 44,
+    "nativeFailed": 3,
+    "reason": "Three added roundtrips exposed valid periodic WAV misdetected as MPEG-TS. Linux was cancelled to rerun corrected code. No candidate was produced.",
+    "windowsLogSha256": "c3ea56c0a14b947a623f9c8194b0e3ad36b3597561759d44f5e7a8e02ddc7944"
+  },
+  "previousCandidateFailure": {
+    "runId": 37162767474,
+    "commit": "ef516030772c51e4c4f93676089304b6aad4aee9",
+    "workflowConclusion": "failure",
+    "portableConclusion": "success",
+    "windowsConclusion": "failure",
+    "windowsCtestPassed": 19,
+    "nativePassed": 48,
+    "javascriptPassedPerJob": 254,
+    "packageAudit": "pass 5",
+    "packageLoad": "pass",
+    "candidateUploaded": false,
+    "reason": "Final source archive download hit Node 24.19.0 Undici Parser.finish assert(!this.paused); replaced by native HTTPS without relaxing integrity gates.",
+    "windowsLogSha256": "528d51676804e4f7ec52a74baebd9d791cb4280bdd9ab062ed27c83d49b1ed23",
+    "passedPortable": {
+      "runId": 37162767474,
+      "commit": "ef516030772c51e4c4f93676089304b6aad4aee9",
+      "portableConclusion": "success",
+      "workflowConclusion": "failure",
+      "ctestPassed": 9,
+      "ctestSecondsInLogOrder": [
+        266.71,
+        747.18
+      ],
+      "javascriptPassed": 254,
+      "logSha256": "794e299d66e80367c9dd5ee6e3b645c96659ce294746613629c0e883d6d1215c"
+    }
+  },
+  "releaseBoundaries": {
+    "physicalWindowsDeviceTestedThisSession": false,
+    "completeFfmpegCorrespondingSource": false,
+    "signed": false,
+    "originalEbuMandatorySupportedFiles": 68,
+    "originalEbuExcludedMultichannelFiles": 2,
+    "remaining": [
+      "Exact static dependency/build source and security inventory",
+      "Actual Windows/driver/96 kHz and three-minute video flow",
+      "Long recordings/faults/GPU/DPI",
+      "Signing and user acceptance"
+    ]
+  },
+  "documentationProofScope": "Later documentation-only commits are not new audio/Windows/CI runs; candidate and numerical proof remain bound to verifiedCodeCommit."
+}

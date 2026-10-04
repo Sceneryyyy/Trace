@@ -1,10 +1,10 @@
 # Trace 项目文档索引
 
-更新：2026-10-03。当前源码 **preview.31**，默认分支 `recorder/dev`；来源 **db005b5** 的 preview.31 私有工程候选已由完整 Windows/Linux CI 生成。Windows CTest 19/19、原生/FFmpeg 43/43、两端 portable JS 248/248、Linux sanitizer 8 + 1 及包审计/加载/重启均通过；完整状态见 [13](13-HANDOFF.md) 和 [79](79-TRACE-INDEPENDENT-PROJECT.md)。**preview.30 / InternalTest-r3（9c1ee21）** 保留为历史同事内测交付包。新 PDF 已生成（云端模拟界面插图）。
+更新：2026-10-04。当前源码 **preview.31**，默认分支 `recorder/dev`；来源 **6835af9** 的 preview.31 私有工程候选已由完整 Windows/Linux CI 生成。Windows CTest 19/19、原生/FFmpeg 48/48、两端 portable JS 258/258、Linux sanitizer 8 + 1 及包审计/加载/重启均通过；完整状态见 [13](13-HANDOFF.md) 和 [80](80-RELEASE-DEPENDENCY-HARDENING.md)。**preview.30 / InternalTest-r3（9c1ee21）** 保留为历史同事内测交付包。新 PDF 已生成（云端模拟界面插图）。
 
 先读 [项目首页](../README.md)、[用户指南](28-USER-GUIDE.md) 或 [开发入门](../CODEX-START.md)。当前状态、未验证项和下一任务统一写在 [13-HANDOFF](13-HANDOFF.md)。带日期的阶段记录只证明当时版本的结果；旧“当前/下一步”不能覆盖 13。
 
-独立工程实现及验证文档已随 `eae33e5` 同步到 GitHub `recorder/dev`；新会话按 [接力说明](13-HANDOFF.md#下一会话接力) 核对实际分支、代码/候选身份、证据位置及后续工作顺序。
+独立化、依赖、编码与下载回归修复已同步到 GitHub `recorder/dev`；新会话按 [接力说明](13-HANDOFF.md#下一会话接力) 核对实际分支、代码/候选身份、证据位置及后续工作顺序。
 
 ## 常用入口
 
@@ -22,8 +22,9 @@
 | [Meter v5 校准修复](78-EBU-METER-RECALIBRATION.md) | 10 ms 完整响度索引、68/68 原始 WAV、缓存/报告与验证范围 |
 | [Trace 独立工程](79-TRACE-INDEPENDENT-PROJECT.md) | 专用入口、FFT 来源、清理边界、从零复现与 Windows CI 证据 |
 | [发布依赖与源码收尾](80-RELEASE-DEPENDENCY-HARDENING.md) | 固定安全工具链、实时审计门禁、FFmpeg 主源码与静态依赖资料缺口 |
-| [独立工程验证清单](release/independence-verification.json) | 绑定代码提交、完整 CI、检查结果和私有候选附件元数据；区分自动化与实机范围 |
-| [依赖安全盘点](release/security-baseline.json) | 锁文件绑定的剩余公告与工具链版本 |
+| [独立工程验证清单](release/independence-verification.json) | 旧工具链独立化阶段的代码提交、CI 与候选元数据；当前复验见下项 |
+| [依赖与新候选验证](release/dependency-verification.json) | 当前 6835af9 完整 CI、实际安全门禁/codec/运行库及新附件证据 |
+| [依赖安全盘点](release/security-baseline.json) | 锁文件绑定的零 npm 公告门禁、固定工具链与静态 codec 来源缺口 |
 | [文档清理记录](74-DOCUMENTATION-CLEANUP.md) | 本轮删除、归档、勘误与检查 |
 
 ## 现行需求、语义与契约
