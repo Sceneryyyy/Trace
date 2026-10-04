@@ -51,7 +51,7 @@
 
 ## 验证范围与接力
 
-云端已实际执行：新锁普通安装、完整/生产审计、类型检查、JS **254/254**
+云端已实际执行：新锁普通安装、完整/生产审计、类型检查、JS **258/258**
 （51 文件，0 fail/skip）、默认构建、独立性检查、真实 Electron 42 headless
 图标生成和 SDK 目标计划。首次旧代理标志下载失败保留；在当前受代理限制
 的 Node 24 云环境，使用 `NODE_USE_ENV_PROXY=1 ELECTRON_GET_USE_PROXY=true`
@@ -84,3 +84,18 @@ Windows 引擎/19 CTest/**48 项 native**、Linux ASan/UBSan 与浏览器、新�
 完成后的 run/commit 与候选身份同步 [13](13-HANDOFF.md)。即使 npm 归零、
 工程候选通过，也不关闭静态 FFmpeg 对应源码与相关库安全核查、真实设备、
 三分钟视频、长测、GPU/DPI、签名和用户验收。
+
+### 候选源码下载回归
+
+第二轮 [CI 37162767474](https://github.com/Sceneryyyy/Trace/actions/runs/37162767474)
+绑定 `ef51603`：Linux 全部成功，Windows CTest 19/19、原生/媒体 48/48、
+两端 JS 254/254、安全门禁、同次 Linux 门禁、打包、5 项包审计与包加载/
+重启均成功。但最终源码下载触发 Node 24.19.0 内部 Undici
+`Parser.finish: assert(!this.paused)`，Windows/工作流 failure，无新候选上传。
+
+下载改用 Node 原生 HTTPS 流，代理取自环境、TLS/CA 校验保持；HTTPS
+重定向最多五次，拒绝降级，240 秒整体下载超时与流式大小上限保留。
+只有准确大小/SHA-256 校验成功才发布缓存，失败清理临时文件。新增四项
+实际本机 HTTP 流反例（测试仅映射 loopback，生产仍严格 HTTPS），专项
+11/11、完整 JS 258/258 和类型检查通过。已用新实现重新下载官方
+FFmpeg/LAME 归档，两个实际大小/hash 与原锁一致；需要再取得修复后完整 CI。

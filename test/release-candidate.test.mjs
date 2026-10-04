@@ -2,13 +2,14 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import {createRequire} from 'node:module'
 import {createHash} from 'node:crypto'
-import {mkdtempSync,writeFileSync,readFileSync} from 'node:fs'
+import {mkdtempSync,writeFileSync,readFileSync,readdirSync,rmSync} from 'node:fs'
+import {createServer,get as httpGet} from 'node:http'
 import {tmpdir} from 'node:os'
 import {join} from 'node:path'
 const {validateEvidence,verifyZip}=createRequire(import.meta.url)('../tools/release/candidate.cjs')
 const {portableOutcome,expectedFromEnvironment}=createRequire(import.meta.url)('../tools/release/wait-portable-ci.cjs')
 const {validateSecurityInventory}=createRequire(import.meta.url)('../tools/release/security-audit.cjs')
-const {validateManifest,validateArchive}=createRequire(import.meta.url)('../tools/release/dependency-sources.cjs')
+const {validateManifest,validateArchive,downloadArchive}=createRequire(import.meta.url)('../tools/release/dependency-sources.cjs')
 const verification={commit:'abc',sourceDirty:false,status:'pass',platform:'win32',arch:'x64',checks:['build:trace-engine','check:security','typecheck','test:trace','build:trace','test:trace-native'].map(c=>({command:'npm run '+c,status:'pass',exitCode:0}))}
 const load={commit:'abc',status:'pass',exeSha256:'exe',asarSha256:'asar'},audit={status:'pass',files:{'Trace.exe':{sha256:'exe'},'resources/app.asar':{sha256:'asar'}}}
 test('release evidence must match the exact commit and require real Windows native checks',()=>{
@@ -75,6 +76,51 @@ test('source archives reject truncation and changed contents even when a cache a
  const corrupted=Buffer.from(bytes);corrupted[0]^=1;writeFileSync(file,corrupted)
  await assert.rejects(validateArchive(file,identity),/SOURCE_ARCHIVE_HASH_MISMATCH/)
  writeFileSync(file,bytes.subarray(1));await assert.rejects(validateArchive(file,identity),/SOURCE_ARCHIVE_SIZE_MISMATCH/)
+})
+async function downloadFixture(t,handler){
+ const server=createServer(handler)
+ await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve))
+ const folder=mkdtempSync(join(tmpdir(),'trace-source-download-'))
+ t.after(async()=>{server.closeAllConnections();await new Promise(resolve=>server.close(resolve));rmSync(folder,{recursive:true,force:true})})
+ // Exercise the real native HTTP parser on loopback only. Production always
+ // uses HTTPS and its environmental proxy/CA agent; no TLS bypass is shipped.
+ const request=(url,options,callback)=>httpGet(new URL(url.href.replace(/^https:/,'http:')),{...options,agent:false},callback)
+ return {folder,file:join(folder,'source.tar.gz'),url:`https://127.0.0.1:${server.address().port}`,request}
+}
+const sourceIdentity=(bytes,archiveUrl)=>({archiveUrl,archiveBytes:bytes.length,archiveSha256:createHash('sha256').update(bytes).digest('hex')})
+test('native source download handles redirect and chunked socket EOF with exact streamed integrity',async t=>{
+ const bytes=Buffer.alloc(512*1024,123)
+ const fixture=await downloadFixture(t,(req,res)=>{
+  if(req.url==='/redirect'){res.writeHead(302,{location:'/archive'});res.end();return}
+  res.writeHead(200,{'connection':'close'});res.write(bytes.subarray(0,100));res.end(bytes.subarray(100))
+ })
+ await downloadArchive(sourceIdentity(bytes,fixture.url+'/redirect'),fixture.file,{request:fixture.request})
+ assert.deepEqual(readFileSync(fixture.file),bytes)
+ assert.deepEqual(readdirSync(fixture.folder),['source.tar.gz'])
+})
+test('failed streamed source download removes partial bytes and never publishes an invalid archive',async t=>{
+ const bytes=Buffer.from('expected-archive')
+ const fixture=await downloadFixture(t,(req,res)=>{
+  if(req.url==='/status'){res.writeHead(503);res.end();return}
+  res.writeHead(200,{'connection':'close'})
+  res.end(req.url==='/large'?Buffer.concat([bytes,bytes]):req.url==='/short'?bytes.subarray(1):Buffer.alloc(bytes.length))
+ })
+ for(const [route,error] of [['large',/SOURCE_DOWNLOAD_TOO_LARGE/],['short',/SOURCE_ARCHIVE_SIZE_MISMATCH/],['changed',/SOURCE_ARCHIVE_HASH_MISMATCH/],['status',/SOURCE_DOWNLOAD_FAILED: 503/]]){
+  await assert.rejects(downloadArchive(sourceIdentity(bytes,fixture.url+'/'+route),fixture.file,{request:fixture.request}),error)
+  assert.deepEqual(readdirSync(fixture.folder),[])
+ }
+})
+test('source download refuses HTTPS downgrade and bounds redirect chains',async t=>{
+ const fixture=await downloadFixture(t,(req,res)=>{res.writeHead(302,{location:req.url==='/downgrade'?'http://127.0.0.1/archive':'/loop'});res.end()})
+ for(const [route,error] of [['downgrade',/SOURCE_DOWNLOAD_HTTPS_REQUIRED/],['loop',/SOURCE_DOWNLOAD_REDIRECT_LIMIT/]]){
+  await assert.rejects(downloadArchive(sourceIdentity(Buffer.from('source'),fixture.url+'/'+route),fixture.file,{request:fixture.request}),error)
+  assert.deepEqual(readdirSync(fixture.folder),[])
+ }
+})
+test('source download deadline aborts a stalled body and removes its partial file',async t=>{
+ const fixture=await downloadFixture(t,(_req,res)=>{res.writeHead(200);res.write('partial')})
+ await assert.rejects(downloadArchive(sourceIdentity(Buffer.from('partial-complete'),fixture.url),fixture.file,{request:fixture.request,timeoutMs:100}),/SOURCE_DOWNLOAD_TIMEOUT/)
+ assert.deepEqual(readdirSync(fixture.folder),[])
 })
 // A tiny stored ZIP fixture, independent of external commands or real packages.
 function zipFile(entries){
