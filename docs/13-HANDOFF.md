@@ -7,22 +7,40 @@
 | 项目 | 当前记录 |
 | --- | --- |
 | 源码 | `0.1.0-preview.31`；计量配置已升级 Meter v5，EBU 修复见 [78](78-EBU-METER-RECALIBRATION.md)；云端发布准备见 [75](75-CLOUD-RELEASE-PREPARATION.md) |
-| Git | `Sceneryyyy/Trace`，默认 `recorder/dev`；保留提交身份及合并历史。依赖修复 `3d63d8f`、编码回归修复 `ef51603` 与下载修复 `6835af9`；独立化历史为 `a986a0d` / `ab466d8` / `db005b5`；最后文档提交不算新音频测试，远程身份以 Git 为准 |
+| Git | `Sceneryyyy/Trace`，默认 `recorder/dev`；保留提交身份及合并历史。自建编码组件 `f33d74d`；此前依赖/编码/下载修复 `3d63d8f` / `ef51603` / `6835af9`；独立化历史为 `a986a0d` / `ab466d8` / `db005b5`；最后文档提交不算新音频测试，远程身份以 Git 为准 |
 | 仪表主题 | 实现 `2938c8e`、审计修复 `c67e9e9` 等已于 2026-09-30 合入 `recorder/dev`；用户已验收开发构建并接受 71-D5 差异 |
-| 当前工程候选 | Windows x64 preview.31，来源 `6835af9`；[CI 37164188081](https://github.com/Sceneryyyy/Trace/actions/runs/37164188081) 全部成功，私有附件 `11289018197`，未签名 |
+| 当前工程候选 | Windows x64 preview.31，自建 FFmpeg，来源 `f33d74d`；[CI 37217397928](https://github.com/Sceneryyyy/Trace/actions/runs/37217397928) 全部成功，私有附件 `11309181720`，未签名 |
 | 历史同事内测包 | Windows x64 preview.30 / InternalTest-r3，来源 `9c1ee21`，包名/校验见 [69](69-INTERNAL-TEST-R3.md) |
 | preview.31 分发 | 私有工程候选含当前应用、项目源码、PDF、校验及验证记录；无声卡 CI 加载/重启已通过。PDF 插图为云端模拟界面，实机/公开发布门禁仍开放；preview.28 PDF 和 R3 为历史快照 |
 | macOS | [70](70-MACOS-PORT-PLAN.md) 方案已记录；当前分支的 Trace 后端仍为 Windows/WASAPI，Mac 实现/实机验收未完成 |
 
-## 当前推进：自建 FFmpeg 已通过独立 Windows 音频验证，完整新候选待复验
+## 当前：自建 FFmpeg 与完整来源门禁已交付，新候选复验通过
 
-默认源码已切换到 Trace 自建 FFmpeg 9.0.2 + LAME 3.100，来源、工具/SDK、脚本和 EXE 哈希固定。
-[独立构建 CI 37216722574](https://github.com/Sceneryyyy/Trace/actions/runs/37216722574) 的 8/8 实际媒体测试均通过，包含生产三格式/M4A/ADTS、18 组 WAV 及四种附图组合；前次独立编译产生相同 EXE 哈希。
-新增完整来源门禁、输入/配置附件检查及候选材料接线。实际来源与复现步骤见 [81](81-SELF-BUILT-FFMPEG.md)。
+默认组件已替换为 Trace 自建 FFmpeg 9.0.2 + LAME 3.100，源码无补丁，工具/SDK、
+脚本、实际配置与两 EXE 固定。三次独立 Windows 编译输出哈希完全一致。
+完整来源门禁验证实际构建报告与提交的 pin，候选附带两份官方源码、项目构建脚本、
+报告、配置和逐文件系统输入清单。来源完整性的范围是 FFmpeg/LAME/Trace recipe；
+Microsoft 编译器/CRT/SDK/系统 DLL 单列版本、哈希及条款复核，不声称这些专有库开源。
 
-新的默认编码组件还需完整 Trace Windows/Linux CI、原生、包审计/加载和候选复验；
-下面 `6835af9` 的候选仍是旧 Gyan 组件的历史已验证包，不能当作本次新包。
-真实声卡、驱动、长测、签名、组件安全及微软/GPL 系统库条款复核继续单列。
+[完整 CI 37217397928](https://github.com/Sceneryyyy/Trace/actions/runs/37217397928)，代码 `f33d74da18d29902e260443f01eb0be24255ed49`，attempt 1：
+
+| 范围 | 最新结果 |
+| --- | --- |
+| Linux | JS 263/263；ASan/UBSan 核心 8/8（177.00 s）、原始 EBU 1/1（410.81 s）；浏览器、类型/构建和安全门禁通过 |
+| Windows | 实际源码构建/锁定安装；CTest 19/19（172.96 s）、原生/媒体 52/52（9 文件）、JS 263/263，均 0 fail/skip |
+| 媒体 | 生产三格式、双 AAC 封装、分段/帧数/延迟、18 组 WAV、JPEG/PNG 的 MP3/M4A 附图通过；一分钟 96 kHz 离线转换 715–1137 ms，帧数一致 |
+| 新候选 | 同次 Linux 完整成功门禁、ZIP、5 项包审计、加载/重启、clean-checkout、完整来源与最终上传均通过 |
+| 云端本地 | 263/263 JS、16 项来源/发布反例、类型/构建、121 文件/573 导入边界、安全门禁和两份来源归档校验通过 |
+
+私有 [trace-windows-candidate](https://github.com/Sceneryyyy/Trace/actions/runs/37217397928/artifacts/11309181720)，ID `11309181720`，归档 `173879193` 字节，
+GitHub 附件 digest `a5afb238df3664fa1c36e2a711a57d3d10e46fdabe7bc4c18f17e0a8767a180e`。此 digest 不是内含 ZIP/JSON 的 hash；
+本地读取完成日志及附件元数据，未读取 payload/数值 JSON，包内核验由本次 CI 执行。
+候选内文档为生成时快照，当前状态见本页、76/81 与 [codec-verification.json](release/codec-verification.json)。
+
+完整 npm 公告仍为 0。旧 Gyan 的八项未知基础库/生产者资料缺口通过替换二进制解决，
+不将旧清单改成完整。组件公告/安全、微软/GPL 系统库分发条款、真实声卡/驱动/96 kHz、
+长测、GPU/DPI、签名与独立用户验收仍按 [76](76-RELEASE-CHECKLIST.md) 单列。
+复现与试构建失败证据见 [81](81-SELF-BUILT-FFMPEG.md)，原计量容差与 Meter v5 保持。
 
 ## 前一轮：发布依赖与云端复验（Gyan 候选）
 
@@ -32,7 +50,7 @@ Electron/SDK **42.11.10**、builder **26.15.3**、node-gyp **13.1.0**、下载�
 已加入两端 CI、Windows 验证及候选门禁。实现及范围见 [80](80-RELEASE-DEPENDENCY-HARDENING.md)，
 可克隆的提交/日志 SHA/附件元数据见 [依赖验证记录](release/dependency-verification.json)。
 
-| 验证范围 | 最新结果与身份 |
+| 验证范围 | 当轮结果与身份 |
 | --- | --- |
 | 云端本地 | 新锁安装 316 包；Electron 42 headless 图标生成、类型/构建、JS 258/258、边界 121 文件/573 导入；提交后安全门禁、7 项格式/时序及 11 项发布/下载反例通过 |
 | 完整 CI | [`37164188081`](https://github.com/Sceneryyyy/Trace/actions/runs/37164188081)，代码 `6835af9`，attempt 1，两个 job 均 success；不沿用旧工具链结果 |
@@ -57,7 +75,7 @@ Electron/SDK **42.11.10**、builder **26.15.3**、node-gyp **13.1.0**、下载�
 Node Undici 内部断言，未上传新候选。下载改为保持代理/TLS 的原生 HTTPS
 流后，大小/hash、重定向与超时门禁均通过，最终完整 CI 和候选已复验成功。
 
-**完整静态 FFmpeg 对应源码仍未齐备**：已取得 37 条发布者版本记录，尚缺八项
+**当时 Gyan 静态 FFmpeg 对应源码未齐备**：已取得 37 条发布者版本记录，尚缺八项
 基础库版本、完整传递依赖/许可、生产者补丁及精确构建/工具链资料。公开通用
 构建脚本也未能绑定到本发布二进制。`correspondingSourceComplete:false` 与
 `releaseReady:false` 保持；需要发布者资料，或另行建立拥有完整来源的 codec 构建。
@@ -82,19 +100,19 @@ Node Undici 内部断言，未上传新候选。下载改为保持代理/TLS 的
 
 计量配置仍 Meter v5，产品 preview.31。70 个原始 WAV 均保留完整性；68 个单/双声道适用文件为通过分母，两个 5.0/5.1 文件仍排除。公开源码归档继续排除私有 EBU 素材，缺素材的强制模式拒绝配置。独立化完成时有 18 个受影响包（17 high / 1 critical）；后续已修至完整/生产审计均 0，见 80，生产依赖审计不能单独证明 Electron 运行时安全。
 
-工程独立化目标已达成。正式发布、物理设备/96 kHz、三分钟在线视频操作、长测/GPU/DPI、签名、安全修复、FFmpeg 对应源码及用户验收按 [76](76-RELEASE-CHECKLIST.md) 继续跟踪。本节保留独立化阶段证据；当前依赖状态以顶部与 80 为准。
+工程独立化目标已达成。正式发布、物理设备/96 kHz、三分钟在线视频操作、长测/GPU/DPI、签名、安全修复、FFmpeg 对应源码及用户验收按 [76](76-RELEASE-CHECKLIST.md) 继续跟踪。本节保留独立化阶段证据；当前依赖与自建组件状态以顶部及 81 为准。
 
 ## 下一会话接力
 
-已验证代码与候选绑定 `6835af98ac4e51841fb1e78564c02105d4e5bb13` /
-run `37164188081`；后续文档提交不算新音频/Windows/候选运行，实际分支 HEAD 以 Git 为准。
+已验证代码与候选绑定 `f33d74da18d29902e260443f01eb0be24255ed49` /
+run `37217397928`；后续文档提交不算新音频/Windows/候选运行，实际分支 HEAD 以 Git 为准。
 
 | 接力材料 | 位置与用途 |
 | --- | --- |
-| 当前入口/固定工具链 | [开发入门](../CODEX-START.md)、[09](09-WINDOWS-SETUP.md)、[80](80-RELEASE-DEPENDENCY-HARDENING.md)；toolchain.trace.json 当前，M0 清单历史 |
-| 可克隆证据 | [dependency-verification.json](release/dependency-verification.json) 当前；[independence-verification.json](release/independence-verification.json) 为旧工具链独立化证明 |
+| 当前入口/固定工具链 | [开发入门](../CODEX-START.md)、[09](09-WINDOWS-SETUP.md)、[81](81-SELF-BUILT-FFMPEG.md)；toolchain.trace.json 当前，M0 清单历史 |
+| 可克隆证据 | [codec-verification.json](release/codec-verification.json) 当前；[dependency-verification.json](release/dependency-verification.json) 为旧 Gyan 工具链证明；[independence-verification.json](release/independence-verification.json) 为旧工具链独立化证明 |
 | 远程原始证据/附件 | 顶部 Actions run、完成 job 日志与私有候选；下载后按内部 manifest/SHA256SUMS 核验，GitHub 归档 digest 单独记录 |
-| 本云端原始材料 | 忽略目录 artifacts/release-security/ 与 artifacts/independence/；原始日志、公开来源归档、同步收据不会随 clone 下载 |
+| 本云端原始材料 | 忽略目录 artifacts/codec-build/、artifacts/release-security/ 与 artifacts/independence/；原始日志、公开来源归档、同步收据不会随 clone 下载 |
 | 私有 EBU | 执行 `python3 references/ebu-loudness-test-set-v5/prepare.py` 还原/核验；公开源码归档排除原始素材，强制门禁缺素材必须失败 |
 
 先检查目录、分支与未提交修改；干净且无本地分叉时执行 `git switch recorder/dev`
@@ -103,13 +121,9 @@ run `37164188081`；后续文档提交不算新音频/Windows/候选运行，实
 
 下一工作顺序：
 
-1. 完整 npm 公告与新工具链复验已关闭。云端来源工作需要发布者提供静态构建的
-   准确包/源码/补丁/脚本与工具链清单；亦可另立完整来源的自建 codec 任务。
-   不能以通用 fork、猜测 MSYS2 包或仅 FFmpeg/LAME 主源码关闭 SRC/静态 SEC。
-2. Windows 实机到位，按 76 的 WIN/FLOW/DEV/METER 跑三分钟视频与真实采集、
-   录音/回听/缓存/选区/导出、96 kHz；继续长测、故障收尾、GPU/DPI 与资源记录。
-3. 来源及实机门禁关闭后处理签名、下载首次启动、独立用户和邀请测试。
-   当前 preview.31 附件保持私有工程候选身份。
+1. 自建 codec 及工程来源门禁已完成。继续云端故障注入矩阵（损坏/截断输入、取消/worker 异常、磁盘故障、残留/恢复），再做离线长文件与资源增长检查；组件公告、安全及微软/GPL 系统库分发条款复核单列。
+2. Windows 实机到位，按 76 的 WIN/FLOW/DEV/METER 跑三分钟视频、真实采集、录音/回听/缓存/选区/导出、96 kHz、长测与 GPU/DPI。
+3. 发布门禁关闭后处理签名、下载首次启动、独立用户和邀请测试。当前附件保持私有工程候选身份。
 
 维护 FFT 时同步来源/hash/许可及数值对照；图标输出保持 build/trace-icons/。
 WAV 路由与 AAC 帧范围修复不更改 Meter v5；原始 EBU 强制范围仍为 68 个适用
@@ -191,6 +205,6 @@ Git HTTPS 上传缺少可用凭据，接入已登录的 GitHub CLI 后仍返回 
 
 ## 后续应用与实机工作
 
-Windows 工程编译、19 项 CTest、48 项原生/媒体、258 项 JS、无声卡包审计/加载/重启与最新 preview.31 私有候选已经通过本节顶部对应 CI，不需要以“尚未执行 Windows”重做这些记录。实际 Windows 设备上继续执行主题 flow 和严格首帧，再播放约三分钟在线视频，交叉操作监听/录音/回听/报告跳转/缓存及选区保存，保留设备与包身份。
+Windows 工程编译、19 项 CTest、52 项原生/媒体、263 项 JS、无声卡包审计/加载/重启与最新 preview.31 私有候选已经通过本节顶部对应 CI，不需要以“尚未执行 Windows”重做这些记录。实际 Windows 设备上继续执行主题 flow 和严格首帧，再播放约三分钟在线视频，交叉操作监听/录音/回听/报告跳转/缓存及选区保存，保留设备与包身份。
 
-待实机验收：实时采集及真实文件缓存/选区/导出完整链路、96 kHz/驱动矩阵、干净普通 Windows、物理 GPU/混合 DPI、实时帧时间与回调 deadline、长录音及看门狗故障收尾、3D 游标与色弱用户体验。工程原始 EBU WAV 与无声卡启动通过，不等于完整 EBU Mode 或物理设备/发布验收。完整 npm 公告已归零；正式发布还需完整静态 FFmpeg 来源/安全核查、签名及独立用户验收。PB3–PB5 见 [59](59-PUBLIC-BETA-READINESS.md)；Mac 下一步仍须 Apple silicon 真机执行 [70](70-MACOS-PORT-PLAN.md) 的 M-MAC0/T00 探针。
+待实机验收：实时采集及真实文件缓存/选区/导出完整链路、96 kHz/驱动矩阵、干净普通 Windows、物理 GPU/混合 DPI、实时帧时间与回调 deadline、长录音及看门狗故障收尾、3D 游标与色弱用户体验。工程原始 EBU WAV 与无声卡启动通过，不等于完整 EBU Mode 或物理设备/发布验收。完整 npm 公告已归零；自建 FFmpeg 来源已核验；正式发布还需组件安全与微软/GPL 系统库条款复核、签名及独立用户验收。PB3–PB5 见 [59](59-PUBLIC-BETA-READINESS.md)；Mac 下一步仍须 Apple silicon 真机执行 [70](70-MACOS-PORT-PLAN.md) 的 M-MAC0/T00 探针。

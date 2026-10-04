@@ -57,5 +57,40 @@ MP3/M4A 转换时间及解码帧数。
 浏览器、类型/构建、安全门禁、包审计/加载及同次 Linux 完整成功门禁。
 这些离线测试不代替真实 WASAPI、驱动、96 kHz 设备与长录音验收。
 
-实际运行、EXE 哈希、重复构建与候选附件身份将在完成验证后记录于本文及
-`docs/release/codec-verification.json`；未完成的运行不记为通过。
+## 实际完成记录
+
+完整 [CI 37217397928](https://github.com/Sceneryyyy/Trace/actions/runs/37217397928)，来源 `f33d74da18d29902e260443f01eb0be24255ed49`，attempt 1，Windows/Linux 均 success。
+Windows CTest **19/19**（172.96 s）、原生/媒体 **52/52**（9 文件）、两端 JS **263/263**，
+均 0 fail/skip；Linux ASan/UBSan 核心 **8/8**（177.00 s）和原始 EBU **1/1**（410.81 s），
+真实 React selector、9 项模拟 IPC 浏览器回归、类型/构建及当前安全门禁全部通过。
+
+Windows 本次从源码重新构建，实际报告与提交的构建报告逐字节相同，安装校验通过。
+三次独立 Windows 编译的 EXE 哈希完全一致（两次试构建及本次完整 CI）：
+
+| 程序 | 大小 | SHA-256 |
+| --- | --- | --- |
+| ffmpeg.exe | 3,096,064 字节 | `c647e20c508af6421efb3c78b59e2a693f7b905c6a27384282ad76b5ad37d5ee` |
+| ffprobe.exe | 2,859,520 字节 | `73337f082639e4f3f867a50fc69ec681ed81cdc8faf5df5d8fed4f677530bef5` |
+
+31 项工具文件哈希与 6,684 个编译器/SDK 文件（1,515,178,411 字节）的清单根绑定构建锁。
+动态导入只有 bcrypt、KERNEL32、PSAPI、SHELL32 系统 DLL；没有 MSYS2、MinGW、VC 动态 CRT。
+引擎自身的 VC DLL 仍按原有独立包审计记录。
+
+一分钟 96 kHz 双声道生成信号编码并解码：44.1 kHz MP3/M4A 分别 **773/1137 ms**，
+48 kHz MP3/M4A 分别 **715/1133 ms**，实际解码帧数均与对应 60 s 帧数一致。
+这是托管 Windows 的离线转换观察，不是声卡实时 deadline 或整机资源验收。
+
+同次 Linux 完整成功门禁、ZIP 内容校验、5 项包审计、加载/重启、clean-checkout、
+完整对应源码门禁和候选上传均通过。新私有 [工程候选](https://github.com/Sceneryyyy/Trace/actions/runs/37217397928/artifacts/11309181720)，ID `11309181720`，
+归档 **173,879,193 字节**，GitHub 附件 SHA-256 `a5afb238df3664fa1c36e2a711a57d3d10e46fdabe7bc4c18f17e0a8767a180e`。
+这个 digest 不是内含应用 ZIP/JSON 的 hash。候选内部材料由本次 CI 校验并打包；
+本地读取了完成日志和附件元数据，未读取附件 payload 或数值 JSON。
+
+试构建失败保持原结果：首轮缺 Make；第二轮 GNU tar 的 Windows 路径误解析；
+第三轮已生成相同 EXE，但 PNG→M4A 测试素材封装缺维度且附件跨盘路径失败。
+素材现直接写入标准 covr/APIC 元数据，随后四种附图的真实导入全部通过；
+归档提取固定用 native tar，附件路径归入同盘输出。未改原音频样本、计量或数值容差。
+
+可克隆的提交、源码/日志哈希、运行及附件元数据见 [完整验证记录](release/codec-verification.json)。
+旧 Gyan 依赖证据保留 [dependency-verification.json](release/dependency-verification.json)，
+不回写成自建程序验证。

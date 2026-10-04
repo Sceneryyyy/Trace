@@ -1,0 +1,780 @@
+{
+  "schemaVersion": 1,
+  "checkedAt": "2026-10-04T16:52:08.347003+00:00",
+  "runId": 37217397928,
+  "attempt": 1,
+  "commit": "f33d74da18d29902e260443f01eb0be24255ed49",
+  "workflowConclusion": "success",
+  "workflowUrl": "https://github.com/Sceneryyyy/Trace/actions/runs/37217397928",
+  "evidenceScope": "Completed GitHub job logs and artifact metadata; artifact payloads were not downloaded or read.",
+  "artifactPayloadRead": false,
+  "artifactPayloadLimitation": "Earlier proxy CONNECT 403 for Azure artifact storage; no retry or bypass. Archive digest is not an internal JSON/application ZIP digest.",
+  "originalWaveGateScopeFromSource": {
+    "mandatorySupportedFiles": 68,
+    "explicitExcludedFiles": 2,
+    "observedJsonNumericalCounts": null,
+    "note": "Passing CTest enforces unchanged coverage/tolerances. This collection did not read the artifact numerical JSON."
+  },
+  "logCollection": {
+    "method": "Official completed job log ZIP cached by gh run view; numbered entries read locally after CRC validation",
+    "archiveSha256": "8601cfab3518cd0e30848aa3067fe151f76ff772b100d9a3acb608ddc5da82af",
+    "crcPassed": true,
+    "entries": {
+      "portable": "0_portable.txt",
+      "windows": "1_windows.txt"
+    }
+  },
+  "jobs": {
+    "windows": {
+      "jobId": 111480600839,
+      "conclusion": "success",
+      "startedAt": "2026-10-04T16:36:41Z",
+      "completedAt": "2026-10-04T16:50:37Z",
+      "logPath": "artifacts/codec-build/windows-job.log (ignored local evidence)",
+      "logBytes": 181181,
+      "logSha256": "51e375a7f6a55247ac3ab5b0163b3a7a971f159b7786f73c82148029621fed71",
+      "ctest": [
+        {
+          "index": 1,
+          "total": 19,
+          "testId": 1,
+          "name": "trace-fft",
+          "result": "Passed",
+          "seconds": 0.05
+        },
+        {
+          "index": 2,
+          "total": 19,
+          "testId": 2,
+          "name": "trace-spectrogram-tile",
+          "result": "Passed",
+          "seconds": 0.3
+        },
+        {
+          "index": 3,
+          "total": 19,
+          "testId": 3,
+          "name": "trace-instruments",
+          "result": "Passed",
+          "seconds": 0.1
+        },
+        {
+          "index": 4,
+          "total": 19,
+          "testId": 4,
+          "name": "trace-core",
+          "result": "Passed",
+          "seconds": 2.76
+        },
+        {
+          "index": 5,
+          "total": 19,
+          "testId": 5,
+          "name": "trace-wav",
+          "result": "Passed",
+          "seconds": 0.04
+        },
+        {
+          "index": 6,
+          "total": 19,
+          "testId": 6,
+          "name": "trace-recorder",
+          "result": "Passed",
+          "seconds": 4.13
+        },
+        {
+          "index": 7,
+          "total": 19,
+          "testId": 7,
+          "name": "trace-analysis",
+          "result": "Passed",
+          "seconds": 2.01
+        },
+        {
+          "index": 8,
+          "total": 19,
+          "testId": 8,
+          "name": "trace-reference",
+          "result": "Passed",
+          "seconds": 15.12
+        },
+        {
+          "index": 9,
+          "total": 19,
+          "testId": 9,
+          "name": "trace-tp-time",
+          "result": "Passed",
+          "seconds": 2.17
+        },
+        {
+          "index": 10,
+          "total": 19,
+          "testId": 10,
+          "name": "trace-init",
+          "result": "Passed",
+          "seconds": 0.64
+        },
+        {
+          "index": 11,
+          "total": 19,
+          "testId": 11,
+          "name": "trace-region-clock",
+          "result": "Passed",
+          "seconds": 0.05
+        },
+        {
+          "index": 12,
+          "total": 19,
+          "testId": 12,
+          "name": "trace-recorder-snapshot",
+          "result": "Passed",
+          "seconds": 32.38
+        },
+        {
+          "index": 13,
+          "total": 19,
+          "testId": 13,
+          "name": "trace-precision",
+          "result": "Passed",
+          "seconds": 0.04
+        },
+        {
+          "index": 14,
+          "total": 19,
+          "testId": 14,
+          "name": "trace-playback",
+          "result": "Passed",
+          "seconds": 0.01
+        },
+        {
+          "index": 15,
+          "total": 19,
+          "testId": 15,
+          "name": "trace-replay",
+          "result": "Passed",
+          "seconds": 0.34
+        },
+        {
+          "index": 16,
+          "total": 19,
+          "testId": 16,
+          "name": "trace-replay-quality",
+          "result": "Passed",
+          "seconds": 0.13
+        },
+        {
+          "index": 17,
+          "total": 19,
+          "testId": 17,
+          "name": "trace-replay-save",
+          "result": "Passed",
+          "seconds": 1.61
+        },
+        {
+          "index": 18,
+          "total": 19,
+          "testId": 18,
+          "name": "trace-meter-cadence",
+          "result": "Passed",
+          "seconds": 11.89
+        },
+        {
+          "index": 19,
+          "total": 19,
+          "testId": 19,
+          "name": "trace-ebu-wav",
+          "result": "Passed",
+          "seconds": 99.15
+        }
+      ],
+      "ctestTotalSecondsInLogOrder": [
+        172.96
+      ],
+      "javascriptTestBlocks": [
+        {
+          "context": "portable JS",
+          "tests": 263,
+          "suites": 0,
+          "pass": 263,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0,
+          "duration_ms": 14555.1387
+        },
+        {
+          "context": "required native/codec JS",
+          "tests": 52,
+          "suites": 0,
+          "pass": 52,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0,
+          "duration_ms": 59765.2965
+        }
+      ],
+      "checkMarkers": [
+        "2026-10-04T16:41:17.9787158Z TRACE_CODEC_BUILD_REPORT {\"schemaVersion\":1,\"buildLockSha256\":\"5814b32f759bbae973baf78c9330d72a5275b6802d66492f8a9b1819710d3f7a\",\"sources\":[{\"repository\":\"[URL redacted] official source compiled by the Trace recipe; no producer patches\"}],\"tools\":[{\"file\":\"msys/bash.exe\",\"sha256\":\"7b4dc5d6878aacdec5d09ca9c5d8e2b43b925a6bbf631873a24c692980b792b2\"},{\"file\":\"msys/make.exe\",\"sha256\":\"2d3b9fca575be8e93c10ab74348055fa127a65cf628d52e9218ac76065cc6d22\"},{\"file\":\"windows/tar.exe\",\"sha256\":\"dcc75eb2e0fce4779784ca0a00c6cda1182c7b3c95eb6dab0e0603651cdb6b52\"},{\"file\":\"msys/msys-2.0.dll\",\"sha256\":\"957d880559f0bfe7406a4cb27724610e7ce2f367030e299373d7ef37fbbb51b3\"},{\"file\":\"msys/sed.exe\",\"sha256\":\"8d54e322dfc3faa60f0464691aba8634197406e53367aa8942409181c0808be8\"},{\"file\":\"msys/grep.exe\",\"sha256\":\"497202418334f8a48d9f34cd2e1b2c03c4f957e02304b613e10931c0457e8d4a\"},{\"file\":\"msys/gawk.exe\",\"sha256\":\"f123d2c120b2ad2158aa8c69d8eeedf14c0d681e68ee76ff103e06ac49986200\"},{\"file\":\"msys/awk.exe\",\"sha256\":\"f123d2c120b2ad2158aa8c69d8eeedf14c0d681e68ee76ff103e06ac49986200\"},{\"file\":\"msys/uname.exe\",\"sha256\":\"1cba275ff8e0c81f48898f017758c558ee5951cb0448c36628580beffdf4ef89\"},{\"file\":\"msys/sh.exe\",\"sha256\":\"7b4dc5d6878aacdec5d09ca9c5d8e2b43b925a6bbf631873a24c692980b792b2\"},{\"file\":\"msys/cat.exe\",\"sha256\":\"f1b37048ee5c70fdc31dde509e562261c9b2d102d94c903393f55b45e883ef90\"},{\"file\":\"msys/cp.exe\",\"sha256\":\"5f91e0b445edb4e4c17e9a660ac29239f6cac5a821a173a86d4332b9eaa8cea3\"},{\"file\":\"msys/rm.exe\",\"sha256\":\"a845f7517a49b49726e056da8a8f65a6d9ce96fbe79c3664c082521eea0f80e7\"},{\"file\":\"msys/mkdir.exe\",\"sha256\":\"fc9b9e49fd6496cdddfc5681208d74bd649ac934818eafdfd50a9571bdcb4861\"},{\"file\":\"msys/touch.exe\",\"sha256\":\"1d895e0f77cbc8b77c3a38da009e8ad8d23a371afd398da5408bdeffcddf5fc0\"},{\"file\":\"msys/tr.exe\",\"sha256\":\"7cf90be63820ba9ec66a10c0c4af84f0a2e3ec90a722ea6904219ec0b93bf1c1\"},{\"file\":\"msys/head.exe\",\"sha256\":\"c82ae2ef72235a34db7007580628cd5183cb350878a10fcc98b6ef26b92a3537\"},{\"file\":\"msys/tail.exe\",\"sha256\":\"8608c4138642de6dca0806b266b3009c137dc373171978cf47418056a5e05c55\"},{\"file\":\"msys/sort.exe\",\"sha256\":\"7c5df851d821e23988641f35442a06652ce834ed724456511798ce60314cab9a\"},{\"file\":\"msys/wc.exe\",\"sha256\":\"3ab05efc4703295f0d36fd48da17f2021219494fb932a062a535ae17ea9f45b3\"},{\"file\":\"msys/cut.exe\",\"sha256\":\"63fcfb76c80d57538312a9637429d5a4b99ac83e8b00d95684609b4c045471e9\"},{\"file\":\"msys/od.exe\",\"sha256\":\"5533b3edb4b47590a3279653475f12cb6dec11a3b8a289e93c613a06c30b99d2\"},{\"file\":\"msys/expr.exe\",\"sha256\":\"e1608f26781374b67f180370dc50c833bfc61946aadfb433e48536590bb79219\"},{\"file\":\"msys/dirname.exe\",\"sha256\":\"53896fda354605a1a1d1f5e6802daba5ba6c05961f3074b892194e068aa82772\"},{\"file\":\"msys/basename.exe\",\"sha256\":\"6fe2e201a956304503f808d0909a26d9b49e1a7e99f6ee6d93721ac4a76a7c6e\"},{\"file\":\"msys/tee.exe\",\"sha256\":\"5b956ac9d6bb6d457665709bbcf71326ecd66bb5111b280c124a68405ce5da46\"},{\"file\":\"msvc/cl.exe\",\"sha256\":\"fe251ef50a1545b1b0835ee17b1e785459712b38d79e45b5c1d3d28970a36619\"},{\"file\":\"msvc/link.exe\",\"sha256\":\"a364af801a8539e4324d9489313dbf001d959128451fc99a27b24676bbac058f\"},{\"file\":\"msvc/lib.exe\",\"sha256\":\"fde148a275981855689c45f932dda56b10dc9289a0290826a0fb93478da34929\"},{\"file\":\"msvc/nmake.exe\",\"sha256\":\"ce6b50c2d8e6704b671ec116e52ce9d2fbc1d20dd28c5b895b5421adddf94ebb\"},{\"file\":\"msvc/dumpbin.exe\",\"sha256\":\"cfee7ed764b7b0866aae0be12f9c0ad2a7f5aecc4046ba2b7de26335827ca815\"}],\"versions\":{\"compiler\":\"usage: cl [ option... ] filename... [ /link linkoption... ]\\nMicrosoft (R) C/C++ Optimizing Compiler Version 19.44.35229 for x64\\nCopyright (C) Microsoft Corporation.  All rights reserved.\",\"bash\":\"GNU bash, version 5.3.20(1)-release (x86_64-pc-cygwin)\",\"make\":\"GNU Make 4.4.1\"},\"systemInputs\":{\"compiler\":{\"files\":91,\"bytes\":98922986,\"sha256\":\"76b84bdd84158585afdd98f70671efd9943a3e3530d112596501fba326e0d855\"},\"msvcInclude\":{\"files\":361,\"bytes\":16200441,\"sha256\":\"7bf99fdca0a732240612ff4cc78880fef76c65b67ff17ec02900c67b4d5ac050\"},\"msvcLib\":{\"files\":166,\"bytes\":802970908,\"sha256\":\"fe7dd3278455a19102cfd07da0b7f64e5eb66a76a44aca0ae4308be1e61be7dc\"},\"sdkInclude\":{\"files\":5553,\"bytes\":385723582,\"sha256\":\"94e724734f0dcb637e1cdc2e7cbffd8c77abf2c41275e6c3da19ab45d8078752\"},\"sdkUcrtLib\":{\"files\":8,\"bytes\":90629762,\"sha256\":\"37569193a7d063c57ef5266e8c3046cef88834055aaeec446a3bec01ae818dd5\"},\"sdkUmLib\":{\"files\":505,\"bytes\":120730732,\"sha256\":\"6a64d69e1ca754408454275bb3d82e51148f46f64d4c2ced9803447225ca51b5\"}},\"recipes\":{\"tools/codec/build.cjs\":\"7b1d08dfefdb06c70292c5886540570c158a8037a530f72f4e00d9722470917a\",\"tools/codec/identity.cjs\":\"0f69a737f54676409a12ca26f169a8392c1dd9040bb9a3fd36ad2244210bcffc\",\"tools/release/dependency-sources.cjs\":\"c53a60e479767c12b7036b36278de5b37035f035fa428c475ba9082c284a12ae\"},\"outputs\":{\"ffmpeg\":{\"sha256\":\"c647e20c508af6421efb3c78b59e2a693f7b905c6a27384282ad76b5ad37d5ee\",\"bytes\":3096064,\"version\":\"ffmpeg version 9.0.2 Copyright (c) 2000-2026 the FFmpeg developers\\nbuilt with Microsoft (R) C/C++ Optimizing Compiler Version 19.44.35229 for x64\\nconfiguration: --toolchain=msvc --arch=x86_64 --target-os=win32 --prefix=/c/trace-codec/prefix --disable-autodetect --disable-everything --disable-network --disable-shared --enable-static --disable-doc --disable-debug --disable-ffplay --disable-avdevice --disable-swscale --disable-x86asm --disable-hwaccels --enable-gpl --enable-version3 --enable-libmp3lame --enable-encoder='aac,libmp3lame,pcm_s16le,pcm_s24le,pcm_f32le' --enable-decoder='aac,mp3,mp3float,pcm_s16le,pcm_s24le,pcm_f32le,mjpeg' --enable-parser='aac,mpegaudio,mjpeg,png' --enable-demuxer='wav,mp3,aac,mov,concat' --enable-muxer='wav,mp3,adts,ipod,mp4,mov,segment' --enable-protocol='file,pipe' --enable-filter='aresample,aformat,anull,atrim,asetpts' --extra-cflags='-IC:/trace-codec/prefix/include' --extra-ldflags='-libpath:C:/trace-codec/prefix/lib -Brepro'\\nlibavutil      61.  1.102 / 61.  1.102\\nlibavcodec     63.  1.102 / 63.  1.102\\nlibavformat    63.  1.102 / 63.  1.102\\nlibavfilter    12.  1.102 / 12.  1.102\\nlibswresample   7.  1.102 /  7.  1.102\\n\\nExiting with exit code 0\",\"dependents\":\"Microsoft (R) COFF/PE Dumper Version 14.44.35229.0\\nCopyright (C) Microsoft Corporation.  All rights reserved.\\n\\n\\nDump of file C:\\\\trace-codec\\\\prefix\\\\bin\\\\ffmpeg.exe\\n\\nFile Type: EXECUTABLE IMAGE\\n\\n  Image has the following dependencies:\\n\\n    bcrypt.dll\\n    PSAPI.DLL\\n    SHELL32.dll\\n    KERNEL32.dll\\n\\n  Summary\\n\\n      1B2000 .data\\n        1000 .fptable\\n       16000 .pdata\\n       D3000 .rdata\\n        5000 .reloc\\n        1000 .rsrc\\n      206000 .text\"},\"ffprobe\":{\"sha256\":\"73337f082639e4f3f867a50fc69ec681ed81cdc8faf5df5d8fed4f677530bef5\",\"bytes\":2859520,\"version\":\"ffprobe version 9.0.2 Copyright (c) 2007-2026 the FFmpeg developers\\nbuilt with Microsoft (R) C/C++ Optimizing Compiler Version 19.44.35229 for x64\\nconfiguration: --toolchain=msvc --arch=x86_64 --target-os=win32 --prefix=/c/trace-codec/prefix --disable-autodetect --disable-everything --disable-network --disable-shared --enable-static --disable-doc --disable-debug --disable-ffplay --disable-avdevice --disable-swscale --disable-x86asm --disable-hwaccels --enable-gpl --enable-version3 --enable-libmp3lame --enable-encoder='aac,libmp3lame,pcm_s16le,pcm_s24le,pcm_f32le' --enable-decoder='aac,mp3,mp3float,pcm_s16le,pcm_s24le,pcm_f32le,mjpeg' --enable-parser='aac,mpegaudio,mjpeg,png' --enable-demuxer='wav,mp3,aac,mov,concat' --enable-muxer='wav,mp3,adts,ipod,mp4,mov,segment' --enable-protocol='file,pipe' --enable-filter='aresample,aformat,anull,atrim,asetpts' --extra-cflags='-IC:/trace-codec/prefix/include' --extra-ldflags='-libpath:C:/trace-codec/prefix/lib -Brepro'\\nlibavutil      61.  1.102 / 61.  1.102\\nlibavcodec     63.  1.102 / 63.  1.102\\nlibavformat    63.  1.102 / 63.  1.102\\nlibavfilter    12.  1.102 / 12.  1.102\\nlibswresample   7.  1.102 /  7.  1.102\",\"dependents\":\"Microsoft (R) COFF/PE Dumper Version 14.44.35229.0\\nCopyright (C) Microsoft Corporation.  All rights reserved.\\n\\n\\nDump of file C:\\\\trace-codec\\\\prefix\\\\bin\\\\ffprobe.exe\\n\\nFile Type: EXECUTABLE IMAGE\\n\\n  Image has the following dependencies:\\n\\n    bcrypt.dll\\n    SHELL32.dll\\n    KERNEL32.dll\\n\\n  Summary\\n\\n      1B2000 .data\\n        1000 .fptable\\n       13000 .pdata\\n       C3000 .rdata\\n        5000 .reloc\\n        1000 .rsrc\\n      1DF000 .text\"}},\"configuration\":\"configuration: --toolchain=msvc --arch=x86_64 --target-os=win32 --prefix=/c/trace-codec/prefix --disable-autodetect --disable-everything --disable-network --disable-shared --enable-static --disable-doc --disable-debug --disable-ffplay --disable-avdevice --disable-swscale --disable-x86asm --disable-hwaccels --enable-gpl --enable-version3 --enable-libmp3lame --enable-encoder='aac,libmp3lame,pcm_s16le,pcm_s24le,pcm_f32le' --enable-decoder='aac,mp3,mp3float,pcm_s16le,pcm_s24le,pcm_f32le,mjpeg' --enable-parser='aac,mpegaudio,mjpeg,png' --enable-demuxer='wav,mp3,aac,mov,concat' --enable-muxer='wav,mp3,adts,ipod,mp4,mov,segment' --enable-protocol='file,pipe' --enable-filter='aresample,aformat,anull,atrim,asetpts' --extra-cflags='-IC:/trace-codec/prefix/include' --extra-ldflags='-libpath:C:/trace-codec/prefix/lib -Brepro'\",\"patches\":[],\"crtLinkage\":\"static /MT\",\"sourceDateEpoch\":1789574400,\"systemInventorySha256\":\"b895920269ac9faa7827c4467f407268e4bd1dbf0ca2d539ff5a53f42b1ce48f\",\"configHeaderSha256\":\"2f386f2de7862231e29b33eb202e152b605367d48e8ffa7b8ce7a004143bbbfb\",\"configMakSha256\":\"b8ea4983a6603fbe52cef68c155a6f2d2c0031e639b70f8715f0532d1be96669\"}",
+        "2026-10-04T16:41:18.0596353Z FFMPEG_SOURCE_RUNTIME_VERIFIED 9.0.2 c647e20c508af6421efb3c78b59e2a693f7b905c6a27384282ad76b5ad37d5ee 73337f082639e4f3f867a50fc69ec681ed81cdc8faf5df5d8fed4f677530bef5",
+        "2026-10-04T16:45:04.7392256Z TRACE_NPM_SECURITY pass 48ad7852ae6c69fca695ec3cdbf61d5686eca73775e81bf0f5b683696fb21ba4",
+        "2026-10-04T16:46:45.0674631Z TRACE_CODEC_MINUTE {\"ffmpegSha256\":\"c647e20c508af6421efb3c78b59e2a693f7b905c6a27384282ad76b5ad37d5ee\",\"sourceRate\":96000,\"sourceFrames\":5760000,\"channels\":2,\"timings\":[{\"rate\":44100,\"extension\":\"mp3\",\"elapsedMs\":773,\"physicalFrames\":\"2646000\",\"audibleFrames\":\"2646000\"},{\"rate\":44100,\"extension\":\"m4a\",\"elapsedMs\":1137,\"physicalFrames\":\"2646000\",\"audibleFrames\":\"2646000\"},{\"rate\":48000,\"extension\":\"mp3\",\"elapsedMs\":715,\"physicalFrames\":\"2880000\",\"audibleFrames\":\"2880000\"},{\"rate\":48000,\"extension\":\"m4a\",\"elapsedMs\":1133,\"physicalFrames\":\"2880000\",\"audibleFrames\":\"2880000\"}],\"scope\":\"Offline generated signal; not WASAPI or physical-device real-time acceptance\"}",
+        "2026-10-04T16:48:20.0128017Z TRACE_PORTABLE_CI_GATE_PASS 37217397928 f33d74da18d29902e260443f01eb0be24255ed49 111480601115",
+        "2026-10-04T16:50:16.0309880Z TRACE_RUNTIME_PROVENANCE {\"electron\":\"42.11.10\",\"electronBuilder\":\"26.15.3\",\"vcRedist\":\"14.44.35112 x64\",\"dlls\":{\"msvcp140.dll\":\"0f885b509a685d2bbfa652fed26b5fb31d88fbdab0a978c641d1c7b8aa460aa9\",\"vcruntime140.dll\":\"d5e4d9a3e835fa679450145d6a7d94e36573a509317111904d9b3712c30d9066\",\"vcruntime140_1.dll\":\"1f2d41c4aa5db0bc33ebf7b66d72943a817d7ce6cbe880502a9403823633093f\"}}",
+        "2026-10-04T16:50:16.4231512Z M6_AUDIT pass 5",
+        "2026-10-04T16:50:24.4433794Z TRACE_PACKAGE_LOAD pass",
+        "2026-10-04T16:50:27.4770959Z TRACE_CANDIDATE 0.1.0-preview.31 f33d74da18d29902e260443f01eb0be24255ed49 engineering-candidate"
+      ],
+      "runtimeProvenance": {
+        "electron": "42.11.10",
+        "electronBuilder": "26.15.3",
+        "vcRedist": "14.44.35112 x64",
+        "dlls": {
+          "msvcp140.dll": "0f885b509a685d2bbfa652fed26b5fb31d88fbdab0a978c641d1c7b8aa460aa9",
+          "vcruntime140.dll": "d5e4d9a3e835fa679450145d6a7d94e36573a509317111904d9b3712c30d9066",
+          "vcruntime140_1.dll": "1f2d41c4aa5db0bc33ebf7b66d72943a817d7ce6cbe880502a9403823633093f"
+        }
+      },
+      "failedSteps": []
+    },
+    "portable": {
+      "jobId": 111480601115,
+      "conclusion": "success",
+      "startedAt": "2026-10-04T16:36:41Z",
+      "completedAt": "2026-10-04T16:47:48Z",
+      "logPath": "artifacts/codec-build/portable-job.log (ignored local evidence)",
+      "logBytes": 81763,
+      "logSha256": "d2a088739c967a839a8eccf79deb1252052a1f2c1b22d19965b6fe9bdb1f6935",
+      "ctest": [
+        {
+          "index": 1,
+          "total": 8,
+          "testId": 2,
+          "name": "meter_cadence",
+          "result": "Passed",
+          "seconds": 135.86
+        },
+        {
+          "index": 2,
+          "total": 8,
+          "testId": 3,
+          "name": "meter_init",
+          "result": "Passed",
+          "seconds": 5.56
+        },
+        {
+          "index": 3,
+          "total": 8,
+          "testId": 4,
+          "name": "tp_time",
+          "result": "Passed",
+          "seconds": 18.18
+        },
+        {
+          "index": 4,
+          "total": 8,
+          "testId": 5,
+          "name": "replay_quality",
+          "result": "Passed",
+          "seconds": 0.47
+        },
+        {
+          "index": 5,
+          "total": 8,
+          "testId": 6,
+          "name": "fft",
+          "result": "Passed",
+          "seconds": 0.47
+        },
+        {
+          "index": 6,
+          "total": 8,
+          "testId": 7,
+          "name": "instrument_analysis",
+          "result": "Passed",
+          "seconds": 1.16
+        },
+        {
+          "index": 7,
+          "total": 8,
+          "testId": 8,
+          "name": "spectrogram_tile",
+          "result": "Passed",
+          "seconds": 2.41
+        },
+        {
+          "index": 8,
+          "total": 8,
+          "testId": 1,
+          "name": "ebu_reference",
+          "result": "Passed",
+          "seconds": 176.96
+        },
+        {
+          "index": 1,
+          "total": 1,
+          "testId": 9,
+          "name": "ebu_wav",
+          "result": "Passed",
+          "seconds": 410.81
+        }
+      ],
+      "ctestTotalSecondsInLogOrder": [
+        177.0,
+        410.81
+      ],
+      "javascriptTestBlocks": [
+        {
+          "context": "portable JS",
+          "tests": 263,
+          "suites": 0,
+          "pass": 263,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0,
+          "duration_ms": 10987.766409
+        }
+      ],
+      "checkMarkers": [
+        "2026-10-04T16:37:06.7417787Z TRACE_NPM_SECURITY pass 48ad7852ae6c69fca695ec3cdbf61d5686eca73775e81bf0f5b683696fb21ba4",
+        "2026-10-04T16:47:39.5050827Z SNAPSHOT_SELECTOR_PASS {\"stable\":0,\"chromeStable\":0,\"changed\":1,\"propValue\":\"2\",\"stableAfterProps\":0,\"nextValue\":\"4\",\"afterUnmount\":0} /home/runner/work/Trace/Trace/artifacts/cloud-regression/selector-kMj1YN",
+        "2026-10-04T16:47:44.0364420Z TRACE_RENDERER pass 9 /home/runner/work/Trace/Trace/artifacts/release-cloud/renderer-4UWTPF"
+      ],
+      "runtimeProvenance": null,
+      "failedSteps": []
+    }
+  },
+  "artifacts": [
+    {
+      "name": "trace-portable-evidence",
+      "id": 11309470077,
+      "sizeInBytes": 13861,
+      "archiveDigest": "sha256:6dba96ab69c40ec6d877c18d031ddbc5f0244c10baeab639b0d538fca3eaf570",
+      "expiredAtMetadataCollection": false,
+      "createdAt": "2026-10-04T16:47:45Z",
+      "payloadRead": false,
+      "internalJsonDigest": null
+    },
+    {
+      "name": "trace-windows-candidate",
+      "id": 11309181720,
+      "sizeInBytes": 173879193,
+      "archiveDigest": "sha256:a5afb238df3664fa1c36e2a711a57d3d10e46fdabe7bc4c18f17e0a8767a180e",
+      "expiredAtMetadataCollection": false,
+      "createdAt": "2026-10-04T16:50:33Z",
+      "payloadRead": false,
+      "internalJsonDigest": null
+    },
+    {
+      "name": "trace-windows-evidence",
+      "id": 11308924266,
+      "sizeInBytes": 24242,
+      "archiveDigest": "sha256:9c9e488e924ebe62df93397e7782d06e6c3cc88b0241ebf35061faf4ecb829d2",
+      "expiredAtMetadataCollection": false,
+      "createdAt": "2026-10-04T16:50:28Z",
+      "payloadRead": false,
+      "internalJsonDigest": null
+    }
+  ],
+  "candidateSourceScope": {
+    "basis": "Successful candidate packer at the exact verified commit requires complete matching source, validates all archive sizes/SHA256 and copies both locked upstream archives plus recipe/report/config/system input material. Contents were not independently re-read from the artifact.",
+    "artifactPayloadRead": false,
+    "correspondingSourceComplete": true,
+    "verifiedSourceCode": {
+      "tools/release/candidate.cjs": "57eba7cd4b22fbf2349775391f7b68b44e3a5f6e61a4f667913b91dcb32b17f2",
+      "tools/release/dependency-sources.cjs": "c53a60e479767c12b7036b36278de5b37035f035fa428c475ba9082c284a12ae",
+      "references/trace-ffmpeg/source-manifest.json": "af8bccf30a4254d38ca5f6a7fc479c1c02ffadae4dccd91b56eb7b18c7b14df4"
+    }
+  },
+  "sourceCodec": {
+    "reportSha256": "7671ade836f14c2af0c0ab2d1dcd178355e47314a26eef903ffe82fd6af224cf",
+    "reportMatchesPinnedBytes": true,
+    "buildReport": {
+      "schemaVersion": 1,
+      "buildLockSha256": "5814b32f759bbae973baf78c9330d72a5275b6802d66492f8a9b1819710d3f7a",
+      "sources": [
+        {
+          "repository": "https://github.com/FFmpeg/FFmpeg",
+          "commit": "946fcce07b6dcd0331c8cc609192aeff5e1924f8",
+          "release": "9.0.2",
+          "archiveUrl": "https://codeload.github.com/FFmpeg/FFmpeg/tar.gz/946fcce07b6dcd0331c8cc609192aeff5e1924f8",
+          "archiveBytes": 17333895,
+          "archiveSha256": "0aa2b1de2a5698b20a23e93d539a9a8e82ca0117496c5bdf05d198805f42bb3b",
+          "archiveFile": "FFmpeg-9.0.2-Upstream-Source.tar.gz",
+          "releaseFileValidated": true
+        },
+        {
+          "name": "LAME",
+          "version": "3.100",
+          "archiveUrl": "https://downloads.sourceforge.net/project/lame/lame/3.100/lame-3.100.tar.gz",
+          "archiveFile": "LAME-3.100-Upstream-Source.tar.gz",
+          "archiveBytes": 1524133,
+          "archiveSha256": "ddfe36cab873794038ae2c1210557ad34857a4b6bdc515785d1da9e175b1da1e",
+          "sourceCorrespondence": "Unmodified official source compiled by the Trace recipe; no producer patches"
+        }
+      ],
+      "tools": [
+        {
+          "file": "msys/bash.exe",
+          "sha256": "7b4dc5d6878aacdec5d09ca9c5d8e2b43b925a6bbf631873a24c692980b792b2"
+        },
+        {
+          "file": "msys/make.exe",
+          "sha256": "2d3b9fca575be8e93c10ab74348055fa127a65cf628d52e9218ac76065cc6d22"
+        },
+        {
+          "file": "windows/tar.exe",
+          "sha256": "dcc75eb2e0fce4779784ca0a00c6cda1182c7b3c95eb6dab0e0603651cdb6b52"
+        },
+        {
+          "file": "msys/msys-2.0.dll",
+          "sha256": "957d880559f0bfe7406a4cb27724610e7ce2f367030e299373d7ef37fbbb51b3"
+        },
+        {
+          "file": "msys/sed.exe",
+          "sha256": "8d54e322dfc3faa60f0464691aba8634197406e53367aa8942409181c0808be8"
+        },
+        {
+          "file": "msys/grep.exe",
+          "sha256": "497202418334f8a48d9f34cd2e1b2c03c4f957e02304b613e10931c0457e8d4a"
+        },
+        {
+          "file": "msys/gawk.exe",
+          "sha256": "f123d2c120b2ad2158aa8c69d8eeedf14c0d681e68ee76ff103e06ac49986200"
+        },
+        {
+          "file": "msys/awk.exe",
+          "sha256": "f123d2c120b2ad2158aa8c69d8eeedf14c0d681e68ee76ff103e06ac49986200"
+        },
+        {
+          "file": "msys/uname.exe",
+          "sha256": "1cba275ff8e0c81f48898f017758c558ee5951cb0448c36628580beffdf4ef89"
+        },
+        {
+          "file": "msys/sh.exe",
+          "sha256": "7b4dc5d6878aacdec5d09ca9c5d8e2b43b925a6bbf631873a24c692980b792b2"
+        },
+        {
+          "file": "msys/cat.exe",
+          "sha256": "f1b37048ee5c70fdc31dde509e562261c9b2d102d94c903393f55b45e883ef90"
+        },
+        {
+          "file": "msys/cp.exe",
+          "sha256": "5f91e0b445edb4e4c17e9a660ac29239f6cac5a821a173a86d4332b9eaa8cea3"
+        },
+        {
+          "file": "msys/rm.exe",
+          "sha256": "a845f7517a49b49726e056da8a8f65a6d9ce96fbe79c3664c082521eea0f80e7"
+        },
+        {
+          "file": "msys/mkdir.exe",
+          "sha256": "fc9b9e49fd6496cdddfc5681208d74bd649ac934818eafdfd50a9571bdcb4861"
+        },
+        {
+          "file": "msys/touch.exe",
+          "sha256": "1d895e0f77cbc8b77c3a38da009e8ad8d23a371afd398da5408bdeffcddf5fc0"
+        },
+        {
+          "file": "msys/tr.exe",
+          "sha256": "7cf90be63820ba9ec66a10c0c4af84f0a2e3ec90a722ea6904219ec0b93bf1c1"
+        },
+        {
+          "file": "msys/head.exe",
+          "sha256": "c82ae2ef72235a34db7007580628cd5183cb350878a10fcc98b6ef26b92a3537"
+        },
+        {
+          "file": "msys/tail.exe",
+          "sha256": "8608c4138642de6dca0806b266b3009c137dc373171978cf47418056a5e05c55"
+        },
+        {
+          "file": "msys/sort.exe",
+          "sha256": "7c5df851d821e23988641f35442a06652ce834ed724456511798ce60314cab9a"
+        },
+        {
+          "file": "msys/wc.exe",
+          "sha256": "3ab05efc4703295f0d36fd48da17f2021219494fb932a062a535ae17ea9f45b3"
+        },
+        {
+          "file": "msys/cut.exe",
+          "sha256": "63fcfb76c80d57538312a9637429d5a4b99ac83e8b00d95684609b4c045471e9"
+        },
+        {
+          "file": "msys/od.exe",
+          "sha256": "5533b3edb4b47590a3279653475f12cb6dec11a3b8a289e93c613a06c30b99d2"
+        },
+        {
+          "file": "msys/expr.exe",
+          "sha256": "e1608f26781374b67f180370dc50c833bfc61946aadfb433e48536590bb79219"
+        },
+        {
+          "file": "msys/dirname.exe",
+          "sha256": "53896fda354605a1a1d1f5e6802daba5ba6c05961f3074b892194e068aa82772"
+        },
+        {
+          "file": "msys/basename.exe",
+          "sha256": "6fe2e201a956304503f808d0909a26d9b49e1a7e99f6ee6d93721ac4a76a7c6e"
+        },
+        {
+          "file": "msys/tee.exe",
+          "sha256": "5b956ac9d6bb6d457665709bbcf71326ecd66bb5111b280c124a68405ce5da46"
+        },
+        {
+          "file": "msvc/cl.exe",
+          "sha256": "fe251ef50a1545b1b0835ee17b1e785459712b38d79e45b5c1d3d28970a36619"
+        },
+        {
+          "file": "msvc/link.exe",
+          "sha256": "a364af801a8539e4324d9489313dbf001d959128451fc99a27b24676bbac058f"
+        },
+        {
+          "file": "msvc/lib.exe",
+          "sha256": "fde148a275981855689c45f932dda56b10dc9289a0290826a0fb93478da34929"
+        },
+        {
+          "file": "msvc/nmake.exe",
+          "sha256": "ce6b50c2d8e6704b671ec116e52ce9d2fbc1d20dd28c5b895b5421adddf94ebb"
+        },
+        {
+          "file": "msvc/dumpbin.exe",
+          "sha256": "cfee7ed764b7b0866aae0be12f9c0ad2a7f5aecc4046ba2b7de26335827ca815"
+        }
+      ],
+      "versions": {
+        "compiler": "usage: cl [ option... ] filename... [ /link linkoption... ]\nMicrosoft (R) C/C++ Optimizing Compiler Version 19.44.35229 for x64\nCopyright (C) Microsoft Corporation.  All rights reserved.",
+        "bash": "GNU bash, version 5.3.20(1)-release (x86_64-pc-cygwin)",
+        "make": "GNU Make 4.4.1"
+      },
+      "systemInputs": {
+        "compiler": {
+          "files": 91,
+          "bytes": 98922986,
+          "sha256": "76b84bdd84158585afdd98f70671efd9943a3e3530d112596501fba326e0d855"
+        },
+        "msvcInclude": {
+          "files": 361,
+          "bytes": 16200441,
+          "sha256": "7bf99fdca0a732240612ff4cc78880fef76c65b67ff17ec02900c67b4d5ac050"
+        },
+        "msvcLib": {
+          "files": 166,
+          "bytes": 802970908,
+          "sha256": "fe7dd3278455a19102cfd07da0b7f64e5eb66a76a44aca0ae4308be1e61be7dc"
+        },
+        "sdkInclude": {
+          "files": 5553,
+          "bytes": 385723582,
+          "sha256": "94e724734f0dcb637e1cdc2e7cbffd8c77abf2c41275e6c3da19ab45d8078752"
+        },
+        "sdkUcrtLib": {
+          "files": 8,
+          "bytes": 90629762,
+          "sha256": "37569193a7d063c57ef5266e8c3046cef88834055aaeec446a3bec01ae818dd5"
+        },
+        "sdkUmLib": {
+          "files": 505,
+          "bytes": 120730732,
+          "sha256": "6a64d69e1ca754408454275bb3d82e51148f46f64d4c2ced9803447225ca51b5"
+        }
+      },
+      "recipes": {
+        "tools/codec/build.cjs": "7b1d08dfefdb06c70292c5886540570c158a8037a530f72f4e00d9722470917a",
+        "tools/codec/identity.cjs": "0f69a737f54676409a12ca26f169a8392c1dd9040bb9a3fd36ad2244210bcffc",
+        "tools/release/dependency-sources.cjs": "c53a60e479767c12b7036b36278de5b37035f035fa428c475ba9082c284a12ae"
+      },
+      "outputs": {
+        "ffmpeg": {
+          "sha256": "c647e20c508af6421efb3c78b59e2a693f7b905c6a27384282ad76b5ad37d5ee",
+          "bytes": 3096064,
+          "version": "ffmpeg version 9.0.2 Copyright (c) 2000-2026 the FFmpeg developers\nbuilt with Microsoft (R) C/C++ Optimizing Compiler Version 19.44.35229 for x64\nconfiguration: --toolchain=msvc --arch=x86_64 --target-os=win32 --prefix=/c/trace-codec/prefix --disable-autodetect --disable-everything --disable-network --disable-shared --enable-static --disable-doc --disable-debug --disable-ffplay --disable-avdevice --disable-swscale --disable-x86asm --disable-hwaccels --enable-gpl --enable-version3 --enable-libmp3lame --enable-encoder='aac,libmp3lame,pcm_s16le,pcm_s24le,pcm_f32le' --enable-decoder='aac,mp3,mp3float,pcm_s16le,pcm_s24le,pcm_f32le,mjpeg' --enable-parser='aac,mpegaudio,mjpeg,png' --enable-demuxer='wav,mp3,aac,mov,concat' --enable-muxer='wav,mp3,adts,ipod,mp4,mov,segment' --enable-protocol='file,pipe' --enable-filter='aresample,aformat,anull,atrim,asetpts' --extra-cflags='-IC:/trace-codec/prefix/include' --extra-ldflags='-libpath:C:/trace-codec/prefix/lib -Brepro'\nlibavutil      61.  1.102 / 61.  1.102\nlibavcodec     63.  1.102 / 63.  1.102\nlibavformat    63.  1.102 / 63.  1.102\nlibavfilter    12.  1.102 / 12.  1.102\nlibswresample   7.  1.102 /  7.  1.102\n\nExiting with exit code 0",
+          "dependents": "Microsoft (R) COFF/PE Dumper Version 14.44.35229.0\nCopyright (C) Microsoft Corporation.  All rights reserved.\n\n\nDump of file C:\\trace-codec\\prefix\\bin\\ffmpeg.exe\n\nFile Type: EXECUTABLE IMAGE\n\n  Image has the following dependencies:\n\n    bcrypt.dll\n    PSAPI.DLL\n    SHELL32.dll\n    KERNEL32.dll\n\n  Summary\n\n      1B2000 .data\n        1000 .fptable\n       16000 .pdata\n       D3000 .rdata\n        5000 .reloc\n        1000 .rsrc\n      206000 .text"
+        },
+        "ffprobe": {
+          "sha256": "73337f082639e4f3f867a50fc69ec681ed81cdc8faf5df5d8fed4f677530bef5",
+          "bytes": 2859520,
+          "version": "ffprobe version 9.0.2 Copyright (c) 2007-2026 the FFmpeg developers\nbuilt with Microsoft (R) C/C++ Optimizing Compiler Version 19.44.35229 for x64\nconfiguration: --toolchain=msvc --arch=x86_64 --target-os=win32 --prefix=/c/trace-codec/prefix --disable-autodetect --disable-everything --disable-network --disable-shared --enable-static --disable-doc --disable-debug --disable-ffplay --disable-avdevice --disable-swscale --disable-x86asm --disable-hwaccels --enable-gpl --enable-version3 --enable-libmp3lame --enable-encoder='aac,libmp3lame,pcm_s16le,pcm_s24le,pcm_f32le' --enable-decoder='aac,mp3,mp3float,pcm_s16le,pcm_s24le,pcm_f32le,mjpeg' --enable-parser='aac,mpegaudio,mjpeg,png' --enable-demuxer='wav,mp3,aac,mov,concat' --enable-muxer='wav,mp3,adts,ipod,mp4,mov,segment' --enable-protocol='file,pipe' --enable-filter='aresample,aformat,anull,atrim,asetpts' --extra-cflags='-IC:/trace-codec/prefix/include' --extra-ldflags='-libpath:C:/trace-codec/prefix/lib -Brepro'\nlibavutil      61.  1.102 / 61.  1.102\nlibavcodec     63.  1.102 / 63.  1.102\nlibavformat    63.  1.102 / 63.  1.102\nlibavfilter    12.  1.102 / 12.  1.102\nlibswresample   7.  1.102 /  7.  1.102",
+          "dependents": "Microsoft (R) COFF/PE Dumper Version 14.44.35229.0\nCopyright (C) Microsoft Corporation.  All rights reserved.\n\n\nDump of file C:\\trace-codec\\prefix\\bin\\ffprobe.exe\n\nFile Type: EXECUTABLE IMAGE\n\n  Image has the following dependencies:\n\n    bcrypt.dll\n    SHELL32.dll\n    KERNEL32.dll\n\n  Summary\n\n      1B2000 .data\n        1000 .fptable\n       13000 .pdata\n       C3000 .rdata\n        5000 .reloc\n        1000 .rsrc\n      1DF000 .text"
+        }
+      },
+      "configuration": "configuration: --toolchain=msvc --arch=x86_64 --target-os=win32 --prefix=/c/trace-codec/prefix --disable-autodetect --disable-everything --disable-network --disable-shared --enable-static --disable-doc --disable-debug --disable-ffplay --disable-avdevice --disable-swscale --disable-x86asm --disable-hwaccels --enable-gpl --enable-version3 --enable-libmp3lame --enable-encoder='aac,libmp3lame,pcm_s16le,pcm_s24le,pcm_f32le' --enable-decoder='aac,mp3,mp3float,pcm_s16le,pcm_s24le,pcm_f32le,mjpeg' --enable-parser='aac,mpegaudio,mjpeg,png' --enable-demuxer='wav,mp3,aac,mov,concat' --enable-muxer='wav,mp3,adts,ipod,mp4,mov,segment' --enable-protocol='file,pipe' --enable-filter='aresample,aformat,anull,atrim,asetpts' --extra-cflags='-IC:/trace-codec/prefix/include' --extra-ldflags='-libpath:C:/trace-codec/prefix/lib -Brepro'",
+      "patches": [],
+      "crtLinkage": "static /MT",
+      "sourceDateEpoch": 1789574400,
+      "systemInventorySha256": "b895920269ac9faa7827c4467f407268e4bd1dbf0ca2d539ff5a53f42b1ce48f",
+      "configHeaderSha256": "2f386f2de7862231e29b33eb202e152b605367d48e8ffa7b8ce7a004143bbbfb",
+      "configMakSha256": "b8ea4983a6603fbe52cef68c155a6f2d2c0031e639b70f8715f0532d1be96669"
+    },
+    "minuteConversion": {
+      "ffmpegSha256": "c647e20c508af6421efb3c78b59e2a693f7b905c6a27384282ad76b5ad37d5ee",
+      "sourceRate": 96000,
+      "sourceFrames": 5760000,
+      "channels": 2,
+      "timings": [
+        {
+          "rate": 44100,
+          "extension": "mp3",
+          "elapsedMs": 773,
+          "physicalFrames": "2646000",
+          "audibleFrames": "2646000"
+        },
+        {
+          "rate": 44100,
+          "extension": "m4a",
+          "elapsedMs": 1137,
+          "physicalFrames": "2646000",
+          "audibleFrames": "2646000"
+        },
+        {
+          "rate": 48000,
+          "extension": "mp3",
+          "elapsedMs": 715,
+          "physicalFrames": "2880000",
+          "audibleFrames": "2880000"
+        },
+        {
+          "rate": 48000,
+          "extension": "m4a",
+          "elapsedMs": 1133,
+          "physicalFrames": "2880000",
+          "audibleFrames": "2880000"
+        }
+      ],
+      "scope": "Offline generated signal; not WASAPI or physical-device real-time acceptance"
+    },
+    "actualBinaryPayloadReadLocally": false,
+    "binaryRepeatability": {
+      "runIds": [
+        37216225171,
+        37216722574,
+        37217397928
+      ],
+      "allFfmpegAndFfprobeHashesIdentical": true,
+      "scope": "Three independent Windows builds from the same official media sources/configuration and pinned compiler/SDK; final build receipt exactly matches the committed pin"
+    },
+    "sourceCodecArtifactMetadata": [
+      {
+        "created_at": "2026-10-04T16:32:38Z",
+        "digest": "sha256:bf4ee978386dab630e0f189c82c27701b3717c04803d7d532be9124db5924b1a",
+        "expired": false,
+        "id": 11308768167,
+        "name": "trace-codec-source-build",
+        "size_in_bytes": 3424902
+      }
+    ]
+  },
+  "sourceBuildTrials": [
+    {
+      "conclusion": "failure",
+      "head_sha": "62210cbc4592269858ddf358ffdac59bd3745778",
+      "html_url": "https://github.com/Sceneryyyy/Trace/actions/runs/37215940506",
+      "id": 37215940506,
+      "run_attempt": 1,
+      "status": "completed",
+      "scope": "missing GNU Make; no codec built",
+      "logSha256": "458d2fddc8da49592de38f3e8552ad23dfcd855dde8bb5aaebc4ece435219094",
+      "completedLogZipSha256": "82d4610ea37a3470ae3ae6a5728d0a4870aefa8e756722875f0927e275a24ac3",
+      "crcPassed": true,
+      "sourceBinaryOutputs": null
+    },
+    {
+      "conclusion": "failure",
+      "head_sha": "4ed113518da143bbf7eba31a06f2e5478227c920",
+      "html_url": "https://github.com/Sceneryyyy/Trace/actions/runs/37216083978",
+      "id": 37216083978,
+      "run_attempt": 1,
+      "status": "completed",
+      "scope": "GNU tar shadowed native tar and treated D: as a remote host; no codec built",
+      "logSha256": "d266867c25cf3442204cc6d2996567ce0e0aeb613be08a2f8f18731886d90501",
+      "completedLogZipSha256": "572d8b6751b67aeba26ee26173b78b14708e92988afb842756735fd4e6abca2e",
+      "crcPassed": true,
+      "sourceBinaryOutputs": null
+    },
+    {
+      "conclusion": "failure",
+      "head_sha": "fc82ac88538bd53e016bdde54fa2098ab4a34606",
+      "html_url": "https://github.com/Sceneryyyy/Trace/actions/runs/37216225171",
+      "id": 37216225171,
+      "run_attempt": 1,
+      "status": "completed",
+      "scope": "codec compiled; 6/7 tests passed; PNG M4A fixture creation and cross-volume artifact upload failed",
+      "logSha256": "730976d3699997fcd530912fe2e47e7173785987d65d0795582ccb2553de77a3",
+      "completedLogZipSha256": "5b5ae9b8f3b44035d26c549052b52d54a25c972f0b733f5f2dd94f52e30ee357",
+      "crcPassed": true,
+      "sourceBinaryOutputs": {
+        "ffmpeg": {
+          "bytes": 3096064,
+          "sha256": "c647e20c508af6421efb3c78b59e2a693f7b905c6a27384282ad76b5ad37d5ee"
+        },
+        "ffprobe": {
+          "bytes": 2859520,
+          "sha256": "73337f082639e4f3f867a50fc69ec681ed81cdc8faf5df5d8fed4f677530bef5"
+        }
+      }
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "74396e4bf8e9dd3696df44dbf923dda826fd70d5",
+      "html_url": "https://github.com/Sceneryyyy/Trace/actions/runs/37216722574",
+      "id": 37216722574,
+      "run_attempt": 1,
+      "status": "completed",
+      "scope": "codec compiled and 8/8 source-codec tests passed; artifact uploaded",
+      "logSha256": "4f45a7511f0dd462b6b996a84c82d4b157a0ad19b4bc18bcded7f9ce35a529c0",
+      "completedLogZipSha256": "f1e16a972305e7f43d56fb364a77d2958cd2ce7396c52f4fd1b8d6faa95eb822",
+      "crcPassed": true,
+      "sourceBinaryOutputs": {
+        "ffmpeg": {
+          "bytes": 3096064,
+          "sha256": "c647e20c508af6421efb3c78b59e2a693f7b905c6a27384282ad76b5ad37d5ee"
+        },
+        "ffprobe": {
+          "bytes": 2859520,
+          "sha256": "73337f082639e4f3f867a50fc69ec681ed81cdc8faf5df5d8fed4f677530bef5"
+        }
+      }
+    }
+  ],
+  "codeInputs": {
+    "ffmpeg.lock.json": "a1172895808d07c3f4cbe24cb9e03df8aa7a200b06afb6be5165f926155640de",
+    "references/trace-ffmpeg/build-lock.json": "5814b32f759bbae973baf78c9330d72a5275b6802d66492f8a9b1819710d3f7a",
+    "references/trace-ffmpeg/build-report.json": "7671ade836f14c2af0c0ab2d1dcd178355e47314a26eef903ffe82fd6af224cf",
+    "references/trace-ffmpeg/source-manifest.json": "af8bccf30a4254d38ca5f6a7fc479c1c02ffadae4dccd91b56eb7b18c7b14df4",
+    "tools/codec/build.cjs": "7b1d08dfefdb06c70292c5886540570c158a8037a530f72f4e00d9722470917a",
+    "tools/codec/identity.cjs": "0f69a737f54676409a12ca26f169a8392c1dd9040bb9a3fd36ad2244210bcffc",
+    "tools/codec/install.cjs": "5cf035eaf700019e3efd700ed228f1f2d7a0abf2747abbc86e5578ba177a239a",
+    "tools/prefetch-ffmpeg.mjs": "3816bdfe42286f31f39c541a7ebb81269c32ebacf156d1cfeb96222820f2b82a",
+    "tools/release/dependency-sources.cjs": "c53a60e479767c12b7036b36278de5b37035f035fa428c475ba9082c284a12ae",
+    "tools/package-trace.cjs": "24c903d1deb089fb68a9147f5d4664506a849862ea8b9583c30248195becb865",
+    "tools/m6/package-audit.cjs": "287ba1df3754f1bcfcca38c0cfd542de2b7dbdedda560e5452f6c07065dcc8c5",
+    "tools/release/candidate.cjs": "57eba7cd4b22fbf2349775391f7b68b44e3a5f6e61a4f667913b91dcb32b17f2",
+    ".github/workflows/trace.yml": "3c245dc78d13801b671bd31ed1b71ee0adecf07ce3b0b9ebfd2c8b0140a03e2c"
+  },
+  "localChecks": {
+    "codeCommit": "f33d74da18d29902e260443f01eb0be24255ed49",
+    "sourceDirtyAtSecurityAudit": false,
+    "portableTests": {
+      "pass": 263,
+      "fail": 0,
+      "skip": 0
+    },
+    "typecheck": "pass",
+    "buildTrace": "pass",
+    "independence": {
+      "status": "pass",
+      "files": 121,
+      "imports": 573
+    },
+    "completeSourceArchives": "two official archives size/hash verified",
+    "sourceCounterexampleTests": {
+      "pass": 16,
+      "fail": 0,
+      "skip": 0
+    }
+  },
+  "scopeLimits": [
+    "Windows hosted CI and generated/offline media; no physical WASAPI/driver/GPU/96kHz-device acceptance",
+    "Microsoft compiler/SDK/CRT/OS inputs separately identified; source completeness means FFmpeg/LAME and Trace recipe, not proprietary system-library source",
+    "Component advisory/security and Microsoft/GPL system-library licensing review still required before public release",
+    "Completed logs and artifact metadata read locally; artifact payload and internal numerical JSON were not downloaded/read"
+  ]
+}

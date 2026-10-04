@@ -52,7 +52,7 @@
   "overrides": {
     "@electron/get": "5.1.0"
   },
-  "verification": "docs/release/dependency-verification.json",
+  "verification": "docs/release/codec-verification.json",
   "lastValidatedOn": "2026-10-04",
   "codecBuildLock": "references/trace-ffmpeg/build-lock.json",
   "codecBuildReport": "references/trace-ffmpeg/build-report.json",

@@ -25,5 +25,5 @@
     "tools/release/dependency-sources.cjs": "c53a60e479767c12b7036b36278de5b37035f035fa428c475ba9082c284a12ae"
   },
   "correspondingSourceManifest": "references/trace-ffmpeg/source-manifest.json",
-  "status": "Expected pinned source build from verified Windows source-codec trials; complete Trace CI/candidate confirmation required"
+  "status": "Pinned Trace source build verified at f33d74da18d29902e260443f01eb0be24255ed49 by complete Windows/Linux CI 37217397928; engineering candidate metadata in docs/release/codec-verification.json"
 }
