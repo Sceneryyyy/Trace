@@ -1,0 +1,25 @@
+name: Trace codec source build
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-2022
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24.19.0
+      - name: Build minimal FFmpeg and LAME from verified source
+        run: node tools/codec/build.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: trace-codec-source-build
+          path: |
+            .tools/trace-ffmpeg/*
+            .tools/trace-ffmpeg/bin/*
+            C:/trace-codec/source/FFmpeg-*/ffbuild/config.log
+          if-no-files-found: warn
