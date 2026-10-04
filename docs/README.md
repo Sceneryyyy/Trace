@@ -22,6 +22,7 @@
 | [Meter v5 校准修复](78-EBU-METER-RECALIBRATION.md) | 10 ms 完整响度索引、68/68 原始 WAV、缓存/报告与验证范围 |
 | [Trace 独立工程](79-TRACE-INDEPENDENT-PROJECT.md) | 专用入口、FFT 来源、清理边界、从零复现与 Windows CI 证据 |
 | [发布依赖与源码收尾](80-RELEASE-DEPENDENCY-HARDENING.md) | 固定安全工具链、实时审计门禁、FFmpeg 主源码与静态依赖资料缺口 |
+| [自建 Windows FFmpeg](81-SELF-BUILT-FFMPEG.md) | 两份官方源码、固定工具/SDK、构建与完整来源门禁；当前候选复验 |
 | [独立工程验证清单](release/independence-verification.json) | 旧工具链独立化阶段的代码提交、CI 与候选元数据；当前复验见下项 |
 | [依赖与新候选验证](release/dependency-verification.json) | 当前 6835af9 完整 CI、实际安全门禁/codec/运行库及新附件证据 |
 | [依赖安全盘点](release/security-baseline.json) | 锁文件绑定的零 npm 公告门禁、固定工具链与静态 codec 来源缺口 |

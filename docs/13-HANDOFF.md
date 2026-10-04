@@ -14,7 +14,17 @@
 | preview.31 分发 | 私有工程候选含当前应用、项目源码、PDF、校验及验证记录；无声卡 CI 加载/重启已通过。PDF 插图为云端模拟界面，实机/公开发布门禁仍开放；preview.28 PDF 和 R3 为历史快照 |
 | macOS | [70](70-MACOS-PORT-PLAN.md) 方案已记录；当前分支的 Trace 后端仍为 Windows/WASAPI，Mac 实现/实机验收未完成 |
 
-## 当前：发布依赖与云端复验已完成，完整 codec 来源仍阻塞
+## 当前推进：自建 FFmpeg 已通过独立 Windows 音频验证，完整新候选待复验
+
+默认源码已切换到 Trace 自建 FFmpeg 9.0.2 + LAME 3.100，来源、工具/SDK、脚本和 EXE 哈希固定。
+[独立构建 CI 37216722574](https://github.com/Sceneryyyy/Trace/actions/runs/37216722574) 的 8/8 实际媒体测试均通过，包含生产三格式/M4A/ADTS、18 组 WAV 及四种附图组合；前次独立编译产生相同 EXE 哈希。
+新增完整来源门禁、输入/配置附件检查及候选材料接线。实际来源与复现步骤见 [81](81-SELF-BUILT-FFMPEG.md)。
+
+新的默认编码组件还需完整 Trace Windows/Linux CI、原生、包审计/加载和候选复验；
+下面 `6835af9` 的候选仍是旧 Gyan 组件的历史已验证包，不能当作本次新包。
+真实声卡、驱动、长测、签名、组件安全及微软/GPL 系统库条款复核继续单列。
+
+## 前一轮：发布依赖与云端复验（Gyan 候选）
 
 依赖修复 `3d63d8f`、编码回归修复 `ef51603` 与下载修复 `6835af9` 已交付到 `recorder/dev`。固定
 Electron/SDK **42.11.10**、builder **26.15.3**、node-gyp **13.1.0**、下载器

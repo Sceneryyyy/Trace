@@ -1,5 +1,7 @@
 # FFmpeg 9.0.2 · 源码与静态依赖核查
 
+> 本目录保留 Gyan 9.0.2 历史候选的来源证据；它不代表新的自建二进制。当前组件见 [Trace 自建来源](../trace-ffmpeg/README.md)。原始发布者文件与不完整来源结论保持。
+
 2026-10-03。对应 [ffmpeg.lock.json](../../ffmpeg.lock.json) 固定的 Gyan
 Windows x64 essentials ZIP 和两份 EXE。原始 publisher README/GPL 保持字节，
 上游 `LICENSE.md` 和 GPLv3 来自固定源码提交

@@ -2,24 +2,26 @@
 
 ## FFmpeg Windows codec runtime
 
-Trace pins Gyan's Windows x64 FFmpeg 9.0.2 essentials static build. Its archive,
-ffmpeg.exe, ffprobe.exe and configuration are identified by ffmpeg.lock.json.
-The publisher distributes this build under GPLv3 with --enable-gpl and
---enable-version3. Its unchanged GPL and build README accompany the application.
+Trace builds Windows x64 FFmpeg 9.0.2 from official commit
+946fcce07b6dcd0331c8cc609192aeff5e1924f8 and unmodified LAME 3.100 source.
+Only libmp3lame is enabled as an external media library. Exact source archives,
+MSVC/SDK/tool hashes, flags, recipe and output EXEs are bound by ffmpeg.lock.json
+and references/trace-ffmpeg/{build-lock,build-report,source-manifest}.json.
+The build enables GPL and version3. Original FFmpeg GPL/upstream licensing and
+LAME LGPL notices accompany the application and the source bundle.
 
-Verified upstream source is FFmpeg commit
-946fcce07b6dcd0331c8cc609192aeff5e1924f8. The candidate separately includes its
-hash-checked source archive. Original source licensing, publisher inventory and
-available-source status are retained in references/ffmpeg-9.0.2/ and packaged
-source notices. FFmpeg's upstream archive alone is not complete corresponding
-source for this static binary: eight base-library versions, exact source/producer-patch mapping for reported
-versions, their
-transitive dependency/license inventory, producer patches and build scripts are
-not fully published with it. The publisher README does contain 37 version/commit
-records, which are retained in the inventory. Official LAME 3.100 source and
-LGPL text match its reported version and accompany the candidate; producer
-modifications and full source correspondence remain unverified. The release source gate remains blocked and the candidate
-must not claim otherwise. See source-manifest.json and README.md in that directory.
+Matching FFmpeg/LAME archives, Trace project source with the build scripts,
+configuration, build report and system input inventory accompany candidates.
+The corresponding-source field covers FFmpeg, LAME and the Trace build recipe.
+Microsoft compiler/CRT/SDK inputs and Windows system libraries are separately
+identified; their proprietary code is not claimed as open source. Public
+release still requires the component security and Microsoft/GPL system-library
+licensing review recorded in docs/76-RELEASE-CHECKLIST.md.
+
+Historical Gyan 9.0.2 binary/source inventory remains in references/ffmpeg-9.0.2/.
+Its missing producer inputs remain explicitly incomplete; new source-build
+verification does not apply to that old binary. Reproduction and current
+verification are described in docs/81-SELF-BUILT-FFMPEG.md.
 
 ## EBU Loudness Test Set (internal research material)
 

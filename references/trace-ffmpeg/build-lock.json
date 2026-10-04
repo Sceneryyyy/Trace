@@ -31,7 +31,166 @@
     "crtLinkage": "static /MT",
     "shell": "MSYS2 bash",
     "make": "MSYS2 GNU Make",
-    "x86Assembly": false
+    "x86Assembly": false,
+    "tools": [
+      {
+        "file": "msys/bash.exe",
+        "sha256": "7b4dc5d6878aacdec5d09ca9c5d8e2b43b925a6bbf631873a24c692980b792b2"
+      },
+      {
+        "file": "msys/make.exe",
+        "sha256": "2d3b9fca575be8e93c10ab74348055fa127a65cf628d52e9218ac76065cc6d22"
+      },
+      {
+        "file": "windows/tar.exe",
+        "sha256": "dcc75eb2e0fce4779784ca0a00c6cda1182c7b3c95eb6dab0e0603651cdb6b52"
+      },
+      {
+        "file": "msys/msys-2.0.dll",
+        "sha256": "957d880559f0bfe7406a4cb27724610e7ce2f367030e299373d7ef37fbbb51b3"
+      },
+      {
+        "file": "msys/sed.exe",
+        "sha256": "8d54e322dfc3faa60f0464691aba8634197406e53367aa8942409181c0808be8"
+      },
+      {
+        "file": "msys/grep.exe",
+        "sha256": "497202418334f8a48d9f34cd2e1b2c03c4f957e02304b613e10931c0457e8d4a"
+      },
+      {
+        "file": "msys/gawk.exe",
+        "sha256": "f123d2c120b2ad2158aa8c69d8eeedf14c0d681e68ee76ff103e06ac49986200"
+      },
+      {
+        "file": "msys/awk.exe",
+        "sha256": "f123d2c120b2ad2158aa8c69d8eeedf14c0d681e68ee76ff103e06ac49986200"
+      },
+      {
+        "file": "msys/uname.exe",
+        "sha256": "1cba275ff8e0c81f48898f017758c558ee5951cb0448c36628580beffdf4ef89"
+      },
+      {
+        "file": "msys/sh.exe",
+        "sha256": "7b4dc5d6878aacdec5d09ca9c5d8e2b43b925a6bbf631873a24c692980b792b2"
+      },
+      {
+        "file": "msys/cat.exe",
+        "sha256": "f1b37048ee5c70fdc31dde509e562261c9b2d102d94c903393f55b45e883ef90"
+      },
+      {
+        "file": "msys/cp.exe",
+        "sha256": "5f91e0b445edb4e4c17e9a660ac29239f6cac5a821a173a86d4332b9eaa8cea3"
+      },
+      {
+        "file": "msys/rm.exe",
+        "sha256": "a845f7517a49b49726e056da8a8f65a6d9ce96fbe79c3664c082521eea0f80e7"
+      },
+      {
+        "file": "msys/mkdir.exe",
+        "sha256": "fc9b9e49fd6496cdddfc5681208d74bd649ac934818eafdfd50a9571bdcb4861"
+      },
+      {
+        "file": "msys/touch.exe",
+        "sha256": "1d895e0f77cbc8b77c3a38da009e8ad8d23a371afd398da5408bdeffcddf5fc0"
+      },
+      {
+        "file": "msys/tr.exe",
+        "sha256": "7cf90be63820ba9ec66a10c0c4af84f0a2e3ec90a722ea6904219ec0b93bf1c1"
+      },
+      {
+        "file": "msys/head.exe",
+        "sha256": "c82ae2ef72235a34db7007580628cd5183cb350878a10fcc98b6ef26b92a3537"
+      },
+      {
+        "file": "msys/tail.exe",
+        "sha256": "8608c4138642de6dca0806b266b3009c137dc373171978cf47418056a5e05c55"
+      },
+      {
+        "file": "msys/sort.exe",
+        "sha256": "7c5df851d821e23988641f35442a06652ce834ed724456511798ce60314cab9a"
+      },
+      {
+        "file": "msys/wc.exe",
+        "sha256": "3ab05efc4703295f0d36fd48da17f2021219494fb932a062a535ae17ea9f45b3"
+      },
+      {
+        "file": "msys/cut.exe",
+        "sha256": "63fcfb76c80d57538312a9637429d5a4b99ac83e8b00d95684609b4c045471e9"
+      },
+      {
+        "file": "msys/od.exe",
+        "sha256": "5533b3edb4b47590a3279653475f12cb6dec11a3b8a289e93c613a06c30b99d2"
+      },
+      {
+        "file": "msys/expr.exe",
+        "sha256": "e1608f26781374b67f180370dc50c833bfc61946aadfb433e48536590bb79219"
+      },
+      {
+        "file": "msys/dirname.exe",
+        "sha256": "53896fda354605a1a1d1f5e6802daba5ba6c05961f3074b892194e068aa82772"
+      },
+      {
+        "file": "msys/basename.exe",
+        "sha256": "6fe2e201a956304503f808d0909a26d9b49e1a7e99f6ee6d93721ac4a76a7c6e"
+      },
+      {
+        "file": "msys/tee.exe",
+        "sha256": "5b956ac9d6bb6d457665709bbcf71326ecd66bb5111b280c124a68405ce5da46"
+      },
+      {
+        "file": "msvc/cl.exe",
+        "sha256": "fe251ef50a1545b1b0835ee17b1e785459712b38d79e45b5c1d3d28970a36619"
+      },
+      {
+        "file": "msvc/link.exe",
+        "sha256": "a364af801a8539e4324d9489313dbf001d959128451fc99a27b24676bbac058f"
+      },
+      {
+        "file": "msvc/lib.exe",
+        "sha256": "fde148a275981855689c45f932dda56b10dc9289a0290826a0fb93478da34929"
+      },
+      {
+        "file": "msvc/nmake.exe",
+        "sha256": "ce6b50c2d8e6704b671ec116e52ce9d2fbc1d20dd28c5b895b5421adddf94ebb"
+      },
+      {
+        "file": "msvc/dumpbin.exe",
+        "sha256": "cfee7ed764b7b0866aae0be12f9c0ad2a7f5aecc4046ba2b7de26335827ca815"
+      }
+    ],
+    "systemInputs": {
+      "compiler": {
+        "files": 91,
+        "bytes": 98922986,
+        "sha256": "76b84bdd84158585afdd98f70671efd9943a3e3530d112596501fba326e0d855"
+      },
+      "msvcInclude": {
+        "files": 361,
+        "bytes": 16200441,
+        "sha256": "7bf99fdca0a732240612ff4cc78880fef76c65b67ff17ec02900c67b4d5ac050"
+      },
+      "msvcLib": {
+        "files": 166,
+        "bytes": 802970908,
+        "sha256": "fe7dd3278455a19102cfd07da0b7f64e5eb66a76a44aca0ae4308be1e61be7dc"
+      },
+      "sdkInclude": {
+        "files": 5553,
+        "bytes": 385723582,
+        "sha256": "94e724734f0dcb637e1cdc2e7cbffd8c77abf2c41275e6c3da19ab45d8078752"
+      },
+      "sdkUcrtLib": {
+        "files": 8,
+        "bytes": 90629762,
+        "sha256": "37569193a7d063c57ef5266e8c3046cef88834055aaeec446a3bec01ae818dd5"
+      },
+      "sdkUmLib": {
+        "files": 505,
+        "bytes": 120730732,
+        "sha256": "6a64d69e1ca754408454275bb3d82e51148f46f64d4c2ced9803447225ca51b5"
+      }
+    },
+    "microsoftLicense": "https://visualstudio.microsoft.com/license-terms/vs2022-ga-proenterprise/"
   },
   "configure": [
     "--toolchain=msvc",
@@ -86,5 +245,11 @@
       "scope": "Build tool only; not linked or distributed in Trace",
       "packageRecipe": "https://github.com/msys2/MSYS2-packages/tree/master/make"
     }
+  ],
+  "systemDlls": [
+    "bcrypt.dll",
+    "kernel32.dll",
+    "psapi.dll",
+    "shell32.dll"
   ]
 }

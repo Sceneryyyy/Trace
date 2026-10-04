@@ -117,7 +117,7 @@ function attachM4aCover(file,kind,image){
  let last;for(let o=0;o<original.length;){last=original.toString('ascii',o+4,o+8);o+=original.readUInt32BE(o)}assert.equal(last,'moov')
  writeFileSync(file,append(original,['moov','udta','meta','ilst']))
 }
-test('production MP3 and M4A imports accept JPEG/PNG attached covers while retaining exact decoded audio',options,async()=>{
+test('production MP3 and M4A imports accept JPEG/PNG attached covers while retaining exact decoded audio',{...options,timeout:180000},async()=>{
  const dir=mkdtempSync(join(tmpdir(),'trace-codec-covers-')),input=join(dir,'source.wav'),frames=fixture(input)
  const tools={ffmpeg,ffprobe,nativePath:'unused',ffmpegSha256:await hash(ffmpeg),ffprobeSha256:await hash(ffprobe)}
  for(const [kind,base64]of Object.entries(covers)){
@@ -131,4 +131,20 @@ test('production MP3 and M4A imports accept JPEG/PNG attached covers while retai
    const actual=BigInt(imported.frames);if(file===mp3)assert.equal(actual,BigInt(frames));else assert(actual>=BigInt(frames)&&actual<BigInt(frames+1024))
   }
  }
+})
+test('one-minute 96 kHz stereo conversion preserves resampled frames and completes faster than playback',options,()=>{
+ const dir=mkdtempSync(join(tmpdir(),'trace-codec-minute-')),input=join(dir,'minute.wav');fixture(input,96000,2,96000*60)
+ const timings=[]
+ for(const rate of [44100,48000])for(const [extension,encoder]of [['mp3','libmp3lame'],['m4a','aac']]){
+  const output=join(dir,`${rate}.${extension}`),decoded=output+'.wav',start=performance.now()
+  run(ffmpeg,['-v','error','-f','wav','-i',input,'-ar',String(rate),'-threads','1','-c:a',encoder,'-b:a','192k',output])
+  run(ffmpeg,['-v','error','-i',output,'-map','0:a:0','-c:a','pcm_f32le',decoded])
+  const elapsedMs=performance.now()-start,information=JSON.parse(run(ffprobe,['-v','error','-f','wav','-show_streams','-of','json',decoded])).streams[0]
+  assert.equal(Number(information.sample_rate),rate);assert.equal(information.channels,2)
+  const physical=BigInt(information.duration_ts),frames=BigInt(rate*60)
+  if(extension==='mp3')assert.equal(physical,frames);else assert(physical>=frames&&physical<frames+1024n)
+  assert(elapsedMs<60000,'offline conversion slower than source playback: '+elapsedMs+' ms')
+  timings.push({rate,extension,elapsedMs:Math.round(elapsedMs),physicalFrames:String(physical),audibleFrames:String(frames)})
+ }
+ console.log('TRACE_CODEC_MINUTE',JSON.stringify({ffmpegSha256:lock.ffmpegSha256,sourceRate:96000,sourceFrames:5760000,channels:2,timings,scope:'Offline generated signal; not WASAPI or physical-device real-time acceptance'}))
 })

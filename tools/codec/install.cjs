@@ -20,10 +20,20 @@ async function install(){
  }
  const destination=path.join(root,'.tools/ffmpeg')
  if(fs.existsSync(path.join(destination,'build-report.json'))){verify(destination);console.log('FFMPEG_SOURCE_RUNTIME_ALREADY_VERIFIED');return}
- execFileSync(process.execPath,[path.join(root,'tools/codec/build.cjs')],{cwd:root,stdio:'inherit'})
- const staged=path.join(root,'.tools/trace-ffmpeg');verify(staged)
- fs.mkdirSync(path.join(destination,'bin'),{recursive:true})
- for(const name of ['bin/ffmpeg.exe','bin/ffprobe.exe','LICENSE','README.txt','config.h','config.mak','system-inputs.json','build-report.json'])fs.copyFileSync(path.join(staged,name),path.join(destination,name))
+ const staged=path.join(root,'.tools/trace-ffmpeg')
+ if(!fs.existsSync(path.join(staged,'build-report.json')))execFileSync(process.execPath,[path.join(root,'tools/codec/build.cjs')],{cwd:root,stdio:'inherit'})
+ verify(staged)
+ const next=destination+'-staging-'+process.pid,previous=destination+'-previous-'+process.pid
+ if(fs.existsSync(next)||fs.existsSync(previous))throw Error('CODEC_INSTALL_STAGING_EXISTS')
+ fs.mkdirSync(path.join(next,'bin'),{recursive:true})
+ try{
+  for(const name of ['bin/ffmpeg.exe','bin/ffprobe.exe','LICENSE','README.txt','config.h','config.mak','system-inputs.json','build-report.json'])fs.copyFileSync(path.join(staged,name),path.join(next,name))
+  verify(next)
+  const hadPrevious=fs.existsSync(destination)
+  if(hadPrevious)fs.renameSync(destination,previous)
+  try{fs.renameSync(next,destination)}catch(error){if(hadPrevious)fs.renameSync(previous,destination);throw error}
+  fs.rmSync(previous,{recursive:true,force:true})
+ }finally{fs.rmSync(next,{recursive:true,force:true})}
  verify(destination);console.log('FFMPEG_SOURCE_RUNTIME_VERIFIED',codec.version,codec.ffmpegSha256,codec.ffprobeSha256)
 }
 module.exports={install}

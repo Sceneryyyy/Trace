@@ -57,9 +57,9 @@ test('a current full dependency audit is required; production-only or stale zero
  assert.throws(()=>validateSecurityInventory({...baseline,allDependencies:undefined},lockSha),/DEPENDENCY_ADVISORY_GATE_FAILED/)
  assert.throws(()=>validateSecurityInventory({...baseline,auditCommands:baseline.auditCommands.filter(c=>c.command.includes('--omit=dev'))},lockSha),/MISSING_SECURITY_AUDIT/)
 })
-test('upstream FFmpeg source must match the actual codec and cannot masquerade as complete static corresponding source',()=>{
- const codec=JSON.parse(readFileSync(new URL('../ffmpeg.lock.json',import.meta.url),'utf8'))
- const manifest=JSON.parse(readFileSync(new URL('../'+codec.correspondingSourceManifest,import.meta.url),'utf8'))
+test('historical publisher FFmpeg source cannot masquerade as complete static corresponding source',()=>{
+ const manifest=JSON.parse(readFileSync(new URL('../references/ffmpeg-9.0.2/source-manifest.json',import.meta.url),'utf8'))
+ const codec={...manifest.binary,upstreamCommit:manifest.upstream.commit}
  assert.equal(validateManifest(codec,manifest).correspondingSourceComplete,false)
  assert.throws(()=>validateManifest(codec,manifest,{requireComplete:true}),/DEPENDENCY_SOURCE_INCOMPLETE/)
  assert.throws(()=>validateManifest({...codec,ffmpegSha256:'0'.repeat(64)},manifest),/STALE_CODEC_SOURCE/)
@@ -68,6 +68,18 @@ test('upstream FFmpeg source must match the actual codec and cannot masquerade a
  assert.throws(()=>validateManifest(codec,{...manifest,upstream:{...manifest.upstream,archiveUrl:'https://different.invalid/source.tar.gz'}}),/SOURCE_ORIGIN_MISMATCH/)
  const changedDependency=structuredClone(manifest);changedDependency.additionalUpstreams[0].publisherVersion='unreported';assert.throws(()=>validateManifest(codec,changedDependency),/DEPENDENCY_SOURCE_VERSION_MISMATCH/)
  const escapedArchive=structuredClone(manifest);escapedArchive.additionalUpstreams[0].archiveFile='../escape.tar.gz';assert.throws(()=>validateManifest(codec,escapedArchive),/DEPENDENCY_SOURCE_INTEGRITY_MISSING/)
+})
+test('current source-built codec binds complete source to the exact verified recipe, inputs and binary report',async()=>{
+ const codec=JSON.parse(readFileSync(new URL('../ffmpeg.lock.json',import.meta.url),'utf8'))
+ const manifest=JSON.parse(readFileSync(new URL('../'+codec.correspondingSourceManifest,import.meta.url),'utf8'))
+ assert.equal(validateManifest(codec,manifest,{requireComplete:true}).correspondingSourceComplete,true)
+ const {prepareSources}=createRequire(import.meta.url)('../tools/release/dependency-sources.cjs')
+ assert.equal((await prepareSources({requireComplete:true})).correspondingSourceComplete,true)
+ assert.throws(()=>validateManifest({...codec,ffmpegSha256:'0'.repeat(64)},manifest),/STALE_CODEC_SOURCE/)
+ assert.throws(()=>validateManifest(codec,{...manifest,buildReportSha256:'0'.repeat(64)}),/CODEC_BUILD_REPORT_CHANGED/)
+ assert.throws(()=>validateManifest(codec,{...manifest,correspondingSourceComplete:false}),/UNVERIFIED_COMPLETE_SOURCE_CLAIM/)
+ assert.throws(()=>validateManifest(codec,{...manifest,additionalUpstreams:[]}),/CODEC_SOURCE_SET_CHANGED/)
+ assert.throws(()=>validateManifest(codec,{...manifest,missingProducerInputs:['unreported.patch']}),/UNVERIFIED_COMPLETE_SOURCE_CLAIM/)
 })
 test('source archives reject truncation and changed contents even when a cache already exists',async()=>{
  const file=join(mkdtempSync(join(tmpdir(),'trace-source-')),'source.tar.gz'),bytes=Buffer.from('fixture-original-source')

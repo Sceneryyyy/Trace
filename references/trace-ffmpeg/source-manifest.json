@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 2,
+  "checkedOn": "2026-10-04",
+  "scope": "FFmpeg and LAME unmodified official sources plus exact Trace recipe; pinned Microsoft system/compiler inputs recorded separately",
+  "correspondingSourceComplete": true,
+  "binary": {
+    "version": "9.0.2",
+    "platform": "win32-x64",
+    "ffmpegSha256": "c647e20c508af6421efb3c78b59e2a693f7b905c6a27384282ad76b5ad37d5ee",
+    "ffprobeSha256": "73337f082639e4f3f867a50fc69ec681ed81cdc8faf5df5d8fed4f677530bef5",
+    "configuration": "configuration: --toolchain=msvc --arch=x86_64 --target-os=win32 --prefix=/c/trace-codec/prefix --disable-autodetect --disable-everything --disable-network --disable-shared --enable-static --disable-doc --disable-debug --disable-ffplay --disable-avdevice --disable-swscale --disable-x86asm --disable-hwaccels --enable-gpl --enable-version3 --enable-libmp3lame --enable-encoder='aac,libmp3lame,pcm_s16le,pcm_s24le,pcm_f32le' --enable-decoder='aac,mp3,mp3float,pcm_s16le,pcm_s24le,pcm_f32le,mjpeg' --enable-parser='aac,mpegaudio,mjpeg,png' --enable-demuxer='wav,mp3,aac,mov,concat' --enable-muxer='wav,mp3,adts,ipod,mp4,mov,segment' --enable-protocol='file,pipe' --enable-filter='aresample,aformat,anull,atrim,asetpts' --extra-cflags='-IC:/trace-codec/prefix/include' --extra-ldflags='-libpath:C:/trace-codec/prefix/lib -Brepro'"
+  },
+  "upstream": {
+    "repository": "https://github.com/FFmpeg/FFmpeg",
+    "commit": "946fcce07b6dcd0331c8cc609192aeff5e1924f8",
+    "release": "9.0.2",
+    "archiveUrl": "https://codeload.github.com/FFmpeg/FFmpeg/tar.gz/946fcce07b6dcd0331c8cc609192aeff5e1924f8",
+    "archiveBytes": 17333895,
+    "archiveSha256": "0aa2b1de2a5698b20a23e93d539a9a8e82ca0117496c5bdf05d198805f42bb3b",
+    "archiveFile": "FFmpeg-9.0.2-Upstream-Source.tar.gz",
+    "releaseFileValidated": true
+  },
+  "additionalUpstreams": [
+    {
+      "name": "LAME",
+      "version": "3.100",
+      "archiveUrl": "https://downloads.sourceforge.net/project/lame/lame/3.100/lame-3.100.tar.gz",
+      "archiveFile": "LAME-3.100-Upstream-Source.tar.gz",
+      "archiveBytes": 1524133,
+      "archiveSha256": "ddfe36cab873794038ae2c1210557ad34857a4b6bdc515785d1da9e175b1da1e",
+      "sourceCorrespondence": "Unmodified official source compiled by the Trace recipe; no producer patches"
+    }
+  ],
+  "buildReportSha256": "7671ade836f14c2af0c0ab2d1dcd178355e47314a26eef903ffe82fd6af224cf",
+  "producer": "Trace source build",
+  "patches": [],
+  "notices": {
+    "license": "COPYING.GPLv3",
+    "build": "README-build.txt"
+  },
+  "documents": {
+    "build-lock.json": {
+      "bytes": 8557,
+      "sha256": "5814b32f759bbae973baf78c9330d72a5275b6802d66492f8a9b1819710d3f7a"
+    },
+    "build-report.json": {
+      "bytes": 11506,
+      "sha256": "7671ade836f14c2af0c0ab2d1dcd178355e47314a26eef903ffe82fd6af224cf"
+    },
+    "COPYING.GPLv3": {
+      "bytes": 35147,
+      "sha256": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903"
+    },
+    "LICENSE.upstream.md": {
+      "bytes": 4346,
+      "sha256": "2e1d16c72fd74e12063776371da757322f8b77589386532f4fd8634bde7de1af"
+    },
+    "LAME-LGPL.txt": {
+      "bytes": 25284,
+      "sha256": "bfe4a52dc4645385f356a8e83cc54216a293e3b6f1cb4f79f5fc0277abf937fd"
+    },
+    "LAME-README.txt": {
+      "bytes": 1715,
+      "sha256": "687ad59451fddafba33340222a5c5820a99b62249d69b25a3667b396bd623d10"
+    },
+    "README-build.txt": {
+      "bytes": 124,
+      "sha256": "19a5010a7ce1a4eac5cd9058bc2fe39ff65a7ee542fd3d50f72c9e696ef6ba69"
+    }
+  },
+  "missingProducerInputs": [],
+  "systemLibraries": {
+    "scope": "Microsoft compiler/CRT/SDK and Windows OS libraries; source completeness excludes GPL section 1 system libraries and build tools",
+    "crtLinkage": "static /MT",
+    "inputInventory": "ffmpeg-system-inputs.json in candidate; roots and versions in build-lock.json/build-report.json",
+    "dlls": [
+      "bcrypt.dll",
+      "kernel32.dll",
+      "psapi.dll",
+      "shell32.dll"
+    ],
+    "licenseReview": "Microsoft terms and GPL system-library exception reviewed separately before public release"
+  },
+  "recipe": {
+    "tools/codec/build.cjs": "7b1d08dfefdb06c70292c5886540570c158a8037a530f72f4e00d9722470917a",
+    "tools/codec/identity.cjs": "0f69a737f54676409a12ca26f169a8392c1dd9040bb9a3fd36ad2244210bcffc",
+    "tools/release/dependency-sources.cjs": "c53a60e479767c12b7036b36278de5b37035f035fa428c475ba9082c284a12ae"
+  }
+}

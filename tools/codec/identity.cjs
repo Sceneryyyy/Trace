@@ -17,7 +17,7 @@ function validateBuildLock(lock){
 function validateBuildReport(codec,lock,lockBytes,report,{recipeHashes}={}){
  validateBuildLock(lock)
  if(report.schemaVersion!==1||report.buildLockSha256!==sha(lockBytes)||codec.buildLockSha256!==sha(lockBytes))throw Error('CODEC_BUILD_LOCK_CHANGED')
- if(!same(report.sources,lock.sources)||report.crtLinkage!==lock.toolchain.crtLinkage||!same(report.patches,[]))throw Error('CODEC_BUILD_INPUT_CHANGED')
+ if(!same(report.sources,lock.sources)||report.crtLinkage!==lock.toolchain.crtLinkage||report.sourceDateEpoch!==lock.sourceDateEpoch||!same(report.patches,[]))throw Error('CODEC_BUILD_INPUT_CHANGED')
  if(!recipeHashes||!same(report.recipes,recipeHashes)||!same(codec.recipeHashes,recipeHashes))throw Error('CODEC_RECIPE_CHANGED')
  if(!Array.isArray(lock.toolchain.tools)||!lock.toolchain.tools.length||!same(report.tools,lock.toolchain.tools))throw Error('CODEC_TOOL_HASH_CHANGED')
  if(!lock.toolchain.systemInputs||!same(report.systemInputs,lock.toolchain.systemInputs))throw Error('CODEC_SYSTEM_INPUT_CHANGED')

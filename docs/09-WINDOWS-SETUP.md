@@ -13,7 +13,7 @@
 | Electron /前端依赖 | 以 [package-lock.json](../package-lock.json) 为准；不能只依据上游 README 的 Node 18+ 说明选环境 |
 | libebur128 | [native/vendor/libebur128](../native/vendor/libebur128) 的锁定源码与 [本地补丁记录](../native/vendor/libebur128/TRACE-PATCHES.md) |
 | FFT | [native/vendor/prism-fft](../native/vendor/prism-fft) 的本地源码组件、来源与 GPL 许可；由 Trace 自身 CMake 编译 |
-| FFmpeg / ffprobe | [ffmpeg.lock.json](../ffmpeg.lock.json) 固定 Windows 构建与校验；项目 `Codecs`/`Setup` 入口准备组件 |
+| FFmpeg / ffprobe | [ffmpeg.lock.json](../ffmpeg.lock.json) 固定 Trace 自建 Windows 编码组件及校验；项目 `Codecs`/`Setup` 入口构建或安装匹配附件，见 [81](81-SELF-BUILT-FFMPEG.md) |
 | 声卡与设备 | 软件读取实际 mix format；验收 96 kHz 需要真实支持该格式的系统播放设备 |
 
 `toolchain.m0.json` 是 2026-09-15 的环境快照，其中后续依赖的待定项不代表当前实现缺失。当前依赖与行为以锁文件、构建脚本和源码为准。本轮安全升级固定 Electron 42.11.10、electron-builder 26.15.3、node-gyp 13.1.0；下载器 `@electron/get` 统一为 5.1.0，以移除未修复的旧 HTTP 缓存链。升级后的 Windows/候选已在 `6835af9` 的完整 CI 通过，具体证据见 [80](80-RELEASE-DEPENDENCY-HARDENING.md)。各机器安装目录不同，普通 shell 找不到 `cl` 不等于未安装工具链。
@@ -111,3 +111,12 @@ ctest --test-dir build/trace-portable -R '^ebu_wav$' --output-on-failure
 私有完整 checkout 当前注册 9 项 portable CTest：8 项核心数值/边界回归（含 FFT）与 1 项原始 EBU WAV 门禁。Sanitizer 下将原始 WAV 单独运行，避免与其余测试争抢 CPU 导致超时。`TRACE_REQUIRE_EBU=ON` 会在缺少原始素材时失败；公开源码归档不包含私有 EBU 素材，不能报告该门禁已通过。门禁数量仅描述当前配置，本轮实际结果以 [80](80-RELEASE-DEPENDENCY-HARDENING.md) 和 13 为准。未运行 Windows 原生加载、真实采集、96 kHz 或打包时须记录未验证。
 
 签名/公开发布、干净 Windows 普通用户、硬件矩阵、真实设备/实时/选区/导出全链路与工具链安全等剩余工作见 [当前交接](13-HANDOFF.md)。Windows 实际文件读取、原生分析及候选包加载已通过上述 CI；包的实机录音流程仍需验证。macOS 实施计划见 [70](70-MACOS-PORT-PLAN.md)。
+
+## 自建编码组件工具
+
+默认 FFmpeg 已由 Gyan 归档改为 Trace 的源码构建。除原生引擎工具外，构建它需要
+MSVC 19.44.35229（工具集 14.44.35207）、SDK 10.0.26100.0 和固定哈希的 MSYS2 Bash/工具。
+GNU Make 4.4.1-2 由脚本按大小/hash 获取；MSYS2 库不链接到产品。
+也可先完整解压匹配的私有编码组件附件到 `.tools/trace-ffmpeg`，再运行 `Codecs`，
+仍须通过 EXE/构建报告/配置/许可验证。具体输入、缓存清理与复现见 [81](81-SELF-BUILT-FFMPEG.md)
+及 [来源 README](../references/trace-ffmpeg/README.md)。
