@@ -96,7 +96,24 @@ jobs:
         run: npm run install:trace-sdk
       - name: Compile independent Trace diagnostic fixtures
         run: npm run build:trace-diagnostics
-      - run: node tools/prefetch-ffmpeg.mjs
+      - name: Prepare pinned codec with readable failure diagnostics
+        shell: pwsh
+        run: |
+          $codecLog = & node tools/prefetch-ffmpeg.mjs 2>&1
+          $codecExit = $LASTEXITCODE
+          $codecLog | ForEach-Object { Write-Output $_ }
+          if ($codecExit -ne 0) {
+            foreach ($entry in $codecLog) {
+              $line = [string]$entry
+              if ($line -match '^TRACE_CODEC_(TOOLCHAIN|SYSTEM_INPUTS) ' -or $line -match '^\s*Error:') {
+                $safe = ($line -replace 'https?://\S+', '[URL redacted]')
+                $safe = $safe.Substring(0, [Math]::Min($safe.Length, 16000))
+                $safe = $safe.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+                Write-Output "::error title=Trace codec preparation::$safe"
+              }
+            }
+            exit $codecExit
+          }
       - name: Verify Trace and retain command outcomes
         run: node tools/release/verify.cjs
         env:
