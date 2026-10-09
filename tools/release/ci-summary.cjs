@@ -17,6 +17,7 @@ if(codec){const expected=JSON.parse(read('ffmpeg.lock.json'));codec.matchesPinne
 const candidate=fields('dist-trace/candidate/manifest.json',['commit','status','signed','files','dependencySource'])
 const audit=json('artifacts/m6/package-audit-latest.json')
 const report={schemaVersion:1,commit,sourceDirty:Boolean(execFileSync('git',['status','--porcelain'],{cwd:root,encoding:'utf8'}).trim()),platform:process.platform,arch:process.arch,
+ codecBuildReused:process.env.TRACE_CI_CODEC_CACHE_HIT==='true',
  tests,ctest:windows?windowsCtest():{core:junit('build/trace-portable/portable-core-results.xml'),ebu:junit('build/trace-portable/ebu-wav-results.xml')},ebu,
  security:fields('artifacts/release/security-audit.json',['commit','sourceDirty','packageLockSha256','status','checks']),
  verification:fields('artifacts/release/verification.json',['commit','sourceDirty','platform','arch','status','checks']),

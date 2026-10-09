@@ -100,6 +100,11 @@ jobs:
         run: npm run install:trace-sdk
       - name: Compile independent Trace diagnostic fixtures
         run: npm run build:trace-diagnostics
+      - uses: actions/cache/restore@v4
+        id: codec-cache
+        with:
+          path: .tools/trace-ffmpeg
+          key: trace-source-codec-${{ runner.os }}-${{ hashFiles('references/trace-ffmpeg/build-lock.json', 'references/trace-ffmpeg/build-report.json', 'tools/codec/build.cjs', 'tools/codec/identity.cjs', 'tools/release/dependency-sources.cjs') }}
       - name: Prepare pinned codec with readable failure diagnostics
         shell: pwsh
         run: |
@@ -118,6 +123,11 @@ jobs:
             }
             exit $codecExit
           }
+      - uses: actions/cache/save@v4
+        if: steps.codec-cache.outputs.cache-hit != 'true'
+        with:
+          path: .tools/trace-ffmpeg
+          key: ${{ steps.codec-cache.outputs.cache-primary-key }}
       - name: Verify Trace and retain command outcomes
         run: node tools/release/verify.cjs
         env:
@@ -140,6 +150,8 @@ jobs:
       - name: Publish selected verification evidence in readable annotations
         if: always()
         run: node tools/release/ci-summary.cjs
+        env:
+          TRACE_CI_CODEC_CACHE_HIT: ${{ steps.codec-cache.outputs.cache-hit }}
       - uses: actions/upload-artifact@v4
         if: always()
         with:
