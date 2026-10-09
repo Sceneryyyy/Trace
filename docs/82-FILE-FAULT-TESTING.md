@@ -78,3 +78,16 @@ TRACE_TEST_SYSTEM_CODEC=1 node --test test/codec-faults.test.mjs test/import-dis
 仅更新该传递开发依赖至 1.2.2，锁文件仅对应一项变化；正常 `npm ci` 后完整和
 生产审计均为零。直接依赖、Electron、FFmpeg/LAME 与构建 recipe pin 保持。
 历史 10 月 4 日零公告记录仍有效于当时审计，当前结果绑定新的锁文件。
+
+## CI 故障诊断与构建工具变化
+
+Windows 镜像更新了 `msys-2.0.dll`，旧 pin 触发 `CODEC_TOOL_HASH_CHANGED`；
+30 个其他工具与编译器/SDK 六组系统输入完全一致。失败运行 37876605731、
+诊断运行 37877327686 的 Windows 都未进入新增媒体测试；Linux 被主动取消，
+这些运行不作为最终通过记录。精确更新该工具身份及其关联的 lock/report/manifest，
+仍要求原来的两 EXE/config 哈希与新完整报告匹配，不跳过任何构建核验。
+
+本环境下载 Azure 日志/附件 blob 返回 Forbidden。新增受限的 GitHub 失败注解
+和 CI 摘要：从真实 test 输出、CTest/EBU、安全与包校验文件提取计数、状态和 hash，
+包含实际提交身份，并拒绝过时记录。只公布必要字段，不读取或发布个人音频。
+实际测试仍由原门禁执行，摘要不能授权省略它们；候选 payload 的下载限制仍保留。

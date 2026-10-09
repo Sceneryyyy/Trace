@@ -67,6 +67,9 @@ jobs:
         run: node tools/audit/renderer.cjs
         env:
           TRACE_AUDIT_CHROMIUM: google-chrome
+      - name: Publish selected verification evidence in readable annotations
+        if: always()
+        run: node tools/release/ci-summary.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -77,6 +80,7 @@ jobs:
             build/trace-portable/ebu-wav-results.json
             artifacts/cloud-regression/selector-*/result.json
             artifacts/release-cloud/renderer-*/report.json
+            artifacts/release/ci-summary.json
           if-no-files-found: warn
 
   windows:
@@ -133,12 +137,16 @@ jobs:
           node tools/release/package-load-smoke.cjs
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           node tools/release/candidate.cjs
+      - name: Publish selected verification evidence in readable annotations
+        if: always()
+        run: node tools/release/ci-summary.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: trace-windows-evidence
           path: |
             artifacts/release/verification.json
+            artifacts/release/ci-summary.json
             artifacts/release/security-audit.json
             artifacts/release/npm-audit-all.json
             artifacts/release/npm-audit-production.json

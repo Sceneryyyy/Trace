@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "checkedOn": "2026-10-04",
+  "checkedOn": "2026-10-09",
   "scope": "FFmpeg and LAME unmodified official sources plus exact Trace recipe; pinned Microsoft system/compiler inputs recorded separately",
   "correspondingSourceComplete": true,
   "binary": {
@@ -31,7 +31,7 @@
       "sourceCorrespondence": "Unmodified official source compiled by the Trace recipe; no producer patches"
     }
   ],
-  "buildReportSha256": "7671ade836f14c2af0c0ab2d1dcd178355e47314a26eef903ffe82fd6af224cf",
+  "buildReportSha256": "e305461d392c76fec8c7355194c2fbd6b1fd4b579c862f4f5cd7bdb01fa0d047",
   "producer": "Trace source build",
   "patches": [],
   "notices": {
@@ -41,11 +41,11 @@
   "documents": {
     "build-lock.json": {
       "bytes": 8557,
-      "sha256": "5814b32f759bbae973baf78c9330d72a5275b6802d66492f8a9b1819710d3f7a"
+      "sha256": "ed3e90d50ae39a4c3364197a5145490d36526f955e744f3585cb5c4cd37e84d1"
     },
     "build-report.json": {
       "bytes": 11506,
-      "sha256": "7671ade836f14c2af0c0ab2d1dcd178355e47314a26eef903ffe82fd6af224cf"
+      "sha256": "e305461d392c76fec8c7355194c2fbd6b1fd4b579c862f4f5cd7bdb01fa0d047"
     },
     "COPYING.GPLv3": {
       "bytes": 35147,

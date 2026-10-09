@@ -6,8 +6,9 @@
 //
 // The native tier reports the missing build step instead of failing with a bare
 // ENOENT from inside a test file.
-import {spawnSync} from 'node:child_process'
-import {existsSync} from 'node:fs'
+import {spawnSync, execFileSync} from 'node:child_process'
+import {existsSync, mkdirSync, writeFileSync} from 'node:fs'
+import {createHash} from 'node:crypto'
 import {fileURLToPath} from 'node:url'
 import {dirname, join, resolve} from 'node:path'
 import {portable, native} from '../test/trace-suites.mjs'
@@ -55,10 +56,32 @@ if (!files.length) {
 }
 
 console.log(`[trace-tests] tier=${tier} files=${files.length}`)
-const result = spawnSync(process.execPath, ['--test', ...files.map(name => join('test', name))], {
+const reportInCI = process.env.GITHUB_ACTIONS === 'true'
+const result = spawnSync(process.execPath, ['--test', '--test-reporter=spec', ...files.map(name => join('test', name))], {
   cwd: root,
-  stdio: 'inherit',
+  stdio: reportInCI ? ['inherit', 'pipe', 'pipe'] : 'inherit',
+  encoding: 'utf8',
+  maxBuffer: 16 * 1024 * 1024,
+  env: {...process.env, FORCE_COLOR: '0'},
 })
+if (reportInCI) {
+  const stdout = result.stdout || '', stderr = result.stderr || ''
+  process.stdout.write(stdout); process.stderr.write(stderr)
+  const counts = Object.fromEntries([...stdout.matchAll(/^ℹ (tests|suites|pass|fail|cancelled|skipped|todo|duration_ms) ([\d.]+)\s*$/gm)].map(m => [m[1], Number(m[2])]))
+  const observations = {}
+  for (const name of ['TRACE_MP3_IMPORT_MATRIX', 'TRACE_CODEC_MINUTE']) {
+    const line = stdout.split(/\r?\n/).find(line => line.startsWith(name + ' '))
+    if (line) observations[name] = JSON.parse(line.slice(name.length + 1))
+  }
+  const complete = ['tests','pass','fail','cancelled','skipped','duration_ms'].every(key => Number.isFinite(counts[key])) &&
+    counts.tests === counts.pass + counts.fail + counts.cancelled + counts.skipped
+  const report = {schemaVersion: 1, commit: execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim(), tier, files:files.length,
+    exitCode:result.status, status:complete && !result.error && result.status === 0 ? 'pass' : 'fail', counts, observations,
+    outputSha256:createHash('sha256').update(stdout).update(stderr).digest('hex'), scope:'Actual Node test output; no device acceptance'}
+  mkdirSync(join(root,'artifacts/release'),{recursive:true})
+  writeFileSync(join(root,'artifacts/release/trace-tests-'+tier+'.json'),JSON.stringify(report,null,2)+'\n')
+  if (!complete && result.status === 0) {console.error('TRACE_TEST_SUMMARY_MISSING');process.exit(1)}
+}
 if (result.error) {
   console.error(result.error.message)
   process.exit(1)
