@@ -1,9 +1,10 @@
 import {createHash,randomUUID} from 'node:crypto'
-import {lstat,realpath,mkdir,readFile,writeFile,readdir,unlink,rmdir} from 'node:fs/promises'
+import {lstat,realpath,mkdir,open,readFile,writeFile,readdir,unlink,rmdir} from 'node:fs/promises'
 import {basename,dirname,isAbsolute,join,resolve,sep} from 'node:path'
 import {hashFiles} from './fileJobs'
 import {mediaProcess} from './mediaProcess'
 import {wavInputOptions} from './wavInput'
+import {mp3Declaration} from './mp3Integrity'
 import {floatWave,verifyMediaTools,type MediaOptions} from './mediaTasks'
 import {freeSpace} from './storageCapacity'
 import type {AssetFormat} from './assetFormat'
@@ -49,8 +50,12 @@ export function classifyImport(value:unknown):Omit<ImportProbe,'source'>{
 }
 export async function probeImport(tools:MediaTools,file:string,signal?:AbortSignal):Promise<ImportProbe>{
  await verifyMediaTools(tools,signal);const source=await fingerprintImport(file,signal)
- const raw=await mediaProcess(tools.ffprobe,['-v','error','-protocol_whitelist','file,pipe',...await wavInputOptions(source.path),'-show_entries','format=format_name,duration:stream=codec_type,codec_name,profile,sample_rate,channels,time_base,duration_ts,bit_rate:stream_disposition=attached_pic','-of','json',source.path],{signal,capture:true,maximumOutput:256*1024})
- return {source,...classifyImport(JSON.parse(raw))}
+ const declaration=await mp3Declaration(source.path)
+ if(declaration?.bytes!==undefined&&BigInt(declaration.offset)+BigInt(declaration.bytes)>BigInt(source.bytes))throw Error('IMPORT_MP3_TRUNCATED')
+ const raw=await mediaProcess(tools.ffprobe,['-v','error','-protocol_whitelist','file,pipe',...await wavInputOptions(source.path),...(declaration?.packets!==undefined?['-count_packets']:[]),'-show_entries','format=format_name,duration:stream=codec_type,codec_name,profile,sample_rate,channels,time_base,duration_ts,bit_rate,nb_read_packets:stream_disposition=attached_pic','-of','json',source.path],{signal,capture:true,maximumOutput:256*1024})
+ const value=JSON.parse(raw),classified=classifyImport(value)
+ if(classified.container==='mp3'&&declaration?.packets!==undefined&&String(value.streams.find((s:Stream)=>s.codec_type==='audio').nb_read_packets)!==String(declaration.packets))throw Error('IMPORT_MP3_FRAME_MISMATCH')
+ return {source,...classified}
 }
 async function ownedDirectory(root:string,directory:string):Promise<string>{
  const base=await realpath(root),target=resolve(directory),info=await lstat(target),actual=await realpath(target)
@@ -94,7 +99,15 @@ export async function decodeImport(tools:MediaTools,file:string,cacheRoot:string
  if(probe.source.path.toLowerCase().startsWith((root+sep).toLowerCase()))throw Error('IMPORT_SOURCE_INSIDE_CACHE')
  const available=await (options.capacity?options.capacity():freeSpace(root)),estimate=probe.durationEstimate===null?0:Math.ceil(probe.durationEstimate*probe.format.sampleRate*probe.format.channelCount*4*1.15)
  if(!Number.isSafeInteger(estimate)||available!==null&&available<BigInt(estimate)+512n*1024n*1024n)throw Error('IMPORT_INSUFFICIENT_SPACE')
- check(options.signal);const id=randomUUID(),directory=join(root,id);await mkdir(directory);await writeFile(join(directory,'owner.json'),JSON.stringify({product:'TraceImportedPCM',version:1,id}),{flag:'wx'})
+ check(options.signal);const id=randomUUID(),directory=join(root,id);await mkdir(directory)
+ // A failed owner write may leave a torn marker. Track the exclusively opened
+ // handle so only our own marker is removed; preserve any foreign contents.
+ let marker:Awaited<ReturnType<typeof open>>|undefined
+ try{marker=await open(join(directory,'owner.json'),'wx');await marker.writeFile(JSON.stringify({product:'TraceImportedPCM',version:1,id}));await marker.close();marker=undefined}
+ catch(error){
+  try{if(marker){await marker.close();await unlink(join(directory,'owner.json'))}await rmdir(directory)}catch(cleanupError){console.warn('TRACE_IMPORT_CLEANUP_FAILED',String(cleanupError))}
+  throw error
+ }
  try{
   const decoded=await floatWave(tools,['-xerror','-err_detect','explode','-protocol_whitelist','file,pipe',...await wavInputOptions(probe.source.path),'-i',probe.source.path],undefined,join(directory,'pcm'),probe.format.sampleRate,probe.format.channelCount,probe.durationEstimate||0,options,'decoding')
   const frames=decoded.reduce((n,f)=>n+BigInt(f.frames),0n).toString();if(frames==='0'||probe.exactFrames&&frames!==probe.exactFrames||decoded.length>10000)throw Error('IMPORT_DECODED_FRAME_MISMATCH')

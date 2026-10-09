@@ -29,8 +29,10 @@ export const portable = [
   'library-service.test.mjs',
   'library-visibility.test.mjs',
   'm6-settings.test.mjs',
+  'media-process-faults.test.mjs',
   'metric-readout.test.mjs',
   'meter-cache-cadence.test.mjs',
+  'mp3-integrity.test.mjs',
   'native-analysis-queue.test.mjs',
   'operation-feedback.test.mjs',
   'playback-service.test.mjs',
@@ -69,9 +71,11 @@ export const portable = [
 
 /** Each entry records why the tier is required, so the cost stays visible. */
 export const native = {
+  'codec-faults.test.mjs': '.tools/ffmpeg (locked Windows codec; malformed/truncated files, cancellation, capacity and cache integrity)',
   'codec-runtime.test.mjs': '.tools/ffmpeg (locked EXEs; real three-format roundtrips and production import/export with both AAC containers)',
   'cache-recording.test.mjs': 'build/trace-engine/Release/trace_engine.node',
   'import-service.test.mjs': '.tools/ffmpeg',
+  'import-disk-faults.test.mjs': '.tools/ffmpeg (real PCM; injected ENOSPC at owner, PCM directory and final metadata writes)',
   'lufsmeter-native.test.mjs': 'build/trace-engine/Release/trace_engine.node',
   'native-long-path.test.mjs': 'build/trace-engine/Release/trace_engine.node',
   'recording-continuation.test.mjs': 'build/trace-engine/Release/trace_engine.node + .tools/ffmpeg',

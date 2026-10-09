@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-10-04T16:52:08.347003+00:00",
-  "packageLockSha256": "48ad7852ae6c69fca695ec3cdbf61d5686eca73775e81bf0f5b683696fb21ba4",
+  "checkedAt": "2026-10-09T02:46:32.094487+00:00",
+  "packageLockSha256": "17ce7b17ef9ce0821c8025284884e32550ed020f4752f6b39d37108cf8b545df",
   "releaseReady": false,
   "npmDependencyGateReady": true,
   "allDependencies": {
@@ -21,7 +21,7 @@
     "total": 0
   },
   "scope": "Full npm advisory gate plus pinned Trace-source-codec provenance. Codec/Microsoft component security, licensing and physical release acceptance remain separate.",
-  "inventorySource": "Current full/production clean local audit and exact-source Windows/Linux CI; historical npm dependency fix evidence retained in dependency-verification.json",
+  "inventorySource": "Current full/production local audits for source-map-js 1.2.2; preceding exact-source Windows/Linux codec evidence retained separately; new CI pending",
   "directToolchain": {
     "@electron/asar": "3.4.1",
     "@types/node": "24.12.0",
@@ -84,5 +84,16 @@
     }
   },
   "verification": "docs/release/codec-verification.json",
-  "ffmpegSourceGateReady": true
+  "ffmpegSourceGateReady": true,
+  "latestPatch": {
+    "component": "source-map-js",
+    "from": "1.2.1",
+    "to": "1.2.2",
+    "advisory": "https://github.com/advisories/GHSA-68fv-2mgg-jv7q",
+    "previousAudit": {
+      "high": 1,
+      "total": 1
+    },
+    "scope": "Single transitive development dependency patch; direct dependencies and codec pins unchanged"
+  }
 }

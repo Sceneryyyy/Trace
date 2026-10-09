@@ -2,7 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import {build} from 'esbuild'
 import {createHash} from 'node:crypto'
-import {mkdir,writeFile,readFile} from 'node:fs/promises'
+import {mkdir,writeFile,readFile,copyFile} from 'node:fs/promises'
 import {resolve,join} from 'node:path'
 import {pathToFileURL} from 'node:url'
 
@@ -35,4 +35,21 @@ test('a child whose event loop stops responding still reaches the watchdog',asyn
  process.env.TRACE_TEST_FILE_WORKER_BLOCK_MS='3500'
  await assert.rejects(hashFiles([fixture]),/FILE_WORKER_TIMEOUT/)
  assert((await readFile(fixture)).equals(bytes))
+})
+
+test('cancelling an active hash worker rejects promptly and permits a fresh read',async()=>{
+ delete process.env.TRACE_TEST_FILE_WORKER_BLOCK_MS
+ process.env.TRACE_TEST_FILE_WORKER_DELAY_MS='3500'
+ const controller=new AbortController(),job=hashFiles([fixture],{signal:controller.signal}),timer=setTimeout(()=>controller.abort(),100)
+ try{await assert.rejects(job,/ANALYSIS_CANCELLED/)}finally{clearTimeout(timer);delete process.env.TRACE_TEST_FILE_WORKER_DELAY_MS}
+ assert.deepEqual(await hashFiles([fixture]),[expected]);assert((await readFile(fixture)).equals(bytes))
+})
+
+test('an abrupt worker exit cannot return a successful hash and recovery uses a new real worker',async()=>{
+ const isolated=join(folder,'abrupt');await mkdir(isolated,{recursive:true})
+ await build({entryPoints:['src/trace/fileJobs.ts'],outfile:join(isolated,'fileJobs.cjs'),bundle:true,platform:'node',format:'cjs'})
+ const worker=join(isolated,'file-worker.js');await writeFile(worker,'process.once("message",()=>process.exit(137))')
+ const {hashFiles:isolatedHash}=(await import(pathToFileURL(join(isolated,'fileJobs.cjs')))).default
+ await assert.rejects(isolatedHash([fixture]),/FILE_WORKER_EXIT 137/);assert((await readFile(fixture)).equals(bytes))
+ await copyFile(join(folder,'file-worker.js'),worker);assert.deepEqual(await isolatedHash([fixture]),[expected])
 })
