@@ -11,7 +11,7 @@ const commit=execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'})
 if(process.env.GITHUB_SHA&&process.env.GITHUB_SHA!==commit)throw Error('CI_EVIDENCE_COMMIT_MISMATCH')
 const windows=process.platform==='win32',output=require('../../electron-builder.trace.cjs').directories.output
 const ebu=fields(windows?'build/trace-engine/ebu-wav-results.json':'build/trace-portable/ebu-wav-results.json',['commit','sourceDirty','status','measurementConfigId','summary','sourceSha256'])
-const tests=['portable',...(windows?['native']:[])].map(tier=>fields('artifacts/release/trace-tests-'+tier+'.json',['commit','tier','files','exitCode','status','counts','observations','outputSha256']))
+const tests=['portable',...(windows?['native']:[])].map(tier=>fields('artifacts/release/trace-tests-'+tier+'.json',['commit','tier','files','exitCode','status','counts','failureDetails','observations','outputSha256']))
 const codec=fields('.tools/ffmpeg/build-report.json',['buildLockSha256','systemInventorySha256','configHeaderSha256','configMakSha256','recipes'])
 if(codec){const expected=JSON.parse(read('ffmpeg.lock.json'));codec.matchesPinnedReport=codec.sha256===expected.buildReportSha256;codec.ffmpegSha256=sha(read('.tools/ffmpeg/bin/ffmpeg.exe'));codec.ffprobeSha256=sha(read('.tools/ffmpeg/bin/ffprobe.exe'))}
 const candidate=fields('dist-trace/candidate/manifest.json',['commit','status','signed','files','dependencySource'])
@@ -29,5 +29,7 @@ for(const record of [...tests,ebu,report.security,report.verification,report.pac
 const bytes=JSON.stringify(report)
 if(Buffer.byteLength(bytes)>60000)throw Error('CI_ANNOTATION_TOO_LARGE')
 fs.mkdirSync(path.join(root,'artifacts/release'),{recursive:true});fs.writeFileSync(path.join(root,'artifacts/release/ci-summary.json'),JSON.stringify(report,null,2)+'\n')
-const encoded=bytes.replaceAll('%','%25').replaceAll('\r','%0D').replaceAll('\n','%0A')
-console.log('::notice title=Trace CI evidence::TRACE_CI_SUMMARY '+encoded)
+// GitHub truncates each annotation message at 4096 bytes. ASCII base64 parts
+// remain below that limit; the collector must verify all parts and their hash.
+const encoded=Buffer.from(bytes).toString('base64'),partSize=3000,total=Math.ceil(encoded.length/partSize),digest=sha(Buffer.from(bytes))
+for(let i=0;i<total;i++)console.log('::notice title=Trace CI evidence::TRACE_CI_SUMMARY_PART '+(i+1)+'/'+total+' '+digest+' '+encoded.slice(i*partSize,(i+1)*partSize))

@@ -16,8 +16,25 @@ jobs:
       - run: npm ci
       - name: Build minimal FFmpeg and LAME from verified source
         run: node tools/codec/build.cjs
-      - name: Exercise actual production imports and exports with the source codec
-        run: node --test test/codec-runtime.test.mjs
+      - name: Install only after matching the pinned source receipt
+        run: node tools/prefetch-ffmpeg.mjs
+      - name: Exercise actual production imports, exports and faults with the source codec
+        shell: pwsh
+        run: |
+          $testLog = & node --test --test-reporter=spec test/codec-runtime.test.mjs test/codec-faults.test.mjs test/import-disk-faults.test.mjs 2>&1
+          $testExit = $LASTEXITCODE
+          $testLog | ForEach-Object { Write-Output $_ }
+          if ($testExit -ne 0) {
+            $detail = ($testLog | ForEach-Object { [string]$_ }) -join "`n"
+            $start = $detail.IndexOf('failing tests:')
+            if ($start -ge 0) { $detail = $detail.Substring($start) }
+            $detail = $detail.Replace((Get-Location).Path, '[checkout]').Replace([IO.Path]::GetTempPath().TrimEnd('\'), '[temporary]')
+            $detail = $detail -replace 'https?://\S+', '[URL redacted]'
+            $detail = $detail.Substring(0, [Math]::Min($detail.Length, 3000))
+            $detail = $detail.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+            Write-Output "::error title=Trace codec fault test::$detail"
+            exit $testExit
+          }
         env:
           TRACE_CODEC_CANDIDATE: '1'
           TRACE_REQUIRE_NATIVE: '1'

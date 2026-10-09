@@ -9,6 +9,7 @@
 import {spawnSync, execFileSync} from 'node:child_process'
 import {existsSync, mkdirSync, writeFileSync} from 'node:fs'
 import {createHash} from 'node:crypto'
+import {tmpdir} from 'node:os'
 import {fileURLToPath} from 'node:url'
 import {dirname, join, resolve} from 'node:path'
 import {portable, native} from '../test/trace-suites.mjs'
@@ -75,8 +76,11 @@ if (reportInCI) {
   }
   const complete = ['tests','pass','fail','cancelled','skipped','duration_ms'].every(key => Number.isFinite(counts[key])) &&
     counts.tests === counts.pass + counts.fail + counts.cancelled + counts.skipped
+  const failureStart = stdout.indexOf('failing tests:')
+  const failureDetails = result.status === 0 ? null : (failureStart >= 0 ? stdout.slice(failureStart) : stderr || stdout.slice(-6000))
+    .replaceAll(root,'[checkout]').replaceAll(tmpdir(),'[temporary]').replace(/https?:\/\/\S+/g,'[URL redacted]').slice(0,6000)
   const report = {schemaVersion: 1, commit: execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim(), tier, files:files.length,
-    exitCode:result.status, status:complete && !result.error && result.status === 0 ? 'pass' : 'fail', counts, observations,
+    exitCode:result.status, status:complete && !result.error && result.status === 0 ? 'pass' : 'fail', counts, failureDetails, observations,
     outputSha256:createHash('sha256').update(stdout).update(stderr).digest('hex'), scope:'Actual Node test output; no device acceptance'}
   mkdirSync(join(root,'artifacts/release'),{recursive:true})
   writeFileSync(join(root,'artifacts/release/trace-tests-'+tier+'.json'),JSON.stringify(report,null,2)+'\n')
