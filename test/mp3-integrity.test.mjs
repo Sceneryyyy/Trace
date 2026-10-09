@@ -11,7 +11,7 @@ const {mp3Declaration}=(await import(pathToFileURL(compiled))).default
 async function fixture(t,bytes){const root=await mkdtemp(join(tmpdir(),'trace-mp3-header-'));t.after(()=>rm(root,{recursive:true,force:true}));const file=join(root,'misnamed.wav');await writeFile(file,bytes);return file}
 function xing({version=3,mono=false,crc=false,flags=3,tag='Xing'}={}){
  const bytes=Buffer.alloc(200);bytes.writeUInt32BE((0xffe00000|(version<<19)|(1<<17)|((crc?0:1)<<16)|(9<<12)|((mono?3:0)<<6))>>>0)
- const offset=4+(crc?2:0)+(version===3?(mono?17:32):(mono?9:17));bytes.write(tag,offset);bytes.writeUInt32BE(flags,offset+4)
+ const offset=4+(version===3?(mono?17:32):(mono?9:17));bytes.write(tag,offset);bytes.writeUInt32BE(flags,offset+4)
  let field=offset+8;if(flags&1){bytes.writeUInt32BE(47,field);field+=4}if(flags&2)bytes.writeUInt32BE(19000,field);return bytes
 }
 test('bounded MP3 headers distinguish MPEG versions, channels, CRC, Xing/Info and absent declarations',async t=>{

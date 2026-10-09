@@ -18,7 +18,9 @@ export async function mp3Declaration(file:string):Promise<MP3Declaration|null>{
   const h=buffer.readUInt32BE(0),version=(h>>>19)&3,layer=(h>>>17)&3,bitrate=(h>>>12)&15,frequency=(h>>>10)&3
   if((h>>>21)!==2047||version===1||layer!==1||bitrate===0||bitrate===15||frequency===3)return null
   const mono=((h>>>6)&3)===3,side=version===3?(mono?17:32):(mono?9:17)
-  const xing=4+((h&65536)?0:2)+side,tag=buffer.toString('ascii',xing,xing+4)
+  // Xing/Info's conventional offset is fixed from the four-byte MPEG header,
+  // including protected LAME frames; adding the two CRC bytes misses the tag.
+  const xing=4+side,tag=buffer.toString('ascii',xing,xing+4)
   let packets:number|undefined,bytes:number|undefined
   if((tag==='Xing'||tag==='Info')&&bytesRead>=xing+8){
    const flags=buffer.readUInt32BE(xing+4);let position=xing+8
