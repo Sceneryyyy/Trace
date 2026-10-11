@@ -34,3 +34,4 @@ fs.mkdirSync(path.join(root,'artifacts/release'),{recursive:true});fs.writeFileS
 // remain below that limit; the collector must verify all parts and their hash.
 const encoded=Buffer.from(bytes).toString('base64'),partSize=3000,total=Math.ceil(encoded.length/partSize),digest=sha(Buffer.from(bytes))
 for(let i=0;i<total;i++)console.log('::notice title=Trace CI evidence::TRACE_CI_SUMMARY_PART '+(i+1)+'/'+total+' '+digest+' '+encoded.slice(i*partSize,(i+1)*partSize))
+if(report.sourceDirty)throw Error('DIRTY_CI_SOURCE')

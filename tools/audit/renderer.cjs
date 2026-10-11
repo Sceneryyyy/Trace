@@ -37,8 +37,11 @@ async function main(){
  `)
  await build({entryPoints:[source],outfile:path.join(folder,'probe.js'),bundle:true,platform:'browser',format:'iife',jsx:'automatic',loader:{'.png':'dataurl','.woff':'dataurl','.woff2':'dataurl'}})
  await fs.writeFile(path.join(folder,'index.html'),'<!doctype html><meta charset="utf-8"><link rel="stylesheet" href="probe.css"><div id="root"></div><script src="probe.js"></script>')
- const output=path.join(root,'docs/assets/quick-start-preview31');await fs.mkdir(output,{recursive:true})
- const report={status:'running',scope:'Actual React renderer in headless Chromium; simulated IPC/metrics, no Windows device acceptance',checks:[],captures:[]}
+ // Regression runs retain captures with their ignored evidence. Documentation
+ // regeneration is an explicit action so CI never rewrites tracked PNGs.
+ const captureDocs=process.argv.slice(2).includes('--capture-docs')
+ const output=captureDocs?path.join(root,'docs/assets/quick-start-preview31'):path.join(folder,'captures');await fs.mkdir(output,{recursive:true})
+ const report={status:'running',scope:'Actual React renderer in headless Chromium; simulated IPC/metrics, no Windows device acceptance',captureDestination:path.relative(root,output).split(path.sep).join('/'),checks:[],captures:[]}
  await browserPage(folder,'index.html',async c=>{
   try{await c.wait("document.querySelectorAll('[data-instrument]').length>=4")}catch(e){console.error(await c.evaluate("JSON.stringify({errors:window.__uiErrors,text:document.body.innerText.slice(0,1200),count:document.querySelectorAll('[data-instrument]').length})"));throw e}await c.evaluate('document.fonts.ready.then(()=>true)');await c.delay(500)
   const shot=async(name,selector)=>{let clip;if(selector)clip=await c.evaluate(`(()=>{const r=document.querySelector(${JSON.stringify(selector)}).getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height,scale:1}})()`);const image=await c.send('Page.captureScreenshot',{format:'png',captureBeyondViewport:false,...(clip?{clip}:{})});await fs.writeFile(path.join(output,name+'.png'),Buffer.from(image.data,'base64'));report.captures.push(name)}
