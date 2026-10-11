@@ -33,7 +33,7 @@ test('choosing a cancelled file again queues the same asset rather than leaving 
  const t=await setup();t.svc.setRecordingBusy(true);const id=await t.svc.add(t.files[0]);t.svc.cancel(id);assert.equal(t.svc.views()[0].phase,'cancelled');assert.equal(await t.svc.add(t.files[0]),id);assert.equal(t.svc.views().length,1);assert.equal(t.svc.views()[0].phase,'queued');t.svc.setRecordingBusy(false);await wait(()=>t.svc.views()[0].status==='ready');assert.equal(t.attempts,1);await t.svc.shutdown()
 })
 test('source modification is explicit; metadata-only changes do not invalidate identical content',async()=>{
- const t=await setup(),id=await t.svc.add(t.files[0]);await wait(()=>t.svc.views()[0].status==='ready');const original=t.svc.session(id).document.source.sha256
+ const t=await setup(),id=await t.svc.add(t.files[0]);await wait(()=>t.svc.views()[0].status==='ready');const original=t.svc.session(id).document.source.sha256;assert.equal((await t.svc.analysisSource(id)).continuity,'complete','validated imported content is eligible for matching; it does not certify original capture')
  await fs.utimes(t.files[0],new Date(),new Date(Date.now()+5000));await t.svc.refresh();assert.equal(t.svc.views()[0].status,'ready')
  await fs.writeFile(t.files[0],'CHANGED CONTENT');await t.svc.refresh();assert.equal(t.svc.views()[0].status,'changed');assert.equal(t.svc.session(id).document.source.sha256,original);t.svc.prepare(id);await wait(()=>t.svc.views()[0].phase==='failed');assert.equal(t.svc.views()[0].status,'changed')
  t.svc.prepare(id,true);await wait(()=>t.svc.views()[0].status==='ready');assert.equal(t.svc.session(id).document.revision,2);assert.notEqual(t.svc.session(id).document.source.sha256,original);assert.equal(t.results.size,1);await t.svc.shutdown()
