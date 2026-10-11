@@ -26,5 +26,5 @@ struct InstrumentAnalysis {
 };
 // Read-only bounded PCM. This function owns no device, playback or accumulation lifecycle.
 InstrumentAnalysis analyzeInstruments(const float* interleaved,uint32_t frames,uint32_t rate,uint32_t channels,
- uint64_t firstFrame,uint64_t position,const InstrumentConfig& config={});
+ uint64_t firstFrame,uint64_t position,const InstrumentConfig& config={},bool includeField=true);
 }

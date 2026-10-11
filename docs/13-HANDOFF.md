@@ -2,17 +2,38 @@
 
 更新：2026-10-11。默认开发分支 `recorder/dev`；源码仓库根为当前 checkout（本次云端 `/workspace/Trace`）。项目规则见 [AGENTS.md](../AGENTS.md)，全部资料见 [文档索引](README.md)。早期会话已移至 [交接历史](archive/13-HANDOFF-HISTORY.md)，其“下一步”和当时分支状态不代表当前待办。
 
+## 2026-10-11 · P0/P1 当前迭代
+
+按用户要求实施 83 的 R83-01～08，详细实现、证据与待验范围见 [84](84-P0-P1-CLOUD-ITERATION.md)。本轮正在完成长文件矩阵、资源/故障回归及云端 CI；下方 preview.31 包/CI 是上一候选，不能当作 preview.32 验证。Meter v5 与缓存计量语义保持不变；InstrumentSettings 升级为 v2 并迁移 v1。
+
 ## 源码与分发身份
 
 | 项目 | 当前记录 |
 | --- | --- |
-| 源码 | `0.1.0-preview.31`；计量配置已升级 Meter v5，EBU 修复见 [78](78-EBU-METER-RECALIBRATION.md)；云端发布准备见 [75](75-CLOUD-RELEASE-PREPARATION.md) |
+| 源码 | `0.1.0-preview.32`；计量配置已升级 Meter v5，EBU 修复见 [78](78-EBU-METER-RECALIBRATION.md)；云端发布准备见 [75](75-CLOUD-RELEASE-PREPARATION.md) |
 | Git | `Sceneryyyy/Trace`，默认 `recorder/dev`；本轮文件/故障修复 `2aee519`；保留提交身份及合并历史。自建编码组件 `f33d74d`；此前依赖/编码/下载修复 `3d63d8f` / `ef51603` / `6835af9`；独立化历史为 `a986a0d` / `ab466d8` / `db005b5`；最后文档提交不算新音频测试，远程身份以 Git 为准 |
 | 仪表主题 | 实现 `2938c8e`、审计修复 `c67e9e9` 等已于 2026-09-30 合入 `recorder/dev`；用户已验收开发构建并接受 71-D5 差异 |
 | 当前工程候选 | Windows x64 preview.31，文件/故障修复来源 `2aee519`；[CI 38099859270](https://github.com/Sceneryyyy/Trace/actions/runs/38099859270) 全部成功，私有附件 `11688230696`，未签名 |
 | 历史同事内测包 | Windows x64 preview.30 / InternalTest-r3，来源 `9c1ee21`，包名/校验见 [69](69-INTERNAL-TEST-R3.md) |
 | preview.31 分发 | 私有工程候选含当前应用、项目源码、PDF、校验及验证记录；无声卡 CI 加载/重启已通过。PDF 插图为云端模拟界面，实机/公开发布门禁仍开放；preview.28 PDF 和 R3 为历史快照 |
 | macOS | [70](70-MACOS-PORT-PLAN.md) 方案已记录；当前分支的 Trace 后端仍为 Windows/WASAPI，Mac 实现/实机验收未完成 |
+
+## 2026-10-11：GitHub 录音与分析仪器调研
+
+在当前源码 `2ed9f7d` 上完成用户要求的外部项目调研和源码对照，见
+[83](83-GITHUB-AUDIO-PROJECT-RESEARCH.md) 与
+[固定来源清单](research/2026-10-11-github-audio-projects.json)。筛选 11 个项目，另核查
+Sonic Visualiser 两个实现库；只核查 README/源码/许可，没有运行竞品或跨引擎数值测试。
+
+建议先做 R83-01 资源/长文件基线和 R83-02 故障收尾，继而推进 FFT/声谱计算复用、
+多级概览与缓存配额，再选择频谱判读、等响度 A/B、人工标记及分析图交付。
+现有设备重连、分段恢复、功率平均/保持、报告和缓存清理已存在，本轮没有重复实现。
+报告记录的重复 FFT 初始化及全频点声谱存储成本是源码观察/理论估算，尚非性能实测。
+
+本次仅修改调研和文档入口；Meter v5、源码版本、已验证代码/候选身份均保持。
+JSON 格式、文档本地链接及 diff 检查通过；未重跑应用、原生或 Windows 实机检查，
+未提交/推送。下一工作票建议 R83-01，具体实施范围按用户接下来的指令确定；
+下方既有 CI/候选和 76 的实机/发布门禁仍是当前事实。
 
 ## 当前：文件与故障测试扩展，完整 CI 与新候选通过
 

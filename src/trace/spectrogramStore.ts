@@ -1,3 +1,4 @@
+import {enforceSpectralBudget,protectSpectralFile} from './spectralDiskBudget'
 import {mkdir,lstat,readFile,writeFile,rename,unlink} from 'node:fs/promises'
 import {resolve,join} from 'node:path'
 import {randomUUID} from 'node:crypto'
@@ -49,8 +50,9 @@ export class SpectrogramStore{
     directory=join(this.root,request.key);await mkdir(directory,{recursive:true});current()
     if((await lstat(directory)).isSymbolicLink())throw Error('LINKED_SPECTROGRAM_CACHE')
     file=join(directory,request.firstFrame+'.bin')
+    const release=protectSpectralFile(file);try{
     try{
-     if((await lstat(file)).isSymbolicLink())throw Error('LINKED_SPECTROGRAM_CACHE')
+     const stat=await lstat(file);if(stat.isSymbolicLink())throw Error('LINKED_SPECTROGRAM_CACHE');if(!stat.isFile()||stat.size>4*1024*1024)throw Error('CORRUPT_SPECTROGRAM_TILE')
      const tile=decodeSpectrogramTile(await readFile(file),request.key);current()
      if(tile.firstFrame!==request.firstFrame)throw Error('CORRUPT_SPECTROGRAM_TILE')
      if(tile.columns>=request.columns){this.keep(id,tile);return tile}
@@ -61,6 +63,7 @@ export class SpectrogramStore{
       current();await rename(file,file+'.corrupt-'+randomUUID())
      }
     }
+    }finally{release()}
    }
    const next=prefix?{...request,firstFrame:String(BigInt(prefix.firstFrame)+BigInt(prefix.columns*prefix.hop)),columns:request.columns-prefix.columns}:request
    const suffix=validateSpectrogramTile(await this.fetchTile(next));current()
@@ -76,7 +79,7 @@ export class SpectrogramStore{
    if(tile.firstFrame!==request.firstFrame||tile.columns<request.columns)throw Error('STALE_SPECTROGRAM_TILE')
    if(file){
     const temporary=file+'.'+randomUUID()+'.tmp'
-    try{await writeFile(temporary,encodeSpectrogramTile(tile,request.key),{flag:'wx'});current();await rename(temporary,file)}
+    try{await writeFile(temporary,encodeSpectrogramTile(tile,request.key),{flag:'wx'});current();await rename(temporary,file);const release=protectSpectralFile(file);try{await enforceSpectralBudget(this.root!,undefined,file)}finally{release()}}
     finally{await unlink(temporary).catch(e=>{if(e.code!=='ENOENT')throw e})}
    }
    current();this.keep(id,tile);return tile

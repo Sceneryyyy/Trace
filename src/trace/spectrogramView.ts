@@ -1,3 +1,4 @@
+import type {SpectralOverview} from './spectrogramOverview'
 import type {SpectrogramTile} from './spectrogramTile'
 import {SpectrogramProjectionCache,spectralRows,spectralMaximum,type SpectralRows} from './spectrogramProjection'
 
@@ -10,7 +11,7 @@ export type SpectrogramView = SpectrogramRange & {
   /** Each pixel is a maximum over its original bins/windows, never an exact point reading. */
   decibels:Float32Array; status:Uint8Array; coverage:Float32Array
   rowFirstBin:Uint32Array; rowLastBin:Uint32Array
-  progress:number; complete:boolean
+  progress:number; complete:boolean;overviewLevel?:number;overviewBinStride?:number
 }
 export const spectralFrame = (value:string):bigint => {
   if(typeof value!=='string'||!/^(0|[1-9][0-9]{0,19})$/.test(value))throw Error('INVALID_SPECTROGRAM_FRAME')
@@ -79,6 +80,22 @@ export class SpectrogramRaster {
       if(to-1>=validFrom&&tile.status[to-1]===1)readyFrames-=rightTrim
       this.touched[x]+=Number(right-left);this.ready[x]+=readyFrames
       if(readyFrames>0){spectralMaximum(projection,eligible,to,this.peaks,this.nodes);for(let y=0;y<v.height;y++)v.decibels[y*v.width+x]=Math.max(v.decibels[y*v.width+x],this.peaks[this.rows.map[y]])}
+    }
+  }
+  addOverview(tile:SpectralOverview,availableStart:bigint,availableEnd:bigint):void {
+    const v=this.view;if(tile.fftSize!==v.fftSize||tile.sampleRate!==v.sampleRate)throw Error('STALE_SPECTRAL_OVERVIEW')
+    v.overviewLevel=Math.max(v.overviewLevel||0,tile.level);v.overviewBinStride=tile.binStride
+    const first=BigInt(tile.firstFrame),hop=BigInt(tile.hop)
+    for(let col=0;col<tile.columns;col++){
+      const a=max(max(first+BigInt(col)*hop,this.start),availableStart+BigInt(tile.fftSize)),b=min(min(first+BigInt(col+1)*hop,this.end),availableEnd)
+      if(b<=a)continue
+      const x0=Number((a-this.start)*BigInt(v.width)/(this.end-this.start)),x1=Number(((b-this.start)*BigInt(v.width)-1n)/(this.end-this.start))
+      for(let x=x0;x<=x1;x++){
+        const frames=Number(min(b,this.edges[x+1])-max(a,this.edges[x]));if(frames<=0)continue
+        this.touched[x]+=frames;this.ready[x]+=frames*tile.ready[col];v.status[x]|=tile.masks[col]
+        if(!(tile.masks[col]&2))continue
+        for(let y=0;y<v.height;y++){let peak=-Infinity;for(let bin=Math.floor(v.rowFirstBin[y]/tile.binStride);bin<=Math.floor(v.rowLastBin[y]/tile.binStride);bin++)peak=Math.max(peak,tile.peaks[col*tile.bins+bin]);v.decibels[y*v.width+x]=Math.max(v.decibels[y*v.width+x],peak)}
+      }
     }
   }
   snapshot(progress:number,complete:boolean):SpectrogramView {

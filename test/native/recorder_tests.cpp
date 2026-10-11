@@ -47,6 +47,19 @@ int main(){
             for(;;){auto count=reader.read(values.data(),2048);if(!count)break;for(uint32_t i=0;i<count;++i)REQUIRE(values[i*2]==static_cast<float>((frame+i)/480)*0.0001f);frame+=count;}
             REQUIRE(frame==s.writtenFrames);
         }},
+        {"slow checkpoint never blocks producer and congestion keeps exact usable prefix",[&]{
+            Trace::Recorder r;auto o=options(root,"slow-flush");o.flushDelayMs=250;r.prepare(o);
+            for(unsigned i=0;i<100;++i)r.push(block(i*480,480));
+            const auto deadline=std::chrono::steady_clock::now()+std::chrono::seconds(5);
+            while(r.snapshot().writtenFrames<48000&&std::chrono::steady_clock::now()<deadline)std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            REQUIRE(r.snapshot().writtenFrames==48000);
+            const auto start=std::chrono::steady_clock::now();
+            for(unsigned i=100;i<1100;++i)r.push(block(i*480,480));
+            const auto seconds=std::chrono::duration<double>(std::chrono::steady_clock::now()-start).count();
+            r.requestStop();r.boundary();r.finishAfterProducerStopped();const auto result=r.snapshot();
+            REQUIRE(seconds<0.5);REQUIRE(result.phase==Trace::RecordPhase::Failed&&result.error=="DISK_BACKPRESSURE");
+            REQUIRE(result.writtenFrames==result.acceptedFrames);REQUIRE(result.acceptedFrames<528000);REQUIRE(result.flushTiming.maxUs>=200000);REQUIRE(result.writeTiming.count>0);
+        }},
         {"disk failure reports only complete written frames",[&]{
             Trace::Recorder r;auto o=options(root,"disk");o.format.channels=1;o.format.blockAlign=4;o.encoding=Trace::WavEncoding::Pcm24;o.wav.failAfterPayloadBytes=1501;
             r.prepare(o);auto b=block(9000,1000);std::fill(b.samples.begin(),b.samples.end(),0.125f);r.push(b);

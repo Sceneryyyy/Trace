@@ -24,6 +24,7 @@
 | [发布依赖与源码收尾](80-RELEASE-DEPENDENCY-HARDENING.md) | 固定安全工具链、实时审计门禁、FFmpeg 主源码与静态依赖资料缺口 |
 | [自建 Windows FFmpeg](81-SELF-BUILT-FFMPEG.md) | 两份官方源码、固定工具/SDK、构建与完整来源门禁；新候选复验通过 |
 | [文件与故障测试](82-FILE-FAULT-TESTING.md) | 损坏/截断、16 组 MP3、取消/进程/worker、磁盘注入及安全修补；完整 CI/新候选已通过 |
+| [GitHub 录音与仪器调研](83-GITHUB-AUDIO-PROJECT-RESEARCH.md) | 2026-10-11 外部项目/固定来源与当前源码对照；资源、故障、FFT/长文件缓存和仪器判读建议，尚未实施 |
 | [文件/故障验证清单](release/file-fault-verification.json) | 当前 2aee519 的实际两端门禁、MP3 帧数、基线反例与新候选身份 |
 | [自建与新候选验证](release/codec-verification.json) | 10 月 4 日 f33d74d 自建来源、重复构建、实际 EXE/报告及历史附件身份 |
 | [独立工程验证清单](release/independence-verification.json) | 旧工具链独立化阶段的代码提交、CI 与候选元数据；当前复验见下项 |
@@ -174,3 +175,5 @@
 | [libebur128 本地补丁](../native/vendor/libebur128/TRACE-PATCHES.md) | 1.2.6 锁定来源、数值改动与版本证据 |
 
 15（开工包自检）、65（临时未提交变更交接）和根目录 TRACE-README 兼容入口已被后续内容替代并删除，原件可从 Git 历史追溯；编号不重新排列。删除理由见 74。
+
+- [84 · P0/P1 云端迭代](84-P0-P1-CLOUD-ITERATION.md)：实现、版本变化、资源基线与验收边界。

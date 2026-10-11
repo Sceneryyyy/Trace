@@ -59,12 +59,25 @@ jobs:
           cmake --build build/trace-portable --parallel 4
           ctest --test-dir build/trace-portable --parallel 2 -E '^ebu_wav$' --output-on-failure --output-junit portable-core-results.xml
           ctest --test-dir build/trace-portable -R '^ebu_wav$' --output-on-failure --output-junit ebu-wav-results.xml
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Independent pinned integrated loudness comparison
+        run: |
+          python -m pip install -r tools/metering/independent-requirements.txt
+          git clone https://github.com/csteinmetz1/pyloudnorm.git artifacts/independent-meter/pyloudnorm
+          git -C artifacts/independent-meter/pyloudnorm checkout b8d67bfd3ce5deef872f688fcfa491a0ca69fddd
+          python tools/metering/independent-i-check.py --pyloudnorm artifacts/independent-meter/pyloudnorm --probe build/trace-portable/ebu_wav_probe --fixtures artifacts/ebu-loudness-v5 --report artifacts/independent-meter/results.json
       - name: Actual React subscription regression in Chromium
         run: node tools/audit/snapshot-selector.cjs
         env:
           TRACE_AUDIT_CHROMIUM: google-chrome
       - name: Renderer interactions with simulated IPC
         run: node tools/audit/renderer.cjs
+        env:
+          TRACE_AUDIT_CHROMIUM: google-chrome
+      - name: P0 and P1 controls and chart conversion in Chromium
+        run: node tools/audit/p0-p1.cjs
         env:
           TRACE_AUDIT_CHROMIUM: google-chrome
       - name: Publish selected verification evidence in readable annotations
@@ -81,6 +94,8 @@ jobs:
             artifacts/cloud-regression/selector-*/result.json
             artifacts/release-cloud/renderer-*/report.json
             artifacts/release/ci-summary.json
+            artifacts/independent-meter/results.json
+            artifacts/p0-p1-ui/report.json
           if-no-files-found: warn
 
   windows:

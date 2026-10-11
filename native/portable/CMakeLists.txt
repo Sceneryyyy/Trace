@@ -33,3 +33,8 @@ foreach(case ebu_reference meter_cadence meter_init tp_time replay_quality fft i
 endforeach()
 include(../ebu-tests.cmake)
 trace_add_ebu_wav_gate(trace_portable ebu_wav_probe ebu_wav FALSE)
+add_executable(spectral_benchmark ../../tools/performance/portable-benchmark.cpp)
+target_link_libraries(spectral_benchmark PRIVATE trace_portable)
+
+add_executable(spectral_file_probe ../../tools/performance/long-file-probe.cpp)
+target_link_libraries(spectral_file_probe PRIVATE trace_portable)

@@ -4,6 +4,7 @@
 #include "ReplayBuffer.h"
 #include "Recorder.h"
 #include "SpscQueue.h"
+#include "TimingStats.h"
 #include <atomic>
 #include <condition_variable>
 #include <memory>
@@ -13,6 +14,7 @@
 namespace Trace {
 std::vector<Device> listDevices();
 struct Snapshot {
+    TimingSnapshot captureTiming;
     SourceFormat format;
     std::string deviceId, error;
     uint64_t replayFrames=0,replayCapacityFrames=0,replayStartFrame=0,replayEndFrame=0;
@@ -27,6 +29,7 @@ struct Snapshot {
     std::vector<LoudnessPoint> loudness;
 };
 class Engine {
+    TimingStats captureTiming_;
     using Queue = SpscQueue<AudioBlock, kQueueBlocks>;
     std::unique_ptr<Queue> queue_;
     std::unique_ptr<Meter> meter_;

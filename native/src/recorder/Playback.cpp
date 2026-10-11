@@ -1,4 +1,5 @@
 #include "Playback.h"
+#include "GainRamp.h"
 #include "PlaybackTimeline.h"
 #include "WaveSequence.h"
 #include "SpscQueue.h"
@@ -164,6 +165,7 @@ struct Playback::Impl {
                 configureMedia(false);
             }
             const auto rate=value.format.sampleRate,channels=value.format.channels;
+            GainRamp auditionRamp(rate);
             WAVEFORMATEX format{};format.wFormatTag=WAVE_FORMAT_IEEE_FLOAT;format.nChannels=static_cast<WORD>(channels);
             format.nSamplesPerSec=rate;format.wBitsPerSample=32;format.nBlockAlign=static_cast<WORD>(channels*4);format.nAvgBytesPerSec=rate*format.nBlockAlign;
             Event audioReady;
@@ -226,7 +228,7 @@ struct Playback::Impl {
                     if(block->generation>active.generation)break;
                     if(block->streamFrame+blockOffset!=value.submittedFrames+filled)throw std::runtime_error("PLAYBACK_QUEUE_SEQUENCE_ERROR");
                     const auto count=std::min(available-filled,block->frames-blockOffset);const auto volume=gain.load();
-                    for(size_t i=0;i<static_cast<size_t>(count)*channels;++i)staging[static_cast<size_t>(filled)*channels+i]=block->samples[static_cast<size_t>(blockOffset)*channels+i]*volume;
+                    for(uint32_t frame=0;frame<count;++frame){const auto smooth=auditionRamp.next(volume);for(uint32_t channel=0;channel<channels;++channel)staging[size_t(filled+frame)*channels+channel]=block->samples[size_t(blockOffset+frame)*channels+channel]*smooth;}
                     filled+=count;blockOffset+=count;
                     if(blockOffset==block->frames){queue->release();blockOffset=0;}
                 }

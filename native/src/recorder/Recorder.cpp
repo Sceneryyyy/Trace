@@ -109,7 +109,7 @@ void Recorder::finishAfterProducerStopped() {
 RecordSnapshot Recorder::snapshot() const {
     const auto phase=phase_.load();
     std::lock_guard<std::mutex> lock(mutex_);
-    auto result=published_;result.phase=phase;
+    auto result=published_;result.phase=phase;result.writeTiming=writeTiming_.snapshot();result.flushTiming=flushTiming_.snapshot();
     result.startFrame=startFrame_;result.acceptedFrames=accepted_;result.queueHighWater=highWater_;
     result.endFrame=result.startFrame==UINT64_MAX?UINT64_MAX:result.startFrame+result.writtenFrames;
     result.queueDepth=queue_?queue_->size():0;
@@ -163,6 +163,7 @@ void Recorder::run(RecordOptions options) {
                 if(options.writerDelayMs)std::this_thread::sleep_for(std::chrono::milliseconds(options.writerDelayMs));
                 const auto before=writer->frames();
                 try{
+                    TimingScope writeTiming(writeTiming_);
                     writer->append(block->samples.data(),block->frames);
                 }catch(const std::exception& error){
                     failure_=RecordFailure::Disk;stopRequested_=true;phase_=RecordPhase::Draining;
@@ -186,6 +187,8 @@ void Recorder::run(RecordOptions options) {
             }
             queue_->release();
             if(writer->frames()>=nextCheckpoint){
+                TimingScope flushTiming(flushTiming_);
+                if(options.flushDelayMs)std::this_thread::sleep_for(std::chrono::milliseconds(options.flushDelayMs));
                 writer->checkpoint();nextCheckpoint=writer->frames()+options.format.sampleRate;
                 {
                     std::lock_guard<std::mutex> lock(mutex_);published_.segments=writer->segments();

@@ -16,6 +16,41 @@ Napi::Value guard(const Napi::CallbackInfo& info, const std::function<Napi::Valu
         Napi::Error::New(info.Env(), e.what()).ThrowAsJavaScriptException(); return info.Env().Undefined();
     }
 }
+Napi::Object timing(Napi::Env env,const Trace::TimingSnapshot& s){
+ auto o=Napi::Object::New(env);o.Set("count",double(s.count));o.Set("p50Us",double(s.p50Us));o.Set("p95Us",double(s.p95Us));o.Set("p99Us",double(s.p99Us));o.Set("maxUs",double(s.maxUs));return o;
+}
+class ProcessJobCloseWorker final:public Napi::AsyncWorker {
+ HANDLE job_;Napi::Promise::Deferred done_;
+public:
+ ProcessJobCloseWorker(Napi::Env env,HANDLE job):Napi::AsyncWorker(env),job_(job),done_(Napi::Promise::Deferred::New(env)){}
+ Napi::Promise promise(){return done_.Promise();}
+ void Execute()override{
+  const auto until=std::chrono::steady_clock::now()+std::chrono::seconds(2);bool stopped=false;
+  while(std::chrono::steady_clock::now()<until){JOBOBJECT_BASIC_ACCOUNTING_INFORMATION info{};if(!QueryInformationJobObject(job_,JobObjectBasicAccountingInformation,&info,sizeof(info),nullptr))break;if(info.ActiveProcesses==0){stopped=true;break;}Sleep(1);}
+  CloseHandle(job_);job_=nullptr;if(!stopped)SetError("MEDIA_JOB_STOP_TIMEOUT");
+ }
+ void OnOK()override{done_.Resolve(Env().Undefined());}
+ void OnError(const Napi::Error& error)override{done_.Reject(error.Value());}
+ ~ProcessJobCloseWorker(){if(job_)CloseHandle(job_);}
+};
+Napi::Value processJob(const Napi::CallbackInfo& info){return guard(info,[&]()->Napi::Value{
+ if(info.Length()!=1||!info[0].IsNumber())throw std::runtime_error("INVALID_PROCESS_JOB");
+ const auto id=info[0].As<Napi::Number>().DoubleValue();if(!std::isfinite(id)||id<1||id>0xffffffff||std::floor(id)!=id)throw std::runtime_error("INVALID_PROCESS_JOB");
+ HANDLE job=CreateJobObjectW(nullptr,nullptr);if(!job)throw std::runtime_error("MEDIA_JOB_CREATE_FAILED");
+ JOBOBJECT_EXTENDED_LIMIT_INFORMATION limits{};limits.BasicLimitInformation.LimitFlags=JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
+ HANDLE child=OpenProcess(PROCESS_SET_QUOTA|PROCESS_TERMINATE,FALSE,DWORD(id));
+ const bool attached=child&&SetInformationJobObject(job,JobObjectExtendedLimitInformation,&limits,sizeof(limits))&&AssignProcessToJobObject(job,child);
+ if(child)CloseHandle(child);if(!attached){CloseHandle(job);throw std::runtime_error("MEDIA_JOB_ATTACH_FAILED");}
+ // Explicit closer retains the handle through a JS external; finalizer and
+ // process termination both close it, including abrupt Electron termination.
+ auto handle=new HANDLE(job);auto token=Napi::External<HANDLE>::New(info.Env(),handle,[](Napi::Env,HANDLE* value){if(*value)CloseHandle(*value);delete value;});
+ auto closer=Napi::Function::New(info.Env(),[](const Napi::CallbackInfo& call)->Napi::Value{
+  auto handle=call.This().As<Napi::Object>().Get("token").As<Napi::External<HANDLE>>().Data();if(!*handle)return call.Env().Undefined();
+  HANDLE job=*handle;*handle=nullptr;TerminateJobObject(job,1);
+  auto* worker=new ProcessJobCloseWorker(call.Env(),job);const auto done=worker->promise();worker->Queue();return done;
+ });
+ auto owner=Napi::Object::New(info.Env());owner.Set("token",token);owner.Set("close",closer);return owner;
+});}
 Napi::Object format(Napi::Env env, const Trace::SourceFormat& f) {
     auto o=Napi::Object::New(env);
     o.Set("sampleRate",f.sampleRate); o.Set("channelCount",f.channels);
@@ -132,12 +167,13 @@ Napi::Value snapshot(const Napi::CallbackInfo& info) {
         d.Set("sourceRecoverable",s.sourceRecoverable);d.Set("sourceErrorCode",s.sourceErrorCode);
         d.Set("errorSite",s.errorSite);d.Set("captureMode","wasapi-event-100ms-v1");d.Set("endpointBufferFrames",s.endpointBufferFrames);
         d.Set("queueDepth",static_cast<double>(s.queueDepth));d.Set("queueHighWater",static_cast<double>(s.queueHighWater));
-        o.Set("diagnostics",d);return o;
+        d.Set("captureTiming",timing(env,s.captureTiming));o.Set("diagnostics",d);return o;
     });
 }
 
 Napi::Object recordObject(Napi::Env env,const Trace::RecordSnapshot& s) {
     auto o=Napi::Object::New(env);
+    auto timings=Napi::Object::New(env);timings.Set("write",timing(env,s.writeTiming));timings.Set("flush",timing(env,s.flushTiming));o.Set("timings",timings);
     o.Set("phase",Trace::recordPhaseName(s.phase));o.Set("id",s.id);
     if(s.error.empty())o.Set("error",env.Null());else o.Set("error",s.error);
     o.Set("sourceFormat",format(env,s.format));
@@ -414,6 +450,7 @@ Napi::Value replaySave(const Napi::CallbackInfo& info){return guard(info,[&]()->
 });}
 
 Napi::Object init(Napi::Env env,Napi::Object exports) {
+    exports.Set("processJob",Napi::Function::New(env,processJob));
     Trace::registerPlayback(env,exports);
     Trace::registerInstruments(env,exports,engine());
     exports.Set("replaySave",Napi::Function::New(env,replaySave));

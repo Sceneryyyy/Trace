@@ -1,4 +1,7 @@
+import {SpectrogramOverviewStore} from './spectrogramOverview'
 import {SpectrogramProjectionCache} from './spectrogramProjection'
+import {performance} from 'node:perf_hooks'
+import {PerformanceWindow} from './performance'
 import {SpectrogramStore,type TileRequest} from './spectrogramStore'
 import {validateSpectrogramTile,type SpectrogramTile} from './spectrogramTile'
 import {SpectrogramRaster,spectralFrame,validateSpectrogramRange,type SpectrogramRange,type SpectrogramView} from './spectrogramView'
@@ -7,7 +10,7 @@ import type {InstrumentRequest} from './instrumentTypes'
 
 export type SpectrogramNative={spectrogramTile(request:InstrumentRequest&{firstFrame:string;columns:number;config:ReturnType<typeof spectralConfig>}):Promise<SpectrogramTile>}
 export type SpectrogramPoint={key:string;frame:string;windowStart:string;bin:number;frequency:number;decibels:number|null;status:'ready'|'silence'|'unavailable'|'gap'|'error'}
-type Context={projections:SpectrogramProjectionCache;key:string;source:SpectrogramSource;config:SpectrogramConfig;store:SpectrogramStore}
+type Context={overview:SpectrogramOverviewStore;projections:SpectrogramProjectionCache;key:string;source:SpectrogramSource;config:SpectrogramConfig;store:SpectrogramStore}
 type ViewJob={generation:number;source:SpectrogramSource;config:SpectrogramConfig;range:SpectrogramRange;changed?:((v:SpectrogramView)=>void);resolve:(v:SpectrogramView)=>void;reject:(error:unknown)=>void}
 const cancelled=()=>Error('SPECTROGRAM_CANCELLED')
 
@@ -18,8 +21,9 @@ export class SpectrogramService {
   private work?:Promise<void>
   private generation=0
   private closed=false
+  readonly timings=new PerformanceWindow()
   constructor(private native:SpectrogramNative){}
-  get usage(){return {views:(this.work?1:0)+(this.next?1:0),...(this.context?.store.usage||{bytes:0,tiles:0,pending:0}),projectionBytes:this.context?.projections.bytes||0}}
+  get usage(){return {views:(this.work?1:0)+(this.next?1:0),...(this.context?.store.usage||{bytes:0,tiles:0,pending:0}),overviewBytes:this.context?.overview.bytes||0,timings:this.timings.snapshot(),projectionBytes:this.context?.projections.bytes||0}}
   query(source:SpectrogramSource,config:SpectrogramConfig,range:SpectrogramRange,changed?:((v:SpectrogramView)=>void)):Promise<SpectrogramView> {
     if(this.closed)return Promise.reject(Error('SPECTROGRAM_CLOSED'))
     try{sourceKey(source,config);validateSpectrogramRange(range,source.request.sampleRate)}catch(error){return Promise.reject(error)}
@@ -36,14 +40,15 @@ export class SpectrogramService {
   private async pump():Promise<void> {
     while(this.next&&!this.closed) {
       const job=this.next;this.next=undefined
-      try{job.resolve(await this.render(job))}catch(error){job.reject(error)}
+      const started=performance.now()
+      try{job.resolve(await this.render(job))}catch(error){job.reject(error)}finally{this.timings.observe(performance.now()-started)}
     }
   }
   private current(generation:number):void {if(this.closed||generation!==this.generation)throw cancelled()}
   private async bind(job:ViewJob):Promise<Context> {
     const key=sourceKey(job.source,job.config)
     if(this.context?.key!==key) {
-      await this.context?.store.close();this.context?.projections.clear();this.context=undefined;this.current(job.generation)
+      await this.context?.store.close();this.context?.overview.clear();this.context?.projections.clear();this.context=undefined;this.current(job.generation)
       const source=job.source,config=job.config
       const store=new SpectrogramStore(async request=>{
         const hop=Math.min(config.fftSize/4,Math.floor(source.request.sampleRate/50))
@@ -51,7 +56,9 @@ export class SpectrogramService {
         if(tile.fftSize!==config.fftSize||tile.sampleRate!==source.request.sampleRate||tile.channels!==source.channelCount)throw Error('STALE_SPECTROGRAM_TILE')
         return tile
       },source.cacheRoot,source.request.kind==='file'?48*1024*1024:96*1024*1024)
-      this.context={key,source,config,store,projections:new SpectrogramProjectionCache()}
+      const context={key,source,config,store,projections:new SpectrogramProjectionCache()} as Context
+      context.overview=new SpectrogramOverviewStore(block=>store.get(this.request(context,block*64n)),key,source.cacheRoot)
+      this.context=context
     }
     this.context.source=job.source
     return this.context
@@ -69,20 +76,32 @@ export class SpectrogramService {
     const availableStart=spectralFrame(source.availableStart),availableEnd=spectralFrame(source.availableEnd)
     c.store.retainRange(c.key,availableStart.toString(),availableEnd.toString())
     const totalBudget=(source.request.kind==='file'?64:112)*1024*1024
-    const raster=new SpectrogramRaster(job.range,c.key,job.generation,source.request.sampleRate,job.config.fftSize,c.projections,totalBudget-c.store.budgetBytes)
+    const raster=new SpectrogramRaster(job.range,c.key,job.generation,source.request.sampleRate,job.config.fftSize,c.projections,totalBudget-c.store.budgetBytes-8*1024*1024)
     const first=firstWindowEnd(source,job.config),hop=BigInt(raster.view.hop)
     const coveredStart=start>availableStart+BigInt(job.config.fftSize)?start:availableStart+BigInt(job.config.fftSize)
     const a=coveredStart>first?(coveredStart-first)/hop:0n,b=(end<availableEnd?end:availableEnd)
     if(b<first||end<=availableStart)return raster.snapshot(1,true)
     const last=(b-first)/hop,firstBlock=a/64n,lastBlock=last/64n,total=lastBlock-firstBlock+1n
     let completed=0n,lastPublication=Date.now(),announced=false
+    const level=source.request.kind==='file'?Math.max(0,Math.min(24,Math.floor(Math.log2(Number(last-a+1n)/Math.max(1,job.range.width*2))))):0
+    if(level>0){
+      const step=1n<<BigInt(level),from=firstBlock/step*step,to=lastBlock/step*step,count=(to-from)/step+1n
+      for(let block=to;block>=from;block-=step){
+        this.current(job.generation)
+        const overview=await c.overview.get(level,block,first,raster.view.hop,(availableEnd-first)/hop/64n,()=>this.current(job.generation));this.current(job.generation)
+        raster.addOverview(overview,availableStart,availableEnd);completed++
+        if(job.changed&&Date.now()-lastPublication>=160){job.changed(raster.snapshot(Number(completed)/Number(count),false));lastPublication=Date.now()}
+        await new Promise<void>(resolve=>setImmediate(resolve))
+      }
+      return raster.snapshot(1,true)
+    }
     // Newest data first so initial LIVE views become useful before older tiles finish.
     for(let block=lastBlock;block>=firstBlock;block--) {
       this.current(job.generation)
       const request=this.request(c,block*64n)
       if(BigInt(request.firstFrame)+BigInt((request.columns-1)*raster.view.hop)<availableStart)continue
       const tile=await c.store.get(request);this.current(job.generation)
-      raster.setProjectionBudget(totalBudget-c.store.usage.bytes)
+      raster.setProjectionBudget(totalBudget-c.store.usage.bytes-c.overview.bytes)
       raster.add(tile,availableStart,availableEnd);completed++
       const coldNext=block>firstBlock&&!c.store.hasMemory(this.request(c,(block-1n)*64n))
       if(job.changed&&(Date.now()-lastPublication>=160||!announced&&coldNext)) {job.changed(raster.snapshot(Number(completed)/Number(total),false));lastPublication=Date.now();announced=true}
@@ -109,5 +128,5 @@ export class SpectrogramService {
     return result(at,db===-Infinity?'silence':'ready',db===-Infinity?null:db)
   }
   cancel():void {++this.generation;this.next?.reject(cancelled());this.next=undefined}
-  async close():Promise<void> {this.closed=true;this.cancel();await this.work;await this.context?.store.close();this.context?.projections.clear();this.context=undefined}
+  async close():Promise<void> {this.closed=true;this.cancel();await this.work;await this.context?.store.close();this.context?.overview.clear();this.context?.overview.clear();this.context?.projections.clear();this.context=undefined}
 }

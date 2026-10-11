@@ -290,7 +290,7 @@ export default function App(): React.JSX.Element {
       <div className="transport-divider"/>
       <TransportElapsed inputs={viewInputs} isRecording={isRecording} file={file}/>
       <div className="transport-spacer"/>
-      <label className="monitor-gain">音量<input aria-label="文件回听音量" type="range" min="0" max="1" step=".01" value={file?.gain??1} disabled={!file||busy} onChange={e=>file&&run('playback.volume',{playbackId:file.id,gain:Number(e.target.value)})}/><span>{Math.round((file?.gain??1)*100)}%</span></label>
+      <label className="monitor-gain">音量<input aria-label="文件回听音量" type="range" min="0" max="1" step=".01" value={state.reference?.active?state.reference[state.reference.active]?.gain??file?.gain??1:file?.gain??1} disabled={!file||busy} onChange={e=>file&&run('playback.volume',{playbackId:file.id,gain:Number(e.target.value)})}/><span>{Math.round((state.reference?.active?state.reference[state.reference.active]?.gain??file?.gain??1:file?.gain??1)*100)}%</span></label>
       <button className="file-export-button" disabled={busy||isRecording||(!file&&!chrome.replayAvailable)} title={file&&!file.temporary?'导出当前文件或选区':'将'+(file?.selection?'选区':'最近缓存')+'按录音设置保存为独立文件'} onClick={()=>file&&!file.temporary?openExport({takeId:file.takeId,role:file.role,regionId:file.regionId,exportId:file.exportId,...(file.selection?{range:file.selection}:{})}):void saveCache()}>{file&&!file.temporary?'导出':'保存缓存'}</button>
       <button className="report-button" title="测量报告与超限事件" onClick={()=>setModal('reports')}>报告</button>
       <button data-open-files className="files-button" onClick={()=>{setLibraryAttention(false);setModal('files')}}>音频文件 {(state.recordings?.length||0)+(state.imports?.length||0)}</button>

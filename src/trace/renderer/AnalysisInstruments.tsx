@@ -1,3 +1,4 @@
+import {spectrumPixels} from '../spectrumDisplay'
 import {canvasSurface} from './canvasSurface'
 import {useEffect,useRef,useState} from 'react'
 import {instrumentConfigKey,validateInstrumentSettings,type InstrumentSettings,type InstrumentPacket} from '../instrumentTypes'
@@ -39,7 +40,7 @@ export function SpectrumPanel({packet,settings,change}:{packet?:InstrumentPacket
    c.save();c.beginPath();c.rect(l,t,w,h);c.clip()
    if(data)for(const [values,enabled,color,dash] of [[data.peakHold,settings.showPeakHold,tk['curve-hold'],[3,3]],[data.current,settings.showCurrent,tk['curve-current'],[]],[data.average,settings.showAverage,tk['curve-average'],[6,3]]] as const){
     if(!enabled)continue;c.strokeStyle=color;c.lineWidth=1.25;c.setLineDash([...dash]);c.beginPath();let started=false
-    for(let k=1;k<values.length;k++){const f=k*data.binHz;if(f<lo||f>hi)continue;const py=y(Math.max(settings.minDecibels,db(values[k])));if(started)c.lineTo(x(f),py);else c.moveTo(x(f),py);started=true}c.stroke()
+    for(const point of spectrumPixels(values,data.binHz,lo,hi,w,settings)){const py=y(Math.max(settings.minDecibels,point.decibels));if(started)c.lineTo(x(point.frequency),py);else c.moveTo(x(point.frequency),py);started=true}c.stroke()
    }c.restore()
   };paintRef.current=paint;paint()
  },[data,settings,lo,hi,theme])
@@ -56,13 +57,13 @@ export function SpectrumPanel({packet,settings,change}:{packet?:InstrumentPacket
   if(!data||!data.current.length)return;const ratio=Math.max(0,Math.min(1,(e.clientX-rect.left-44)/Math.max(1,rect.width-56))),f=lo*Math.pow(hi/lo,ratio),bin=Math.max(0,Math.min(data.current.length-1,Math.round(f/data.binHz)))
   if(bin<0)return
   const now=Date.now();if(now-hoverAt.current<60)return;hoverAt.current=now
-  setHover((bin*data.binHz).toFixed(1)+' Hz · 当前 '+reading(data.current[bin])+' · 平均 '+reading(data.average[bin])+' dBFS')
+  setHover((bin*data.binHz).toFixed(1)+' Hz · 当前 '+reading(data.current[bin])+' · 平均 '+reading(data.average[bin])+' dBFS · 原始频点')
  }
  return <div className="spectrum-instrument" ref={box} data-instrument-frame={data?.positionFrame}>
   <div className="analysis-legend"><button className="curve-current" aria-pressed={settings.showCurrent} onClick={()=>change({...settings,showCurrent:!settings.showCurrent})}>当前</button><button className="curve-average" aria-pressed={settings.showAverage} onClick={()=>change({...settings,showAverage:!settings.showAverage})}>平均</button><button className="curve-hold" aria-pressed={settings.showPeakHold} onClick={()=>change({...settings,showPeakHold:!settings.showPeakHold})}>保持</button><button title="复位频率与电平坐标" onClick={reset}>复位</button></div>
   <canvas ref={canvas} aria-label="频谱曲线：频率与幅度" title="滚轮缩放频率 · Ctrl＋滚轮缩放电平 · 拖动坐标轴平移 · 双击复位" onWheel={wheel} onDoubleClick={reset} onPointerMove={move} onPointerLeave={()=>{if(!drag.current)setHover('')}} onPointerDown={e=>{const r=e.currentTarget.getBoundingClientRect();if(e.button!==0||e.clientX-r.left>44&&e.clientY-r.top<r.height-28)return;e.preventDefault();e.currentTarget.setPointerCapture(e.pointerId);drag.current={x:e.clientX,y:e.clientY,settings:{...settings,minFrequency:lo,maxFrequency:hi},axis:e.clientX-r.left<44?'level':'frequency'}}} onPointerUp={e=>{drag.current=null;if(e.currentTarget.hasPointerCapture(e.pointerId))e.currentTarget.releasePointerCapture(e.pointerId)}} onPointerCancel={()=>{drag.current=null}}/>
   {message(packet,settings)&&<div className="instrument-empty" role="status">{message(packet,settings)}</div>}
-  <div className="analysis-readout">{hover||('FFT '+settings.fftSize+' · 平均 '+settings.averageMs+' ms · 保持 '+settings.holdMs+' ms')}{data&&(data.partialAverage||data.partialHold)&&<span title="开始处可用音频不足完整平均或保持窗口，当前使用已到达的完整 FFT 窗。"> · 暂估</span>}</div>
+  <div className="analysis-readout">{hover||('FFT '+settings.fftSize+' · Δf '+((data?.sampleRate||48000)/settings.fftSize).toFixed(2)+' Hz · 窗 '+(settings.fftSize/(data?.sampleRate||48000)*1000).toFixed(1)+' ms · '+(settings.smoothing?'1/'+settings.smoothing+' 倍频程':'原始')+' · 倾斜 '+settings.tilt+' dB/oct · 平均 '+settings.averageMs+' ms · 保持 '+settings.holdMs+' ms')}{data&&(data.partialAverage||data.partialHold)&&<span title="开始处可用音频不足完整平均或保持窗口，当前使用已到达的完整 FFT 窗。"> · 暂估</span>}</div>
  </div>
 }
 export function SoundFieldPanel({packet,settings,change}:{packet?:InstrumentPacket;settings:InstrumentSettings;change:(s:InstrumentSettings)=>void}){
@@ -93,6 +94,8 @@ export function AnalysisSettings({value,apply,kind}:{value:InstrumentSettings;ap
  return <div className="instrument-analysis-settings">
   {kind==='spectrum'?<>
    <label>FFT 窗<select aria-label="FFT 窗大小" value={draft.fftSize} onChange={e=>setDraft({...draft,fftSize:Number(e.target.value)})}>{[512,1024,2048,4096,8192,16384].map(n=><option key={n}>{n}</option>)}</select></label>
+   <label>频率平滑<select aria-label="频率平滑" value={draft.smoothing} onChange={e=>setDraft({...draft,smoothing:Number(e.target.value) as InstrumentSettings['smoothing']})}>{[0,3,6,12,24].map(n=><option key={n} value={n}>{n?'1/'+n+' 倍频程':'关闭'}</option>)}</select></label>
+   <label>显示倾斜 · dB/oct<input aria-label="频谱倾斜" type="number" min="-6" max="6" step=".5" value={draft.tilt} onChange={e=>setDraft({...draft,tilt:Number(e.target.value)})}/></label>
    <label>声道<select aria-label="频谱声道" value={draft.channel} onChange={e=>setDraft({...draft,channel:e.target.value as InstrumentSettings['channel']})}>{['stereo','left','right','mid','side'].map((v,i)=><option key={v} value={v}>{['声道能量（默认）','左','右','Mid','Side'][i]}</option>)}</select></label>
    <label>平均 · ms<input aria-label="频谱平均时间" type="number" min="0" max="2000" step="50" value={draft.averageMs} onChange={e=>setDraft({...draft,averageMs:Number(e.target.value)})}/></label>
    <label>保持 · ms<input aria-label="频谱保持时间" type="number" min="0" max="2000" step="50" value={draft.holdMs} onChange={e=>setDraft({...draft,holdMs:Number(e.target.value)})}/></label>

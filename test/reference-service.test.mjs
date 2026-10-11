@@ -35,3 +35,10 @@ test('linked activation converts time across rates and rejects unavailable posit
 test('original audio remains owned by reference peers and pending resolutions until they are released',async()=>{
  const t=setup();await t.bind(source('a'));assert(t.svc.usesTake('a'));let finish;t.setResolver(()=>new Promise(r=>finish=()=>r(source('b'))));t.svc.setReference({takeId:'b',role:'source'},'b');await wait(()=>!!finish);assert(t.svc.usesTake('b'));finish();await wait(()=>!!t.svc.view().b);assert(t.svc.usesTake('b'));await t.svc.clearReference();assert(!t.svc.usesTake('b'));assert(t.svc.usesTake('a'));await t.svc.shutdown();assert(!t.svc.usesTake('a'))
 })
+
+test('audition gain stays separate from measurements and manual volume across matching, switch and range changes',async()=>{
+ const t=setup(),v=await t.bind(source('a'));t.svc.setReference({takeId:'b',role:'source'},'b');await wait(()=>!!t.svc.view().b);const before=structuredClone(t.svc.view().a.analysis.summary)
+ t.svc.setMatching(true);const match=t.svc.view().match;assert.equal(match.status,'ready');assert(match.aDb<=0&&match.bDb<=0)
+ const applied=t.svc.markAudition('a');t.svc.observe({...v,gain:applied});assert.equal(t.svc.peer('a').gain,v.gain);const manual=t.svc.setAuditionVolume('a',.7);t.svc.observe({...v,gain:manual});assert.equal(t.svc.peer('a').gain,.7);assert.deepEqual(t.svc.view().a.analysis.summary,before)
+ t.svc.setMatching(false);assert.equal(t.svc.markAudition('a'),.7);await t.svc.shutdown()
+})

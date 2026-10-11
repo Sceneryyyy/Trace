@@ -1,5 +1,12 @@
 export function userError(error:unknown):string{
  const text=String(error||'')
+ if(/REVIEW_QUEUE_FULL|CHART_BUSY/.test(text))return '正在准备复核数据，请稍后重试。'
+ if(/REVIEW_SOURCE_CHANGED/.test(text))return '来源内容已变化，请重新打开并分析；旧标记不会用于新内容。'
+ if(/CHART_NOT_READY/.test(text))return '等待完整 FFT 窗口，并暂停游标后重试导出。'
+ if(/STALE_CHART_EXPORT/.test(text))return '分析图已过期或来源已切换，请重新导出。'
+ if(/MARKER_LIMIT/.test(text))return '每份素材最多保存 512 个标记。'
+ if(/INVALID_REVIEW_MARKER/.test(text))return '请检查标记名称、评论与帧范围。'
+ if(/REFERENCE_MATCH_UNAVAILABLE/.test(text))return '等待两份有效范围响度与真峰值；静音、缺口或分析未完成不能匹配。'
  if(/RETENTION_INTERRUPTED_REVIEW_SOURCE|RETENTION_RECOVERY_SAVE_FAILED|RETENTION_REPAIR_PERSIST_FAILED/.test(text))return '原始录音整理被中断，请检查文件与保存目录；可在确认后重试整理。'
  if(/REFERENCE_POSITION_OUTSIDE_RANGE/.test(text))return '游标不在比较范围内，请查看范围起点或调整偏移。'
  if(/REFERENCE_SOURCE_MISSING/.test(text))return '请先选择主素材 A 和参考 B。'

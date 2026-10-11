@@ -125,3 +125,7 @@ Meter v5 的电平与完整响度记录均为 10 ms 实际索引；曲线呈现�
 ReplayFreeze v3 的 quality v1 为 `{version:1,estimatedFrames,gapFrames,unknown}`，两项计数是十进制帧字符串，覆盖当前不可变冻结范围。replaySave 的可选 quality 只覆盖 startFrame/endFrame 选区，由原生对象计算；旧字段缺失兼容保存但标记 unknown。导出保留来源 continuity（complete/estimated-silence/gaps/unknown），旧导出只追溯元数据，不要求原 PCM 仍存在；媒体哈希通过不等于原采集完整。见 [73](73-CLOUD-CODE-REVIEW.md)。
 
 报告 jump 与普通 seek 均释放输出、恢复原监听意图、不自动发声。录音/缓存准备失败统一恢复后台服务，退出/文件库维护/活动录音时保持暂停。正常关闭等待录音收尾和文件任务，后台状态不能由 renderer 自行猜测；Windows 故障/退出专项仍按 [当前交接](13-HANDOFF.md) 跟踪。
+
+## 2026-10-11 增量接口（preview.32）
+
+见 [84](84-P0-P1-CLOUD-ITERATION.md)。InstrumentSettings v2 严格迁移 v1（新增频率平滑与倾斜，保持 trace-spectrum-v1 分析身份）。Request v1 新增 reference.match(enabled)、markers.list/save/remove/jump、chart.prepare/save、report.markerJump；仍只有主进程解析内部来源/路径。marker v1 以 PCM/媒体/解码范围内容身份绑定。ReportResult v1 可携带 marker/distribution v1 增量数据；历史报告保留原字段，summary.csv 增加两个 JSON 列。spectral overview v1 使用独立有校验的文件，原始 tile v1 不变。性能诊断 v1 为增量诊断，原生分位数为微秒 log2 桶上界、TS 分位数为最近 2048 次窗口；不改变计量或录音数据协议。

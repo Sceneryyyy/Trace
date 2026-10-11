@@ -3,9 +3,24 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include <memory>
 #include <stdexcept>
 namespace Trace {
 namespace {
+struct SpectralWorkspace {
+ uint32_t size;DSP::FFT fft;std::vector<float> window,input;std::vector<std::complex<float>> left,right;double windowSum=0;
+ explicit SpectralWorkspace(uint32_t n):size(n),fft(n),window(n),input(n),left(n),right(n){
+  for(uint32_t i=0;i<n;++i){window[i]=float(.5*(1-std::cos(2*3.14159265358979323846*i/n)));windowSum+=window[i];}
+ }
+};
+// Two per worker, bounded by maximum FFT size. No PCM or measurement history
+// survives a query. Never share the mutable FFT scratch across threads.
+SpectralWorkspace& workspace(uint32_t size){
+ thread_local std::unique_ptr<SpectralWorkspace> recent,previous;
+ if(recent&&recent->size==size)return *recent;
+ if(previous&&previous->size==size){recent.swap(previous);return *recent;}
+ previous=std::move(recent);recent=std::make_unique<SpectralWorkspace>(size);return *recent;
+}
 void validate(uint32_t frames,uint32_t rate,uint32_t channels,const InstrumentConfig& c){
  if(rate<8000||rate>96000||channels<1||channels>2||frames>uint64_t(rate)*5||c.fftSize<512||c.fftSize>16384||
    (c.fftSize&(c.fftSize-1))||c.averageMs>2000||c.holdMs>2000||c.fieldMs<50||c.fieldMs>1000||
@@ -37,20 +52,18 @@ FieldAnalysis field(const float* pcm,uint32_t channels,uint32_t rate,uint64_t or
 }
 }
 InstrumentAnalysis analyzeInstruments(const float* pcm,uint32_t frames,uint32_t rate,uint32_t channels,
- uint64_t origin,uint64_t position,const InstrumentConfig& c){
+ uint64_t origin,uint64_t position,const InstrumentConfig& c,bool includeField){
  validate(frames,rate,channels,c);
  if((frames&&!pcm)||origin>UINT64_MAX-frames||position<origin||position>origin+frames)throw std::runtime_error("INVALID_INSTRUMENT_RANGE");
  for(size_t i=0;i<size_t(frames)*channels;++i)if(!std::isfinite(pcm[i]))throw std::runtime_error("NONFINITE_INSTRUMENT_PCM");
  InstrumentAnalysis out;out.positionFrame=position;out.fftSize=c.fftSize;out.hop=std::min(c.fftSize/4,std::max(1u,rate/50));out.binHz=double(rate)/c.fftSize;
- out.field=field(pcm,channels,rate,origin,position,c.fieldMs);
+ if(includeField)out.field=field(pcm,channels,rate,origin,position,c.fieldMs);
  if(position-origin<c.fftSize)return out;
  if(channels==1&&c.channel!=SpectrumChannel::Stereo&&c.channel!=SpectrumChannel::Left)return out;
  out.windowStart=position-c.fftSize;
  const size_t bins=c.fftSize/2+1;
  out.current.resize(bins);out.average.resize(bins);out.peakHold.resize(bins);
- std::vector<float> window(c.fftSize),input(c.fftSize);double windowSum=0;
- for(uint32_t n=0;n<c.fftSize;++n){window[n]=float(.5*(1-std::cos(2*3.14159265358979323846*n/c.fftSize)));windowSum+=window[n];}
- DSP::FFT fft(c.fftSize);std::vector<std::complex<float>> left(c.fftSize),right(c.fftSize);
+ auto& work=workspace(c.fftSize);auto& window=work.window;auto& input=work.input;auto& left=work.left;auto& right=work.right;auto& fft=work.fft;const auto windowSum=work.windowSum;
  const uint64_t averageFrames=uint64_t(rate)*c.averageMs/1000,holdFrames=uint64_t(rate)*c.holdMs/1000,maxFrames=std::max(averageFrames,holdFrames);
  uint64_t end=position;
  while(true){

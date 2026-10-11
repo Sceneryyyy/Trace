@@ -1,3 +1,13 @@
+import {configureSpectralDiskRegistry,spectralDiskUsage} from './spectralDiskBudget'
+import {SpectrogramService} from './spectrogramService'
+import {measurementConfigId} from './analysisTypes'
+import {replayQualityContinuity} from './replaySaveTypes'
+import {MarkerStore,markerKey,validateMarker,type MarkerIdentity} from './markerStore'
+import {spectrumSvg,spectrogramSvg,type ChartMetadata} from './chartExport'
+import {writeFile as writeReviewFile,unlink as unlinkReviewFile} from 'node:fs/promises'
+import {monitorEventLoopDelay} from 'node:perf_hooks'
+import {configureMediaProcessJobs} from './mediaProcess'
+const loopDelay=monitorEventLoopDelay({resolution:20});loopDelay.enable()
 import {ReferenceService} from './referenceService'
 import {ReferenceSpectrumService} from './referenceSpectrum'
 import {NativeAnalysisQueue} from './nativeAnalysisQueue'
@@ -26,7 +36,7 @@ import {exportPreferencesVersion} from './exportPreferences'
 import {recordingCapacity,freeSpace} from './storageCapacity'
 import {mediaDurationNs} from './sessionTimeline'
 import {LibraryService} from './libraryService'
-import { app, BrowserWindow, dialog, ipcMain, shell, screen, clipboard } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, shell, screen, clipboard,nativeImage } from 'electron'
 import { join, resolve, sep,isAbsolute } from 'node:path'
 import { randomUUID } from 'node:crypto'
 import { createRequire } from 'node:module'
@@ -52,11 +62,16 @@ const requireNative=createRequire(__filename)
 const root=resolve(__dirname,'../..')
 const captureInstance=randomUUID()
 type NativeEngine=PlaybackNative&InstrumentNative&SpectrogramNative&{
-  runtimeModules():Record<string,string|null>;devices():Device[];start(id:string):SourceFormat;stop():void;reset():void;shutdown():NativeRecordSnapshot
+  processJob?(pid:number):{close():void|Promise<void>};runtimeModules():Record<string,string|null>;devices():Device[];start(id:string):SourceFormat;stop():void;reset():void;shutdown():NativeRecordSnapshot
   snapshot(seconds:number,columns:number):NativeMeterSnapshot
   recordStart(id:string,path:string,encoding:string,segmentBytes?:number,journalPath?:string):NativeRecordSnapshot
   recordStop():NativeRecordSnapshot;recordStatus():NativeRecordSnapshot
 }
+const reviewControllers=new Set<AbortController>()
+let chartPreparing=false
+let chartWork:SpectrogramService|undefined
+let markers:MarkerStore
+const chartTickets=new Map<string,{svg:string;metadata:ChartMetadata;playbackId:string;created:number}>()
 let engine:NativeEngine
 let instruments:InstrumentService
 let spectrogram:SpectrogramPresenter
@@ -116,7 +131,7 @@ process.on('uncaughtException',()=>{if(supportRuntime)return supportRuntime.fata
 process.on('unhandledRejection',()=>{if(supportRuntime)return supportRuntime.fatal('main-rejection');app.exit(1)})
 function diagnosticSnapshot(){
  const basic=safeDiagnostics(product.version,state,engine.snapshot(5,1),engine.recordStatus())
- return {...basic,workbench:{visibleInstruments:state.workspace?8-state.workspace.layout.hidden.length:null,fftSize:state.instrumentSettings?.fftSize,spectrogramFftSize:state.spectrogramSettings?.fftSize},
+ return {...basic,performance:{schemaVersion:1,reviewJobs:reviewControllers.size,chartPreparing,spectralDisk:spectralDiskUsage(),memory:process.memoryUsage(),loopDelay:{count:loopDelay.count,p50Ms:loopDelay.percentile(50)/1e6,p95Ms:loopDelay.percentile(95)/1e6,p99Ms:loopDelay.percentile(99)/1e6,maxMs:loopDelay.max/1e6},instruments:instruments?.usage,spectrogram:spectrogram?.usage,nativeQueue:nativeAnalysisQueue.usage},workbench:{visibleInstruments:state.workspace?8-state.workspace.layout.hidden.length:null,fftSize:state.instrumentSettings?.fftSize,spectrogramFftSize:state.spectrogramSettings?.fftSize},
   background:{imports:(state.imports||[]).slice(-32).map(j=>({status:j.status})),reports:(state.reportJobs||[]).slice(-32).map(j=>({phase:j.phase})),reference:state.reference?{active:state.reference.active,hasA:Boolean(state.reference.a),hasB:Boolean(state.reference.b),error:Boolean(state.reference.error)}:null}}
 }
 function sendRenderer(channel:string,value:unknown):void{if(rendererUsable&&window&&!window.isDestroyed())window.webContents.send(channel,value)}
@@ -149,7 +164,7 @@ async function prepareMemoryAnalyses():Promise<void>{
   }
  }finally{preparingMemoryAnalysis=false}
 }
-function syncAnalysisState(control:boolean):void{if(!analyses)return;const patch={analysisJobs:analyses.snapshots(),playback:playback?.view(),reference:references?.view()};if(control)update(patch);else{state={...state,...patch};emitState()}void prepareMemoryAnalyses()}
+function syncAnalysisState(control:boolean):void{if(!analyses)return;refreshAudition();const patch={analysisJobs:analyses.snapshots(),playback:playback?.view(),reference:references?.view()};if(control)update(patch);else{state={...state,...patch};emitState()}void prepareMemoryAnalyses()}
 function releaseRecordingCapture():void{
   if(!recordingCaptureHeld||recordings.busy()||exiting)return
   try{
@@ -178,7 +193,8 @@ function syncExportState(control=true):void{if(!exporter||!recordings)return;con
 function syncPlaybackState():void{if(playback){references?.observe(playback.view());update({playback:playback.view(),reference:references?.view()})}retention?.schedule()}
 function syncRetentionState():void{if(recordings)update({recordings:library?library.summaries():recordings.summaries()})}
 function referenceVisible(){return Boolean(!exiting&&!recordings?.busy()&&state.windowVisible!==false&&state.workspace&&!state.workspace.layout.hidden.includes('comparison'))}
-function syncReferenceState(){if(references){state={...state,reference:references.view()};emitState();if(!recordings?.busy()&&!managingLibrary&&!exiting)retention?.resume()}}
+function refreshAudition(){const slot=references?.activeSlot,file=playback?.view();if(slot&&file){const gain=references.markAudition(slot);if(Math.abs(file.gain-gain)>1e-9)playback.volume(file.id,gain)}}
+function syncReferenceState(){if(references){refreshAudition();state={...state,reference:references.view()};emitState();if(!recordings?.busy()&&!managingLibrary&&!exiting)retention?.resume()}}
 function instrumentsVisible():boolean{const peer=references?.activeSlot?references.peer(references.activeSlot):undefined;return Boolean(state.workspace&&(['spectrum','soundfield'].some(id=>!state.workspace!.layout.hidden.includes(id as never))||referenceVisible()&&peer&&references.peer('b')&&peer.range.startFrame==='0'&&peer.range.endFrame===peer.source.frames))}
 function publishLiveSample(snapshot:MeterSnapshot):void{
  const send=()=>{if(!window||window.isDestroyed()||exiting||playback.active())return;const key=[snapshot.sourceId,snapshot.epochId,snapshot.measurementEpoch,state.currentRecord?snapshot.recording?.id:''].join(':');const frame=BigInt(state.currentRecord?snapshot.recording?.writtenFrames||'0':snapshot.positionFrame);if(lastLivePublication?.key===key&&frame<lastLivePublication.frame)return;lastLivePublication={key,frame};snapshot.eventSequence=++snapshotSequence;snapshot.stateRevision=state.revision;sendRenderer('trace:snapshot',snapshot)}
@@ -350,6 +366,17 @@ function makeReportInput(playbackId:string,scope:'whole'|'selection'):ReportInpu
  else if(continuity==='estimated-silence'){integrity='estimated';notes.push('原采集含估计静音或估计时钟边界。')}}
  return {playbackId,request:{version:1,source:{origin:imported?'imported':'recording',label:c.source.label,takeId:c.source.takeId,role:c.source.role,regionId:c.source.regionId,exportId:c.source.exportId,format:assetFormatLabel(c.source.assetFormat)||c.source.sampleRate+' Hz',sourceFrames:c.source.frames,scope:{kind:scope,...c.range},integrity:{state:integrity,notes},physicalRange:a.manifest.sourceRange},cacheDirectory:a.directory,cacheKey:a.manifest.cacheKey,sourceFiles:a.source.sources},retain:()=>{try{analyses.retain(c.analysisId);return()=>analyses.release(c.analysisId)}catch(error){if(!String(error).includes('UNKNOWN_ANALYSIS_JOB'))throw error;return()=>{}}}}
 }
+async function reviewSource(playbackId:string){
+ if(recordings.busy()||managingLibrary)throw Error('RECORDING_ACTIVE')
+ const c=playback.reportContext(playbackId,false),a=analyses.reportInput(c.analysisId)
+ if(reviewControllers.size>=2)throw Error('REVIEW_QUEUE_FULL')
+ const controller=new AbortController();reviewControllers.add(controller)
+ let hashes:string[]
+ try{hashes=await hashFiles(c.source.sources,{signal:controller.signal})}finally{reviewControllers.delete(controller)}
+ if(exiting||recordings.busy()||playback.view()?.id!==playbackId||JSON.stringify(hashes)!==JSON.stringify(a.manifest.sourceSha256))throw Error('REVIEW_SOURCE_CHANGED')
+ const identity:MarkerIdentity={sourceSha256:hashes,mediaIdentity:c.source.mediaIdentity,decodeRange:c.source.decodeRange,frames:c.source.frames,sampleRate:c.source.sampleRate,channelCount:c.source.channelCount}
+ return {source:c.source,manifest:a.manifest,identity}
+}
 async function chooseDirectory():Promise<boolean>{
   if(recordings.busy())throw Error('RECORDING_ACTIVE')
   if(exporter?.busy()||deliveries?.busy()||retention?.active())throw Error('EXPORT_ACTIVE')
@@ -375,11 +402,12 @@ async function dispatch(request:Request):Promise<Reply>{
        // during a recording; match the rule applied in syncRetentionState.
        try{references.setReference(source,session.document.name)}finally{if(!recordings.busy()&&!managingLibrary&&!exiting)retention.resume()}
        const workspace=state.workspace!;if(workspace.layout.hidden.includes('comparison'))update({workspace:{...workspace,activePreset:null,layout:{...workspace.layout,hidden:workspace.layout.hidden.filter(id=>id!=='comparison')}}});savePreferences();break}
-      case 'reference.clear':{await references.clearReference();const file=playback.view();if(file&&!file.temporary)await references.bindPrimary(playback.spectralSource(file.id).source,file);break}
+      case 'reference.clear':{const oldSlot=references.activeSlot,oldFile=playback.view();if(oldSlot&&oldFile){references.observe(oldFile);const gain=references.peer(oldSlot)!.gain;references.setMatching(false);playback.volume(oldFile.id,gain)}await references.clearReference();const file=playback.view();if(file&&!file.temporary)await references.bindPrimary(playback.spectralSource(file.id).source,file);break}
       case 'reference.activate':await activateReference(request.payload.slot as ReferenceSlot,request.payload.atStart===true);break
+      case 'reference.match':{references.observe(playback.view());references.setMatching(request.payload.enabled as boolean);const slot=references.activeSlot,file=playback.view();if(slot&&file)playback.volume(file.id,references.markAudition(slot));break}
       case 'reference.configure':references.configure(request.payload.offsetNs as string,request.payload.linked as boolean);await referenceSpectrum.cancel();break
       case 'reference.retry':await imports.refresh();await references.retry();break
-      case 'reference.range':{const slot=request.payload.slot as ReferenceSlot,range={startFrame:request.payload.startFrame as string,endFrame:request.payload.endFrame as string},peer=references.peer(slot);if(!peer)throw Error('REFERENCE_SOURCE_MISSING');await references.range(slot,range);const file=playback.view();if(references.activeSlot===slot&&file){if(range.startFrame==='0'&&range.endFrame===peer.source.frames)playback.clearSelection(file.id);else playback.selection(file.id,range.startFrame,range.endFrame,false)}break}
+      case 'reference.range':{const slot=request.payload.slot as ReferenceSlot,range={startFrame:request.payload.startFrame as string,endFrame:request.payload.endFrame as string},peer=references.peer(slot);if(!peer)throw Error('REFERENCE_SOURCE_MISSING');await references.range(slot,range);const file=playback.view();if(references.activeSlot===slot&&file){if(range.startFrame==='0'&&range.endFrame===peer.source.frames)playback.clearSelection(file.id);else playback.selection(file.id,range.startFrame,range.endFrame,false);playback.volume(file.id,references.markAudition(slot))}break}
       case 'imports.choose':{const paths=await chooseImportFiles();data=paths.length?await acceptImportFiles(paths):{accepted:[],errors:[]};break}
       case 'imports.refresh':await imports.refresh();syncImportState();break
       case 'imports.cancel':imports.cancel(request.payload.assetId as string);break
@@ -392,8 +420,46 @@ async function dispatch(request:Request):Promise<Reply>{
       case 'imports.openSource':shell.showItemInFolder(imports.sourceFile(request.payload.assetId as string));break
       case 'imports.openFolder':{const message=await shell.openPath(imports.folder(request.payload.assetId as string));if(message)throw Error(message);break}
       case 'imports.openRoot':{const message=await shell.openPath(imports.store.root);if(message)throw Error(message);break}
+      case 'markers.list':{await retention.pause();try{const input=await reviewSource(request.payload.playbackId as string);data={key:markerKey(input.identity),markers:await markers.list(input.identity)}}finally{retention.resume()}break}
+      case 'markers.save':{await retention.pause();try{const input=await reviewSource(request.payload.playbackId as string);data={markers:await markers.save(input.identity,validateMarker(request.payload.marker as import('./markerStore').ReviewMarker,input.source.frames))};update({})}finally{retention.resume()}break}
+      case 'markers.remove':{await retention.pause();try{const input=await reviewSource(request.payload.playbackId as string);data={markers:await markers.save(input.identity,undefined,request.payload.markerId as string)};update({})}finally{retention.resume()}break}
+      case 'markers.jump':{await retention.pause();try{const input=await reviewSource(request.payload.playbackId as string),marker=(await markers.list(input.identity)).find(m=>m.id===request.payload.markerId);if(!marker)throw Error('MARKER_NOT_FOUND');const file=playback.view()!;if(file.outputReady)await playback.pause(file.id);if(marker.endFrame)playback.selection(file.id,marker.startFrame,marker.endFrame,false);else playback.clearSelection(file.id);playback.seek(file.id,marker.startFrame,false)}finally{retention.resume()}break}
+      case 'chart.prepare':{
+       if(chartPreparing)throw Error('CHART_BUSY')
+       if(recordings.busy()||managingLibrary)throw Error('RECORDING_ACTIVE')
+       chartPreparing=true;try{await retention.pause();
+        let file=playback.view();if(!file||file.id!==request.payload.playbackId)throw Error('STALE_PLAYBACK_SOURCE');if(file.outputReady){await playback.pause(file.id);file=playback.view()!}
+        const frozen=playback.spectralSource(file.id),input=file.temporary?undefined:await reviewSource(file.id),settings=state.instrumentSettings||defaultInstrumentSettings
+        const descriptor=frozen.replay?replaySpectrogramSource(frozen.replay):fileSpectrogramSource(frozen.source,input!.manifest.cacheKey)
+        const kind=request.payload.kind==='spectrogram'?'spectrogram':'spectrum'
+        const metadata:ChartMetadata={version:1,product:'Trace',sourceLabel:file.label,sourceSha256:input?.manifest.sourceSha256||[],sampleRate:file.sampleRate,channelCount:file.channelCount,positionFrame:file.positionFrame,measurementConfigId:input?.manifest.measurementConfigId||measurementConfigId,quality:testMode?'模拟测试（非设备验收）':frozen.replay?'冻结 LIVE 缓存 · '+replayQualityContinuity(frozen.replay.quality):frozen.source.continuity||'unknown',settings:{...settings},createdAt:new Date().toISOString()}
+        let svg:string;metadata.kind=kind
+        if(kind==='spectrum'){
+         const packet=await instruments.query({...descriptor.request,positionFrame:file.positionFrame},settings)
+         if(playback.view()?.id!==file.id||playback.view()?.positionFrame!==file.positionFrame||!packet.data||!['ready','silence'].includes(packet.data.status))throw Error('CHART_NOT_READY')
+         const d=packet.data;metadata.analysis={windowStartFrame:d.windowStart,hop:d.hop,averageWindows:d.averageWindows,holdWindows:d.holdWindows,partialAverage:d.partialAverage,partialHold:d.partialHold};svg=spectrumSvg(d,metadata)
+        }else{
+         const s=state.spectrogramSettings||defaultSpectrogramSettings;metadata.settings={...settings,fftSize:s.fftSize,channel:s.channel,averageMs:0,holdMs:0}
+         chartWork=new SpectrogramService({spectrogramTile:r=>{if(recordings.busy()||playback.view()?.id!==file.id)throw Error('CHART_NOT_READY');return nativeAnalysisQueue.run(()=>engine.spectrogramTile(r),1)}})
+         const v=await chartWork.query(descriptor,s,{startFrame:file.startFrame,endFrame:file.endFrame,width:512,height:256,minFrequency:Math.min(s.minFrequency,file.sampleRate/2*.9),maxFrequency:Math.min(s.maxFrequency,file.sampleRate/2)})
+         if(recordings.busy()||playback.view()?.id!==file.id)throw Error('CHART_NOT_READY')
+         metadata.spectrogram={settings:{...s},startFrame:v.startFrame,endFrame:v.endFrame,timeOffsetSeconds:file.timeOffsetSeconds||0,overviewLevel:v.overviewLevel||0,binStride:v.overviewBinStride||1};svg=await spectrogramSvg(v,metadata,s)
+        }
+        metadata.createdAt=new Date().toISOString();const ticket=randomUUID();chartTickets.set(ticket,{svg,metadata,playbackId:file.id,created:Date.now()});while(chartTickets.size>2)chartTickets.delete(chartTickets.keys().next().value!);data={ticket,svg,metadata}
+       }finally{await chartWork?.close();chartWork=undefined;chartPreparing=false;retention.resume()}break
+      }
+      case 'chart.save':{
+       const ticket=chartTickets.get(request.payload.ticket as string);if(!ticket||Date.now()-ticket.created>120000||playback.view()?.id!==ticket.playbackId)throw Error('STALE_CHART_EXPORT')
+       const format=request.payload.format as 'svg'|'png';let content:Buffer|string=ticket.svg
+       if(format==='png'){content=Buffer.from(request.payload.png as string,'base64');if(content.length>4*1024*1024||!content.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10])))throw Error('INVALID_CHART_PNG');const size=nativeImage.createFromBuffer(content).getSize();if(size.width!==1000||size.height!==620)throw Error('INVALID_CHART_PNG')}
+       const selected=await dialog.showSaveDialog(window!,{title:'导出分析图',defaultPath:'Trace-spectrum.'+format,filters:[{name:format.toUpperCase(),extensions:[format]}]});if(selected.canceled||!selected.filePath){data={cancelled:true};break}
+       if(playback.view()?.id!==ticket.playbackId)throw Error('STALE_CHART_EXPORT')
+       const path=selected.filePath,metadataPath=path+'.json';let written=false
+       try{await writeReviewFile(path,content,{flag:'wx'});written=true;await writeReviewFile(metadataPath,JSON.stringify(ticket.metadata,null,2)+'\n',{flag:'wx'})}catch(e){if(written)await unlinkReviewFile(path).catch(()=>{});throw e}
+       chartTickets.delete(request.payload.ticket as string);data={saved:true};break
+      }
       case 'app.configure':update({confirmExitWhileRecording:request.payload.confirmExitWhileRecording as boolean});savePreferences();break
-      case 'app.diagnostics':data=safeDiagnostics(product.version,state,engine.snapshot(5,1),engine.recordStatus());break
+      case 'app.diagnostics':data=diagnosticSnapshot();break
       case 'app.copyDiagnostics':clipboard.writeText(JSON.stringify(await supportRuntime!.report(),null,2));data={copied:true};break
       case 'app.exportDiagnostics':data=await supportRuntime!.export(window);break
       case 'app.feedback':data=await supportRuntime!.feedback();break
@@ -417,19 +483,19 @@ async function dispatch(request:Request):Promise<Reply>{
       case 'report.prepare':{
         if(recordings.busy()||managingLibrary)throw Error('RECORDING_ACTIVE')
         await retention.pause();const input=makeReportInput(request.payload.playbackId as string,request.payload.scope as 'whole'|'selection')
-        data={reportId:await reports.start(input,state.targetSettings||defaultTargetSettings)};retention.resume();break
+        const review=await reviewSource(request.payload.playbackId as string);input.request.markers=await markers.list(review.identity);data={reportId:await reports.start(input,state.targetSettings||defaultTargetSettings)};retention.resume();break
       }
       case 'report.get':data=reports.result(request.payload.reportId as string);break
       case 'report.cancel':reports.cancel(request.payload.reportId as string);break
       case 'report.retry':if(recordings.busy()||managingLibrary)throw Error('RECORDING_ACTIVE');await retention.pause();data={reportId:await reports.retry(request.payload.reportId as string,state.targetSettings||defaultTargetSettings)};retention.resume();break
       case 'report.open':{const error=await shell.openPath(reports.file(request.payload.reportId as string));if(error)throw Error('OPEN_REPORT_FAILED: '+error);break}
-      case 'report.jump':{
+      case 'report.jump':case 'report.markerJump':{
         if(recordings.busy()||managingLibrary)throw Error('RECORDING_ACTIVE')
-        const report=reports.result(request.payload.reportId as string),file=playback.view(),event=report.eventPreview[request.payload.index as number]
+        const report=reports.result(request.payload.reportId as string),file=playback.view(),event=request.command==='report.markerJump'?(()=>{const m=report.markers?.[request.payload.index as number];return m?{startFrame:m.startFrame,endFrame:m.endFrame||m.startFrame}:undefined})():report.eventPreview[request.payload.index as number]
         if(!file||!event||file.takeId!==report.source.takeId||file.role!==report.source.role||file.regionId!==report.source.regionId||file.exportId!==report.source.exportId)throw Error('REPORT_SOURCE_NOT_OPEN')
-        const current=analyses.reportInput(file.analysisId);if(JSON.stringify(current.manifest.sourceSha256)!==JSON.stringify(report.analysis.sourceSha256))throw Error('REPORT_SOURCE_CHANGED')
+        const current=await reviewSource(file.id);if(JSON.stringify(current.manifest.sourceSha256)!==JSON.stringify(report.analysis.sourceSha256))throw Error('REPORT_SOURCE_CHANGED')
         if(playback.outputActive())await playback.pause(file.id)
-        playback.seek(file.id,event.startFrame,false);resumeInput();publishInspectionSample();break
+        if(request.command==='report.markerJump'){if(event.endFrame!==event.startFrame)playback.selection(file.id,event.startFrame,event.endFrame,false);else playback.clearSelection(file.id)}playback.seek(file.id,event.startFrame,false);resumeInput();publishInspectionSample();break
       }
       case 'report.export':{
         if(recordings.busy()||managingLibrary)throw Error('RECORDING_ACTIVE')
@@ -562,6 +628,7 @@ async function dispatch(request:Request):Promise<Reply>{
         break
       }
       case 'record.start':
+        chartWork?.cancel();for(const controller of reviewControllers)controller.abort();
         if(recordings.busy())throw Error('RECORDING_ACTIVE')
         if(!state.deviceId)throw Error('DEVICE_UNAVAILABLE')
         if(!recordings.directory&&!(await chooseDirectory()))break
@@ -592,7 +659,7 @@ async function dispatch(request:Request):Promise<Reply>{
       case 'playback.seek':
         if(playback.outputActive())await playback.pause(request.payload.playbackId as string)
         playback.seek(request.payload.playbackId as string,request.payload.positionFrame as string,false);resumeInput();break
-      case 'playback.volume':playback.volume(request.payload.playbackId as string,request.payload.gain as number);break
+      case 'playback.volume':{const id=request.payload.playbackId as string,slot=references.activeSlot,gain=request.payload.gain as number;if(playback.view()?.id!==id)throw Error('STALE_PLAYBACK_SOURCE');playback.volume(id,slot?references.setAuditionVolume(slot,gain):gain);break}
       case 'playback.clearSelection':playback.clearSelection(request.payload.playbackId as string);await updateReferenceSelection();break
       case 'playback.retryAnalysis':
         if(recordings.busy())throw Error('RECORDING_ACTIVE')
@@ -711,8 +778,11 @@ async function initialize():Promise<void>{
 app.whenReady().then(async()=>{
   supportRuntime=await SupportRuntime.create(product.version,__filename,()=>state,diagnosticSnapshot,()=>{if(supportRuntime){state={...state,support:supportRuntime.status};emitState()}},testRoot)
   state={...state,support:supportRuntime.status}
+  markers=new MarkerStore(join(app.getPath('userData'),'review-markers'))
+  await configureSpectralDiskRegistry(join(app.getPath('userData'),'spectral-cache-roots.json'))
   if(testMode&&process.env.TRACE_TEST_STARTUP_FAILURE==='1')throw Error('TEST_ONLY_STARTUP_FAILURE')
   engine=requireNative(app.isPackaged?join(process.resourcesPath,'native/trace_engine.node'):join(root,'build/trace-engine/Release/trace_engine.node')) as NativeEngine
+  configureMediaProcessJobs(engine.processJob?pid=>engine.processJob!(pid):undefined)
   const ffroot=app.isPackaged?join(process.resourcesPath,'ffmpeg'):join(root,'.tools/ffmpeg/bin')
   const segment=testMode&&process.env.TRACE_TEST_SEGMENT_BYTES?Number(process.env.TRACE_TEST_SEGMENT_BYTES):2147483648
   recordings=new RecordingService(engine,join(ffroot,'ffmpeg.exe'),join(ffroot,'ffprobe.exe'),app.isPackaged?join(process.resourcesPath,'native/trace_engine.node'):join(root,'build/trace-engine/Release/trace_engine.node'),syncRecordingState,segment)
@@ -722,7 +792,7 @@ app.whenReady().then(async()=>{
   spectrogram=new SpectrogramPresenter(analysisNative,resolveSpectrogram,packet=>{if(window&&!window.isDestroyed())sendRenderer('trace:spectrogram',packet)})
   playback=new PlaybackService(engine,analyses,syncPlaybackState)
   reports=new ReportService(join(app.getPath('userData'),'report-drafts'),()=>{state={...state,reportJobs:reports.views()};emitState();if(!recordings.busy()&&!managingLibrary&&!exiting)retention?.resume()})
-  playback.beforeSourceChange=()=>spectrogram.release()
+  playback.beforeSourceChange=async()=>{for(const controller of reviewControllers)controller.abort();chartWork?.cancel();await chartWork?.close();await spectrogram.release()}
   playback.instrumentQuery=request=>instrumentsVisible()?instruments.query(request,state.instrumentSettings||defaultInstrumentSettings):Promise.resolve(undefined)
   const encoderLock=JSON.parse(readFileSync(app.isPackaged?join(process.resourcesPath,'ffmpeg.lock.json'):join(root,'ffmpeg.lock.json'),'utf8'))
   const mediaTools={ffmpeg:join(ffroot,'ffmpeg.exe'),ffprobe:join(ffroot,'ffprobe.exe'),nativePath:app.isPackaged?join(process.resourcesPath,'native/trace_engine.node'):join(root,'build/trace-engine/Release/trace_engine.node'),ffmpegSha256:encoderLock.ffmpegSha256,ffprobeSha256:encoderLock.ffprobeSha256}
@@ -821,6 +891,7 @@ app.on('before-quit',event=>{
   recordings?.prepareShutdown()
   const finish=(async()=>{
     if(importWatchTimer)clearInterval(importWatchTimer)
+    for(const controller of reviewControllers)controller.abort();await chartWork?.close();await markers?.close();chartTickets.clear()
     await imports?.shutdown()
     await references?.shutdown()
     await reports?.shutdown()
