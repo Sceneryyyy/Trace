@@ -363,5 +363,10 @@
       "p95Ms": 38.0468,
       "p99Ms": 38.6356
     }
-  ]
+  ],
+  "sourceReference": {
+    "beforeCommit": "2ed9f7d8f2769ec814ca32c21232c7f8ede6d747",
+    "afterSpectralImplementationCommit": "c20c04274ab8fc76f459db0448be2ad2144461a2",
+    "note": "Only spectral kernel source comparison; full iteration and final CI identities are recorded separately in docs/84."
+  }
 }

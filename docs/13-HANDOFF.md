@@ -4,14 +4,20 @@
 
 ## 2026-10-11 · P0/P1 当前迭代
 
-按用户要求实施 83 的 R83-01～08，详细实现、证据与待验范围见 [84](84-P0-P1-CLOUD-ITERATION.md)。本轮正在完成长文件矩阵、资源/故障回归及云端 CI；下方 preview.31 包/CI 是上一候选，不能当作 preview.32 验证。Meter v5 与缓存计量语义保持不变；InstrumentSettings 升级为 v2 并迁移 v1。
+按用户要求顺序完成 83 的 R83-01～08，所有云端可完成内容已交付，到此停止迭代。源码 preview.32，代码 `4fd9401` 已推到 [草稿 PR #1](https://github.com/Sceneryyyy/Trace/pull/1)（`codex/p0-p1-cloud-20261011`）；本地继续在 `recorder/dev`，远程默认分支尚未合入该 PR。
+
+[完整 CI 38160177617](https://github.com/Sceneryyyy/Trace/actions/runs/38160177617) 全成功：Linux / Windows portable 286/286；Linux ASan/UBSan 8/8 + 原始 EBU 1/1；Windows CTest 19/19、native/媒体 67/67，两平台原始 EBU 68/68、sourceDirty=false。CI 临时合并提交 `b31fcb9` 与代码 `4fd9401` 的 Git tree 相同。独立 I 对照 8/8、浏览器交互、18 组实际长文件基线全通过；详细范围/数值见 [84](84-P0-P1-CLOUD-ITERATION.md)，固定来源/摘要/附件身份见 [验证 JSON](release/p0-p1-cloud-verification.json)。附件 payload 下载 HTTP 403，未在本地读取；实际 CI 分片注解已校验，成功步骤与本地记录分别标明证据范围。
+
+本轮包括进程树/慢检查点故障收尾、有界性能诊断、FFT 复用、声谱金字塔与持久预算、显示平滑/倾斜、等响度回听、人工标记/双图导出、分布/PLR/PSR。Meter v5 与缓存计量语义不变；InstrumentSettings 升级 v2 并迁移 v1。最后文档提交不代表新增测试。下方 preview.31 分发包是上一候选，本轮未建立 preview.32 包。
+
+下一阶段：真实 Windows 声卡/96 kHz、两小时录音、慢盘/满盘/断电、设备重连、GPU/DPI、回听与原生保存对话框验收，仍按 76 单列；不能因本轮 CI 成功关闭。R83-09/10 保留 P2，本轮不推进。
 
 ## 源码与分发身份
 
 | 项目 | 当前记录 |
 | --- | --- |
 | 源码 | `0.1.0-preview.32`；计量配置已升级 Meter v5，EBU 修复见 [78](78-EBU-METER-RECALIBRATION.md)；云端发布准备见 [75](75-CLOUD-RELEASE-PREPARATION.md) |
-| Git | `Sceneryyyy/Trace`，默认 `recorder/dev`；本轮文件/故障修复 `2aee519`；保留提交身份及合并历史。自建编码组件 `f33d74d`；此前依赖/编码/下载修复 `3d63d8f` / `ef51603` / `6835af9`；独立化历史为 `a986a0d` / `ab466d8` / `db005b5`；最后文档提交不算新音频测试，远程身份以 Git 为准 |
+| Git | `Sceneryyyy/Trace`，默认 `recorder/dev`；本轮 P0/P1 `4fd9401`（评审分支 `codex/p0-p1-cloud-20261011`）；上一轮文件/故障修复 `2aee519`；保留提交身份及合并历史。自建编码组件 `f33d74d`；此前依赖/编码/下载修复 `3d63d8f` / `ef51603` / `6835af9`；独立化历史为 `a986a0d` / `ab466d8` / `db005b5`；最后文档提交不算新音频测试，远程身份以 Git 为准 |
 | 仪表主题 | 实现 `2938c8e`、审计修复 `c67e9e9` 等已于 2026-09-30 合入 `recorder/dev`；用户已验收开发构建并接受 71-D5 差异 |
 | 当前工程候选 | Windows x64 preview.31，文件/故障修复来源 `2aee519`；[CI 38099859270](https://github.com/Sceneryyyy/Trace/actions/runs/38099859270) 全部成功，私有附件 `11688230696`，未签名 |
 | 历史同事内测包 | Windows x64 preview.30 / InternalTest-r3，来源 `9c1ee21`，包名/校验见 [69](69-INTERNAL-TEST-R3.md) |
