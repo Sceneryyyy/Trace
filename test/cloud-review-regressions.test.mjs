@@ -108,13 +108,18 @@ test('report uses a region export quality rather than unrelated interrupted capt
 })
 test('report event jump releases output, seeks silently and restores requested monitoring',async()=>{
  for(const playing of [true,false]){
-  const p=new PlaybackService(new Native(),new Analysis(),noop),source={takeId:'take',role:'source',label:'fixture',sources:['test.wav'],cacheRoot:root,sampleRate:48000,channelCount:1,frames:'48000'}
+  const f=await fixture(),source=await f.service.resolve('take',f.record.id),analysis=new Analysis(),hash=f.record.result.sourceSha256[0]
+  analysis.reportInput=()=>({manifest:{sourceSha256:[hash],cacheKey:'cache'},directory:root,source:{sources:source.sources}})
+  const p=new PlaybackService(new Native(),analysis,noop)
   await p.open(source,'device');const id=p.view().id;if(playing)await p.play(id)
-  let started=0;const t=context({playback:p,reports:{setRecordingBusy:noop,result:()=>({source:{takeId:'take',role:'source'},analysis:{sourceSha256:['hash']},eventPreview:[{startFrame:'24000'}]})},engine:{snapshot:()=>({active:false}),start:()=>{started++},stop:noop}})
+  let started=0;const t=context({playback:p,analyses:analysis,reports:{setRecordingBusy:noop,result:()=>({source:{takeId:source.takeId,role:source.role,exportId:source.exportId},analysis:{sourceSha256:[hash]},eventPreview:[{startFrame:'24000'}]})},engine:{snapshot:()=>({active:false}),start:()=>{started++},stop:noop}})
   p.selection(id,'0','12000',true);review.set(t)
   const reply=await review.dispatch(request('report.jump',{reportId:'report',index:0}))
   assert.equal(reply.ok,true);assert.equal(p.view().phase,'paused');assert.equal(p.view().outputReady,false);assert.equal(p.view().positionFrame,'24000');assert.equal(p.view().loop,false)
-  assert.equal(started,1);assert.equal(review.state().active,true);await p.close()
+  assert.equal(started,1);assert.equal(review.state().active,true)
+  await fs.appendFile(source.sources[0],'changed')
+  const changed=await review.dispatch({...request('report.jump',{reportId:'report',index:0}),expectedStateRevision:review.state().revision})
+  assert.equal(changed.ok,false);assert.equal(changed.error.code,'REVIEW_SOURCE_CHANGED');assert.equal(p.view().positionFrame,'24000');await p.close()
  }
 })
 test('failed recording startup resumes actual delivery so a later user-authorized copy completes',async()=>{
