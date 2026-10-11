@@ -1,0 +1,3229 @@
+{
+  "schemaVersion": 1,
+  "checkedAt": "2026-10-11T01:13:25.609771+00:00",
+  "task": "Expanded file and fault tests; preserves Meter v5, Session v2, cache key v3 and original EBU tolerances",
+  "verifiedCodeCommit": "2aee519b575acdc8cdd954634084c2bb282b063f",
+  "verifiedCodeInputs": {
+    "src/trace/importMedia.ts": "3ac8249a0105f7137a222db99caf1a2fdea51bdcda7364f205bedac8dd994280",
+    "src/trace/mp3Integrity.ts": "e6a4abd63cf55435e20e519a7e9220e6b6af2acd280688be59c231865076ebe3",
+    "src/trace/media-runner.ts": "3b32d12b89e30272a04b3b73db8e65973e51be1276a12fed80a978996856f261",
+    "test/codec-faults.test.mjs": "f4bb7f642dc67a5ddd64fb698dab53639cdd02567e2238cfa84595428f4b39e6",
+    "test/import-disk-faults.test.mjs": "6bc33206492da7855cb1bf4b5ad0a254d644c6394cde63e75af125cd39d56f71",
+    "test/media-process-faults.test.mjs": "69a036d155b61180008544ffeb9a837a5593cc870b82a517883078c59849677c",
+    "test/mp3-integrity.test.mjs": "430ad41c17def04969e943674e5b5eafed7b3873c12fc34100130ac9cbc4dbc8",
+    "test/file-worker-watchdog.test.mjs": "6b076f54e86250928ab0ab06e8b8a36e3c1a40b087958b5b72cf1fd77e053ce9",
+    "test/trace-suites.mjs": "348bea2fbdfbd587a43c2d40bea128ad53f14bc2ab6697bc4afa42bb5f816170",
+    "scripts/run-trace-tests.mjs": "b15e5bef975d7acbf363d93ae546aed0ffe95c583df7fa5fda895688d3b0c8a1",
+    "tools/release/ci-summary.cjs": "d5abb926d064a62e17506247c9b1f79f51771369e026f086e3c89186c8d25783",
+    "tools/audit/renderer.cjs": "c02e55030f0dace0ea0cf0fbef3e6456b31faf714f6e400127646568bc26c5dd",
+    ".github/workflows/trace.yml": "9be8d9ad2c383fa86c43f029684d47d7dbf94ae7482287e73cdc21c67185e7bd",
+    ".github/workflows/codec-source.yml": "5fab3719027ee5feb97f27c8a080d2f8d0b3ffdca6342dc6610094e0f0d235a7",
+    "package-lock.json": "17ce7b17ef9ce0821c8025284884e32550ed020f4752f6b39d37108cf8b545df",
+    "ffmpeg.lock.json": "9224e609163e4ccdc4f595c78fc515d5994d9628a39f46f1c6333cfd91586e0b",
+    "references/trace-ffmpeg/build-lock.json": "ed3e90d50ae39a4c3364197a5145490d36526f955e744f3585cb5c4cd37e84d1",
+    "references/trace-ffmpeg/build-report.json": "e305461d392c76fec8c7355194c2fbd6b1fd4b579c862f4f5cd7bdb01fa0d047",
+    "references/trace-ffmpeg/source-manifest.json": "e9770272c2a688991fe49203bc6145666c6864ef10c153550bda6adec46cb9a0"
+  },
+  "ci": {
+    "schemaVersion": 1,
+    "checkedAt": "2026-10-11T01:13:22.137688+00:00",
+    "runId": 38099859270,
+    "attempt": 1,
+    "commit": "2aee519b575acdc8cdd954634084c2bb282b063f",
+    "workflowConclusion": "success",
+    "workflowUrl": "https://github.com/Sceneryyyy/Trace/actions/runs/38099859270",
+    "evidenceScope": "Authenticated GitHub job/annotation and artifact metadata APIs; selected actual test, EBU, source receipt and package records published by the runner. Azure log/artifact payloads not downloaded/read.",
+    "artifactPayloadRead": false,
+    "logPayloadRead": false,
+    "artifactPayloadLimitation": "Azure log/blob CONNECT Forbidden observed. No retry/bypass. Evidence annotations carry selected actual records plus their hashes; archive digest is separate from internal ZIP/JSON digests.",
+    "jobs": {
+      "portable": {
+        "jobId": 114353369436,
+        "conclusion": "success",
+        "startedAt": "2026-10-11T00:51:50Z",
+        "completedAt": "2026-10-11T01:10:09Z",
+        "javascriptTestBlocks": [
+          {
+            "context": "portable JS",
+            "tests": 272,
+            "suites": 0,
+            "pass": 272,
+            "fail": 0,
+            "cancelled": 0,
+            "skipped": 0,
+            "todo": 0,
+            "duration_ms": 17647.728579
+          }
+        ],
+        "ctest": {
+          "core": {
+            "sha256": "2392a8099ad4707dba0bf5e0e807ca43c93777c1ba8e1b3c3421241ffce1b784",
+            "tests": 8,
+            "failures": 0,
+            "disabled": 0,
+            "seconds": 266
+          },
+          "ebu": {
+            "sha256": "99fb565657511d44d4404dd0a051855e730e285d733300c401e36bbc8e141e4c",
+            "tests": 1,
+            "failures": 0,
+            "disabled": 0,
+            "seconds": 744
+          }
+        },
+        "ctestTotalSecondsInLogOrder": [
+          266,
+          744
+        ],
+        "ebuSummary": {
+          "passed": 68,
+          "failed": 0,
+          "excluded": 2,
+          "supported": 68,
+          "checks": {
+            "total": 112,
+            "passed": 112,
+            "failed": 0
+          },
+          "invariants": {
+            "total": 204,
+            "passed": 204,
+            "failed": 0
+          },
+          "supportedPassRate": 1
+        },
+        "runtimeProvenance": null,
+        "selectedActualRecords": {
+          "schemaVersion": 1,
+          "commit": "2aee519b575acdc8cdd954634084c2bb282b063f",
+          "sourceDirty": false,
+          "platform": "linux",
+          "arch": "x64",
+          "codecBuildReused": false,
+          "tests": [
+            {
+              "sha256": "5f8a020040e439b994735926386d1e38e6d62fd58cfbb3d6518a1198b42d1628",
+              "commit": "2aee519b575acdc8cdd954634084c2bb282b063f",
+              "tier": "portable",
+              "files": 54,
+              "exitCode": 0,
+              "status": "pass",
+              "counts": {
+                "tests": 272,
+                "suites": 0,
+                "pass": 272,
+                "fail": 0,
+                "cancelled": 0,
+                "skipped": 0,
+                "todo": 0,
+                "duration_ms": 17647.728579
+              },
+              "failureDetails": null,
+              "observations": {},
+              "outputSha256": "bddccb3582b0c66d1544ec29f845141b976ff927b1d700b9fbf1fa13607e8e60"
+            }
+          ],
+          "ctest": {
+            "core": {
+              "sha256": "2392a8099ad4707dba0bf5e0e807ca43c93777c1ba8e1b3c3421241ffce1b784",
+              "tests": 8,
+              "failures": 0,
+              "disabled": 0,
+              "seconds": 266
+            },
+            "ebu": {
+              "sha256": "99fb565657511d44d4404dd0a051855e730e285d733300c401e36bbc8e141e4c",
+              "tests": 1,
+              "failures": 0,
+              "disabled": 0,
+              "seconds": 744
+            }
+          },
+          "ebu": {
+            "sha256": "c7f772bd23507ec95dd7b49211e4a6dedd941172567377b3db95a025ade441f6",
+            "commit": "2aee519b575acdc8cdd954634084c2bb282b063f",
+            "sourceDirty": false,
+            "status": "pass",
+            "measurementConfigId": "trace-meter-v5-ebur128-1.2.6-lra10hz-msi100hz-tpaligned",
+            "summary": {
+              "passed": 68,
+              "failed": 0,
+              "excluded": 2,
+              "supported": 68,
+              "checks": {
+                "total": 112,
+                "passed": 112,
+                "failed": 0
+              },
+              "invariants": {
+                "total": 204,
+                "passed": 204,
+                "failed": 0
+              },
+              "supportedPassRate": 1
+            },
+            "sourceSha256": {
+              "native/src/recorder/Meter.cpp": "d77d0d2f948d576977935ba0990a98fddc0738f3fc5219f6895a38a2597e2e42",
+              "native/src/recorder/Meter.h": "532a775edae2000a6f132db39b1684c7f7138484706dc6268999a2d4c1835cad",
+              "native/src/recorder/MeasurementConfig.h": "0a3619610a959edc91172767203f7695649c79573edd406e4185a6cdd49e8078",
+              "native/src/recorder/FileAnalysis.cpp": "5151b30051df30202880bb10b6a28417ce78e6284d9fa9da50f75d1d2de9ce5d",
+              "native/vendor/libebur128/ebur128.c": "9d3d75d880e7f514b0669341501ce55b159d86c25012b6d8c9340ad7ed8e7d5f",
+              "test/native/ebu_wav_probe.cpp": "15b983a60ee21cc86277d17707fad87f04b03f87e9d302d439c623befac23aa0",
+              "tools/metering/run-ebu-wav-tests.py": "872930365b8ff8e16f468fe85b0abbc436ff37ed5c41d6cb6d399ccc84f5cba6"
+            }
+          },
+          "security": {
+            "sha256": "6a6cf240b5895a03a0853da6d1bd176ccc1f194df825065713db656e2c9f7d93",
+            "commit": "2aee519b575acdc8cdd954634084c2bb282b063f",
+            "sourceDirty": false,
+            "packageLockSha256": "17ce7b17ef9ce0821c8025284884e32550ed020f4752f6b39d37108cf8b545df",
+            "status": "pass",
+            "checks": [
+              {
+                "command": "npm audit --json",
+                "exitCode": 0,
+                "counts": {
+                  "info": 0,
+                  "low": 0,
+                  "moderate": 0,
+                  "high": 0,
+                  "critical": 0,
+                  "total": 0
+                },
+                "reportSha256": "c32ca030b773f94f2850f3e61a8a942058b82cd928537441fbaf310ea318997a"
+              },
+              {
+                "command": "npm audit --omit=dev --json",
+                "exitCode": 0,
+                "counts": {
+                  "info": 0,
+                  "low": 0,
+                  "moderate": 0,
+                  "high": 0,
+                  "critical": 0,
+                  "total": 0
+                },
+                "reportSha256": "c32ca030b773f94f2850f3e61a8a942058b82cd928537441fbaf310ea318997a"
+              }
+            ]
+          },
+          "verification": null,
+          "portableGate": null,
+          "packageLoad": null,
+          "packageAudit": null,
+          "runtime": null,
+          "codec": null,
+          "candidate": null,
+          "scope": "Selected actual CI-produced test/numerical/build/package records; generated/offline and no-card checks, not physical-device or release acceptance",
+          "annotationAssembly": {
+            "parts": 2,
+            "compactJsonSha256": "c941a722eb7aaae0dc9910c2c82e389305b4db0651830fa545fcfd4d1acd6f44",
+            "allPartsPresent": true,
+            "verifiedSha256": true
+          }
+        },
+        "ebuSourceBindings": {
+          "native/src/recorder/Meter.cpp": {
+            "gitBlobSha256": "d77d0d2f948d576977935ba0990a98fddc0738f3fc5219f6895a38a2597e2e42",
+            "actualRunnerFileSha256": "d77d0d2f948d576977935ba0990a98fddc0738f3fc5219f6895a38a2597e2e42",
+            "checkoutTransform": "identity",
+            "contentMatchesVerifiedCommit": true
+          },
+          "native/src/recorder/Meter.h": {
+            "gitBlobSha256": "532a775edae2000a6f132db39b1684c7f7138484706dc6268999a2d4c1835cad",
+            "actualRunnerFileSha256": "532a775edae2000a6f132db39b1684c7f7138484706dc6268999a2d4c1835cad",
+            "checkoutTransform": "identity",
+            "contentMatchesVerifiedCommit": true
+          },
+          "native/src/recorder/MeasurementConfig.h": {
+            "gitBlobSha256": "0a3619610a959edc91172767203f7695649c79573edd406e4185a6cdd49e8078",
+            "actualRunnerFileSha256": "0a3619610a959edc91172767203f7695649c79573edd406e4185a6cdd49e8078",
+            "checkoutTransform": "identity",
+            "contentMatchesVerifiedCommit": true
+          },
+          "native/src/recorder/FileAnalysis.cpp": {
+            "gitBlobSha256": "5151b30051df30202880bb10b6a28417ce78e6284d9fa9da50f75d1d2de9ce5d",
+            "actualRunnerFileSha256": "5151b30051df30202880bb10b6a28417ce78e6284d9fa9da50f75d1d2de9ce5d",
+            "checkoutTransform": "identity",
+            "contentMatchesVerifiedCommit": true
+          },
+          "native/vendor/libebur128/ebur128.c": {
+            "gitBlobSha256": "9d3d75d880e7f514b0669341501ce55b159d86c25012b6d8c9340ad7ed8e7d5f",
+            "actualRunnerFileSha256": "9d3d75d880e7f514b0669341501ce55b159d86c25012b6d8c9340ad7ed8e7d5f",
+            "checkoutTransform": "identity",
+            "contentMatchesVerifiedCommit": true
+          },
+          "test/native/ebu_wav_probe.cpp": {
+            "gitBlobSha256": "15b983a60ee21cc86277d17707fad87f04b03f87e9d302d439c623befac23aa0",
+            "actualRunnerFileSha256": "15b983a60ee21cc86277d17707fad87f04b03f87e9d302d439c623befac23aa0",
+            "checkoutTransform": "identity",
+            "contentMatchesVerifiedCommit": true
+          },
+          "tools/metering/run-ebu-wav-tests.py": {
+            "gitBlobSha256": "872930365b8ff8e16f468fe85b0abbc436ff37ed5c41d6cb6d399ccc84f5cba6",
+            "actualRunnerFileSha256": "872930365b8ff8e16f468fe85b0abbc436ff37ed5c41d6cb6d399ccc84f5cba6",
+            "checkoutTransform": "identity",
+            "contentMatchesVerifiedCommit": true
+          }
+        },
+        "annotationMetadataSha256": "60b311a485f7ba17fff468595a7f7052846342559015111c40e08985f77b70e1",
+        "failedSteps": [],
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/setup-node@v6",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Install locked dependencies",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run npm run check:independence",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run npm run check:security",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run npm run typecheck",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run npm run test:trace",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run npm run build:trace",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Portable C++ with ASan and UBSan",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Actual React subscription regression in Chromium",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Renderer interactions with simulated IPC",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Publish selected verification evidence in readable annotations",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/upload-artifact@v4",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run actions/setup-node@v6",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success"
+          }
+        ]
+      },
+      "windows": {
+        "jobId": 114353369512,
+        "conclusion": "success",
+        "startedAt": "2026-10-11T00:51:50Z",
+        "completedAt": "2026-10-11T01:12:28Z",
+        "javascriptTestBlocks": [
+          {
+            "context": "portable JS",
+            "tests": 272,
+            "suites": 0,
+            "pass": 272,
+            "fail": 0,
+            "cancelled": 0,
+            "skipped": 0,
+            "todo": 0,
+            "duration_ms": 19790.6657
+          },
+          {
+            "context": "native JS",
+            "tests": 64,
+            "suites": 0,
+            "pass": 64,
+            "fail": 0,
+            "cancelled": 0,
+            "skipped": 0,
+            "todo": 0,
+            "duration_ms": 99194.7401
+          }
+        ],
+        "ctest": {
+          "sha256": "8d740f45c2c90ef0b6f8597a3ad84be4dafadc991b56aef5794febc686b03dd8",
+          "tests": 19,
+          "passed": 19,
+          "failed": 0
+        },
+        "ctestTotalSecondsInLogOrder": [],
+        "ebuSummary": {
+          "passed": 68,
+          "failed": 0,
+          "excluded": 2,
+          "supported": 68,
+          "checks": {
+            "total": 112,
+            "passed": 112,
+            "failed": 0
+          },
+          "invariants": {
+            "total": 204,
+            "passed": 204,
+            "failed": 0
+          },
+          "supportedPassRate": 1
+        },
+        "runtimeProvenance": {
+          "sha256": "3a6bf9d7bcbd46d003cb835d67718f47fb64929d28eb8b97575568d803c2470a",
+          "electron": "42.11.10",
+          "electronBuilder": "26.15.3",
+          "vcRedist": "14.44.35112 x64",
+          "dlls": {
+            "msvcp140.dll": "0f885b509a685d2bbfa652fed26b5fb31d88fbdab0a978c641d1c7b8aa460aa9",
+            "vcruntime140.dll": "d5e4d9a3e835fa679450145d6a7d94e36573a509317111904d9b3712c30d9066",
+            "vcruntime140_1.dll": "1f2d41c4aa5db0bc33ebf7b66d72943a817d7ce6cbe880502a9403823633093f"
+          }
+        },
+        "selectedActualRecords": {
+          "schemaVersion": 1,
+          "commit": "2aee519b575acdc8cdd954634084c2bb282b063f",
+          "sourceDirty": false,
+          "platform": "win32",
+          "arch": "x64",
+          "codecBuildReused": true,
+          "tests": [
+            {
+              "sha256": "66567e3d6f2e495783913acbe313777997dad8acfab0cb526a4eca621f30ebec",
+              "commit": "2aee519b575acdc8cdd954634084c2bb282b063f",
+              "tier": "portable",
+              "files": 54,
+              "exitCode": 0,
+              "status": "pass",
+              "counts": {
+                "tests": 272,
+                "suites": 0,
+                "pass": 272,
+                "fail": 0,
+                "cancelled": 0,
+                "skipped": 0,
+                "todo": 0,
+                "duration_ms": 19790.6657
+              },
+              "failureDetails": null,
+              "observations": {},
+              "outputSha256": "964cdd2f5b5e2b49a1d81140d3dd20495f4c7628e425473a4a7d409dcccb3558"
+            },
+            {
+              "sha256": "f5370632c9e67e96099ff4ec86dadef545143d3c6e4485a9a9c54f37090da919",
+              "commit": "2aee519b575acdc8cdd954634084c2bb282b063f",
+              "tier": "native",
+              "files": 11,
+              "exitCode": 0,
+              "status": "pass",
+              "counts": {
+                "tests": 64,
+                "suites": 0,
+                "pass": 64,
+                "fail": 0,
+                "cancelled": 0,
+                "skipped": 0,
+                "todo": 0,
+                "duration_ms": 99194.7401
+              },
+              "failureDetails": null,
+              "observations": {
+                "TRACE_MP3_IMPORT_MATRIX": {
+                  "ffmpegSha256": "c647e20c508af6421efb3c78b59e2a693f7b905c6a27384282ad76b5ad37d5ee",
+                  "matrix": [
+                    {
+                      "rate": 8000,
+                      "channels": 1,
+                      "mode": "cbr",
+                      "inputFrames": 1737,
+                      "declaredDecodedFrames": "1775",
+                      "importedFrames": "1775"
+                    },
+                    {
+                      "rate": 8000,
+                      "channels": 1,
+                      "mode": "vbr",
+                      "inputFrames": 1737,
+                      "declaredDecodedFrames": "1775",
+                      "importedFrames": "1775"
+                    },
+                    {
+                      "rate": 8000,
+                      "channels": 2,
+                      "mode": "cbr",
+                      "inputFrames": 1737,
+                      "declaredDecodedFrames": "1775",
+                      "importedFrames": "1775"
+                    },
+                    {
+                      "rate": 8000,
+                      "channels": 2,
+                      "mode": "vbr",
+                      "inputFrames": 1737,
+                      "declaredDecodedFrames": "1775",
+                      "importedFrames": "1775"
+                    },
+                    {
+                      "rate": 16000,
+                      "channels": 1,
+                      "mode": "cbr",
+                      "inputFrames": 3337,
+                      "declaredDecodedFrames": "3337",
+                      "importedFrames": "3337"
+                    },
+                    {
+                      "rate": 16000,
+                      "channels": 1,
+                      "mode": "vbr",
+                      "inputFrames": 3337,
+                      "declaredDecodedFrames": "3337",
+                      "importedFrames": "3337"
+                    },
+                    {
+                      "rate": 16000,
+                      "channels": 2,
+                      "mode": "cbr",
+                      "inputFrames": 3337,
+                      "declaredDecodedFrames": "3337",
+                      "importedFrames": "3337"
+                    },
+                    {
+                      "rate": 16000,
+                      "channels": 2,
+                      "mode": "vbr",
+                      "inputFrames": 3337,
+                      "declaredDecodedFrames": "3337",
+                      "importedFrames": "3337"
+                    },
+                    {
+                      "rate": 44100,
+                      "channels": 1,
+                      "mode": "cbr",
+                      "inputFrames": 8957,
+                      "declaredDecodedFrames": "8957",
+                      "importedFrames": "8957"
+                    },
+                    {
+                      "rate": 44100,
+                      "channels": 1,
+                      "mode": "vbr",
+                      "inputFrames": 8957,
+                      "declaredDecodedFrames": "8957",
+                      "importedFrames": "8957"
+                    },
+                    {
+                      "rate": 44100,
+                      "channels": 2,
+                      "mode": "cbr",
+                      "inputFrames": 8957,
+                      "declaredDecodedFrames": "8957",
+                      "importedFrames": "8957"
+                    },
+                    {
+                      "rate": 44100,
+                      "channels": 2,
+                      "mode": "vbr",
+                      "inputFrames": 8957,
+                      "declaredDecodedFrames": "8957",
+                      "importedFrames": "8957"
+                    },
+                    {
+                      "rate": 48000,
+                      "channels": 1,
+                      "mode": "cbr",
+                      "inputFrames": 9737,
+                      "declaredDecodedFrames": "9737",
+                      "importedFrames": "9737"
+                    },
+                    {
+                      "rate": 48000,
+                      "channels": 1,
+                      "mode": "vbr",
+                      "inputFrames": 9737,
+                      "declaredDecodedFrames": "9737",
+                      "importedFrames": "9737"
+                    },
+                    {
+                      "rate": 48000,
+                      "channels": 2,
+                      "mode": "cbr",
+                      "inputFrames": 9737,
+                      "declaredDecodedFrames": "9737",
+                      "importedFrames": "9737"
+                    },
+                    {
+                      "rate": 48000,
+                      "channels": 2,
+                      "mode": "vbr",
+                      "inputFrames": 9737,
+                      "declaredDecodedFrames": "9737",
+                      "importedFrames": "9737"
+                    }
+                  ],
+                  "scope": "Generated external files; decoder metadata governs frames, not a claim of bit-exact encoder roundtrip"
+                },
+                "TRACE_CODEC_MINUTE": {
+                  "ffmpegSha256": "c647e20c508af6421efb3c78b59e2a693f7b905c6a27384282ad76b5ad37d5ee",
+                  "sourceRate": 96000,
+                  "sourceFrames": 5760000,
+                  "channels": 2,
+                  "timings": [
+                    {
+                      "rate": 44100,
+                      "extension": "mp3",
+                      "elapsedMs": 1203,
+                      "physicalFrames": "2646000",
+                      "audibleFrames": "2646000"
+                    },
+                    {
+                      "rate": 44100,
+                      "extension": "m4a",
+                      "elapsedMs": 1772,
+                      "physicalFrames": "2646000",
+                      "audibleFrames": "2646000"
+                    },
+                    {
+                      "rate": 48000,
+                      "extension": "mp3",
+                      "elapsedMs": 1242,
+                      "physicalFrames": "2880000",
+                      "audibleFrames": "2880000"
+                    },
+                    {
+                      "rate": 48000,
+                      "extension": "m4a",
+                      "elapsedMs": 1833,
+                      "physicalFrames": "2880000",
+                      "audibleFrames": "2880000"
+                    }
+                  ],
+                  "scope": "Offline generated signal; not WASAPI or physical-device real-time acceptance"
+                }
+              },
+              "outputSha256": "f473a6f8f12d7fc0703a5a7666eb4bb23408ade36d755a2c66550230985fc85b"
+            }
+          ],
+          "ctest": {
+            "sha256": "8d740f45c2c90ef0b6f8597a3ad84be4dafadc991b56aef5794febc686b03dd8",
+            "tests": 19,
+            "passed": 19,
+            "failed": 0
+          },
+          "ebu": {
+            "sha256": "d450cc9644327f9490273003c770c6c2a9d74a779970ecdb91ebc104b3e25f82",
+            "commit": "2aee519b575acdc8cdd954634084c2bb282b063f",
+            "sourceDirty": false,
+            "status": "pass",
+            "measurementConfigId": "trace-meter-v5-ebur128-1.2.6-lra10hz-msi100hz-tpaligned",
+            "summary": {
+              "passed": 68,
+              "failed": 0,
+              "excluded": 2,
+              "supported": 68,
+              "checks": {
+                "total": 112,
+                "passed": 112,
+                "failed": 0
+              },
+              "invariants": {
+                "total": 204,
+                "passed": 204,
+                "failed": 0
+              },
+              "supportedPassRate": 1
+            },
+            "sourceSha256": {
+              "native/src/recorder/Meter.cpp": "a01a7b96641bf8113faba731aa8338e642753febf725f2fdc599c6bedd4a5e91",
+              "native/src/recorder/Meter.h": "e4066aac8d89fdec565f177c7a08e076448e384536202d175d4d1ede3b066409",
+              "native/src/recorder/MeasurementConfig.h": "de90bfa7762c80b2ba3155a5f1a5ea4a255292c4b307e79c5a60f1c1d160f1a6",
+              "native/src/recorder/FileAnalysis.cpp": "e9702a0dea47e2da2ca56611564d6a03f5c57743b64b8b650b3aacded843d82d",
+              "native/vendor/libebur128/ebur128.c": "36726095b74a13fde0cb74992a06400d3f7cb1a228fa95df2a4cc5bf38231783",
+              "test/native/ebu_wav_probe.cpp": "51763a9073bce6d2f39226299b3c5e3175d985d07f8721929a4eb65108368722",
+              "tools/metering/run-ebu-wav-tests.py": "b8710789684f94d2e15e306993b7d8ca1a44d2d8f3bef2cf304e563edc9413a9"
+            }
+          },
+          "security": {
+            "sha256": "6a6cf240b5895a03a0853da6d1bd176ccc1f194df825065713db656e2c9f7d93",
+            "commit": "2aee519b575acdc8cdd954634084c2bb282b063f",
+            "sourceDirty": false,
+            "packageLockSha256": "17ce7b17ef9ce0821c8025284884e32550ed020f4752f6b39d37108cf8b545df",
+            "status": "pass",
+            "checks": [
+              {
+                "command": "npm audit --json",
+                "exitCode": 0,
+                "counts": {
+                  "info": 0,
+                  "low": 0,
+                  "moderate": 0,
+                  "high": 0,
+                  "critical": 0,
+                  "total": 0
+                },
+                "reportSha256": "c32ca030b773f94f2850f3e61a8a942058b82cd928537441fbaf310ea318997a"
+              },
+              {
+                "command": "npm audit --omit=dev --json",
+                "exitCode": 0,
+                "counts": {
+                  "info": 0,
+                  "low": 0,
+                  "moderate": 0,
+                  "high": 0,
+                  "critical": 0,
+                  "total": 0
+                },
+                "reportSha256": "c32ca030b773f94f2850f3e61a8a942058b82cd928537441fbaf310ea318997a"
+              }
+            ]
+          },
+          "verification": {
+            "sha256": "ba5f4ebd08be337ae674b89ca852817ce3b635b92311a63beed47539d5e57a8f",
+            "commit": "2aee519b575acdc8cdd954634084c2bb282b063f",
+            "sourceDirty": false,
+            "platform": "win32",
+            "arch": "x64",
+            "status": "pass",
+            "checks": [
+              {
+                "command": "npm run build:trace-engine",
+                "exitCode": 0,
+                "status": "pass"
+              },
+              {
+                "command": "npm run check:security",
+                "exitCode": 0,
+                "status": "pass"
+              },
+              {
+                "command": "npm run typecheck",
+                "exitCode": 0,
+                "status": "pass"
+              },
+              {
+                "command": "npm run test:trace",
+                "exitCode": 0,
+                "status": "pass"
+              },
+              {
+                "command": "npm run build:trace",
+                "exitCode": 0,
+                "status": "pass"
+              },
+              {
+                "command": "npm run test:trace-native",
+                "exitCode": 0,
+                "status": "pass"
+              }
+            ]
+          },
+          "portableGate": {
+            "sha256": "6f2fa24b8c44fe228a1146c1e87eec9a28d2df4ca9508021104d09973e759180",
+            "status": "pass",
+            "headSha": "2aee519b575acdc8cdd954634084c2bb282b063f",
+            "runId": 38099859270,
+            "attempt": 1,
+            "jobId": 114353369436
+          },
+          "packageLoad": {
+            "sha256": "51024d99cd3a75942ba9afb3f96ea40333b416ff823808fd1d11671da95c0b03",
+            "commit": "2aee519b575acdc8cdd954634084c2bb282b063f",
+            "status": "pass",
+            "exeSha256": "d0f815f2d96a88ae560bad6a9437155fbd4307da8e962868cf7d9932e6b7e586",
+            "asarSha256": "8035c66dafb8cb179fa4afddf5db49b8547dba8e8e3325e6170fdbe317061329"
+          },
+          "packageAudit": {
+            "sha256": "9827928076a851126fe43def56aee9055ba4ccfc8e6127fc951d05e228003810",
+            "status": "pass",
+            "checks": [
+              "ASAR contains only the Trace build and a minimal package, with all workers and assets identical to the build",
+              "Package contains usage guide, licenses and no recordings, default demo, VST or TUI",
+              "Retained Prism FFT license/provenance matches packaged bytes and pinned source/extraction hashes",
+              "Native addon, VC runtime, codecs and available source inventory match locked/staged hashes",
+              "Trace executable carries its own icon and the current product version"
+            ],
+            "files": {
+              "Trace.exe": {
+                "bytes": 235323904,
+                "sha256": "d0f815f2d96a88ae560bad6a9437155fbd4307da8e962868cf7d9932e6b7e586"
+              },
+              "resources/app.asar": {
+                "bytes": 3288311,
+                "sha256": "8035c66dafb8cb179fa4afddf5db49b8547dba8e8e3325e6170fdbe317061329"
+              }
+            }
+          },
+          "runtime": {
+            "sha256": "3a6bf9d7bcbd46d003cb835d67718f47fb64929d28eb8b97575568d803c2470a",
+            "electron": "42.11.10",
+            "electronBuilder": "26.15.3",
+            "vcRedist": "14.44.35112 x64",
+            "dlls": {
+              "msvcp140.dll": "0f885b509a685d2bbfa652fed26b5fb31d88fbdab0a978c641d1c7b8aa460aa9",
+              "vcruntime140.dll": "d5e4d9a3e835fa679450145d6a7d94e36573a509317111904d9b3712c30d9066",
+              "vcruntime140_1.dll": "1f2d41c4aa5db0bc33ebf7b66d72943a817d7ce6cbe880502a9403823633093f"
+            }
+          },
+          "codec": {
+            "sha256": "e305461d392c76fec8c7355194c2fbd6b1fd4b579c862f4f5cd7bdb01fa0d047",
+            "buildLockSha256": "ed3e90d50ae39a4c3364197a5145490d36526f955e744f3585cb5c4cd37e84d1",
+            "systemInventorySha256": "b895920269ac9faa7827c4467f407268e4bd1dbf0ca2d539ff5a53f42b1ce48f",
+            "configHeaderSha256": "2f386f2de7862231e29b33eb202e152b605367d48e8ffa7b8ce7a004143bbbfb",
+            "configMakSha256": "b8ea4983a6603fbe52cef68c155a6f2d2c0031e639b70f8715f0532d1be96669",
+            "recipes": {
+              "tools/codec/build.cjs": "7b1d08dfefdb06c70292c5886540570c158a8037a530f72f4e00d9722470917a",
+              "tools/codec/identity.cjs": "0f69a737f54676409a12ca26f169a8392c1dd9040bb9a3fd36ad2244210bcffc",
+              "tools/release/dependency-sources.cjs": "c53a60e479767c12b7036b36278de5b37035f035fa428c475ba9082c284a12ae"
+            },
+            "matchesPinnedReport": true,
+            "ffmpegSha256": "c647e20c508af6421efb3c78b59e2a693f7b905c6a27384282ad76b5ad37d5ee",
+            "ffprobeSha256": "73337f082639e4f3f867a50fc69ec681ed81cdc8faf5df5d8fed4f677530bef5"
+          },
+          "candidate": {
+            "sha256": "f1242137c00df59eb95574e31834c965c372f853f76ca9b7c4dc1f1a0a607b11",
+            "commit": "2aee519b575acdc8cdd954634084c2bb282b063f",
+            "status": "engineering-candidate",
+            "signed": false,
+            "files": {
+              "00-开始使用.txt": {
+                "bytes": 931,
+                "sha256": "73cb115117f1f1b67c596ae377a3a6425f2ea4eca612339807a8d1bbf9ae9255"
+              },
+              "FFmpeg-9.0.2-Upstream-Source.tar.gz": {
+                "bytes": 17333895,
+                "sha256": "0aa2b1de2a5698b20a23e93d539a9a8e82ca0117496c5bdf05d198805f42bb3b"
+              },
+              "ffmpeg-build-lock.json": {
+                "bytes": 8557,
+                "sha256": "ed3e90d50ae39a4c3364197a5145490d36526f955e744f3585cb5c4cd37e84d1"
+              },
+              "ffmpeg-build-report.json": {
+                "bytes": 11506,
+                "sha256": "e305461d392c76fec8c7355194c2fbd6b1fd4b579c862f4f5cd7bdb01fa0d047"
+              },
+              "ffmpeg-config.h": {
+                "bytes": 24832,
+                "sha256": "2f386f2de7862231e29b33eb202e152b605367d48e8ffa7b8ce7a004143bbbfb"
+              },
+              "ffmpeg-config.mak": {
+                "bytes": 89448,
+                "sha256": "b8ea4983a6603fbe52cef68c155a6f2d2c0031e639b70f8715f0532d1be96669"
+              },
+              "ffmpeg-source-manifest.json": {
+                "bytes": 4398,
+                "sha256": "e9770272c2a688991fe49203bc6145666c6864ef10c153550bda6adec46cb9a0"
+              },
+              "ffmpeg-system-inputs.json": {
+                "bytes": 1152417,
+                "sha256": "b895920269ac9faa7827c4467f407268e4bd1dbf0ca2d539ff5a53f42b1ce48f"
+              },
+              "FFmpeg源码说明.md": {
+                "bytes": 2835,
+                "sha256": "6112c030e99f0bfe29f7d4827a2c818750e4e58cc8683dd0fe7c957bcd30d304"
+              },
+              "LAME-3.100-Upstream-Source.tar.gz": {
+                "bytes": 1524133,
+                "sha256": "ddfe36cab873794038ae2c1210557ad34857a4b6bdc515785d1da9e175b1da1e"
+              },
+              "package-load.json": {
+                "bytes": 519,
+                "sha256": "51024d99cd3a75942ba9afb3f96ea40333b416ff823808fd1d11671da95c0b03"
+              },
+              "PDF字体许可.txt": {
+                "bytes": 4480,
+                "sha256": "7accca2f29220c9ab44e4950799b821f36ebf5bbe6b5fb5342724b32228a8daf"
+              },
+              "security-audit.json": {
+                "bytes": 997,
+                "sha256": "6a6cf240b5895a03a0853da6d1bd176ccc1f194df825065713db656e2c9f7d93"
+              },
+              "security-baseline.json": {
+                "bytes": 3509,
+                "sha256": "443159d93a3841da06f1d2a9b9fc32842a424e7a3c608c41de92db01da198c89"
+              },
+              "Trace-0.1.0-preview.31-Source.zip": {
+                "bytes": 4561322,
+                "sha256": "4404c31e778801f3c9c53ffc66c104139e8a6f4d998372ff3470189cb6b68287"
+              },
+              "Trace-0.1.0-preview.31-Windows-x64.zip": {
+                "bytes": 150159356,
+                "sha256": "a5c4428f619bdd74bc599a97bad5862fe2087ccad553b3ea996786a2f3e4067b"
+              },
+              "verification.json": {
+                "bytes": 924,
+                "sha256": "ba5f4ebd08be337ae674b89ca852817ce3b635b92311a63beed47539d5e57a8f"
+              },
+              "发布验收清单.md": {
+                "bytes": 7150,
+                "sha256": "052789dfe6e4b6bad5b8ac5ddb449dfa516cb67ec7c4b941a866f6107b58e904"
+              },
+              "快速上手-preview.31.pdf": {
+                "bytes": 419208,
+                "sha256": "001818ad11ef4b0fd5ec95a29c348030a2e57c92d8a04e98f2f0bcd85cc0968a"
+              }
+            },
+            "dependencySource": {
+              "manifest": "ffmpeg-source-manifest.json",
+              "upstreamArchive": "FFmpeg-9.0.2-Upstream-Source.tar.gz",
+              "upstreamArchiveSha256": "0aa2b1de2a5698b20a23e93d539a9a8e82ca0117496c5bdf05d198805f42bb3b",
+              "additionalUpstreamArchives": [
+                {
+                  "name": "LAME",
+                  "file": "LAME-3.100-Upstream-Source.tar.gz",
+                  "sha256": "ddfe36cab873794038ae2c1210557ad34857a4b6bdc515785d1da9e175b1da1e"
+                }
+              ],
+              "correspondingSourceComplete": true,
+              "buildLock": "ffmpeg-build-lock.json",
+              "buildReport": "ffmpeg-build-report.json",
+              "systemInputs": "ffmpeg-system-inputs.json",
+              "scope": "FFmpeg and LAME source plus unmodified build recipe; pinned Microsoft system/toolchain inputs are recorded separately"
+            }
+          },
+          "scope": "Selected actual CI-produced test/numerical/build/package records; generated/offline and no-card checks, not physical-device or release acceptance",
+          "annotationAssembly": {
+            "parts": 6,
+            "compactJsonSha256": "998809e7c39af030975ea06b364a8f941365208c768bda54d93dda006d9de661",
+            "allPartsPresent": true,
+            "verifiedSha256": true
+          }
+        },
+        "ebuSourceBindings": {
+          "native/src/recorder/Meter.cpp": {
+            "gitBlobSha256": "d77d0d2f948d576977935ba0990a98fddc0738f3fc5219f6895a38a2597e2e42",
+            "actualRunnerFileSha256": "a01a7b96641bf8113faba731aa8338e642753febf725f2fdc599c6bedd4a5e91",
+            "checkoutTransform": "Git Windows LF-to-CRLF text checkout",
+            "contentMatchesVerifiedCommit": true
+          },
+          "native/src/recorder/Meter.h": {
+            "gitBlobSha256": "532a775edae2000a6f132db39b1684c7f7138484706dc6268999a2d4c1835cad",
+            "actualRunnerFileSha256": "e4066aac8d89fdec565f177c7a08e076448e384536202d175d4d1ede3b066409",
+            "checkoutTransform": "Git Windows LF-to-CRLF text checkout",
+            "contentMatchesVerifiedCommit": true
+          },
+          "native/src/recorder/MeasurementConfig.h": {
+            "gitBlobSha256": "0a3619610a959edc91172767203f7695649c79573edd406e4185a6cdd49e8078",
+            "actualRunnerFileSha256": "de90bfa7762c80b2ba3155a5f1a5ea4a255292c4b307e79c5a60f1c1d160f1a6",
+            "checkoutTransform": "Git Windows LF-to-CRLF text checkout",
+            "contentMatchesVerifiedCommit": true
+          },
+          "native/src/recorder/FileAnalysis.cpp": {
+            "gitBlobSha256": "5151b30051df30202880bb10b6a28417ce78e6284d9fa9da50f75d1d2de9ce5d",
+            "actualRunnerFileSha256": "e9702a0dea47e2da2ca56611564d6a03f5c57743b64b8b650b3aacded843d82d",
+            "checkoutTransform": "Git Windows LF-to-CRLF text checkout",
+            "contentMatchesVerifiedCommit": true
+          },
+          "native/vendor/libebur128/ebur128.c": {
+            "gitBlobSha256": "9d3d75d880e7f514b0669341501ce55b159d86c25012b6d8c9340ad7ed8e7d5f",
+            "actualRunnerFileSha256": "36726095b74a13fde0cb74992a06400d3f7cb1a228fa95df2a4cc5bf38231783",
+            "checkoutTransform": "Git Windows LF-to-CRLF text checkout",
+            "contentMatchesVerifiedCommit": true
+          },
+          "test/native/ebu_wav_probe.cpp": {
+            "gitBlobSha256": "15b983a60ee21cc86277d17707fad87f04b03f87e9d302d439c623befac23aa0",
+            "actualRunnerFileSha256": "51763a9073bce6d2f39226299b3c5e3175d985d07f8721929a4eb65108368722",
+            "checkoutTransform": "Git Windows LF-to-CRLF text checkout",
+            "contentMatchesVerifiedCommit": true
+          },
+          "tools/metering/run-ebu-wav-tests.py": {
+            "gitBlobSha256": "872930365b8ff8e16f468fe85b0abbc436ff37ed5c41d6cb6d399ccc84f5cba6",
+            "actualRunnerFileSha256": "b8710789684f94d2e15e306993b7d8ca1a44d2d8f3bef2cf304e563edc9413a9",
+            "checkoutTransform": "Git Windows LF-to-CRLF text checkout",
+            "contentMatchesVerifiedCommit": true
+          }
+        },
+        "annotationMetadataSha256": "4247dfa2b84b7a551d59564888e62266cec92edd0c32e3e9e177e70fd60a3ae4",
+        "failedSteps": [],
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/setup-node@v6",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Install locked dependencies",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run npm run check:independence",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Fetch pinned Electron SDK without building another application",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Compile independent Trace diagnostic fixtures",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/cache/restore@v4",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Prepare pinned codec with readable failure diagnostics",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/cache/save@v4",
+            "status": "completed",
+            "conclusion": "skipped"
+          },
+          {
+            "name": "Verify Trace and retain command outcomes",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Require this run's complete portable success before packing a candidate",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Build and inspect candidate package",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Publish selected verification evidence in readable annotations",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/upload-artifact@v4",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/upload-artifact@v4",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run actions/setup-node@v6",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success"
+          }
+        ]
+      }
+    },
+    "artifacts": [
+      {
+        "name": "trace-windows-evidence",
+        "id": 11688420211,
+        "sizeInBytes": 29149,
+        "archiveDigest": "sha256:79ed886a266570004e180b15352a296be8233df6255c8e16725e39949394b0f2",
+        "createdAt": "2026-10-11T01:12:14Z",
+        "payloadRead": false
+      },
+      {
+        "name": "trace-portable-evidence",
+        "id": 11688340244,
+        "sizeInBytes": 15600,
+        "archiveDigest": "sha256:0149bfec1fc883a4346053c074addb632a9b9bac0b786b852bf8708c958e2960",
+        "createdAt": "2026-10-11T01:10:06Z",
+        "payloadRead": false
+      },
+      {
+        "name": "trace-windows-candidate",
+        "id": 11688230696,
+        "sizeInBytes": 173915167,
+        "archiveDigest": "sha256:c7e67a9bb7735efca61ac121fab7daf142d9a8e17a23863fca60a899ca8b42fd",
+        "createdAt": "2026-10-11T01:12:23Z",
+        "payloadRead": false
+      }
+    ],
+    "mp3ImportMatrix": {
+      "ffmpegSha256": "c647e20c508af6421efb3c78b59e2a693f7b905c6a27384282ad76b5ad37d5ee",
+      "matrix": [
+        {
+          "rate": 8000,
+          "channels": 1,
+          "mode": "cbr",
+          "inputFrames": 1737,
+          "declaredDecodedFrames": "1775",
+          "importedFrames": "1775"
+        },
+        {
+          "rate": 8000,
+          "channels": 1,
+          "mode": "vbr",
+          "inputFrames": 1737,
+          "declaredDecodedFrames": "1775",
+          "importedFrames": "1775"
+        },
+        {
+          "rate": 8000,
+          "channels": 2,
+          "mode": "cbr",
+          "inputFrames": 1737,
+          "declaredDecodedFrames": "1775",
+          "importedFrames": "1775"
+        },
+        {
+          "rate": 8000,
+          "channels": 2,
+          "mode": "vbr",
+          "inputFrames": 1737,
+          "declaredDecodedFrames": "1775",
+          "importedFrames": "1775"
+        },
+        {
+          "rate": 16000,
+          "channels": 1,
+          "mode": "cbr",
+          "inputFrames": 3337,
+          "declaredDecodedFrames": "3337",
+          "importedFrames": "3337"
+        },
+        {
+          "rate": 16000,
+          "channels": 1,
+          "mode": "vbr",
+          "inputFrames": 3337,
+          "declaredDecodedFrames": "3337",
+          "importedFrames": "3337"
+        },
+        {
+          "rate": 16000,
+          "channels": 2,
+          "mode": "cbr",
+          "inputFrames": 3337,
+          "declaredDecodedFrames": "3337",
+          "importedFrames": "3337"
+        },
+        {
+          "rate": 16000,
+          "channels": 2,
+          "mode": "vbr",
+          "inputFrames": 3337,
+          "declaredDecodedFrames": "3337",
+          "importedFrames": "3337"
+        },
+        {
+          "rate": 44100,
+          "channels": 1,
+          "mode": "cbr",
+          "inputFrames": 8957,
+          "declaredDecodedFrames": "8957",
+          "importedFrames": "8957"
+        },
+        {
+          "rate": 44100,
+          "channels": 1,
+          "mode": "vbr",
+          "inputFrames": 8957,
+          "declaredDecodedFrames": "8957",
+          "importedFrames": "8957"
+        },
+        {
+          "rate": 44100,
+          "channels": 2,
+          "mode": "cbr",
+          "inputFrames": 8957,
+          "declaredDecodedFrames": "8957",
+          "importedFrames": "8957"
+        },
+        {
+          "rate": 44100,
+          "channels": 2,
+          "mode": "vbr",
+          "inputFrames": 8957,
+          "declaredDecodedFrames": "8957",
+          "importedFrames": "8957"
+        },
+        {
+          "rate": 48000,
+          "channels": 1,
+          "mode": "cbr",
+          "inputFrames": 9737,
+          "declaredDecodedFrames": "9737",
+          "importedFrames": "9737"
+        },
+        {
+          "rate": 48000,
+          "channels": 1,
+          "mode": "vbr",
+          "inputFrames": 9737,
+          "declaredDecodedFrames": "9737",
+          "importedFrames": "9737"
+        },
+        {
+          "rate": 48000,
+          "channels": 2,
+          "mode": "cbr",
+          "inputFrames": 9737,
+          "declaredDecodedFrames": "9737",
+          "importedFrames": "9737"
+        },
+        {
+          "rate": 48000,
+          "channels": 2,
+          "mode": "vbr",
+          "inputFrames": 9737,
+          "declaredDecodedFrames": "9737",
+          "importedFrames": "9737"
+        }
+      ],
+      "scope": "Generated external files; decoder metadata governs frames, not a claim of bit-exact encoder roundtrip"
+    },
+    "sourceCodec": {
+      "reportSha256": "e305461d392c76fec8c7355194c2fbd6b1fd4b579c862f4f5cd7bdb01fa0d047",
+      "reportMatchesPinnedBytes": true,
+      "buildReport": {
+        "schemaVersion": 1,
+        "buildLockSha256": "ed3e90d50ae39a4c3364197a5145490d36526f955e744f3585cb5c4cd37e84d1",
+        "sources": [
+          {
+            "repository": "https://github.com/FFmpeg/FFmpeg",
+            "commit": "946fcce07b6dcd0331c8cc609192aeff5e1924f8",
+            "release": "9.0.2",
+            "archiveUrl": "https://codeload.github.com/FFmpeg/FFmpeg/tar.gz/946fcce07b6dcd0331c8cc609192aeff5e1924f8",
+            "archiveBytes": 17333895,
+            "archiveSha256": "0aa2b1de2a5698b20a23e93d539a9a8e82ca0117496c5bdf05d198805f42bb3b",
+            "archiveFile": "FFmpeg-9.0.2-Upstream-Source.tar.gz",
+            "releaseFileValidated": true
+          },
+          {
+            "name": "LAME",
+            "version": "3.100",
+            "archiveUrl": "https://downloads.sourceforge.net/project/lame/lame/3.100/lame-3.100.tar.gz",
+            "archiveFile": "LAME-3.100-Upstream-Source.tar.gz",
+            "archiveBytes": 1524133,
+            "archiveSha256": "ddfe36cab873794038ae2c1210557ad34857a4b6bdc515785d1da9e175b1da1e",
+            "sourceCorrespondence": "Unmodified official source compiled by the Trace recipe; no producer patches"
+          }
+        ],
+        "tools": [
+          {
+            "file": "msys/bash.exe",
+            "sha256": "7b4dc5d6878aacdec5d09ca9c5d8e2b43b925a6bbf631873a24c692980b792b2"
+          },
+          {
+            "file": "msys/make.exe",
+            "sha256": "2d3b9fca575be8e93c10ab74348055fa127a65cf628d52e9218ac76065cc6d22"
+          },
+          {
+            "file": "windows/tar.exe",
+            "sha256": "dcc75eb2e0fce4779784ca0a00c6cda1182c7b3c95eb6dab0e0603651cdb6b52"
+          },
+          {
+            "file": "msys/msys-2.0.dll",
+            "sha256": "47d652c7cba30eb294eb7ee10bbfefdcc46342ddf47b4c09ad58a2185b36ad2c"
+          },
+          {
+            "file": "msys/sed.exe",
+            "sha256": "8d54e322dfc3faa60f0464691aba8634197406e53367aa8942409181c0808be8"
+          },
+          {
+            "file": "msys/grep.exe",
+            "sha256": "497202418334f8a48d9f34cd2e1b2c03c4f957e02304b613e10931c0457e8d4a"
+          },
+          {
+            "file": "msys/gawk.exe",
+            "sha256": "f123d2c120b2ad2158aa8c69d8eeedf14c0d681e68ee76ff103e06ac49986200"
+          },
+          {
+            "file": "msys/awk.exe",
+            "sha256": "f123d2c120b2ad2158aa8c69d8eeedf14c0d681e68ee76ff103e06ac49986200"
+          },
+          {
+            "file": "msys/uname.exe",
+            "sha256": "1cba275ff8e0c81f48898f017758c558ee5951cb0448c36628580beffdf4ef89"
+          },
+          {
+            "file": "msys/sh.exe",
+            "sha256": "7b4dc5d6878aacdec5d09ca9c5d8e2b43b925a6bbf631873a24c692980b792b2"
+          },
+          {
+            "file": "msys/cat.exe",
+            "sha256": "f1b37048ee5c70fdc31dde509e562261c9b2d102d94c903393f55b45e883ef90"
+          },
+          {
+            "file": "msys/cp.exe",
+            "sha256": "5f91e0b445edb4e4c17e9a660ac29239f6cac5a821a173a86d4332b9eaa8cea3"
+          },
+          {
+            "file": "msys/rm.exe",
+            "sha256": "a845f7517a49b49726e056da8a8f65a6d9ce96fbe79c3664c082521eea0f80e7"
+          },
+          {
+            "file": "msys/mkdir.exe",
+            "sha256": "fc9b9e49fd6496cdddfc5681208d74bd649ac934818eafdfd50a9571bdcb4861"
+          },
+          {
+            "file": "msys/touch.exe",
+            "sha256": "1d895e0f77cbc8b77c3a38da009e8ad8d23a371afd398da5408bdeffcddf5fc0"
+          },
+          {
+            "file": "msys/tr.exe",
+            "sha256": "7cf90be63820ba9ec66a10c0c4af84f0a2e3ec90a722ea6904219ec0b93bf1c1"
+          },
+          {
+            "file": "msys/head.exe",
+            "sha256": "c82ae2ef72235a34db7007580628cd5183cb350878a10fcc98b6ef26b92a3537"
+          },
+          {
+            "file": "msys/tail.exe",
+            "sha256": "8608c4138642de6dca0806b266b3009c137dc373171978cf47418056a5e05c55"
+          },
+          {
+            "file": "msys/sort.exe",
+            "sha256": "7c5df851d821e23988641f35442a06652ce834ed724456511798ce60314cab9a"
+          },
+          {
+            "file": "msys/wc.exe",
+            "sha256": "3ab05efc4703295f0d36fd48da17f2021219494fb932a062a535ae17ea9f45b3"
+          },
+          {
+            "file": "msys/cut.exe",
+            "sha256": "63fcfb76c80d57538312a9637429d5a4b99ac83e8b00d95684609b4c045471e9"
+          },
+          {
+            "file": "msys/od.exe",
+            "sha256": "5533b3edb4b47590a3279653475f12cb6dec11a3b8a289e93c613a06c30b99d2"
+          },
+          {
+            "file": "msys/expr.exe",
+            "sha256": "e1608f26781374b67f180370dc50c833bfc61946aadfb433e48536590bb79219"
+          },
+          {
+            "file": "msys/dirname.exe",
+            "sha256": "53896fda354605a1a1d1f5e6802daba5ba6c05961f3074b892194e068aa82772"
+          },
+          {
+            "file": "msys/basename.exe",
+            "sha256": "6fe2e201a956304503f808d0909a26d9b49e1a7e99f6ee6d93721ac4a76a7c6e"
+          },
+          {
+            "file": "msys/tee.exe",
+            "sha256": "5b956ac9d6bb6d457665709bbcf71326ecd66bb5111b280c124a68405ce5da46"
+          },
+          {
+            "file": "msvc/cl.exe",
+            "sha256": "fe251ef50a1545b1b0835ee17b1e785459712b38d79e45b5c1d3d28970a36619"
+          },
+          {
+            "file": "msvc/link.exe",
+            "sha256": "a364af801a8539e4324d9489313dbf001d959128451fc99a27b24676bbac058f"
+          },
+          {
+            "file": "msvc/lib.exe",
+            "sha256": "fde148a275981855689c45f932dda56b10dc9289a0290826a0fb93478da34929"
+          },
+          {
+            "file": "msvc/nmake.exe",
+            "sha256": "ce6b50c2d8e6704b671ec116e52ce9d2fbc1d20dd28c5b895b5421adddf94ebb"
+          },
+          {
+            "file": "msvc/dumpbin.exe",
+            "sha256": "cfee7ed764b7b0866aae0be12f9c0ad2a7f5aecc4046ba2b7de26335827ca815"
+          }
+        ],
+        "versions": {
+          "compiler": "usage: cl [ option... ] filename... [ /link linkoption... ]\nMicrosoft (R) C/C++ Optimizing Compiler Version 19.44.35229 for x64\nCopyright (C) Microsoft Corporation.  All rights reserved.",
+          "bash": "GNU bash, version 5.3.20(1)-release (x86_64-pc-cygwin)",
+          "make": "GNU Make 4.4.1"
+        },
+        "systemInputs": {
+          "compiler": {
+            "files": 91,
+            "bytes": 98922986,
+            "sha256": "76b84bdd84158585afdd98f70671efd9943a3e3530d112596501fba326e0d855"
+          },
+          "msvcInclude": {
+            "files": 361,
+            "bytes": 16200441,
+            "sha256": "7bf99fdca0a732240612ff4cc78880fef76c65b67ff17ec02900c67b4d5ac050"
+          },
+          "msvcLib": {
+            "files": 166,
+            "bytes": 802970908,
+            "sha256": "fe7dd3278455a19102cfd07da0b7f64e5eb66a76a44aca0ae4308be1e61be7dc"
+          },
+          "sdkInclude": {
+            "files": 5553,
+            "bytes": 385723582,
+            "sha256": "94e724734f0dcb637e1cdc2e7cbffd8c77abf2c41275e6c3da19ab45d8078752"
+          },
+          "sdkUcrtLib": {
+            "files": 8,
+            "bytes": 90629762,
+            "sha256": "37569193a7d063c57ef5266e8c3046cef88834055aaeec446a3bec01ae818dd5"
+          },
+          "sdkUmLib": {
+            "files": 505,
+            "bytes": 120730732,
+            "sha256": "6a64d69e1ca754408454275bb3d82e51148f46f64d4c2ced9803447225ca51b5"
+          }
+        },
+        "recipes": {
+          "tools/codec/build.cjs": "7b1d08dfefdb06c70292c5886540570c158a8037a530f72f4e00d9722470917a",
+          "tools/codec/identity.cjs": "0f69a737f54676409a12ca26f169a8392c1dd9040bb9a3fd36ad2244210bcffc",
+          "tools/release/dependency-sources.cjs": "c53a60e479767c12b7036b36278de5b37035f035fa428c475ba9082c284a12ae"
+        },
+        "outputs": {
+          "ffmpeg": {
+            "sha256": "c647e20c508af6421efb3c78b59e2a693f7b905c6a27384282ad76b5ad37d5ee",
+            "bytes": 3096064,
+            "version": "ffmpeg version 9.0.2 Copyright (c) 2000-2026 the FFmpeg developers\nbuilt with Microsoft (R) C/C++ Optimizing Compiler Version 19.44.35229 for x64\nconfiguration: --toolchain=msvc --arch=x86_64 --target-os=win32 --prefix=/c/trace-codec/prefix --disable-autodetect --disable-everything --disable-network --disable-shared --enable-static --disable-doc --disable-debug --disable-ffplay --disable-avdevice --disable-swscale --disable-x86asm --disable-hwaccels --enable-gpl --enable-version3 --enable-libmp3lame --enable-encoder='aac,libmp3lame,pcm_s16le,pcm_s24le,pcm_f32le' --enable-decoder='aac,mp3,mp3float,pcm_s16le,pcm_s24le,pcm_f32le,mjpeg' --enable-parser='aac,mpegaudio,mjpeg,png' --enable-demuxer='wav,mp3,aac,mov,concat' --enable-muxer='wav,mp3,adts,ipod,mp4,mov,segment' --enable-protocol='file,pipe' --enable-filter='aresample,aformat,anull,atrim,asetpts' --extra-cflags='-IC:/trace-codec/prefix/include' --extra-ldflags='-libpath:C:/trace-codec/prefix/lib -Brepro'\nlibavutil      61.  1.102 / 61.  1.102\nlibavcodec     63.  1.102 / 63.  1.102\nlibavformat    63.  1.102 / 63.  1.102\nlibavfilter    12.  1.102 / 12.  1.102\nlibswresample   7.  1.102 /  7.  1.102\n\nExiting with exit code 0",
+            "dependents": "Microsoft (R) COFF/PE Dumper Version 14.44.35229.0\nCopyright (C) Microsoft Corporation.  All rights reserved.\n\n\nDump of file C:\\trace-codec\\prefix\\bin\\ffmpeg.exe\n\nFile Type: EXECUTABLE IMAGE\n\n  Image has the following dependencies:\n\n    bcrypt.dll\n    PSAPI.DLL\n    SHELL32.dll\n    KERNEL32.dll\n\n  Summary\n\n      1B2000 .data\n        1000 .fptable\n       16000 .pdata\n       D3000 .rdata\n        5000 .reloc\n        1000 .rsrc\n      206000 .text"
+          },
+          "ffprobe": {
+            "sha256": "73337f082639e4f3f867a50fc69ec681ed81cdc8faf5df5d8fed4f677530bef5",
+            "bytes": 2859520,
+            "version": "ffprobe version 9.0.2 Copyright (c) 2007-2026 the FFmpeg developers\nbuilt with Microsoft (R) C/C++ Optimizing Compiler Version 19.44.35229 for x64\nconfiguration: --toolchain=msvc --arch=x86_64 --target-os=win32 --prefix=/c/trace-codec/prefix --disable-autodetect --disable-everything --disable-network --disable-shared --enable-static --disable-doc --disable-debug --disable-ffplay --disable-avdevice --disable-swscale --disable-x86asm --disable-hwaccels --enable-gpl --enable-version3 --enable-libmp3lame --enable-encoder='aac,libmp3lame,pcm_s16le,pcm_s24le,pcm_f32le' --enable-decoder='aac,mp3,mp3float,pcm_s16le,pcm_s24le,pcm_f32le,mjpeg' --enable-parser='aac,mpegaudio,mjpeg,png' --enable-demuxer='wav,mp3,aac,mov,concat' --enable-muxer='wav,mp3,adts,ipod,mp4,mov,segment' --enable-protocol='file,pipe' --enable-filter='aresample,aformat,anull,atrim,asetpts' --extra-cflags='-IC:/trace-codec/prefix/include' --extra-ldflags='-libpath:C:/trace-codec/prefix/lib -Brepro'\nlibavutil      61.  1.102 / 61.  1.102\nlibavcodec     63.  1.102 / 63.  1.102\nlibavformat    63.  1.102 / 63.  1.102\nlibavfilter    12.  1.102 / 12.  1.102\nlibswresample   7.  1.102 /  7.  1.102",
+            "dependents": "Microsoft (R) COFF/PE Dumper Version 14.44.35229.0\nCopyright (C) Microsoft Corporation.  All rights reserved.\n\n\nDump of file C:\\trace-codec\\prefix\\bin\\ffprobe.exe\n\nFile Type: EXECUTABLE IMAGE\n\n  Image has the following dependencies:\n\n    bcrypt.dll\n    SHELL32.dll\n    KERNEL32.dll\n\n  Summary\n\n      1B2000 .data\n        1000 .fptable\n       13000 .pdata\n       C3000 .rdata\n        5000 .reloc\n        1000 .rsrc\n      1DF000 .text"
+          }
+        },
+        "configuration": "configuration: --toolchain=msvc --arch=x86_64 --target-os=win32 --prefix=/c/trace-codec/prefix --disable-autodetect --disable-everything --disable-network --disable-shared --enable-static --disable-doc --disable-debug --disable-ffplay --disable-avdevice --disable-swscale --disable-x86asm --disable-hwaccels --enable-gpl --enable-version3 --enable-libmp3lame --enable-encoder='aac,libmp3lame,pcm_s16le,pcm_s24le,pcm_f32le' --enable-decoder='aac,mp3,mp3float,pcm_s16le,pcm_s24le,pcm_f32le,mjpeg' --enable-parser='aac,mpegaudio,mjpeg,png' --enable-demuxer='wav,mp3,aac,mov,concat' --enable-muxer='wav,mp3,adts,ipod,mp4,mov,segment' --enable-protocol='file,pipe' --enable-filter='aresample,aformat,anull,atrim,asetpts' --extra-cflags='-IC:/trace-codec/prefix/include' --extra-ldflags='-libpath:C:/trace-codec/prefix/lib -Brepro'",
+        "patches": [],
+        "crtLinkage": "static /MT",
+        "sourceDateEpoch": 1789574400,
+        "systemInventorySha256": "b895920269ac9faa7827c4467f407268e4bd1dbf0ca2d539ff5a53f42b1ce48f",
+        "configHeaderSha256": "2f386f2de7862231e29b33eb202e152b605367d48e8ffa7b8ce7a004143bbbfb",
+        "configMakSha256": "b8ea4983a6603fbe52cef68c155a6f2d2c0031e639b70f8715f0532d1be96669"
+      },
+      "minuteConversion": {
+        "ffmpegSha256": "c647e20c508af6421efb3c78b59e2a693f7b905c6a27384282ad76b5ad37d5ee",
+        "sourceRate": 96000,
+        "sourceFrames": 5760000,
+        "channels": 2,
+        "timings": [
+          {
+            "rate": 44100,
+            "extension": "mp3",
+            "elapsedMs": 1203,
+            "physicalFrames": "2646000",
+            "audibleFrames": "2646000"
+          },
+          {
+            "rate": 44100,
+            "extension": "m4a",
+            "elapsedMs": 1772,
+            "physicalFrames": "2646000",
+            "audibleFrames": "2646000"
+          },
+          {
+            "rate": 48000,
+            "extension": "mp3",
+            "elapsedMs": 1242,
+            "physicalFrames": "2880000",
+            "audibleFrames": "2880000"
+          },
+          {
+            "rate": 48000,
+            "extension": "m4a",
+            "elapsedMs": 1833,
+            "physicalFrames": "2880000",
+            "audibleFrames": "2880000"
+          }
+        ],
+        "scope": "Offline generated signal; not WASAPI or physical-device real-time acceptance"
+      },
+      "codecBuildReused": true,
+      "actualBinaryPayloadReadLocally": false,
+      "basis": "Actual installed report hash from CI annotation equals canonical pinned report; actual EXE hashes emitted by the runner and install checks remained strict."
+    }
+  },
+  "baseline": {
+    "codeCommit": "928634822a6de17c7d3eadb95f04ff0eeb689b3c",
+    "scope": "Auxiliary Linux system codec and filesystem error injection; original production import/runner sources bundled without editing their behavior",
+    "findings": [
+      "Truncated Xing-declared MP3 can be accepted by original decoder path",
+      "Partial owner marker write leaves directory that cannot validate for normal cleanup",
+      "POSIX encoder ignoring SIGTERM remains alive after parent IPC disconnect",
+      "Windows aliased ancestor paths prevent reading healthy persisted PCM; canonical root fixes aliases while UUID child junctions remain rejected"
+    ],
+    "process": {
+      "baselineCommit": "928634822a6de17c7d3eadb95f04ff0eeb689b3c",
+      "scope": "Real POSIX process ignores SIGTERM after supervisor IPC loss",
+      "stillRunningAfterMs": 2500,
+      "manualCleanupRequired": true
+    },
+    "logs": {
+      "linux-codec-before.log": {
+        "localIgnoredPath": "artifacts/file-faults/linux-codec-before.log",
+        "bytes": 3326,
+        "sha256": "0d7f05fd265e38f150257806f155f08f48417e71c08f352b3b94efa58c1715f6"
+      },
+      "linux-disk-before.log": {
+        "localIgnoredPath": "artifacts/file-faults/linux-disk-before.log",
+        "bytes": 992,
+        "sha256": "c8ca041fc8dbdd8138f44679400465e22cf9fbad5f5a7181977eb2b9b8362f32"
+      },
+      "process-baseline.log": {
+        "localIgnoredPath": "artifacts/file-faults/process-baseline.log",
+        "bytes": 189,
+        "sha256": "d0691d0b75ad822cbc19c0e11685c2efb30e61103370a9c967290c7fb8f027af"
+      }
+    },
+    "cachePathAlias": {
+      "codeCommit": "62d7eede7794e8cd8374e9086522f72112e9a441",
+      "scope": "Actual Linux parent directory symlink alias reproduces rejection under pre-fix importMedia; complements actual Windows failure",
+      "tests": 1,
+      "pass": 0,
+      "fail": 1,
+      "error": "INVALID_IMPORT_CACHE_DIRECTORY",
+      "logSha256": "b0314b5b9a9ea23ffbda5320e08816a8056a85a24e199600a5fd5315c3a306f0"
+    }
+  },
+  "localAuxiliary": {
+    "scope": "Linux FFmpeg 7.1.5; actual generated files and production path, not the Windows pinned binary",
+    "combinedMediaTests": {
+      "tests": 12,
+      "pass": 12,
+      "fail": 0,
+      "skip": 0,
+      "logSha256": "36295457930e57cdc3997e256c4cd482414c550fc16e7f6367e3e539caafb669"
+    },
+    "crcFiles": {
+      "scope": "Auxiliary Linux libmp3lame 3.100 generated CRC/non-CRC files; not locked Windows evidence",
+      "ffmpegSha256": "e8a8d46f5225f3062cec7c07fb145d58ae73c603cb740dcd5bad34bfb54e455a",
+      "results": [
+        {
+          "crc": 0,
+          "frames": "48000",
+          "valid": true,
+          "truncatedRejected": true,
+          "sourceSha256": "095af1ac5aa469b0011046b6c22cbd37cc33721270abf291dd4c971d6439cb73"
+        },
+        {
+          "crc": 1,
+          "frames": "48000",
+          "valid": true,
+          "truncatedRejected": true,
+          "sourceSha256": "3c7d4a91b31418054b836232163d5da8827817fd956cce76fd681c26da7613c3"
+        }
+      ]
+    },
+    "securityPatch": {
+      "component": "source-map-js",
+      "from": "1.2.1",
+      "to": "1.2.2",
+      "advisory": "https://github.com/advisories/GHSA-68fv-2mgg-jv7q",
+      "oldLockSha256": "48ad7852ae6c69fca695ec3cdbf61d5686eca73775e81bf0f5b683696fb21ba4",
+      "newLockSha256": "17ce7b17ef9ce0821c8025284884e32550ed020f4752f6b39d37108cf8b545df",
+      "baselineAuditCounts": {
+        "high": 1,
+        "total": 1
+      },
+      "oldAuditSha256": "09af4921d58c928de712b334640492738835da32349aadfbfb7d98b2bdd4dfbe"
+    },
+    "resumedMediaTests": {
+      "tests": 12,
+      "pass": 12,
+      "fail": 0,
+      "skip": 0,
+      "includes": "Canonical ancestor alias acceptance and UUID child junction rejection",
+      "logSha256": "13e0f610a0d7dceb5b9b90058838fe86724d1a192c38fd9f0cac2f91cb0bda1b"
+    },
+    "rendererCaptureIsolation": {
+      "scope": "Actual Chromium renderer with explicitly simulated IPC; 9 interaction checks, default captures under ignored artifacts, no Windows/device/GPU acceptance",
+      "status": "pass",
+      "checks": [
+        "Visible quality: estimated-silence",
+        "Visible quality: unknown",
+        "Visible quality: gaps",
+        "Theme entry/preview/apply: trace-green",
+        "Theme entry/preview/apply: ocean",
+        "Theme entry/preview/apply: ember",
+        "Theme entry/preview/apply: graphite",
+        "Theme entry/preview/apply: duo",
+        "Escape restores saved theme"
+      ],
+      "captureDestination": "artifacts/release-cloud/renderer-sMhoju/captures",
+      "trackedAssetsBeforeAfterSha256": {
+        "docs/assets/quick-start-preview31/layout-toolbar.png": "93a52fe5cd23284e4aaaaf38efea74d89fae92358486c51123d0fe36749ea5ec",
+        "docs/assets/quick-start-preview31/themes.png": "82cbdf490e948175d93d2cab9fee020eae04820a7866a43ff0d0555d174596a7",
+        "docs/assets/quick-start-preview31/waveform.png": "c129258b830d40231b69800d1453ee7afda00cc5bb049d342dedf8f052195d0b",
+        "docs/assets/quick-start-preview31/workbench.png": "29e7d5dc6107f14d793724718f69655e130e7790bda4455f3ddf4dc8a6717dcc",
+        "docs/assets/quick-start-preview31/capture.json": "51c69f239d92a3d762772357ae594215162e6680732acbace53a9950e062026e"
+      },
+      "trackedAssetsUnchanged": true,
+      "reportSha256": "4172738dcd96c7cf6945888c88a00743f0f15d792e87d7b5cb23d065019595fb"
+    },
+    "dirtySourceGate": {
+      "scope": "Actual ci-summary CLI and Git state in an isolated synthetic repository; clean/dirty counterexample only, not application test evidence",
+      "cases": [
+        {
+          "dirty": false,
+          "exitCode": 0,
+          "reportedSourceDirty": false,
+          "stdoutSha256": "637079239609a1d30560da6654453b179e70bd6e6ec07250f8a89b851684832f",
+          "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "dirty": true,
+          "exitCode": 1,
+          "reportedSourceDirty": true,
+          "stdoutSha256": "1c90b397455421360f420c0d4d7ac719f8153dfc3afd59d79ba3470b633524d0",
+          "stderrSha256": "83571085f059643582e6ad1c7ded04a06916534859882b61db42a95130818795"
+        }
+      ]
+    },
+    "sameSourceLinux9": {
+      "scope": "Auxiliary Linux build of the same unpatched FFmpeg 9.0.2 source and minimal features, GCC/Linux with installed libmp3lame 3.100; not the pinned Windows binary or hardware evidence",
+      "sourceCommit": "946fcce07b6dcd0331c8cc609192aeff5e1924f8",
+      "sourceArchiveSha256": "0aa2b1de2a5698b20a23e93d539a9a8e82ca0117496c5bdf05d198805f42bb3b",
+      "counts": {
+        "tests": 12,
+        "pass": 12,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "logSha256": "d1d5269c5d5219add84e32cea679f207ed208bb52afd588b0ff5bd43c0c28de2",
+      "buildLogSha256": "f8f088375f9a90a61df24a687a0d311bb115194e292e2db034d5e617a868b8d8",
+      "binaries": {
+        "ffmpeg": {
+          "sha256": "ae06646dcdc9be9f226a2f65c979776fb0d1912f58c30a6a29d25f99b33384f3",
+          "version": "ffmpeg version 62d7eed Copyright (c) 2000-2026 the FFmpeg developers"
+        },
+        "ffprobe": {
+          "sha256": "0f16faf2e4755e0b089069a0f2eb26539be911c9af848dc3b95c77359fd4a6cd",
+          "version": "ffprobe version 62d7eed Copyright (c) 2007-2026 the FFmpeg developers"
+        }
+      }
+    }
+  },
+  "supersededRun": {
+    "runId": 37876369232,
+    "commit": "9f8d18db5757dfdcfa5c5b570ecfe01f637a2d33",
+    "conclusion": "cancelled",
+    "reason": "Explicitly cancelled while CRC Xing offsets were corrected; no result carried forward"
+  },
+  "toolInputRefresh": {
+    "diagnosticRunId": 37877327686,
+    "diagnosticCodeCommit": "852839c8d0d1e20a34d4651892d5521d4c3dc8eb",
+    "jobId": 113648802170,
+    "annotationSha256": "8a7e53851abde23b96456d7bf5c59123398ef42d771d36f4a2696fd87c20d375",
+    "changedTool": {
+      "file": "msys/msys-2.0.dll",
+      "previousSha256": "957d880559f0bfe7406a4cb27724610e7ce2f367030e299373d7ef37fbbb51b3",
+      "observedSha256": "47d652c7cba30eb294eb7ee10bbfefdcc46342ddf47b4c09ad58a2185b36ad2c"
+    },
+    "unchangedToolCount": 30,
+    "versionsUnchanged": true,
+    "systemInputsUnchanged": true,
+    "expectedNewBuildLockSha256": "ed3e90d50ae39a4c3364197a5145490d36526f955e744f3585cb5c4cd37e84d1",
+    "expectedNewBuildReportSha256": "e305461d392c76fec8c7355194c2fbd6b1fd4b579c862f4f5cd7bdb01fa0d047",
+    "binaryAndConfigurationPinsUnchanged": true,
+    "newReceiptVerification": "Succeeded: actual installed receipt hash equals the updated pin, original EXE/config hashes preserved"
+  },
+  "sourceArchive": {
+    "commit": "2aee519b575acdc8cdd954634084c2bb282b063f",
+    "scope": "Independent local Git archive verifies export-ignore and exact required source files; not a claim to have read the candidate archive payload",
+    "prefix": "Trace-source/",
+    "entries": 665,
+    "privateEbuExcluded": true,
+    "requiredFilesExact": [
+      "src/trace/mp3Integrity.ts",
+      "src/trace/importMedia.ts",
+      "src/trace/media-runner.ts",
+      "test/codec-faults.test.mjs",
+      "test/import-disk-faults.test.mjs",
+      "scripts/run-trace-tests.mjs",
+      "tools/release/ci-summary.cjs",
+      ".github/workflows/trace.yml",
+      ".github/workflows/codec-source.yml",
+      "package-lock.json",
+      "LICENSE",
+      "references/trace-ffmpeg/build-report.json",
+      "references/trace-ffmpeg/build-lock.json",
+      "references/trace-ffmpeg/source-manifest.json",
+      "tools/audit/renderer.cjs"
+    ],
+    "archiveSha256": "b5dd6c3d34bd79c68dc3f337250f33884610f3c96c0b6b1fe8484b90f678e8f4"
+  },
+  "failedPrerequisiteRuns": [
+    {
+      "runId": 37876605731,
+      "commit": "02e733a4a4d806bdbd618b4c9c469e901def9143",
+      "windowsConclusion": "failure",
+      "linuxConclusion": "cancelled",
+      "reason": "CODEC_TOOL_HASH_CHANGED before media tests; Linux cancelled because prerequisites required a new pin"
+    },
+    {
+      "runId": 37877327686,
+      "commit": "852839c8d0d1e20a34d4651892d5521d4c3dc8eb",
+      "windowsConclusion": "failure",
+      "linuxConclusion": "cancelled",
+      "reason": "Readable diagnostics isolated the single MSYS runtime DLL change; no hash check was disabled"
+    }
+  ],
+  "limits": [
+    "No cryptographic completeness claim for external audio lacking a trusted original digest/length declaration",
+    "No two-hour real recording or physical full disk/power loss/slow disk/queue pressure/device/96 kHz capture/GPU/DPI/YouTube acceptance",
+    "Parent IPC disconnect is covered; abrupt death of the media supervisor itself is not covered",
+    "Artifact payloads not downloaded/read; candidate internal checks run inside the observed CI"
+  ],
+  "failedFunctionalRuns": [
+    {
+      "runId": 37878086505,
+      "commit": "15fec750fc4406a8b6bb07ca782efb9588d200e5",
+      "workflowConclusion": "cancelled",
+      "windowsConclusion": "failure",
+      "portable": {
+        "pass": 272,
+        "fail": 0
+      },
+      "native": {
+        "pass": 63,
+        "fail": 1
+      },
+      "ctest": {
+        "pass": 19,
+        "fail": 0
+      },
+      "sourceReceiptMatchesCurrentPin": true,
+      "reason": "Healthy PCM cache reload rejected a Windows ancestor alias; Linux cancelled when the diagnostic workflow was dispatched",
+      "annotationMetadataSha256": "388ab5cd419206003a3fcf5f4f3f56afc53d289e1eb59aaa3054a4f66db9da2e",
+      "annotationLimitation": "Initial plain JSON was truncated at 4096 bytes; only visible complete test/count records used, not a complete summary"
+    },
+    {
+      "runId": 37879668339,
+      "commit": "62d7eede7794e8cd8374e9086522f72112e9a441",
+      "workflowConclusion": "failure",
+      "jobId": 113656330157,
+      "reason": "Independent codec diagnostic identifies persisted PCM read INVALID_IMPORT_CACHE_DIRECTORY; all source compile/install checks succeeded",
+      "annotationMetadataSha256": "00eb173bb77feaaede6e7d3a8f9f9e56dc014d41d831c41b1ceb590d41723f73"
+    }
+  ],
+  "nonfinalSuccessfulRun": {
+    "schemaVersion": 1,
+    "checkedAt": "2026-10-11T00:52:36.798087+00:00",
+    "runId": 38098647365,
+    "attempt": 1,
+    "commit": "091bce46def70a2f31a8e7d8d103cd95fdea40c9",
+    "workflowConclusion": "success",
+    "workflowUrl": "https://github.com/Sceneryyyy/Trace/actions/runs/38098647365",
+    "evidenceScope": "Authenticated GitHub job/annotation and artifact metadata APIs; selected actual test, EBU, source receipt and package records published by the runner. Azure log/artifact payloads not downloaded/read.",
+    "artifactPayloadRead": false,
+    "logPayloadRead": false,
+    "artifactPayloadLimitation": "Azure log/blob CONNECT Forbidden observed. No retry/bypass. Evidence annotations carry selected actual records plus their hashes; archive digest is separate from internal ZIP/JSON digests.",
+    "jobs": {
+      "portable": {
+        "jobId": 114349774225,
+        "conclusion": "success",
+        "startedAt": "2026-10-11T00:30:25Z",
+        "completedAt": "2026-10-11T00:48:52Z",
+        "javascriptTestBlocks": [
+          {
+            "context": "portable JS",
+            "tests": 272,
+            "suites": 0,
+            "pass": 272,
+            "fail": 0,
+            "cancelled": 0,
+            "skipped": 0,
+            "todo": 0,
+            "duration_ms": 17997.547898
+          }
+        ],
+        "ctest": {
+          "core": {
+            "sha256": "d8231939b7395c35aedc650de99eed5a6e1c527327b06754d4070754cba187fc",
+            "tests": 8,
+            "failures": 0,
+            "disabled": 0,
+            "seconds": 266
+          },
+          "ebu": {
+            "sha256": "cf828620cf8b5d8c3cbc6a15a08f8da46ab8af497ca04354fc82d79862a77a7c",
+            "tests": 1,
+            "failures": 0,
+            "disabled": 0,
+            "seconds": 746
+          }
+        },
+        "ctestTotalSecondsInLogOrder": [
+          266,
+          746
+        ],
+        "ebuSummary": {
+          "passed": 68,
+          "failed": 0,
+          "excluded": 2,
+          "supported": 68,
+          "checks": {
+            "total": 112,
+            "passed": 112,
+            "failed": 0
+          },
+          "invariants": {
+            "total": 204,
+            "passed": 204,
+            "failed": 0
+          },
+          "supportedPassRate": 1
+        },
+        "runtimeProvenance": null,
+        "selectedActualRecords": {
+          "schemaVersion": 1,
+          "commit": "091bce46def70a2f31a8e7d8d103cd95fdea40c9",
+          "sourceDirty": true,
+          "platform": "linux",
+          "arch": "x64",
+          "codecBuildReused": false,
+          "tests": [
+            {
+              "sha256": "b210ea2efe4c6db58b025c6dbbf0921cfd55cfb15cc1e6fca1c2060c78d74cdc",
+              "commit": "091bce46def70a2f31a8e7d8d103cd95fdea40c9",
+              "tier": "portable",
+              "files": 54,
+              "exitCode": 0,
+              "status": "pass",
+              "counts": {
+                "tests": 272,
+                "suites": 0,
+                "pass": 272,
+                "fail": 0,
+                "cancelled": 0,
+                "skipped": 0,
+                "todo": 0,
+                "duration_ms": 17997.547898
+              },
+              "failureDetails": null,
+              "observations": {},
+              "outputSha256": "0e6f75e162f85ff35b70bfd01b3cfbed12ac50d472798ba25a0f76a4acc4c011"
+            }
+          ],
+          "ctest": {
+            "core": {
+              "sha256": "d8231939b7395c35aedc650de99eed5a6e1c527327b06754d4070754cba187fc",
+              "tests": 8,
+              "failures": 0,
+              "disabled": 0,
+              "seconds": 266
+            },
+            "ebu": {
+              "sha256": "cf828620cf8b5d8c3cbc6a15a08f8da46ab8af497ca04354fc82d79862a77a7c",
+              "tests": 1,
+              "failures": 0,
+              "disabled": 0,
+              "seconds": 746
+            }
+          },
+          "ebu": {
+            "sha256": "8ded7c34d8e574bf861285622143664be88b2438354e40c97932e676590962e6",
+            "commit": "091bce46def70a2f31a8e7d8d103cd95fdea40c9",
+            "sourceDirty": false,
+            "status": "pass",
+            "measurementConfigId": "trace-meter-v5-ebur128-1.2.6-lra10hz-msi100hz-tpaligned",
+            "summary": {
+              "passed": 68,
+              "failed": 0,
+              "excluded": 2,
+              "supported": 68,
+              "checks": {
+                "total": 112,
+                "passed": 112,
+                "failed": 0
+              },
+              "invariants": {
+                "total": 204,
+                "passed": 204,
+                "failed": 0
+              },
+              "supportedPassRate": 1
+            },
+            "sourceSha256": {
+              "native/src/recorder/Meter.cpp": "d77d0d2f948d576977935ba0990a98fddc0738f3fc5219f6895a38a2597e2e42",
+              "native/src/recorder/Meter.h": "532a775edae2000a6f132db39b1684c7f7138484706dc6268999a2d4c1835cad",
+              "native/src/recorder/MeasurementConfig.h": "0a3619610a959edc91172767203f7695649c79573edd406e4185a6cdd49e8078",
+              "native/src/recorder/FileAnalysis.cpp": "5151b30051df30202880bb10b6a28417ce78e6284d9fa9da50f75d1d2de9ce5d",
+              "native/vendor/libebur128/ebur128.c": "9d3d75d880e7f514b0669341501ce55b159d86c25012b6d8c9340ad7ed8e7d5f",
+              "test/native/ebu_wav_probe.cpp": "15b983a60ee21cc86277d17707fad87f04b03f87e9d302d439c623befac23aa0",
+              "tools/metering/run-ebu-wav-tests.py": "872930365b8ff8e16f468fe85b0abbc436ff37ed5c41d6cb6d399ccc84f5cba6"
+            }
+          },
+          "security": {
+            "sha256": "19359dbab59adf73bc9ab1dbe14474d3803fcfc7f096a3ab8db738fa1921af03",
+            "commit": "091bce46def70a2f31a8e7d8d103cd95fdea40c9",
+            "sourceDirty": false,
+            "packageLockSha256": "17ce7b17ef9ce0821c8025284884e32550ed020f4752f6b39d37108cf8b545df",
+            "status": "pass",
+            "checks": [
+              {
+                "command": "npm audit --json",
+                "exitCode": 0,
+                "counts": {
+                  "info": 0,
+                  "low": 0,
+                  "moderate": 0,
+                  "high": 0,
+                  "critical": 0,
+                  "total": 0
+                },
+                "reportSha256": "c32ca030b773f94f2850f3e61a8a942058b82cd928537441fbaf310ea318997a"
+              },
+              {
+                "command": "npm audit --omit=dev --json",
+                "exitCode": 0,
+                "counts": {
+                  "info": 0,
+                  "low": 0,
+                  "moderate": 0,
+                  "high": 0,
+                  "critical": 0,
+                  "total": 0
+                },
+                "reportSha256": "c32ca030b773f94f2850f3e61a8a942058b82cd928537441fbaf310ea318997a"
+              }
+            ]
+          },
+          "verification": null,
+          "portableGate": null,
+          "packageLoad": null,
+          "packageAudit": null,
+          "runtime": null,
+          "codec": null,
+          "candidate": null,
+          "scope": "Selected actual CI-produced test/numerical/build/package records; generated/offline and no-card checks, not physical-device or release acceptance",
+          "annotationAssembly": {
+            "parts": 2,
+            "compactJsonSha256": "e36fce48a99ab802f07902d6a442ba249444dad1ad39150fda42d1ce374eb0d0",
+            "allPartsPresent": true,
+            "verifiedSha256": true
+          }
+        },
+        "ebuSourceBindings": {
+          "native/src/recorder/Meter.cpp": {
+            "gitBlobSha256": "d77d0d2f948d576977935ba0990a98fddc0738f3fc5219f6895a38a2597e2e42",
+            "actualRunnerFileSha256": "d77d0d2f948d576977935ba0990a98fddc0738f3fc5219f6895a38a2597e2e42",
+            "checkoutTransform": "identity",
+            "contentMatchesVerifiedCommit": true
+          },
+          "native/src/recorder/Meter.h": {
+            "gitBlobSha256": "532a775edae2000a6f132db39b1684c7f7138484706dc6268999a2d4c1835cad",
+            "actualRunnerFileSha256": "532a775edae2000a6f132db39b1684c7f7138484706dc6268999a2d4c1835cad",
+            "checkoutTransform": "identity",
+            "contentMatchesVerifiedCommit": true
+          },
+          "native/src/recorder/MeasurementConfig.h": {
+            "gitBlobSha256": "0a3619610a959edc91172767203f7695649c79573edd406e4185a6cdd49e8078",
+            "actualRunnerFileSha256": "0a3619610a959edc91172767203f7695649c79573edd406e4185a6cdd49e8078",
+            "checkoutTransform": "identity",
+            "contentMatchesVerifiedCommit": true
+          },
+          "native/src/recorder/FileAnalysis.cpp": {
+            "gitBlobSha256": "5151b30051df30202880bb10b6a28417ce78e6284d9fa9da50f75d1d2de9ce5d",
+            "actualRunnerFileSha256": "5151b30051df30202880bb10b6a28417ce78e6284d9fa9da50f75d1d2de9ce5d",
+            "checkoutTransform": "identity",
+            "contentMatchesVerifiedCommit": true
+          },
+          "native/vendor/libebur128/ebur128.c": {
+            "gitBlobSha256": "9d3d75d880e7f514b0669341501ce55b159d86c25012b6d8c9340ad7ed8e7d5f",
+            "actualRunnerFileSha256": "9d3d75d880e7f514b0669341501ce55b159d86c25012b6d8c9340ad7ed8e7d5f",
+            "checkoutTransform": "identity",
+            "contentMatchesVerifiedCommit": true
+          },
+          "test/native/ebu_wav_probe.cpp": {
+            "gitBlobSha256": "15b983a60ee21cc86277d17707fad87f04b03f87e9d302d439c623befac23aa0",
+            "actualRunnerFileSha256": "15b983a60ee21cc86277d17707fad87f04b03f87e9d302d439c623befac23aa0",
+            "checkoutTransform": "identity",
+            "contentMatchesVerifiedCommit": true
+          },
+          "tools/metering/run-ebu-wav-tests.py": {
+            "gitBlobSha256": "872930365b8ff8e16f468fe85b0abbc436ff37ed5c41d6cb6d399ccc84f5cba6",
+            "actualRunnerFileSha256": "872930365b8ff8e16f468fe85b0abbc436ff37ed5c41d6cb6d399ccc84f5cba6",
+            "checkoutTransform": "identity",
+            "contentMatchesVerifiedCommit": true
+          }
+        },
+        "annotationMetadataSha256": "0dee95790828da512c6d39dc5b7a5ec31d24e21b50cda1547d17e9cd14592f26",
+        "failedSteps": [],
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/setup-node@v6",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Install locked dependencies",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run npm run check:independence",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run npm run check:security",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run npm run typecheck",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run npm run test:trace",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run npm run build:trace",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Portable C++ with ASan and UBSan",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Actual React subscription regression in Chromium",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Renderer interactions with simulated IPC",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Publish selected verification evidence in readable annotations",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/upload-artifact@v4",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run actions/setup-node@v6",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success"
+          }
+        ]
+      },
+      "windows": {
+        "jobId": 114349774336,
+        "conclusion": "success",
+        "startedAt": "2026-10-11T00:30:25Z",
+        "completedAt": "2026-10-11T00:51:12Z",
+        "javascriptTestBlocks": [
+          {
+            "context": "portable JS",
+            "tests": 272,
+            "suites": 0,
+            "pass": 272,
+            "fail": 0,
+            "cancelled": 0,
+            "skipped": 0,
+            "todo": 0,
+            "duration_ms": 19678.3111
+          },
+          {
+            "context": "native JS",
+            "tests": 64,
+            "suites": 0,
+            "pass": 64,
+            "fail": 0,
+            "cancelled": 0,
+            "skipped": 0,
+            "todo": 0,
+            "duration_ms": 104226.9842
+          }
+        ],
+        "ctest": {
+          "sha256": "c9f826e161027e2e38fcf89729a302f108fff5b4beb66f23a51c43a44bdc0622",
+          "tests": 19,
+          "passed": 19,
+          "failed": 0
+        },
+        "ctestTotalSecondsInLogOrder": [],
+        "ebuSummary": {
+          "passed": 68,
+          "failed": 0,
+          "excluded": 2,
+          "supported": 68,
+          "checks": {
+            "total": 112,
+            "passed": 112,
+            "failed": 0
+          },
+          "invariants": {
+            "total": 204,
+            "passed": 204,
+            "failed": 0
+          },
+          "supportedPassRate": 1
+        },
+        "runtimeProvenance": {
+          "sha256": "3a6bf9d7bcbd46d003cb835d67718f47fb64929d28eb8b97575568d803c2470a",
+          "electron": "42.11.10",
+          "electronBuilder": "26.15.3",
+          "vcRedist": "14.44.35112 x64",
+          "dlls": {
+            "msvcp140.dll": "0f885b509a685d2bbfa652fed26b5fb31d88fbdab0a978c641d1c7b8aa460aa9",
+            "vcruntime140.dll": "d5e4d9a3e835fa679450145d6a7d94e36573a509317111904d9b3712c30d9066",
+            "vcruntime140_1.dll": "1f2d41c4aa5db0bc33ebf7b66d72943a817d7ce6cbe880502a9403823633093f"
+          }
+        },
+        "selectedActualRecords": {
+          "schemaVersion": 1,
+          "commit": "091bce46def70a2f31a8e7d8d103cd95fdea40c9",
+          "sourceDirty": false,
+          "platform": "win32",
+          "arch": "x64",
+          "codecBuildReused": true,
+          "tests": [
+            {
+              "sha256": "4726868c9d095ca3690cc8ab2661cb5d46cfa5d2ab17ed1d130ae27ef7d37da9",
+              "commit": "091bce46def70a2f31a8e7d8d103cd95fdea40c9",
+              "tier": "portable",
+              "files": 54,
+              "exitCode": 0,
+              "status": "pass",
+              "counts": {
+                "tests": 272,
+                "suites": 0,
+                "pass": 272,
+                "fail": 0,
+                "cancelled": 0,
+                "skipped": 0,
+                "todo": 0,
+                "duration_ms": 19678.3111
+              },
+              "failureDetails": null,
+              "observations": {},
+              "outputSha256": "6c61ac082b581a0381a5f38d54a52693b5ea727684936c61695e1d01b84bc736"
+            },
+            {
+              "sha256": "f212b29526692cb665862e92c0ceb7148b71925ea42c54f6598c8ad3e0085160",
+              "commit": "091bce46def70a2f31a8e7d8d103cd95fdea40c9",
+              "tier": "native",
+              "files": 11,
+              "exitCode": 0,
+              "status": "pass",
+              "counts": {
+                "tests": 64,
+                "suites": 0,
+                "pass": 64,
+                "fail": 0,
+                "cancelled": 0,
+                "skipped": 0,
+                "todo": 0,
+                "duration_ms": 104226.9842
+              },
+              "failureDetails": null,
+              "observations": {
+                "TRACE_MP3_IMPORT_MATRIX": {
+                  "ffmpegSha256": "c647e20c508af6421efb3c78b59e2a693f7b905c6a27384282ad76b5ad37d5ee",
+                  "matrix": [
+                    {
+                      "rate": 8000,
+                      "channels": 1,
+                      "mode": "cbr",
+                      "inputFrames": 1737,
+                      "declaredDecodedFrames": "1775",
+                      "importedFrames": "1775"
+                    },
+                    {
+                      "rate": 8000,
+                      "channels": 1,
+                      "mode": "vbr",
+                      "inputFrames": 1737,
+                      "declaredDecodedFrames": "1775",
+                      "importedFrames": "1775"
+                    },
+                    {
+                      "rate": 8000,
+                      "channels": 2,
+                      "mode": "cbr",
+                      "inputFrames": 1737,
+                      "declaredDecodedFrames": "1775",
+                      "importedFrames": "1775"
+                    },
+                    {
+                      "rate": 8000,
+                      "channels": 2,
+                      "mode": "vbr",
+                      "inputFrames": 1737,
+                      "declaredDecodedFrames": "1775",
+                      "importedFrames": "1775"
+                    },
+                    {
+                      "rate": 16000,
+                      "channels": 1,
+                      "mode": "cbr",
+                      "inputFrames": 3337,
+                      "declaredDecodedFrames": "3337",
+                      "importedFrames": "3337"
+                    },
+                    {
+                      "rate": 16000,
+                      "channels": 1,
+                      "mode": "vbr",
+                      "inputFrames": 3337,
+                      "declaredDecodedFrames": "3337",
+                      "importedFrames": "3337"
+                    },
+                    {
+                      "rate": 16000,
+                      "channels": 2,
+                      "mode": "cbr",
+                      "inputFrames": 3337,
+                      "declaredDecodedFrames": "3337",
+                      "importedFrames": "3337"
+                    },
+                    {
+                      "rate": 16000,
+                      "channels": 2,
+                      "mode": "vbr",
+                      "inputFrames": 3337,
+                      "declaredDecodedFrames": "3337",
+                      "importedFrames": "3337"
+                    },
+                    {
+                      "rate": 44100,
+                      "channels": 1,
+                      "mode": "cbr",
+                      "inputFrames": 8957,
+                      "declaredDecodedFrames": "8957",
+                      "importedFrames": "8957"
+                    },
+                    {
+                      "rate": 44100,
+                      "channels": 1,
+                      "mode": "vbr",
+                      "inputFrames": 8957,
+                      "declaredDecodedFrames": "8957",
+                      "importedFrames": "8957"
+                    },
+                    {
+                      "rate": 44100,
+                      "channels": 2,
+                      "mode": "cbr",
+                      "inputFrames": 8957,
+                      "declaredDecodedFrames": "8957",
+                      "importedFrames": "8957"
+                    },
+                    {
+                      "rate": 44100,
+                      "channels": 2,
+                      "mode": "vbr",
+                      "inputFrames": 8957,
+                      "declaredDecodedFrames": "8957",
+                      "importedFrames": "8957"
+                    },
+                    {
+                      "rate": 48000,
+                      "channels": 1,
+                      "mode": "cbr",
+                      "inputFrames": 9737,
+                      "declaredDecodedFrames": "9737",
+                      "importedFrames": "9737"
+                    },
+                    {
+                      "rate": 48000,
+                      "channels": 1,
+                      "mode": "vbr",
+                      "inputFrames": 9737,
+                      "declaredDecodedFrames": "9737",
+                      "importedFrames": "9737"
+                    },
+                    {
+                      "rate": 48000,
+                      "channels": 2,
+                      "mode": "cbr",
+                      "inputFrames": 9737,
+                      "declaredDecodedFrames": "9737",
+                      "importedFrames": "9737"
+                    },
+                    {
+                      "rate": 48000,
+                      "channels": 2,
+                      "mode": "vbr",
+                      "inputFrames": 9737,
+                      "declaredDecodedFrames": "9737",
+                      "importedFrames": "9737"
+                    }
+                  ],
+                  "scope": "Generated external files; decoder metadata governs frames, not a claim of bit-exact encoder roundtrip"
+                },
+                "TRACE_CODEC_MINUTE": {
+                  "ffmpegSha256": "c647e20c508af6421efb3c78b59e2a693f7b905c6a27384282ad76b5ad37d5ee",
+                  "sourceRate": 96000,
+                  "sourceFrames": 5760000,
+                  "channels": 2,
+                  "timings": [
+                    {
+                      "rate": 44100,
+                      "extension": "mp3",
+                      "elapsedMs": 1539,
+                      "physicalFrames": "2646000",
+                      "audibleFrames": "2646000"
+                    },
+                    {
+                      "rate": 44100,
+                      "extension": "m4a",
+                      "elapsedMs": 2414,
+                      "physicalFrames": "2646000",
+                      "audibleFrames": "2646000"
+                    },
+                    {
+                      "rate": 48000,
+                      "extension": "mp3",
+                      "elapsedMs": 1550,
+                      "physicalFrames": "2880000",
+                      "audibleFrames": "2880000"
+                    },
+                    {
+                      "rate": 48000,
+                      "extension": "m4a",
+                      "elapsedMs": 2718,
+                      "physicalFrames": "2880000",
+                      "audibleFrames": "2880000"
+                    }
+                  ],
+                  "scope": "Offline generated signal; not WASAPI or physical-device real-time acceptance"
+                }
+              },
+              "outputSha256": "78af9c3fe86c768c2c40a577691abd4b9811e9f8f0610f3ff0cabcee94f2da66"
+            }
+          ],
+          "ctest": {
+            "sha256": "c9f826e161027e2e38fcf89729a302f108fff5b4beb66f23a51c43a44bdc0622",
+            "tests": 19,
+            "passed": 19,
+            "failed": 0
+          },
+          "ebu": {
+            "sha256": "b5e6e2d65269ed1ef089874145e8abb3a3f616daa796b7b4ad1ae788a1eb8ac5",
+            "commit": "091bce46def70a2f31a8e7d8d103cd95fdea40c9",
+            "sourceDirty": false,
+            "status": "pass",
+            "measurementConfigId": "trace-meter-v5-ebur128-1.2.6-lra10hz-msi100hz-tpaligned",
+            "summary": {
+              "passed": 68,
+              "failed": 0,
+              "excluded": 2,
+              "supported": 68,
+              "checks": {
+                "total": 112,
+                "passed": 112,
+                "failed": 0
+              },
+              "invariants": {
+                "total": 204,
+                "passed": 204,
+                "failed": 0
+              },
+              "supportedPassRate": 1
+            },
+            "sourceSha256": {
+              "native/src/recorder/Meter.cpp": "a01a7b96641bf8113faba731aa8338e642753febf725f2fdc599c6bedd4a5e91",
+              "native/src/recorder/Meter.h": "e4066aac8d89fdec565f177c7a08e076448e384536202d175d4d1ede3b066409",
+              "native/src/recorder/MeasurementConfig.h": "de90bfa7762c80b2ba3155a5f1a5ea4a255292c4b307e79c5a60f1c1d160f1a6",
+              "native/src/recorder/FileAnalysis.cpp": "e9702a0dea47e2da2ca56611564d6a03f5c57743b64b8b650b3aacded843d82d",
+              "native/vendor/libebur128/ebur128.c": "36726095b74a13fde0cb74992a06400d3f7cb1a228fa95df2a4cc5bf38231783",
+              "test/native/ebu_wav_probe.cpp": "51763a9073bce6d2f39226299b3c5e3175d985d07f8721929a4eb65108368722",
+              "tools/metering/run-ebu-wav-tests.py": "b8710789684f94d2e15e306993b7d8ca1a44d2d8f3bef2cf304e563edc9413a9"
+            }
+          },
+          "security": {
+            "sha256": "19359dbab59adf73bc9ab1dbe14474d3803fcfc7f096a3ab8db738fa1921af03",
+            "commit": "091bce46def70a2f31a8e7d8d103cd95fdea40c9",
+            "sourceDirty": false,
+            "packageLockSha256": "17ce7b17ef9ce0821c8025284884e32550ed020f4752f6b39d37108cf8b545df",
+            "status": "pass",
+            "checks": [
+              {
+                "command": "npm audit --json",
+                "exitCode": 0,
+                "counts": {
+                  "info": 0,
+                  "low": 0,
+                  "moderate": 0,
+                  "high": 0,
+                  "critical": 0,
+                  "total": 0
+                },
+                "reportSha256": "c32ca030b773f94f2850f3e61a8a942058b82cd928537441fbaf310ea318997a"
+              },
+              {
+                "command": "npm audit --omit=dev --json",
+                "exitCode": 0,
+                "counts": {
+                  "info": 0,
+                  "low": 0,
+                  "moderate": 0,
+                  "high": 0,
+                  "critical": 0,
+                  "total": 0
+                },
+                "reportSha256": "c32ca030b773f94f2850f3e61a8a942058b82cd928537441fbaf310ea318997a"
+              }
+            ]
+          },
+          "verification": {
+            "sha256": "57ae802631c530e61359bf1aab2a24f8293a5e66fa060874071920e5c217ba0f",
+            "commit": "091bce46def70a2f31a8e7d8d103cd95fdea40c9",
+            "sourceDirty": false,
+            "platform": "win32",
+            "arch": "x64",
+            "status": "pass",
+            "checks": [
+              {
+                "command": "npm run build:trace-engine",
+                "exitCode": 0,
+                "status": "pass"
+              },
+              {
+                "command": "npm run check:security",
+                "exitCode": 0,
+                "status": "pass"
+              },
+              {
+                "command": "npm run typecheck",
+                "exitCode": 0,
+                "status": "pass"
+              },
+              {
+                "command": "npm run test:trace",
+                "exitCode": 0,
+                "status": "pass"
+              },
+              {
+                "command": "npm run build:trace",
+                "exitCode": 0,
+                "status": "pass"
+              },
+              {
+                "command": "npm run test:trace-native",
+                "exitCode": 0,
+                "status": "pass"
+              }
+            ]
+          },
+          "portableGate": {
+            "sha256": "365c893d0bc773b0c73ecbdf6758055d6604692c6598d164b2f7f0eaf693d395",
+            "status": "pass",
+            "headSha": "091bce46def70a2f31a8e7d8d103cd95fdea40c9",
+            "runId": 38098647365,
+            "attempt": 1,
+            "jobId": 114349774225
+          },
+          "packageLoad": {
+            "sha256": "a83a7108c1cbe6bc8dbfe3ef72c41382fd1fa4688af6201a856094511f938fae",
+            "commit": "091bce46def70a2f31a8e7d8d103cd95fdea40c9",
+            "status": "pass",
+            "exeSha256": "d0f815f2d96a88ae560bad6a9437155fbd4307da8e962868cf7d9932e6b7e586",
+            "asarSha256": "8035c66dafb8cb179fa4afddf5db49b8547dba8e8e3325e6170fdbe317061329"
+          },
+          "packageAudit": {
+            "sha256": "cf90af2671803e72a935301d2bffae2c682958e245ded8d0cb94ab3f0d1a5e3b",
+            "status": "pass",
+            "checks": [
+              "ASAR contains only the Trace build and a minimal package, with all workers and assets identical to the build",
+              "Package contains usage guide, licenses and no recordings, default demo, VST or TUI",
+              "Retained Prism FFT license/provenance matches packaged bytes and pinned source/extraction hashes",
+              "Native addon, VC runtime, codecs and available source inventory match locked/staged hashes",
+              "Trace executable carries its own icon and the current product version"
+            ],
+            "files": {
+              "Trace.exe": {
+                "bytes": 235323904,
+                "sha256": "d0f815f2d96a88ae560bad6a9437155fbd4307da8e962868cf7d9932e6b7e586"
+              },
+              "resources/app.asar": {
+                "bytes": 3288311,
+                "sha256": "8035c66dafb8cb179fa4afddf5db49b8547dba8e8e3325e6170fdbe317061329"
+              }
+            }
+          },
+          "runtime": {
+            "sha256": "3a6bf9d7bcbd46d003cb835d67718f47fb64929d28eb8b97575568d803c2470a",
+            "electron": "42.11.10",
+            "electronBuilder": "26.15.3",
+            "vcRedist": "14.44.35112 x64",
+            "dlls": {
+              "msvcp140.dll": "0f885b509a685d2bbfa652fed26b5fb31d88fbdab0a978c641d1c7b8aa460aa9",
+              "vcruntime140.dll": "d5e4d9a3e835fa679450145d6a7d94e36573a509317111904d9b3712c30d9066",
+              "vcruntime140_1.dll": "1f2d41c4aa5db0bc33ebf7b66d72943a817d7ce6cbe880502a9403823633093f"
+            }
+          },
+          "codec": {
+            "sha256": "e305461d392c76fec8c7355194c2fbd6b1fd4b579c862f4f5cd7bdb01fa0d047",
+            "buildLockSha256": "ed3e90d50ae39a4c3364197a5145490d36526f955e744f3585cb5c4cd37e84d1",
+            "systemInventorySha256": "b895920269ac9faa7827c4467f407268e4bd1dbf0ca2d539ff5a53f42b1ce48f",
+            "configHeaderSha256": "2f386f2de7862231e29b33eb202e152b605367d48e8ffa7b8ce7a004143bbbfb",
+            "configMakSha256": "b8ea4983a6603fbe52cef68c155a6f2d2c0031e639b70f8715f0532d1be96669",
+            "recipes": {
+              "tools/codec/build.cjs": "7b1d08dfefdb06c70292c5886540570c158a8037a530f72f4e00d9722470917a",
+              "tools/codec/identity.cjs": "0f69a737f54676409a12ca26f169a8392c1dd9040bb9a3fd36ad2244210bcffc",
+              "tools/release/dependency-sources.cjs": "c53a60e479767c12b7036b36278de5b37035f035fa428c475ba9082c284a12ae"
+            },
+            "matchesPinnedReport": true,
+            "ffmpegSha256": "c647e20c508af6421efb3c78b59e2a693f7b905c6a27384282ad76b5ad37d5ee",
+            "ffprobeSha256": "73337f082639e4f3f867a50fc69ec681ed81cdc8faf5df5d8fed4f677530bef5"
+          },
+          "candidate": {
+            "sha256": "7e933567e06a0f3e45959ab3029efecc2f30aaf1bd04de71310c49b690a7bf67",
+            "commit": "091bce46def70a2f31a8e7d8d103cd95fdea40c9",
+            "status": "engineering-candidate",
+            "signed": false,
+            "files": {
+              "00-开始使用.txt": {
+                "bytes": 931,
+                "sha256": "73cb115117f1f1b67c596ae377a3a6425f2ea4eca612339807a8d1bbf9ae9255"
+              },
+              "FFmpeg-9.0.2-Upstream-Source.tar.gz": {
+                "bytes": 17333895,
+                "sha256": "0aa2b1de2a5698b20a23e93d539a9a8e82ca0117496c5bdf05d198805f42bb3b"
+              },
+              "ffmpeg-build-lock.json": {
+                "bytes": 8557,
+                "sha256": "ed3e90d50ae39a4c3364197a5145490d36526f955e744f3585cb5c4cd37e84d1"
+              },
+              "ffmpeg-build-report.json": {
+                "bytes": 11506,
+                "sha256": "e305461d392c76fec8c7355194c2fbd6b1fd4b579c862f4f5cd7bdb01fa0d047"
+              },
+              "ffmpeg-config.h": {
+                "bytes": 24832,
+                "sha256": "2f386f2de7862231e29b33eb202e152b605367d48e8ffa7b8ce7a004143bbbfb"
+              },
+              "ffmpeg-config.mak": {
+                "bytes": 89448,
+                "sha256": "b8ea4983a6603fbe52cef68c155a6f2d2c0031e639b70f8715f0532d1be96669"
+              },
+              "ffmpeg-source-manifest.json": {
+                "bytes": 4398,
+                "sha256": "e9770272c2a688991fe49203bc6145666c6864ef10c153550bda6adec46cb9a0"
+              },
+              "ffmpeg-system-inputs.json": {
+                "bytes": 1152417,
+                "sha256": "b895920269ac9faa7827c4467f407268e4bd1dbf0ca2d539ff5a53f42b1ce48f"
+              },
+              "FFmpeg源码说明.md": {
+                "bytes": 2835,
+                "sha256": "6112c030e99f0bfe29f7d4827a2c818750e4e58cc8683dd0fe7c957bcd30d304"
+              },
+              "LAME-3.100-Upstream-Source.tar.gz": {
+                "bytes": 1524133,
+                "sha256": "ddfe36cab873794038ae2c1210557ad34857a4b6bdc515785d1da9e175b1da1e"
+              },
+              "package-load.json": {
+                "bytes": 519,
+                "sha256": "a83a7108c1cbe6bc8dbfe3ef72c41382fd1fa4688af6201a856094511f938fae"
+              },
+              "PDF字体许可.txt": {
+                "bytes": 4480,
+                "sha256": "7accca2f29220c9ab44e4950799b821f36ebf5bbe6b5fb5342724b32228a8daf"
+              },
+              "security-audit.json": {
+                "bytes": 997,
+                "sha256": "19359dbab59adf73bc9ab1dbe14474d3803fcfc7f096a3ab8db738fa1921af03"
+              },
+              "security-baseline.json": {
+                "bytes": 3509,
+                "sha256": "443159d93a3841da06f1d2a9b9fc32842a424e7a3c608c41de92db01da198c89"
+              },
+              "Trace-0.1.0-preview.31-Source.zip": {
+                "bytes": 4559951,
+                "sha256": "d9f39440f645c07ed40582bf523e221ee43e125e985dc01aaeb11cd63f6b2f80"
+              },
+              "Trace-0.1.0-preview.31-Windows-x64.zip": {
+                "bytes": 150159357,
+                "sha256": "e14fba12831c263c5340089f5421f0c5168421328d5063df8bbb17058357e103"
+              },
+              "verification.json": {
+                "bytes": 924,
+                "sha256": "57ae802631c530e61359bf1aab2a24f8293a5e66fa060874071920e5c217ba0f"
+              },
+              "发布验收清单.md": {
+                "bytes": 7150,
+                "sha256": "052789dfe6e4b6bad5b8ac5ddb449dfa516cb67ec7c4b941a866f6107b58e904"
+              },
+              "快速上手-preview.31.pdf": {
+                "bytes": 419208,
+                "sha256": "001818ad11ef4b0fd5ec95a29c348030a2e57c92d8a04e98f2f0bcd85cc0968a"
+              }
+            },
+            "dependencySource": {
+              "manifest": "ffmpeg-source-manifest.json",
+              "upstreamArchive": "FFmpeg-9.0.2-Upstream-Source.tar.gz",
+              "upstreamArchiveSha256": "0aa2b1de2a5698b20a23e93d539a9a8e82ca0117496c5bdf05d198805f42bb3b",
+              "additionalUpstreamArchives": [
+                {
+                  "name": "LAME",
+                  "file": "LAME-3.100-Upstream-Source.tar.gz",
+                  "sha256": "ddfe36cab873794038ae2c1210557ad34857a4b6bdc515785d1da9e175b1da1e"
+                }
+              ],
+              "correspondingSourceComplete": true,
+              "buildLock": "ffmpeg-build-lock.json",
+              "buildReport": "ffmpeg-build-report.json",
+              "systemInputs": "ffmpeg-system-inputs.json",
+              "scope": "FFmpeg and LAME source plus unmodified build recipe; pinned Microsoft system/toolchain inputs are recorded separately"
+            }
+          },
+          "scope": "Selected actual CI-produced test/numerical/build/package records; generated/offline and no-card checks, not physical-device or release acceptance",
+          "annotationAssembly": {
+            "parts": 6,
+            "compactJsonSha256": "ac359cf448d66e0684c2a8f3ff19ac2f1f17ab59627102b4fe2fd7fec57333c0",
+            "allPartsPresent": true,
+            "verifiedSha256": true
+          }
+        },
+        "ebuSourceBindings": {
+          "native/src/recorder/Meter.cpp": {
+            "gitBlobSha256": "d77d0d2f948d576977935ba0990a98fddc0738f3fc5219f6895a38a2597e2e42",
+            "actualRunnerFileSha256": "a01a7b96641bf8113faba731aa8338e642753febf725f2fdc599c6bedd4a5e91",
+            "checkoutTransform": "Git Windows LF-to-CRLF text checkout",
+            "contentMatchesVerifiedCommit": true
+          },
+          "native/src/recorder/Meter.h": {
+            "gitBlobSha256": "532a775edae2000a6f132db39b1684c7f7138484706dc6268999a2d4c1835cad",
+            "actualRunnerFileSha256": "e4066aac8d89fdec565f177c7a08e076448e384536202d175d4d1ede3b066409",
+            "checkoutTransform": "Git Windows LF-to-CRLF text checkout",
+            "contentMatchesVerifiedCommit": true
+          },
+          "native/src/recorder/MeasurementConfig.h": {
+            "gitBlobSha256": "0a3619610a959edc91172767203f7695649c79573edd406e4185a6cdd49e8078",
+            "actualRunnerFileSha256": "de90bfa7762c80b2ba3155a5f1a5ea4a255292c4b307e79c5a60f1c1d160f1a6",
+            "checkoutTransform": "Git Windows LF-to-CRLF text checkout",
+            "contentMatchesVerifiedCommit": true
+          },
+          "native/src/recorder/FileAnalysis.cpp": {
+            "gitBlobSha256": "5151b30051df30202880bb10b6a28417ce78e6284d9fa9da50f75d1d2de9ce5d",
+            "actualRunnerFileSha256": "e9702a0dea47e2da2ca56611564d6a03f5c57743b64b8b650b3aacded843d82d",
+            "checkoutTransform": "Git Windows LF-to-CRLF text checkout",
+            "contentMatchesVerifiedCommit": true
+          },
+          "native/vendor/libebur128/ebur128.c": {
+            "gitBlobSha256": "9d3d75d880e7f514b0669341501ce55b159d86c25012b6d8c9340ad7ed8e7d5f",
+            "actualRunnerFileSha256": "36726095b74a13fde0cb74992a06400d3f7cb1a228fa95df2a4cc5bf38231783",
+            "checkoutTransform": "Git Windows LF-to-CRLF text checkout",
+            "contentMatchesVerifiedCommit": true
+          },
+          "test/native/ebu_wav_probe.cpp": {
+            "gitBlobSha256": "15b983a60ee21cc86277d17707fad87f04b03f87e9d302d439c623befac23aa0",
+            "actualRunnerFileSha256": "51763a9073bce6d2f39226299b3c5e3175d985d07f8721929a4eb65108368722",
+            "checkoutTransform": "Git Windows LF-to-CRLF text checkout",
+            "contentMatchesVerifiedCommit": true
+          },
+          "tools/metering/run-ebu-wav-tests.py": {
+            "gitBlobSha256": "872930365b8ff8e16f468fe85b0abbc436ff37ed5c41d6cb6d399ccc84f5cba6",
+            "actualRunnerFileSha256": "b8710789684f94d2e15e306993b7d8ca1a44d2d8f3bef2cf304e563edc9413a9",
+            "checkoutTransform": "Git Windows LF-to-CRLF text checkout",
+            "contentMatchesVerifiedCommit": true
+          }
+        },
+        "annotationMetadataSha256": "b9da4aa9af16999117cc18608300ef395f1a90ad5d512af94c111fdbe48ba759",
+        "failedSteps": [],
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/setup-node@v6",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Install locked dependencies",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run npm run check:independence",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Fetch pinned Electron SDK without building another application",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Compile independent Trace diagnostic fixtures",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/cache/restore@v4",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Prepare pinned codec with readable failure diagnostics",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/cache/save@v4",
+            "status": "completed",
+            "conclusion": "skipped"
+          },
+          {
+            "name": "Verify Trace and retain command outcomes",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Require this run's complete portable success before packing a candidate",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Build and inspect candidate package",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Publish selected verification evidence in readable annotations",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/upload-artifact@v4",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/upload-artifact@v4",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run actions/setup-node@v6",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run actions/checkout@v6",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success"
+          }
+        ]
+      }
+    },
+    "artifacts": [
+      {
+        "name": "trace-windows-evidence",
+        "id": 11687630346,
+        "sizeInBytes": 29135,
+        "archiveDigest": "sha256:9c36450d989be1e23fbc26e4c57c6d560bef1ff0a3c5444dec4f523c51d89365",
+        "createdAt": "2026-10-11T00:50:59Z",
+        "payloadRead": false
+      },
+      {
+        "name": "trace-portable-evidence",
+        "id": 11687365538,
+        "sizeInBytes": 15567,
+        "archiveDigest": "sha256:124bfce9e6807c78b82ab01f13c36432e538730625348bbb031f8af7ed274723",
+        "createdAt": "2026-10-11T00:48:49Z",
+        "payloadRead": false
+      },
+      {
+        "name": "trace-windows-candidate",
+        "id": 11687184699,
+        "sizeInBytes": 173913764,
+        "archiveDigest": "sha256:62ec32005849440f514dce915eccf14deeabb460a4e467503e2aec87621b5cbe",
+        "createdAt": "2026-10-11T00:51:06Z",
+        "payloadRead": false
+      }
+    ],
+    "mp3ImportMatrix": {
+      "ffmpegSha256": "c647e20c508af6421efb3c78b59e2a693f7b905c6a27384282ad76b5ad37d5ee",
+      "matrix": [
+        {
+          "rate": 8000,
+          "channels": 1,
+          "mode": "cbr",
+          "inputFrames": 1737,
+          "declaredDecodedFrames": "1775",
+          "importedFrames": "1775"
+        },
+        {
+          "rate": 8000,
+          "channels": 1,
+          "mode": "vbr",
+          "inputFrames": 1737,
+          "declaredDecodedFrames": "1775",
+          "importedFrames": "1775"
+        },
+        {
+          "rate": 8000,
+          "channels": 2,
+          "mode": "cbr",
+          "inputFrames": 1737,
+          "declaredDecodedFrames": "1775",
+          "importedFrames": "1775"
+        },
+        {
+          "rate": 8000,
+          "channels": 2,
+          "mode": "vbr",
+          "inputFrames": 1737,
+          "declaredDecodedFrames": "1775",
+          "importedFrames": "1775"
+        },
+        {
+          "rate": 16000,
+          "channels": 1,
+          "mode": "cbr",
+          "inputFrames": 3337,
+          "declaredDecodedFrames": "3337",
+          "importedFrames": "3337"
+        },
+        {
+          "rate": 16000,
+          "channels": 1,
+          "mode": "vbr",
+          "inputFrames": 3337,
+          "declaredDecodedFrames": "3337",
+          "importedFrames": "3337"
+        },
+        {
+          "rate": 16000,
+          "channels": 2,
+          "mode": "cbr",
+          "inputFrames": 3337,
+          "declaredDecodedFrames": "3337",
+          "importedFrames": "3337"
+        },
+        {
+          "rate": 16000,
+          "channels": 2,
+          "mode": "vbr",
+          "inputFrames": 3337,
+          "declaredDecodedFrames": "3337",
+          "importedFrames": "3337"
+        },
+        {
+          "rate": 44100,
+          "channels": 1,
+          "mode": "cbr",
+          "inputFrames": 8957,
+          "declaredDecodedFrames": "8957",
+          "importedFrames": "8957"
+        },
+        {
+          "rate": 44100,
+          "channels": 1,
+          "mode": "vbr",
+          "inputFrames": 8957,
+          "declaredDecodedFrames": "8957",
+          "importedFrames": "8957"
+        },
+        {
+          "rate": 44100,
+          "channels": 2,
+          "mode": "cbr",
+          "inputFrames": 8957,
+          "declaredDecodedFrames": "8957",
+          "importedFrames": "8957"
+        },
+        {
+          "rate": 44100,
+          "channels": 2,
+          "mode": "vbr",
+          "inputFrames": 8957,
+          "declaredDecodedFrames": "8957",
+          "importedFrames": "8957"
+        },
+        {
+          "rate": 48000,
+          "channels": 1,
+          "mode": "cbr",
+          "inputFrames": 9737,
+          "declaredDecodedFrames": "9737",
+          "importedFrames": "9737"
+        },
+        {
+          "rate": 48000,
+          "channels": 1,
+          "mode": "vbr",
+          "inputFrames": 9737,
+          "declaredDecodedFrames": "9737",
+          "importedFrames": "9737"
+        },
+        {
+          "rate": 48000,
+          "channels": 2,
+          "mode": "cbr",
+          "inputFrames": 9737,
+          "declaredDecodedFrames": "9737",
+          "importedFrames": "9737"
+        },
+        {
+          "rate": 48000,
+          "channels": 2,
+          "mode": "vbr",
+          "inputFrames": 9737,
+          "declaredDecodedFrames": "9737",
+          "importedFrames": "9737"
+        }
+      ],
+      "scope": "Generated external files; decoder metadata governs frames, not a claim of bit-exact encoder roundtrip"
+    },
+    "sourceCodec": {
+      "reportSha256": "e305461d392c76fec8c7355194c2fbd6b1fd4b579c862f4f5cd7bdb01fa0d047",
+      "reportMatchesPinnedBytes": true,
+      "buildReport": {
+        "schemaVersion": 1,
+        "buildLockSha256": "ed3e90d50ae39a4c3364197a5145490d36526f955e744f3585cb5c4cd37e84d1",
+        "sources": [
+          {
+            "repository": "https://github.com/FFmpeg/FFmpeg",
+            "commit": "946fcce07b6dcd0331c8cc609192aeff5e1924f8",
+            "release": "9.0.2",
+            "archiveUrl": "https://codeload.github.com/FFmpeg/FFmpeg/tar.gz/946fcce07b6dcd0331c8cc609192aeff5e1924f8",
+            "archiveBytes": 17333895,
+            "archiveSha256": "0aa2b1de2a5698b20a23e93d539a9a8e82ca0117496c5bdf05d198805f42bb3b",
+            "archiveFile": "FFmpeg-9.0.2-Upstream-Source.tar.gz",
+            "releaseFileValidated": true
+          },
+          {
+            "name": "LAME",
+            "version": "3.100",
+            "archiveUrl": "https://downloads.sourceforge.net/project/lame/lame/3.100/lame-3.100.tar.gz",
+            "archiveFile": "LAME-3.100-Upstream-Source.tar.gz",
+            "archiveBytes": 1524133,
+            "archiveSha256": "ddfe36cab873794038ae2c1210557ad34857a4b6bdc515785d1da9e175b1da1e",
+            "sourceCorrespondence": "Unmodified official source compiled by the Trace recipe; no producer patches"
+          }
+        ],
+        "tools": [
+          {
+            "file": "msys/bash.exe",
+            "sha256": "7b4dc5d6878aacdec5d09ca9c5d8e2b43b925a6bbf631873a24c692980b792b2"
+          },
+          {
+            "file": "msys/make.exe",
+            "sha256": "2d3b9fca575be8e93c10ab74348055fa127a65cf628d52e9218ac76065cc6d22"
+          },
+          {
+            "file": "windows/tar.exe",
+            "sha256": "dcc75eb2e0fce4779784ca0a00c6cda1182c7b3c95eb6dab0e0603651cdb6b52"
+          },
+          {
+            "file": "msys/msys-2.0.dll",
+            "sha256": "47d652c7cba30eb294eb7ee10bbfefdcc46342ddf47b4c09ad58a2185b36ad2c"
+          },
+          {
+            "file": "msys/sed.exe",
+            "sha256": "8d54e322dfc3faa60f0464691aba8634197406e53367aa8942409181c0808be8"
+          },
+          {
+            "file": "msys/grep.exe",
+            "sha256": "497202418334f8a48d9f34cd2e1b2c03c4f957e02304b613e10931c0457e8d4a"
+          },
+          {
+            "file": "msys/gawk.exe",
+            "sha256": "f123d2c120b2ad2158aa8c69d8eeedf14c0d681e68ee76ff103e06ac49986200"
+          },
+          {
+            "file": "msys/awk.exe",
+            "sha256": "f123d2c120b2ad2158aa8c69d8eeedf14c0d681e68ee76ff103e06ac49986200"
+          },
+          {
+            "file": "msys/uname.exe",
+            "sha256": "1cba275ff8e0c81f48898f017758c558ee5951cb0448c36628580beffdf4ef89"
+          },
+          {
+            "file": "msys/sh.exe",
+            "sha256": "7b4dc5d6878aacdec5d09ca9c5d8e2b43b925a6bbf631873a24c692980b792b2"
+          },
+          {
+            "file": "msys/cat.exe",
+            "sha256": "f1b37048ee5c70fdc31dde509e562261c9b2d102d94c903393f55b45e883ef90"
+          },
+          {
+            "file": "msys/cp.exe",
+            "sha256": "5f91e0b445edb4e4c17e9a660ac29239f6cac5a821a173a86d4332b9eaa8cea3"
+          },
+          {
+            "file": "msys/rm.exe",
+            "sha256": "a845f7517a49b49726e056da8a8f65a6d9ce96fbe79c3664c082521eea0f80e7"
+          },
+          {
+            "file": "msys/mkdir.exe",
+            "sha256": "fc9b9e49fd6496cdddfc5681208d74bd649ac934818eafdfd50a9571bdcb4861"
+          },
+          {
+            "file": "msys/touch.exe",
+            "sha256": "1d895e0f77cbc8b77c3a38da009e8ad8d23a371afd398da5408bdeffcddf5fc0"
+          },
+          {
+            "file": "msys/tr.exe",
+            "sha256": "7cf90be63820ba9ec66a10c0c4af84f0a2e3ec90a722ea6904219ec0b93bf1c1"
+          },
+          {
+            "file": "msys/head.exe",
+            "sha256": "c82ae2ef72235a34db7007580628cd5183cb350878a10fcc98b6ef26b92a3537"
+          },
+          {
+            "file": "msys/tail.exe",
+            "sha256": "8608c4138642de6dca0806b266b3009c137dc373171978cf47418056a5e05c55"
+          },
+          {
+            "file": "msys/sort.exe",
+            "sha256": "7c5df851d821e23988641f35442a06652ce834ed724456511798ce60314cab9a"
+          },
+          {
+            "file": "msys/wc.exe",
+            "sha256": "3ab05efc4703295f0d36fd48da17f2021219494fb932a062a535ae17ea9f45b3"
+          },
+          {
+            "file": "msys/cut.exe",
+            "sha256": "63fcfb76c80d57538312a9637429d5a4b99ac83e8b00d95684609b4c045471e9"
+          },
+          {
+            "file": "msys/od.exe",
+            "sha256": "5533b3edb4b47590a3279653475f12cb6dec11a3b8a289e93c613a06c30b99d2"
+          },
+          {
+            "file": "msys/expr.exe",
+            "sha256": "e1608f26781374b67f180370dc50c833bfc61946aadfb433e48536590bb79219"
+          },
+          {
+            "file": "msys/dirname.exe",
+            "sha256": "53896fda354605a1a1d1f5e6802daba5ba6c05961f3074b892194e068aa82772"
+          },
+          {
+            "file": "msys/basename.exe",
+            "sha256": "6fe2e201a956304503f808d0909a26d9b49e1a7e99f6ee6d93721ac4a76a7c6e"
+          },
+          {
+            "file": "msys/tee.exe",
+            "sha256": "5b956ac9d6bb6d457665709bbcf71326ecd66bb5111b280c124a68405ce5da46"
+          },
+          {
+            "file": "msvc/cl.exe",
+            "sha256": "fe251ef50a1545b1b0835ee17b1e785459712b38d79e45b5c1d3d28970a36619"
+          },
+          {
+            "file": "msvc/link.exe",
+            "sha256": "a364af801a8539e4324d9489313dbf001d959128451fc99a27b24676bbac058f"
+          },
+          {
+            "file": "msvc/lib.exe",
+            "sha256": "fde148a275981855689c45f932dda56b10dc9289a0290826a0fb93478da34929"
+          },
+          {
+            "file": "msvc/nmake.exe",
+            "sha256": "ce6b50c2d8e6704b671ec116e52ce9d2fbc1d20dd28c5b895b5421adddf94ebb"
+          },
+          {
+            "file": "msvc/dumpbin.exe",
+            "sha256": "cfee7ed764b7b0866aae0be12f9c0ad2a7f5aecc4046ba2b7de26335827ca815"
+          }
+        ],
+        "versions": {
+          "compiler": "usage: cl [ option... ] filename... [ /link linkoption... ]\nMicrosoft (R) C/C++ Optimizing Compiler Version 19.44.35229 for x64\nCopyright (C) Microsoft Corporation.  All rights reserved.",
+          "bash": "GNU bash, version 5.3.20(1)-release (x86_64-pc-cygwin)",
+          "make": "GNU Make 4.4.1"
+        },
+        "systemInputs": {
+          "compiler": {
+            "files": 91,
+            "bytes": 98922986,
+            "sha256": "76b84bdd84158585afdd98f70671efd9943a3e3530d112596501fba326e0d855"
+          },
+          "msvcInclude": {
+            "files": 361,
+            "bytes": 16200441,
+            "sha256": "7bf99fdca0a732240612ff4cc78880fef76c65b67ff17ec02900c67b4d5ac050"
+          },
+          "msvcLib": {
+            "files": 166,
+            "bytes": 802970908,
+            "sha256": "fe7dd3278455a19102cfd07da0b7f64e5eb66a76a44aca0ae4308be1e61be7dc"
+          },
+          "sdkInclude": {
+            "files": 5553,
+            "bytes": 385723582,
+            "sha256": "94e724734f0dcb637e1cdc2e7cbffd8c77abf2c41275e6c3da19ab45d8078752"
+          },
+          "sdkUcrtLib": {
+            "files": 8,
+            "bytes": 90629762,
+            "sha256": "37569193a7d063c57ef5266e8c3046cef88834055aaeec446a3bec01ae818dd5"
+          },
+          "sdkUmLib": {
+            "files": 505,
+            "bytes": 120730732,
+            "sha256": "6a64d69e1ca754408454275bb3d82e51148f46f64d4c2ced9803447225ca51b5"
+          }
+        },
+        "recipes": {
+          "tools/codec/build.cjs": "7b1d08dfefdb06c70292c5886540570c158a8037a530f72f4e00d9722470917a",
+          "tools/codec/identity.cjs": "0f69a737f54676409a12ca26f169a8392c1dd9040bb9a3fd36ad2244210bcffc",
+          "tools/release/dependency-sources.cjs": "c53a60e479767c12b7036b36278de5b37035f035fa428c475ba9082c284a12ae"
+        },
+        "outputs": {
+          "ffmpeg": {
+            "sha256": "c647e20c508af6421efb3c78b59e2a693f7b905c6a27384282ad76b5ad37d5ee",
+            "bytes": 3096064,
+            "version": "ffmpeg version 9.0.2 Copyright (c) 2000-2026 the FFmpeg developers\nbuilt with Microsoft (R) C/C++ Optimizing Compiler Version 19.44.35229 for x64\nconfiguration: --toolchain=msvc --arch=x86_64 --target-os=win32 --prefix=/c/trace-codec/prefix --disable-autodetect --disable-everything --disable-network --disable-shared --enable-static --disable-doc --disable-debug --disable-ffplay --disable-avdevice --disable-swscale --disable-x86asm --disable-hwaccels --enable-gpl --enable-version3 --enable-libmp3lame --enable-encoder='aac,libmp3lame,pcm_s16le,pcm_s24le,pcm_f32le' --enable-decoder='aac,mp3,mp3float,pcm_s16le,pcm_s24le,pcm_f32le,mjpeg' --enable-parser='aac,mpegaudio,mjpeg,png' --enable-demuxer='wav,mp3,aac,mov,concat' --enable-muxer='wav,mp3,adts,ipod,mp4,mov,segment' --enable-protocol='file,pipe' --enable-filter='aresample,aformat,anull,atrim,asetpts' --extra-cflags='-IC:/trace-codec/prefix/include' --extra-ldflags='-libpath:C:/trace-codec/prefix/lib -Brepro'\nlibavutil      61.  1.102 / 61.  1.102\nlibavcodec     63.  1.102 / 63.  1.102\nlibavformat    63.  1.102 / 63.  1.102\nlibavfilter    12.  1.102 / 12.  1.102\nlibswresample   7.  1.102 /  7.  1.102\n\nExiting with exit code 0",
+            "dependents": "Microsoft (R) COFF/PE Dumper Version 14.44.35229.0\nCopyright (C) Microsoft Corporation.  All rights reserved.\n\n\nDump of file C:\\trace-codec\\prefix\\bin\\ffmpeg.exe\n\nFile Type: EXECUTABLE IMAGE\n\n  Image has the following dependencies:\n\n    bcrypt.dll\n    PSAPI.DLL\n    SHELL32.dll\n    KERNEL32.dll\n\n  Summary\n\n      1B2000 .data\n        1000 .fptable\n       16000 .pdata\n       D3000 .rdata\n        5000 .reloc\n        1000 .rsrc\n      206000 .text"
+          },
+          "ffprobe": {
+            "sha256": "73337f082639e4f3f867a50fc69ec681ed81cdc8faf5df5d8fed4f677530bef5",
+            "bytes": 2859520,
+            "version": "ffprobe version 9.0.2 Copyright (c) 2007-2026 the FFmpeg developers\nbuilt with Microsoft (R) C/C++ Optimizing Compiler Version 19.44.35229 for x64\nconfiguration: --toolchain=msvc --arch=x86_64 --target-os=win32 --prefix=/c/trace-codec/prefix --disable-autodetect --disable-everything --disable-network --disable-shared --enable-static --disable-doc --disable-debug --disable-ffplay --disable-avdevice --disable-swscale --disable-x86asm --disable-hwaccels --enable-gpl --enable-version3 --enable-libmp3lame --enable-encoder='aac,libmp3lame,pcm_s16le,pcm_s24le,pcm_f32le' --enable-decoder='aac,mp3,mp3float,pcm_s16le,pcm_s24le,pcm_f32le,mjpeg' --enable-parser='aac,mpegaudio,mjpeg,png' --enable-demuxer='wav,mp3,aac,mov,concat' --enable-muxer='wav,mp3,adts,ipod,mp4,mov,segment' --enable-protocol='file,pipe' --enable-filter='aresample,aformat,anull,atrim,asetpts' --extra-cflags='-IC:/trace-codec/prefix/include' --extra-ldflags='-libpath:C:/trace-codec/prefix/lib -Brepro'\nlibavutil      61.  1.102 / 61.  1.102\nlibavcodec     63.  1.102 / 63.  1.102\nlibavformat    63.  1.102 / 63.  1.102\nlibavfilter    12.  1.102 / 12.  1.102\nlibswresample   7.  1.102 /  7.  1.102",
+            "dependents": "Microsoft (R) COFF/PE Dumper Version 14.44.35229.0\nCopyright (C) Microsoft Corporation.  All rights reserved.\n\n\nDump of file C:\\trace-codec\\prefix\\bin\\ffprobe.exe\n\nFile Type: EXECUTABLE IMAGE\n\n  Image has the following dependencies:\n\n    bcrypt.dll\n    SHELL32.dll\n    KERNEL32.dll\n\n  Summary\n\n      1B2000 .data\n        1000 .fptable\n       13000 .pdata\n       C3000 .rdata\n        5000 .reloc\n        1000 .rsrc\n      1DF000 .text"
+          }
+        },
+        "configuration": "configuration: --toolchain=msvc --arch=x86_64 --target-os=win32 --prefix=/c/trace-codec/prefix --disable-autodetect --disable-everything --disable-network --disable-shared --enable-static --disable-doc --disable-debug --disable-ffplay --disable-avdevice --disable-swscale --disable-x86asm --disable-hwaccels --enable-gpl --enable-version3 --enable-libmp3lame --enable-encoder='aac,libmp3lame,pcm_s16le,pcm_s24le,pcm_f32le' --enable-decoder='aac,mp3,mp3float,pcm_s16le,pcm_s24le,pcm_f32le,mjpeg' --enable-parser='aac,mpegaudio,mjpeg,png' --enable-demuxer='wav,mp3,aac,mov,concat' --enable-muxer='wav,mp3,adts,ipod,mp4,mov,segment' --enable-protocol='file,pipe' --enable-filter='aresample,aformat,anull,atrim,asetpts' --extra-cflags='-IC:/trace-codec/prefix/include' --extra-ldflags='-libpath:C:/trace-codec/prefix/lib -Brepro'",
+        "patches": [],
+        "crtLinkage": "static /MT",
+        "sourceDateEpoch": 1789574400,
+        "systemInventorySha256": "b895920269ac9faa7827c4467f407268e4bd1dbf0ca2d539ff5a53f42b1ce48f",
+        "configHeaderSha256": "2f386f2de7862231e29b33eb202e152b605367d48e8ffa7b8ce7a004143bbbfb",
+        "configMakSha256": "b8ea4983a6603fbe52cef68c155a6f2d2c0031e639b70f8715f0532d1be96669"
+      },
+      "minuteConversion": {
+        "ffmpegSha256": "c647e20c508af6421efb3c78b59e2a693f7b905c6a27384282ad76b5ad37d5ee",
+        "sourceRate": 96000,
+        "sourceFrames": 5760000,
+        "channels": 2,
+        "timings": [
+          {
+            "rate": 44100,
+            "extension": "mp3",
+            "elapsedMs": 1539,
+            "physicalFrames": "2646000",
+            "audibleFrames": "2646000"
+          },
+          {
+            "rate": 44100,
+            "extension": "m4a",
+            "elapsedMs": 2414,
+            "physicalFrames": "2646000",
+            "audibleFrames": "2646000"
+          },
+          {
+            "rate": 48000,
+            "extension": "mp3",
+            "elapsedMs": 1550,
+            "physicalFrames": "2880000",
+            "audibleFrames": "2880000"
+          },
+          {
+            "rate": 48000,
+            "extension": "m4a",
+            "elapsedMs": 2718,
+            "physicalFrames": "2880000",
+            "audibleFrames": "2880000"
+          }
+        ],
+        "scope": "Offline generated signal; not WASAPI or physical-device real-time acceptance"
+      },
+      "codecBuildReused": true,
+      "actualBinaryPayloadReadLocally": false,
+      "basis": "Actual installed report hash from CI annotation equals canonical pinned report; actual EXE hashes emitted by the runner and install checks remained strict."
+    },
+    "acceptedAsFinal": false,
+    "reason": "Renderer audit changed tracked documentation assets after clean numerical tests; final end-of-job Linux sourceDirty=true, requiring a corrected clean-source rerun"
+  }
+}

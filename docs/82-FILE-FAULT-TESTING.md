@@ -2,7 +2,9 @@
 
 2026-10-11 更新，preview.31，Meter v5、Session v2 和缓存 key v3 保持。
 本轮扩展云端可重复测试，原始录音、计量算法及 EBU 容差没有修改。
-最终代码、CI 和验证记录见 [13](13-HANDOFF.md)。
+最终代码 `2aee519`、[完整 CI 38099859270](https://github.com/Sceneryyyy/Trace/actions/runs/38099859270) 成功；
+可克隆证据见 [file-fault-verification.json](release/file-fault-verification.json)，
+最新交接见 [13](13-HANDOFF.md)。
 
 ## 修复
 
@@ -63,12 +65,17 @@ TRACE_TEST_SYSTEM_CODEC=1 node --test test/codec-faults.test.mjs test/import-dis
 
 它与 `TRACE_REQUIRE_NATIVE=1` 同时使用会报错，不能替代固定 Windows 9.0.2
 的实际结果。本地已完成 12/12 真实媒体/注入用例；完整 portable、类型、构建
-与安全门禁的最终结果在 13。远程 Windows/Linux CI 尚待本轮提交后的实际执行。
+与安全门禁的最终结果在 13。最终 Windows/Linux CI：两端 portable 272/272；
+Windows CTest 19/19、原生/媒体 64/64；Linux sanitizer 核心 8/8 + 原始 EBU 1/1；
+同次候选的打包/加载/重启及上传通过，均无失败/跳过。
 
 损坏检测针对可观察的容器/解码错误和可信长度声明。没有完整性声明或原始校验值的
 外部文件，可能存在无法判断的提前结束或仍可解码的位变化，不能宣称全部损坏均可
 检测。8 kHz 辅助夹具的编码前 1737 帧与 decoder 元数据 1775 帧不同；导入保留
-实际解码帧数，不裁成猜测的原始长度。Windows 对应数据以实际测试日志为准。
+实际解码帧数，不裁成猜测的原始长度。Windows 固定 9.0.2 对应的 16 组元数据与帧数已通过实际 CI 注解记录在验证 JSON。
+补充 Linux libmp3lame 3.100 真实 CRC/non-CRC 文件：各 48000 帧正常导入，
+截断均拒绝。Xing 标记位于固定偏移，不能随 CRC 标志多加两字节；首轮 CI
+37876369232 在此复核后主动取消，最终结果只绑定 2aee519。
 生成的 VBR 文件用于外部导入测试，产品导出仍仅提供原有 CBR 预设。
 
 本轮没有运行两小时物理录音、慢盘/队列拥塞、真实磁盘填满或断电、驱动拔插、
@@ -108,3 +115,9 @@ Linux 浏览器回归会改写受版本控制的文档截图，使数值测试�
 普通回归现在只在忽略的 `artifacts/release-cloud/renderer-*/captures` 留图，
 仅显式 `node tools/audit/renderer.cjs --capture-docs` 更新手册素材；CI 摘要保留
 实际 dirty 状态并使脏工作区失败。该运行不作为最终干净源码通过证据。
+
+最终运行 38099859270 已由分块摘要核验：Linux/Windows 结束时均
+`sourceDirty=false`；本次命中固定 codec 构建缓存并严格核验安装身份，
+文件/原生测试完整执行。EBU 源码在 Linux 与 Git blob 逐字节一致；Windows
+实际文件只作 Git 的 LF→CRLF 文本 checkout。验证 JSON 保留两种 hash 与限定
+转换，音频/EXE/固定构建报告的字节身份仍严格核对，不接受任意源码差异。

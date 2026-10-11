@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-10-09T02:46:32.094487+00:00",
+  "checkedAt": "2026-10-11T01:13:25.709801+00:00",
   "packageLockSha256": "17ce7b17ef9ce0821c8025284884e32550ed020f4752f6b39d37108cf8b545df",
   "releaseReady": false,
   "npmDependencyGateReady": true,
@@ -21,7 +21,7 @@
     "total": 0
   },
   "scope": "Full npm advisory gate plus pinned Trace-source-codec provenance. Codec/Microsoft component security, licensing and physical release acceptance remain separate.",
-  "inventorySource": "Current full/production local audits for source-map-js 1.2.2; preceding exact-source Windows/Linux codec evidence retained separately; new CI pending",
+  "inventorySource": "Current full/production local audits and exact-source Windows/Linux CI after source-map-js 1.2.2 patch; historical codec/dependency proof retained separately",
   "directToolchain": {
     "@electron/asar": "3.4.1",
     "@types/node": "24.12.0",
@@ -71,19 +71,9 @@
     "packageLockSha256": "2a98a88d1fb88068aab93a4408f83c33d19d0a7a44ef1bc72ba65ce63db18c68"
   },
   "ffmpegSourceInventory": "references/trace-ffmpeg/source-manifest.json",
-  "verifiedCodeCommit": "f33d74da18d29902e260443f01eb0be24255ed49",
-  "verifiedCiRunId": 37217397928,
-  "runtimeProvenanceFromCompletedLog": {
-    "electron": "42.11.10",
-    "electronBuilder": "26.15.3",
-    "vcRedist": "14.44.35112 x64",
-    "dlls": {
-      "msvcp140.dll": "0f885b509a685d2bbfa652fed26b5fb31d88fbdab0a978c641d1c7b8aa460aa9",
-      "vcruntime140.dll": "d5e4d9a3e835fa679450145d6a7d94e36573a509317111904d9b3712c30d9066",
-      "vcruntime140_1.dll": "1f2d41c4aa5db0bc33ebf7b66d72943a817d7ce6cbe880502a9403823633093f"
-    }
-  },
-  "verification": "docs/release/codec-verification.json",
+  "verifiedCodeCommit": "2aee519b575acdc8cdd954634084c2bb282b063f",
+  "verifiedCiRunId": 38099859270,
+  "verification": "docs/release/file-fault-verification.json",
   "ffmpegSourceGateReady": true,
   "latestPatch": {
     "component": "source-map-js",
@@ -95,5 +85,26 @@
       "total": 1
     },
     "scope": "Single transitive development dependency patch; direct dependencies and codec pins unchanged"
+  },
+  "previousRuntimeProvenanceFromCompletedLog": {
+    "electron": "42.11.10",
+    "electronBuilder": "26.15.3",
+    "vcRedist": "14.44.35112 x64",
+    "dlls": {
+      "msvcp140.dll": "0f885b509a685d2bbfa652fed26b5fb31d88fbdab0a978c641d1c7b8aa460aa9",
+      "vcruntime140.dll": "d5e4d9a3e835fa679450145d6a7d94e36573a509317111904d9b3712c30d9066",
+      "vcruntime140_1.dll": "1f2d41c4aa5db0bc33ebf7b66d72943a817d7ce6cbe880502a9403823633093f"
+    }
+  },
+  "runtimeProvenanceFromCurrentCiAnnotations": {
+    "sha256": "3a6bf9d7bcbd46d003cb835d67718f47fb64929d28eb8b97575568d803c2470a",
+    "electron": "42.11.10",
+    "electronBuilder": "26.15.3",
+    "vcRedist": "14.44.35112 x64",
+    "dlls": {
+      "msvcp140.dll": "0f885b509a685d2bbfa652fed26b5fb31d88fbdab0a978c641d1c7b8aa460aa9",
+      "vcruntime140.dll": "d5e4d9a3e835fa679450145d6a7d94e36573a509317111904d9b3712c30d9066",
+      "vcruntime140_1.dll": "1f2d41c4aa5db0bc33ebf7b66d72943a817d7ce6cbe880502a9403823633093f"
+    }
   }
 }

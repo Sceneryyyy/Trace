@@ -7,40 +7,55 @@
 | 项目 | 当前记录 |
 | --- | --- |
 | 源码 | `0.1.0-preview.31`；计量配置已升级 Meter v5，EBU 修复见 [78](78-EBU-METER-RECALIBRATION.md)；云端发布准备见 [75](75-CLOUD-RELEASE-PREPARATION.md) |
-| Git | `Sceneryyyy/Trace`，默认 `recorder/dev`；保留提交身份及合并历史。自建编码组件 `f33d74d`；此前依赖/编码/下载修复 `3d63d8f` / `ef51603` / `6835af9`；独立化历史为 `a986a0d` / `ab466d8` / `db005b5`；最后文档提交不算新音频测试，远程身份以 Git 为准 |
+| Git | `Sceneryyyy/Trace`，默认 `recorder/dev`；本轮文件/故障修复 `2aee519`；保留提交身份及合并历史。自建编码组件 `f33d74d`；此前依赖/编码/下载修复 `3d63d8f` / `ef51603` / `6835af9`；独立化历史为 `a986a0d` / `ab466d8` / `db005b5`；最后文档提交不算新音频测试，远程身份以 Git 为准 |
 | 仪表主题 | 实现 `2938c8e`、审计修复 `c67e9e9` 等已于 2026-09-30 合入 `recorder/dev`；用户已验收开发构建并接受 71-D5 差异 |
-| 当前工程候选 | Windows x64 preview.31，自建 FFmpeg，来源 `f33d74d`；[CI 37217397928](https://github.com/Sceneryyyy/Trace/actions/runs/37217397928) 全部成功，私有附件 `11309181720`，未签名 |
+| 当前工程候选 | Windows x64 preview.31，文件/故障修复来源 `2aee519`；[CI 38099859270](https://github.com/Sceneryyyy/Trace/actions/runs/38099859270) 全部成功，私有附件 `11688230696`，未签名 |
 | 历史同事内测包 | Windows x64 preview.30 / InternalTest-r3，来源 `9c1ee21`，包名/校验见 [69](69-INTERNAL-TEST-R3.md) |
 | preview.31 分发 | 私有工程候选含当前应用、项目源码、PDF、校验及验证记录；无声卡 CI 加载/重启已通过。PDF 插图为云端模拟界面，实机/公开发布门禁仍开放；preview.28 PDF 和 R3 为历史快照 |
 | macOS | [70](70-MACOS-PORT-PLAN.md) 方案已记录；当前分支的 Trace 后端仍为 Windows/WASAPI，Mac 实现/实机验收未完成 |
 
-## 当前：文件与故障测试扩展
+## 当前：文件与故障测试扩展，完整 CI 与新候选通过
 
-本轮实现及复现见 [82](82-FILE-FAULT-TESTING.md)。新增实际损坏/截断文件、
-16 组 CBR/VBR MP3、取消/worker 异常、缓存篡改和三处 ENOSPC 注入。
-修复 MP3 截断被接受、owner 标记部分写入残留和拒绝 SIGTERM 子进程取消挂起。
-本地 Linux 系统 FFmpeg 辅助 12/12 媒体/磁盘用例通过；完整 portable 272/272
-（54 文件、0 fail/skip）、类型、应用构建、独立边界 122 文件/575 导入及安全
-门禁通过。Windows 固定组件的初次 CI 被镜像中 MSYS 运行库哈希变化阻止；
-现固定唯一变化的工具文件，并要求原 EXE/config 哈希和更新后完整构建报告
-逐字节一致。新增可通过 GitHub 注解读取的实际测试/EBU/产物摘要；最终 CI 待复验。
+本轮修复 MP3 声明长度与实际内容不符仍被接受、owner 标记部分写入残留，
+POSIX 子进程忽略 SIGTERM 时取消不退出，以及 Windows 路径别名阻止正常缓存重读。
+读取时先解析根目录，同时保留 UUID 子目录链接和归属检查。新增 16 组 CBR/VBR MP3、
+真实损坏/截断文件、缓存变化、worker 异常和三处 ENOSPC 注入。
+浏览器回归默认截图移到忽略目录；更新手册须显式 --capture-docs，脏工作区使
+CI 摘要失败。
+实现及复现见 [82](82-FILE-FAULT-TESTING.md)，可克隆证据见
+[file-fault-verification.json](release/file-fault-verification.json)。
 
-10 月 9 日 Windows 已通过固定组件安装、272 项 portable 与 19 项 CTest，
-原生/媒体 63/64；独立诊断定位到正常缓存路径别名被拒绝。10 月 11 日修复
-根目录 canonicalization，补充祖先别名与 UUID 子目录 junction 反例；本地
-12/12 真实媒体/磁盘测试再次通过，Windows/Linux 完整复验待执行。失败 run
-37878086505 / 37879668339 不算通过证据。摘要采用分块与完整哈希，构建缓存
-仍要求严格来源身份核验。
+最终代码 `2aee519b575acdc8cdd954634084c2bb282b063f` / [完整 CI 38099859270](https://github.com/Sceneryyyy/Trace/actions/runs/38099859270)，attempt 1：
 
-运行 38098647365 的完整数值与 Windows 验证已通过，Linux EBU 为
-68/68、112/112 数值与 204/204 一致性断言，sanitizer 8 + 1 通过；
-但浏览器回归改写已提交的截图，最终摘要 sourceDirty=true。普通回归改为
-只在忽略目录留图，手册更新须显式 --capture-docs；脏源码使 CI 摘要失败。
-本轮最终干净源码与候选仍待新提交完整 CI，不复用这个 dirty 结果。
+| 范围 | 实际结果 |
+| --- | --- |
+| Linux | portable **272/272（54 文件、0 fail/skip）**；ASan/UBSan 核心 8/8 + 原始 EBU 1/1，JUnit 记录分别 266/744 s；实际浏览器回归、类型/构建与完整/生产安全门禁通过 |
+| Windows | 锁定工具链、自建 FFmpeg 安装及实际报告一致；CTest **19/19**；原生/媒体 **64/64（11 文件、0 fail/skip）**；portable 272/272；类型/构建与安全门禁通过 |
+| 新文件/故障 | 9 项真实 codec 用例 + 3 项真实导入 ENOSPC 注入通过；16 组 MP3 的声明裁剪帧数与分段解码完全一致；现有 WAV/附图/三格式/双 AAC 封装保持通过 |
+| 候选 | 同次 run/HEAD/attempt 的完整 Linux 成功门禁、ZIP、5 项包审计、加载/重启、clean-checkout、完整来源和上传通过 |
+| 本地辅助 | Linux 系统 FFmpeg 7.1.5 与同源码 Linux 9.0.2 辅助构建的媒体/磁盘用例各 12/12，真实 CRC/non-CRC LAME 文件验证通过；272 项 portable、类型/构建、122 文件/575 导入边界通过；四项问题的复现证据保留 |
 
-实时 npm 审计新增 source-map-js high 1，仅修补 1.2.1→1.2.2；正常 npm ci
-后完整/生产审计均为零。历史候选仍为下节 f33d74d，不能视作含本轮修改。
-Meter v5、帧数/EBU 容差、协议版本和 FFmpeg build pin 保持。
+新私有 [trace-windows-candidate](https://github.com/Sceneryyyy/Trace/actions/runs/38099859270/artifacts/11688230696)，ID `11688230696`，
+归档 `173915167` 字节，GitHub 附件 digest `sha256:c7e67a9bb7735efca61ac121fab7daf142d9a8e17a23863fca60a899ca8b42fd`。
+它是附件归档身份，不是内含 ZIP/JSON hash。本地读取 GitHub API 中的实际 CI 摘要注解和附件元数据，
+没有下载/读取 Azure 日志或附件 payload；包内部校验由本次成功 CI 执行。候选文档为生成时
+快照，最新交接与试验边界以本页、76/82 为准。
+
+10 月 9 日实时 npm 审计新增 source-map-js high 1，仅修补 1.2.1→1.2.2；
+新锁 `17ce7b17ef9ce0821c8025284884e32550ed020f4752f6b39d37108cf8b545df`
+的完整/生产审计均为零。直接依赖、Meter v5、Session v2、缓存 key v3、
+EBU 容差和 FFmpeg/LAME recipe/EXE/config pin 保持。GitHub 镜像仅更新
+MSYS 构建运行库 DLL，重新固定该工具及关联 lock/report，实际重建报告已严格匹配；
+其余 30 个工具和六组系统输入保持。本次命中固定构建缓存（`codecBuildReused=true`），来源编译记录来自
+此前已通过严格安装的同 pin 构建；本次缓存再次经过完整安装身份核验，不能代替实际文件测试。
+先前 run 37876369232 因
+CRC Xing 偏移复核而主动取消；其结果没有带入最终证明。37876605731 / 37877327686 的 Windows 被旧
+MSYS 哈希 pin 阻止、Linux 主动取消，故障与诊断身份保留在验证 JSON。37878086505 的 Windows 原生/媒体 63/64，
+独立诊断 37879668339 找到缓存路径别名错误；这些失败同样保留，不复用为通过。38098647365 虽然全部检查与候选成功，
+Linux 浏览器回归却改写已提交的文档截图；最终 sourceDirty=true，不能作为
+最终干净源码证明。新提交修复输出位置及脏源码门禁，并完成完整复验。
+真实录音/慢盘/满盘/断电/驱动/96 kHz/GPU、监督进程自身强杀收尾、签名和用户
+验收仍单列；本轮不关闭这些实机门禁。
 
 ## 前一轮：自建 FFmpeg 与完整来源门禁已交付，新候选复验通过
 
@@ -52,7 +67,7 @@ Microsoft 编译器/CRT/SDK/系统 DLL 单列版本、哈希及条款复核，�
 
 [完整 CI 37217397928](https://github.com/Sceneryyyy/Trace/actions/runs/37217397928)，代码 `f33d74da18d29902e260443f01eb0be24255ed49`，attempt 1：
 
-| 范围 | 最新结果 |
+| 范围 | 当轮结果 |
 | --- | --- |
 | Linux | JS 263/263；ASan/UBSan 核心 8/8（177.00 s）、原始 EBU 1/1（410.81 s）；浏览器、类型/构建和安全门禁通过 |
 | Windows | 实际源码构建/锁定安装；CTest 19/19（172.96 s）、原生/媒体 52/52（9 文件）、JS 263/263，均 0 fail/skip |
@@ -132,15 +147,15 @@ Node Undici 内部断言，未上传新候选。下载改为保持代理/TLS 的
 
 ## 下一会话接力
 
-已验证代码与候选绑定 `f33d74da18d29902e260443f01eb0be24255ed49` /
-run `37217397928`；后续文档提交不算新音频/Windows/候选运行，实际分支 HEAD 以 Git 为准。
+已验证代码与候选绑定 `2aee519b575acdc8cdd954634084c2bb282b063f` /
+run `38099859270`；后续文档提交不算新音频/Windows/候选运行，实际分支 HEAD 以 Git 为准。
 
 | 接力材料 | 位置与用途 |
 | --- | --- |
 | 当前入口/固定工具链 | [开发入门](../CODEX-START.md)、[09](09-WINDOWS-SETUP.md)、[81](81-SELF-BUILT-FFMPEG.md)；toolchain.trace.json 当前，M0 清单历史 |
-| 可克隆证据 | [codec-verification.json](release/codec-verification.json) 当前；[dependency-verification.json](release/dependency-verification.json) 为旧 Gyan 工具链证明；[independence-verification.json](release/independence-verification.json) 为旧工具链独立化证明 |
+| 可克隆证据 | [file-fault-verification.json](release/file-fault-verification.json) 当前文件/故障复验；[codec-verification.json](release/codec-verification.json) 为此前自建证明；[dependency-verification.json](release/dependency-verification.json) 为旧 Gyan 工具链证明；[independence-verification.json](release/independence-verification.json) 为旧工具链独立化证明 |
 | 远程原始证据/附件 | 顶部 Actions run、完成 job 日志与私有候选；下载后按内部 manifest/SHA256SUMS 核验，GitHub 归档 digest 单独记录 |
-| 本云端原始材料 | 忽略目录 artifacts/codec-build/、artifacts/release-security/ 与 artifacts/independence/；原始日志、公开来源归档、同步收据不会随 clone 下载 |
+| 本云端原始材料 | 忽略目录 artifacts/file-faults/、artifacts/codec-build/、artifacts/release-security/ 与 artifacts/independence/；原始日志、公开来源归档、同步收据不会随 clone 下载 |
 | 私有 EBU | 执行 `python3 references/ebu-loudness-test-set-v5/prepare.py` 还原/核验；公开源码归档排除原始素材，强制门禁缺素材必须失败 |
 
 先检查目录、分支与未提交修改；干净且无本地分叉时执行 `git switch recorder/dev`
@@ -149,7 +164,7 @@ run `37217397928`；后续文档提交不算新音频/Windows/候选运行，实
 
 下一工作顺序：
 
-1. 文件/故障矩阵已扩展并修复，见 82；完成本轮固定 Windows CI 后，继续离线长文件与资源增长检查、慢盘/队列与监督进程自身异常收尾；组件公告、安全及微软/GPL 系统库分发条款复核单列。
+1. 文件/故障矩阵已扩展并修复，见 82；完整固定 Windows CI 已通过，继续离线长文件与资源增长检查、慢盘/队列与监督进程自身异常收尾；组件公告、安全及微软/GPL 系统库分发条款复核单列。
 2. Windows 实机到位，按 76 的 WIN/FLOW/DEV/METER 跑三分钟视频、真实采集、录音/回听/缓存/选区/导出、96 kHz、长测与 GPU/DPI。
 3. 发布门禁关闭后处理签名、下载首次启动、独立用户和邀请测试。当前附件保持私有工程候选身份。
 
@@ -233,6 +248,6 @@ Git HTTPS 上传缺少可用凭据，接入已登录的 GitHub CLI 后仍返回 
 
 ## 后续应用与实机工作
 
-Windows 工程编译、19 项 CTest、52 项原生/媒体、263 项 JS、无声卡包审计/加载/重启与最新 preview.31 私有候选已经通过本节顶部对应 CI，不需要以“尚未执行 Windows”重做这些记录。实际 Windows 设备上继续执行主题 flow 和严格首帧，再播放约三分钟在线视频，交叉操作监听/录音/回听/报告跳转/缓存及选区保存，保留设备与包身份。
+Windows 工程编译、19 项 CTest、64 项原生/媒体、272 项 JS、无声卡包审计/加载/重启与最新 preview.31 私有候选已经通过本节顶部对应 CI，不需要以“尚未执行 Windows”重做这些记录。实际 Windows 设备上继续执行主题 flow 和严格首帧，再播放约三分钟在线视频，交叉操作监听/录音/回听/报告跳转/缓存及选区保存，保留设备与包身份。
 
 待实机验收：实时采集及真实文件缓存/选区/导出完整链路、96 kHz/驱动矩阵、干净普通 Windows、物理 GPU/混合 DPI、实时帧时间与回调 deadline、长录音及看门狗故障收尾、3D 游标与色弱用户体验。工程原始 EBU WAV 与无声卡启动通过，不等于完整 EBU Mode 或物理设备/发布验收。完整 npm 公告已归零；自建 FFmpeg 来源已核验；正式发布还需组件安全与微软/GPL 系统库条款复核、签名及独立用户验收。PB3–PB5 见 [59](59-PUBLIC-BETA-READINESS.md)；Mac 下一步仍须 Apple silicon 真机执行 [70](70-MACOS-PORT-PLAN.md) 的 M-MAC0/T00 探针。

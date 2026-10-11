@@ -57,7 +57,7 @@ MP3/M4A 转换时间及解码帧数。
 浏览器、类型/构建、安全门禁、包审计/加载及同次 Linux 完整成功门禁。
 这些离线测试不代替真实 WASAPI、驱动、96 kHz 设备与长录音验收。
 
-## 实际完成记录
+## 2026-10-04 实际完成记录
 
 完整 [CI 37217397928](https://github.com/Sceneryyyy/Trace/actions/runs/37217397928)，来源 `f33d74da18d29902e260443f01eb0be24255ed49`，attempt 1，Windows/Linux 均 success。
 Windows CTest **19/19**（172.96 s）、原生/媒体 **52/52**（9 文件）、两端 JS **263/263**，
@@ -94,3 +94,25 @@ Windows 本次从源码重新构建，实际报告与提交的构建报告逐字
 可克隆的提交、源码/日志哈希、运行及附件元数据见 [完整验证记录](release/codec-verification.json)。
 旧 Gyan 依赖证据保留 [dependency-verification.json](release/dependency-verification.json)，
 不回写成自建程序验证。
+
+## 2026-10-11 文件/故障复验与工具身份更新
+
+[完整 CI 38099859270](https://github.com/Sceneryyyy/Trace/actions/runs/38099859270)，代码 `2aee519b575acdc8cdd954634084c2bb282b063f`，严格安装并完成实际测试。
+同 pin 的源码编译在 37878086505 / 37879668339 成功；本次是否命中构建缓存
+见验证 JSON 的 `codecBuildReused`，命中后仍核对 EXE/配置/工具及完整来源报告。
+GitHub Windows 镜像只改变 `msys-2.0.dll`，其哈希从
+`957d880559f0bfe7406a4cb27724610e7ce2f367030e299373d7ef37fbbb51b3`
+更新为 `47d652c7cba30eb294eb7ee10bbfefdcc46342ddf47b4c09ad58a2185b36ad2c`；
+其余 30 个工具、工具版本及六组系统输入目录相同。构建 lock/report 重新固定；
+实际安装报告 SHA `e305461d392c76fec8c7355194c2fbd6b1fd4b579c862f4f5cd7bdb01fa0d047`
+匹配当前 pin，原两 EXE、config.h/config.mak、源码和 recipe 哈希保持。
+旧 pin 的 Windows 失败与主动取消的 Linux 保留，不放宽验证或倒改 10 月 4 日结果。
+
+本轮两端 JS 272/272、Windows 原生/媒体 64/64、CTest 19/19、Linux sanitizer
+8 + 原始 EBU 1、三格式及新候选通过。可读取的实际摘要来自 GitHub CI 注解，
+包含真实测试/EBU/构建/产物记录与哈希；分块收齐并核对完整 JSON SHA。
+EBU 原生源码的 Windows 实际文件 hash 对应 Git 的 LF→CRLF 文本 checkout，
+验证 JSON 同时保留 blob hash、实际 hash 与限定转换，Linux 则逐字节相同。
+Azure 日志/附件 payload 未读取。
+新候选、工具变化、实际 MP3 帧数与旧代码反例见 [82](82-FILE-FAULT-TESTING.md)
+及 [验证 JSON](release/file-fault-verification.json)。上节附件及数值仍是旧运行身份。

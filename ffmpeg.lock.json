@@ -25,5 +25,5 @@
     "tools/release/dependency-sources.cjs": "c53a60e479767c12b7036b36278de5b37035f035fa428c475ba9082c284a12ae"
   },
   "correspondingSourceManifest": "references/trace-ffmpeg/source-manifest.json",
-  "status": "October 9 observed MSYS runtime tool update pinned; strict source rebuild must match unchanged EXE/config and expected updated receipt before current Windows verification is complete"
+  "status": "Pinned Trace source build verified at 2aee519b575acdc8cdd954634084c2bb282b063f by complete Windows/Linux CI 38099859270; refreshed MSYS tool identity and actual receipt checked in docs/release/file-fault-verification.json"
 }
