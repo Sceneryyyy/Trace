@@ -433,6 +433,7 @@ async function dispatch(request:Request):Promise<Reply>{
         const descriptor=frozen.replay?replaySpectrogramSource(frozen.replay):fileSpectrogramSource(frozen.source,input!.manifest.cacheKey)
         const kind=request.payload.kind==='spectrogram'?'spectrogram':'spectrum'
         const metadata:ChartMetadata={version:1,product:'Trace',sourceLabel:file.label,sourceSha256:input?.manifest.sourceSha256||[],sampleRate:file.sampleRate,channelCount:file.channelCount,positionFrame:file.positionFrame,measurementConfigId:input?.manifest.measurementConfigId||measurementConfigId,quality:testMode?'模拟测试（非设备验收）':frozen.replay?'冻结 LIVE 缓存 · '+replayQualityContinuity(frozen.replay.quality):frozen.source.continuity||'unknown',settings:{...settings},createdAt:new Date().toISOString()}
+        if(frozen.replay){const r=frozen.replay;metadata.memory={sourceId:r.sourceId,epochId:r.epochId,measurementEpoch:r.measurementEpoch,originFrame:r.originFrame,captureStartFrame:r.captureStartFrame,frames:r.frames}}
         let svg:string;metadata.kind=kind
         if(kind==='spectrum'){
          const packet=await instruments.query({...descriptor.request,positionFrame:file.positionFrame},settings)
@@ -445,7 +446,7 @@ async function dispatch(request:Request):Promise<Reply>{
          if(recordings.busy()||playback.view()?.id!==file.id)throw Error('CHART_NOT_READY')
          metadata.spectrogram={settings:{...s},startFrame:v.startFrame,endFrame:v.endFrame,timeOffsetSeconds:file.timeOffsetSeconds||0,overviewLevel:v.overviewLevel||0,binStride:v.overviewBinStride||1};svg=await spectrogramSvg(v,metadata,s)
         }
-        metadata.createdAt=new Date().toISOString();const ticket=randomUUID();chartTickets.set(ticket,{svg,metadata,playbackId:file.id,created:Date.now()});while(chartTickets.size>2)chartTickets.delete(chartTickets.keys().next().value!);data={ticket,svg,metadata}
+        const ticket=randomUUID();chartTickets.set(ticket,{svg,metadata,playbackId:file.id,created:Date.now()});while(chartTickets.size>2)chartTickets.delete(chartTickets.keys().next().value!);data={ticket,svg,metadata}
        }finally{await chartWork?.close();chartWork=undefined;chartPreparing=false;retention.resume()}break
       }
       case 'chart.save':{
