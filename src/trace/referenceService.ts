@@ -74,9 +74,10 @@ export class ReferenceService {
   const id=reuseId||this.analyses.start(selection?{...p.source,range,frames:String(BigInt(range.endFrame)-BigInt(range.startFrame)),label:p.source.label+' · 比较范围'}:p.source)
   this.matching=false;this.analyses.retain(id);this.analyses.release(p.analysisId,true);p.analysisId=id;p.range=range;p.selection=selection;this.error=null;this.publish()
  }
+ private completeSources(){return this.peers.a?.source.continuity==='complete'&&this.peers.b?.source.continuity==='complete'}
  setMatching(enabled:boolean):void{
   if(typeof enabled!=='boolean')throw Error('INVALID_REFERENCE_MATCH')
-  if(enabled){const view=this.view();if(loudnessMatch(true,view.compatible,view.a?.analysis?.summary,view.b?.analysis?.summary).status!=='ready')throw Error('REFERENCE_MATCH_UNAVAILABLE')}
+  if(enabled){const view=this.view();if(loudnessMatch(true,view.compatible&&this.completeSources(),view.a?.analysis?.summary,view.b?.analysis?.summary).status!=='ready')throw Error('REFERENCE_MATCH_UNAVAILABLE')}
   this.matching=enabled;this.publish()
  }
  auditionGain(slot:ReferenceSlot):number{const p=this.peers[slot];if(!p)throw Error('REFERENCE_SOURCE_MISSING');const match=this.view().match!;return p.gain*10**((slot==='a'?match.aDb:match.bDb)/20)}
@@ -114,7 +115,7 @@ export class ReferenceService {
   const a=peer(this.peers.a),b=peer(this.peers.b),ia=a?.analysis?.phase==='ready'?this.analyses.identity(a.analysis.id):undefined,ib=b?.analysis?.phase==='ready'?this.analyses.identity(b.analysis.id):undefined
   const compatible=Boolean(ia&&ib&&ia.engineSha256===ib.engineSha256&&ia.measurementConfigId===ib.measurementConfigId)
   const am=compatible?a?.analysis?.summary:undefined,bm=compatible?b?.analysis?.summary:undefined,durations={a:a?Number(BigInt(a.range.endFrame)-BigInt(a.range.startFrame))/a.sampleRate:0,b:b?Number(BigInt(b.range.endFrame)-BigInt(b.range.startFrame))/b.sampleRate:0}
-  return {match:loudnessMatch(this.matching,compatible,am,bm),version:this.version,active:this.active,a,b,pending:this.pendingLabel,error:this.error||a?.analysis?.error||b?.analysis?.error||null,offsetNs:this.offsetNs,linked:this.linked,compatible,deltas:a&&b?{integrated:referenceDelta('integrated',am?.integratedToCursor,bm?.integratedToCursor,durations),truePeak:referenceDelta('truePeak',am?.maxTruePeak,bm?.maxTruePeak,durations),lra:referenceDelta('lra',am?.loudnessRange,bm?.loudnessRange,durations)}:null}
+  return {match:loudnessMatch(this.matching,compatible&&this.completeSources(),am,bm),version:this.version,active:this.active,a,b,pending:this.pendingLabel,error:this.error||a?.analysis?.error||b?.analysis?.error||null,offsetNs:this.offsetNs,linked:this.linked,compatible,deltas:a&&b?{integrated:referenceDelta('integrated',am?.integratedToCursor,bm?.integratedToCursor,durations),truePeak:referenceDelta('truePeak',am?.maxTruePeak,bm?.maxTruePeak,durations),lra:referenceDelta('lra',am?.loudnessRange,bm?.loudnessRange,durations)}:null}
  }
  async shutdown(){this.closing=true;++this.token;++this.aToken;this.requested=undefined;await this.loading;await this.stopQueries();this.drop('a');this.drop('b')}
 }

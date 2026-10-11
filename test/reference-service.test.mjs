@@ -7,7 +7,7 @@ import {resolve} from 'node:path'
 await mkdir('artifacts/m12',{recursive:true});await build({entryPoints:['src/trace/referenceService.ts'],outfile:'artifacts/m12/reference-service.cjs',bundle:true,platform:'node',format:'cjs'})
 const {ReferenceService}=(await import(pathToFileURL(resolve('artifacts/m12/reference-service.cjs')))).default
 const tick=()=>new Promise(r=>setImmediate(r)),wait=async fn=>{for(let i=0;i<1000;i++){if(fn())return;await tick()}throw Error('reference wait')}
-const source=(id,rate=48000)=>({takeId:id,role:'source',label:id,sources:[id+'.wav'],cacheRoot:'test-only',sampleRate:rate,channelCount:2,frames:String(rate*120)})
+const source=(id,rate=48000)=>({continuity:'complete',takeId:id,role:'source',label:id,sources:[id+'.wav'],cacheRoot:'test-only',sampleRate:rate,channelCount:2,frames:String(rate*120)})
 const view=(s,id='playback')=>({id,takeId:s.takeId,role:s.role,positionFrame:String(s.sampleRate),sampleRate:s.sampleRate,totalFrames:s.frames,channelCount:2,gain:.5,startFrame:'0',endFrame:s.frames,selection:null,loop:false,follow:false,analysisId:'existing-'+id,outputReady:false})
 function setup(){
  let next=0,resolveSource=async r=>source(r.takeId);const jobs=new Map(),retained=new Map(),released=[]
@@ -41,4 +41,8 @@ test('audition gain stays separate from measurements and manual volume across ma
  t.svc.setMatching(true);const match=t.svc.view().match;assert.equal(match.status,'ready');assert(match.aDb<=0&&match.bDb<=0)
  const applied=t.svc.markAudition('a');t.svc.observe({...v,gain:applied});assert.equal(t.svc.peer('a').gain,v.gain);const manual=t.svc.setAuditionVolume('a',.7);t.svc.observe({...v,gain:manual});assert.equal(t.svc.peer('a').gain,.7);assert.deepEqual(t.svc.view().a.analysis.summary,before)
  t.svc.setMatching(false);assert.equal(t.svc.markAudition('a'),.7);await t.svc.shutdown()
+})
+
+test('ready metrics cannot enable matching for gapped, estimated or unknown source quality',async()=>{
+ for(const continuity of ['gaps','estimated-silence','unknown',undefined]){const t=setup();await t.bind({...source('a'),continuity});t.svc.setReference({takeId:'b',role:'source'},'b');await wait(()=>!!t.svc.view().b);assert(t.svc.view().compatible);assert.throws(()=>t.svc.setMatching(true),/REFERENCE_MATCH_UNAVAILABLE/);assert.equal(t.svc.view().match.enabled,false);await t.svc.shutdown()}
 })

@@ -6,7 +6,7 @@ export function userError(error:unknown):string{
  if(/STALE_CHART_EXPORT/.test(text))return '分析图已过期或来源已切换，请重新导出。'
  if(/MARKER_LIMIT/.test(text))return '每份素材最多保存 512 个标记。'
  if(/INVALID_REVIEW_MARKER/.test(text))return '请检查标记名称、评论与帧范围。'
- if(/REFERENCE_MATCH_UNAVAILABLE/.test(text))return '等待两份有效范围响度与真峰值；静音、缺口或分析未完成不能匹配。'
+ if(/REFERENCE_MATCH_UNAVAILABLE/.test(text))return '需要来源完整、计量版本一致且范围响度与真峰值就绪；静音、缺口、估计填充、质量未知或分析未完成不能匹配。'
  if(/RETENTION_INTERRUPTED_REVIEW_SOURCE|RETENTION_RECOVERY_SAVE_FAILED|RETENTION_REPAIR_PERSIST_FAILED/.test(text))return '原始录音整理被中断，请检查文件与保存目录；可在确认后重试整理。'
  if(/REFERENCE_POSITION_OUTSIDE_RANGE/.test(text))return '游标不在比较范围内，请查看范围起点或调整偏移。'
  if(/REFERENCE_SOURCE_MISSING/.test(text))return '请先选择主素材 A 和参考 B。'
