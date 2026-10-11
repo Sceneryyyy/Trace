@@ -1,6 +1,6 @@
 # 13 · 当前状态与下一会话
 
-更新：2026-10-09。默认开发分支 `recorder/dev`；源码仓库根为当前 checkout（本次云端 `/workspace/Trace`）。项目规则见 [AGENTS.md](../AGENTS.md)，全部资料见 [文档索引](README.md)。早期会话已移至 [交接历史](archive/13-HANDOFF-HISTORY.md)，其“下一步”和当时分支状态不代表当前待办。
+更新：2026-10-11。默认开发分支 `recorder/dev`；源码仓库根为当前 checkout（本次云端 `/workspace/Trace`）。项目规则见 [AGENTS.md](../AGENTS.md)，全部资料见 [文档索引](README.md)。早期会话已移至 [交接历史](archive/13-HANDOFF-HISTORY.md)，其“下一步”和当时分支状态不代表当前待办。
 
 ## 源码与分发身份
 
@@ -24,6 +24,13 @@
 门禁通过。Windows 固定组件的初次 CI 被镜像中 MSYS 运行库哈希变化阻止；
 现固定唯一变化的工具文件，并要求原 EXE/config 哈希和更新后完整构建报告
 逐字节一致。新增可通过 GitHub 注解读取的实际测试/EBU/产物摘要；最终 CI 待复验。
+
+10 月 9 日 Windows 已通过固定组件安装、272 项 portable 与 19 项 CTest，
+原生/媒体 63/64；独立诊断定位到正常缓存路径别名被拒绝。10 月 11 日修复
+根目录 canonicalization，补充祖先别名与 UUID 子目录 junction 反例；本地
+12/12 真实媒体/磁盘测试再次通过，Windows/Linux 完整复验待执行。失败 run
+37878086505 / 37879668339 不算通过证据。摘要采用分块与完整哈希，构建缓存
+仍要求严格来源身份核验。
 
 实时 npm 审计新增 source-map-js high 1，仅修补 1.2.1→1.2.2；正常 npm ci
 后完整/生产审计均为零。历史候选仍为下节 f33d74d，不能视作含本轮修改。

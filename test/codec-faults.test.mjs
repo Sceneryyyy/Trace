@@ -3,10 +3,10 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import {existsSync,createReadStream,writeFileSync,readFileSync} from 'node:fs'
-import {mkdir,mkdtemp,readdir,readFile,writeFile,rm} from 'node:fs/promises'
+import {mkdir,mkdtemp,readdir,readFile,writeFile,rm,symlink} from 'node:fs/promises'
 import {tmpdir} from 'node:os'
 import {join,resolve} from 'node:path'
-import {createHash} from 'node:crypto'
+import {createHash,randomUUID} from 'node:crypto'
 import {spawnSync} from 'node:child_process'
 import {pathToFileURL} from 'node:url'
 import {build} from 'esbuild'
@@ -70,8 +70,13 @@ test('source replacement during verification fails and preserves the caller chan
  await intact(source,changed,cache)
 })
 test('persisted real PCM rejects changed bytes, missing segments and forged frame totals',options,async t=>{
- const {source,cache}=await setup(t),imported=await decodeImport(tools,source,cache,{capacity,segmentBytes:8192})
+ const {root,source,cache}=await setup(t),imported=await decodeImport(tools,source,cache,{capacity,segmentBytes:8192})
  assert(imported.files.length>1);assert.equal((await readImportedPCM(cache,imported.id,imported.source.sha256)).frames,imported.frames)
+ // An ancestor alias is legitimate; a UUID child junction must still fail.
+ const alias=root+'-alias';await symlink(root,alias,'junction');t.after(()=>rm(alias,{force:true,recursive:true}))
+ assert.equal((await readImportedPCM(join(alias,'cache'),imported.id,imported.source.sha256)).frames,imported.frames)
+ const redirected=randomUUID(),junction=join(cache,redirected);await symlink(imported.directory,junction,'junction')
+ await assert.rejects(readImportedPCM(cache,redirected,imported.source.sha256),/INVALID_IMPORT_CACHE_DIRECTORY/);await rm(junction,{recursive:true,force:true})
  const part=join(imported.directory,imported.files[0].file),original=await readFile(part),modified=Buffer.from(original);modified[modified.length-1]^=1;await writeFile(part,modified)
  await assert.rejects(readImportedPCM(cache,imported.id,imported.source.sha256),/IMPORT_DECODED_CACHE_CHANGED/);await writeFile(part,original)
  await rm(part);await assert.rejects(readImportedPCM(cache,imported.id,imported.source.sha256),/ENOENT/);await writeFile(part,original)

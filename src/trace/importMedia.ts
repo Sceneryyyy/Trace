@@ -66,7 +66,10 @@ async function ownedDirectory(root:string,directory:string):Promise<string>{
 }
 export async function readImportedPCM(root:string,id:string,sourceSha256:string,signal?:AbortSignal):Promise<ImportedPCM>{
  if(!idPattern.test(id)||!hashPattern.test(sourceSha256))throw Error('INVALID_IMPORT_CACHE_REFERENCE')
- const directory=await ownedDirectory(root,join(resolve(root),id)),metadata=join(directory,'decoded.json'),info=await lstat(metadata)
+ // Windows may expose an ancestor through an 8.3 alias (e.g. RUNNER~1).
+ // Resolve the configured root before constructing the child, while retaining
+ // the child's lstat/realpath and immediate-owner checks in ownedDirectory.
+ const base=await realpath(root),directory=await ownedDirectory(base,join(base,id)),metadata=join(directory,'decoded.json'),info=await lstat(metadata)
  if(!info.isFile()||info.isSymbolicLink()||info.size>16*1024*1024)throw Error('INVALID_IMPORT_CACHE_METADATA')
  const d=JSON.parse(await readFile(metadata,'utf8')) as ImportedPCM
  if(!d||d.version!==1||d.id!==id||!d.source||d.source.sha256!==sourceSha256||!hashPattern.test(d.decoderSha256)||!hashPattern.test(d.mediaIdentity)||!frame(d.frames)||d.frames==='0'||!d.format||!['decoder-metadata','decoded-content'].includes(d.trim)||!Array.isArray(d.files)||!d.files.length||d.files.length>10000)throw Error('INVALID_IMPORT_CACHE_METADATA')
