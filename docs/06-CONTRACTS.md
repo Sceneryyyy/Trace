@@ -131,3 +131,5 @@ ReplayFreeze v3 的 quality v1 为 `{version:1,estimatedFrames,gapFrames,unknown
 见 [84](84-P0-P1-CLOUD-ITERATION.md)。InstrumentSettings v2 严格迁移 v1（新增频率平滑与倾斜，保持 trace-spectrum-v1 分析身份）。Request v1 新增 reference.match(enabled)、markers.list/save/remove/jump、chart.prepare/save、report.markerJump；仍只有主进程解析内部来源/路径。marker v1 以 PCM/媒体/解码范围内容身份绑定。ReportResult v1 可携带 marker/distribution v1 增量数据；历史报告保留原字段，summary.csv 增加两个 JSON 列。spectral overview v1 使用独立有校验的文件，原始 tile v1 不变。性能诊断 v1 为增量诊断，原生分位数为微秒 log2 桶上界、TS 分位数为最近 2048 次窗口；不改变计量或录音数据协议。
 
 2026-10-15：标记跳转、报告标记跳转和导图释放输出后恢复请求中的监测；选区同步 A/B 范围。复核暂停采用持有计数，录音准备/录音/库维护/退出时禁止恢复 retention。PNG 在解码前校验 IHDR 的固定 1000×620 尺寸。修复与证据见 [85](85-CODE-DOCUMENT-REVIEW.md)。
+
+file/report worker 的任务消息仅在进程所有权建立后发送；正常结果在所有权释放后返回。Windows 主进程持有 Job Object，硬退出时可终止阻塞原生文件 worker；异步 worker 同时监听 IPC disconnect。旧 WAV 后处理不再绕过媒体 supervisor。见 85。

@@ -1,5 +1,5 @@
 import {sessionWavePreset} from './recordSettings'
-import {spawn} from 'node:child_process'
+import {mediaProcess} from './mediaProcess'
 import {createReadStream} from 'node:fs'
 import {mkdir,readdir,writeFile,rename,realpath,lstat,rm} from 'node:fs/promises'
 import {join,sep,basename} from 'node:path'
@@ -8,13 +8,8 @@ import {quantizeFiles} from './fileJobs'
 import type {StoredSession,SessionAsset} from './sessionStore'
 type PcmEncoding=SessionAsset['encoding']
 async function hash(path:string){const value=createHash('sha256');for await(const bytes of createReadStream(path))value.update(bytes);return value.digest('hex')}
-function execute(program:string,args:string[]):Promise<string>{
- return new Promise((resolve,reject)=>{
-  const child=spawn(program,args,{windowsHide:true,stdio:['ignore','pipe','pipe']});let output='',error=''
-  child.stdout.on('data',data=>{if(output.length<1000000)output+=data});child.stderr.on('data',data=>error=(error+data).slice(-16000))
-  child.on('error',reject);child.on('close',code=>code===0?resolve(output):reject(Error('WAV_POSTPROCESS_FAILED: '+error)))
- })
-}
+function execute(program:string,args:string[]):Promise<string>{return mediaProcess(program,args,{capture:true})}
+
 type Input={paths:string[];rate:number;channels:number;frames:bigint}
 type Output={path:string;frames:bigint;hash:string;clippedSamples:string}
 async function render(input:Input,directory:string,rate:number,channels:number,encoding:PcmEncoding,ffmpeg:string,ffprobe:string,nativePath:string):Promise<Output[]>{

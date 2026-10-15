@@ -66,3 +66,15 @@ test('hard exit of the owning main process stops the detached supervisor tree',o
   for(const pid of pids){try{const text=await readFile('/proc/'+pid+'/stat','utf8');assert.equal(text.match(/\)\s([A-Z])/)[1],'Z','descendant must have exited')}catch(error){if(error.code!=='ENOENT')throw error}}
  }finally{host?.kill('SIGKILL');for(const pid of pids)try{process.kill(pid,'SIGKILL')}catch{}await rm(root,{recursive:true,force:true})}
 })
+
+test('legacy WAV postprocessing stops its real encoder when the owning process exits',{timeout:15000},async()=>{
+ const file=join(compiled,'wavPostprocess.cjs');await build({entryPoints:['src/trace/wavPostprocess.ts'],outfile:file,bundle:true,platform:'node',format:'cjs',footer:{js:'module.exports.reviewExecute=execute;'}})
+ const root=await mkdtemp(join(tmpdir(),'trace-wav-owner-')),writes=join(root,'writes'),pidFile=join(root,'pid');let host,pid
+ const encoder="const fs=require('fs');fs.writeFileSync(process.argv[1],String(process.pid));fs.appendFileSync(process.argv[2],'x');setInterval(()=>fs.appendFileSync(process.argv[2],'x'),15)"
+ const owner="require(process.argv[1]).reviewExecute(process.execPath,['-e',process.argv[2],process.argv[3],process.argv[4]]).catch(()=>{})"
+ try{
+  host=spawn(process.execPath,['-e',owner,file,encoder,pidFile,writes],{stdio:'ignore'})
+  for(let n=0;n<200&&!pid;n++){try{pid=Number(await readFile(pidFile,'utf8'));if(!(await stat(writes)).size)pid=undefined}catch{pid=undefined}if(!pid)await new Promise(r=>setTimeout(r,10))}assert(pid>0)
+  const exited=once(host,'exit');host.kill('SIGKILL');await exited;await new Promise(r=>setTimeout(r,2500));const before=(await stat(writes)).size;await new Promise(r=>setTimeout(r,120));assert.equal((await stat(writes)).size,before,'postprocess encoder must stop after owner termination')
+ }finally{host?.kill('SIGKILL');if(pid)try{process.kill(pid,'SIGKILL')}catch{}await new Promise(r=>setTimeout(r,50));await rm(root,{recursive:true,force:true})}
+})

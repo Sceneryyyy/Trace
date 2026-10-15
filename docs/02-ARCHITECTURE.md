@@ -100,3 +100,5 @@ Trace 后续建立了 sample frame/epoch/flags、分离的显示与录音队列�
 Trace 主进程、preload、领域服务和 shared/contracts 位于 `src/trace/`，界面位于 `src/trace/renderer/`，原生引擎位于 `native/src/recorder/`，Windows CMake 入口位于 `native/recorder/`，可移植数值检查位于 `native/portable/`。第三方本地源码位于 `native/vendor/`；测试位于 `test/`（以 Trace runner 分层），工具位于 `tools/`。无关上游应用、插件、TUI、构建脚本和资源已从当前工程移除；来源、原始说明、许可与历史记录继续保留，见 [14](14-SOURCES.md) 和 [79](79-TRACE-INDEPENDENT-PROJECT.md)。
 
 录音设备重设、多采样率分段、成品缓存和恢复细节见 [03](03-AUDIO-METERING.md)、[04](04-DATA-FORMATS.md)、[06](06-CONTRACTS.md)。
+
+2026-10-15：WAV 后处理与导入/导出共用媒体 supervisor；file/report worker 的 Windows Job Object 由主进程在发送任务前持有，关闭等待释放，异步 worker 对 IPC 断开立即退出。可阻塞事件循环的 Windows 原生文件工作仍依赖 Job Object 的内核清理，不以 JS disconnect 回调冒充保障。复核见 [85](85-CODE-DOCUMENT-REVIEW.md)。

@@ -73,7 +73,7 @@ export const portable = [
 
 /** Each entry records why the tier is required, so the cost stays visible. */
 export const native = {
-  'media-process-job.test.mjs': 'build/trace-engine/Release/trace_engine.node (real Windows Job Object and killed supervisor descendants)',
+  'media-process-job.test.mjs': 'build/trace-engine/Release/trace_engine.node (real Windows Job Object, killed supervisor descendants and blocked file-worker ownership)',
   'codec-faults.test.mjs': '.tools/ffmpeg (locked Windows codec; malformed/truncated files, cancellation, capacity and cache integrity)',
   'codec-runtime.test.mjs': '.tools/ffmpeg (locked EXEs; real three-format roundtrips and production import/export with both AAC containers)',
   'cache-recording.test.mjs': 'build/trace-engine/Release/trace_engine.node',

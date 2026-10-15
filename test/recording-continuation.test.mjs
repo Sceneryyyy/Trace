@@ -9,6 +9,7 @@ await mkdir('artifacts/m2-regions',{recursive:true})
 const modulePath=resolve('artifacts/m2-regions/continuation.cjs')
 await build({entryPoints:['src/trace/recording.ts'],outfile:modulePath,platform:'node',format:'cjs',bundle:true})
 await build({entryPoints:['src/trace/file-worker.ts'],outfile:resolve('artifacts/m2-regions/file-worker.js'),platform:'node',format:'cjs',bundle:true})
+await build({entryPoints:['src/trace/media-runner.ts'],outfile:resolve('artifacts/m2-regions/media-runner.js'),platform:'node',format:'cjs',bundle:true})
 const {RecordingService}=(await import(pathToFileURL(modulePath))).default
 const delay=ms=>new Promise(r=>setTimeout(r,ms))
 const metric=unit=>({value:null,status:'insufficient',unit})

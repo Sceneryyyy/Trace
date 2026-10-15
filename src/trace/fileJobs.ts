@@ -1,3 +1,4 @@
+import {ownProcessTree} from './mediaProcess'
 import { spawn } from 'node:child_process'
 import {supportEvent} from './supportEvents'
 import {retryHashWorker} from './readOnlyWorkerRetry'
@@ -27,7 +28,7 @@ async function runJob<T>(job:Record<string,unknown>,options:JobOptions={}):Promi
   try{
     return await new Promise<T>((resolve,reject)=>{
       const child=spawn(process.execPath,[join(__dirname,'file-worker.js')],{env:{...process.env,ELECTRON_RUN_AS_NODE:'1'},stdio:['ignore','ignore','pipe','ipc'],windowsHide:true})
-      let settled=false,stderr='',cancelled=false,timedOut=false
+      let settled=false,stderr='',cancelled=false,timedOut=false,owner:ReturnType<typeof ownProcessTree>
       let result:{ok:boolean;results:T;error:string}|undefined
       let idle:ReturnType<typeof setTimeout>|undefined
       const nativeWithoutHeartbeat=job.kind==='quantize'||job.kind==='recover'
@@ -54,14 +55,18 @@ async function runJob<T>(job:Record<string,unknown>,options:JobOptions={}):Promi
           try{options.progress?.(message.progress)}catch{}
         }else{result=message;rearm()}
       })
-      child.on('close',code=>{
+      child.on('close',async code=>{
+        const alreadySettled=settled;settled=true;done()
+        let cleanupError:unknown;try{await owner?.close()}catch(error){cleanupError=error}
+        if(alreadySettled)return
+        if(cleanupError){reject(Error('FILE_WORKER_JOB_CLEANUP_FAILED: '+String(cleanupError)));return}
         if(!cancelled&&!timedOut&&code!==0)supportEvent('file-worker-exit',code??-1)
-        if(settled)return;settled=true;done()
         if(cancelled)reject(Error('ANALYSIS_CANCELLED'))
         else if(timedOut)reject(Error('FILE_WORKER_TIMEOUT: worker stopped reporting progress'))
         else if(code===0&&result?.ok)resolve(result.results)
         else reject(Error(result?.error||'FILE_WORKER_EXIT '+code+': '+stderr))
       })
+      try{if(child.pid)owner=ownProcessTree(child.pid)}catch(error){result={ok:false,results:undefined as T,error:'FILE_WORKER_JOB_ATTACH_FAILED: '+String(error)};child.kill();return}
       rearm()
       child.send(job,error=>{if(error&&!settled){result={ok:false,results:undefined as T,error:String(error)};child.kill()}})
       if(options.signal?.aborted)abort()

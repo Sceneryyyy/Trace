@@ -4,6 +4,8 @@ export type ProcessOptions={signal?:AbortSignal;line?:(line:string)=>void;captur
 let createJob:((pid:number)=>{close():void|Promise<void>})|undefined
 /** On Windows the main process owns the job before the supervisor may spawn. */
 export function configureMediaProcessJobs(factory:typeof createJob){createJob=factory}
+/** Shared by the main process's media, file and report workers. */
+export function ownProcessTree(pid:number){return createJob?.(pid)}
 export function mediaProcess(program:string,args:string[],options:ProcessOptions={}):Promise<string>{
  if(options.signal?.aborted)return Promise.reject(Error('MEDIA_CANCELLED'))
  return new Promise((resolve,reject)=>{
@@ -49,7 +51,7 @@ export function mediaProcess(program:string,args:string[],options:ProcessOptions
    else if(code!==0||resultCode!==0)reject(Error('MEDIA_PROCESS_FAILED: '+error))
    else resolve(output)
   })
-  try{if(process.platform==='win32'&&createJob&&runner.pid)job=createJob(runner.pid)}catch(cause){error=String(cause);runner.kill();return}
+  try{if(process.platform==='win32'&&createJob&&runner.pid)job=ownProcessTree(runner.pid)}catch(cause){error=String(cause);runner.kill();return}
   runner.send({program,args,testReadRate:process.argv.includes('--trace-test')?Number(process.env.TRACE_TEST_MEDIA_READ_RATE)||undefined:undefined},cause=>{if(cause&&!settled){error+=String(cause);abort()}})
   if(options.signal?.aborted)abort()
  })
