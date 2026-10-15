@@ -85,3 +85,5 @@ node tools/performance/long-files.mjs
 ```
 
 原始 EBU 准备与门禁顺序执行；不得另起 prepare.py 同时改写正在读取的 fixtures。本轮第一次 Release EBU 执行因同时重建材料而读到截断 WAV，停止重叠操作后在原容差下全通过，未改测量代码掩盖失败。全矩阵生成并流式读取实际 30/600/7200 秒单声道 float32 WAV；这些测试信号不是声卡录音证据。独立 I 对照及 Chromium 命令见 CI 工作流。
+
+2026-10-15 复核补充：本页原浏览器 8 项夹具未载入实际产品 CSP，不能证明 PNG 在生产安全策略下可用。85 已复现 blob 图片被 img-src 阻止，修复限定图片策略，并将实际 CSP 加入浏览器回归；最终结果与新源码身份见 [85](85-CODE-DOCUMENT-REVIEW.md)。原始阶段测试记录保持其当时范围。
