@@ -1,5 +1,6 @@
+import {readMetadata} from './metadataFile'
 import {createHash,randomUUID} from 'node:crypto'
-import {lstat,realpath,mkdir,open,readFile,writeFile,readdir,unlink,rmdir} from 'node:fs/promises'
+import {lstat,realpath,mkdir,open,writeFile,readdir,unlink,rmdir} from 'node:fs/promises'
 import {basename,dirname,isAbsolute,join,resolve,sep} from 'node:path'
 import {hashFiles} from './fileJobs'
 import {mediaProcess} from './mediaProcess'
@@ -61,7 +62,7 @@ async function ownedDirectory(root:string,directory:string):Promise<string>{
  const base=await realpath(root),target=resolve(directory),info=await lstat(target),actual=await realpath(target)
  if(!info.isDirectory()||info.isSymbolicLink()||!idPattern.test(basename(target))||!same(dirname(actual),base)||!same(actual,target))throw Error('INVALID_IMPORT_CACHE_DIRECTORY')
  const marker=join(actual,'owner.json'),stat=await lstat(marker);if(!stat.isFile()||stat.isSymbolicLink()||stat.size>4096)throw Error('INVALID_IMPORT_CACHE_OWNER')
- const owner=JSON.parse(await readFile(marker,'utf8'));if(owner.product!=='TraceImportedPCM'||owner.version!==1||owner.id!==basename(actual))throw Error('INVALID_IMPORT_CACHE_OWNER')
+ const owner=JSON.parse(await readMetadata(marker,4096,'INVALID_IMPORT_CACHE_OWNER'));if(owner.product!=='TraceImportedPCM'||owner.version!==1||owner.id!==basename(actual))throw Error('INVALID_IMPORT_CACHE_OWNER')
  return actual
 }
 export async function readImportedPCM(root:string,id:string,sourceSha256:string,signal?:AbortSignal):Promise<ImportedPCM>{
@@ -71,7 +72,7 @@ export async function readImportedPCM(root:string,id:string,sourceSha256:string,
  // the child's lstat/realpath and immediate-owner checks in ownedDirectory.
  const base=await realpath(root),directory=await ownedDirectory(base,join(base,id)),metadata=join(directory,'decoded.json'),info=await lstat(metadata)
  if(!info.isFile()||info.isSymbolicLink()||info.size>16*1024*1024)throw Error('INVALID_IMPORT_CACHE_METADATA')
- const d=JSON.parse(await readFile(metadata,'utf8')) as ImportedPCM
+ const d=JSON.parse(await readMetadata(metadata,16*1024*1024,'INVALID_IMPORT_CACHE_METADATA')) as ImportedPCM
  if(!d||d.version!==1||d.id!==id||!d.source||d.source.sha256!==sourceSha256||!hashPattern.test(d.decoderSha256)||!hashPattern.test(d.mediaIdentity)||!frame(d.frames)||d.frames==='0'||!d.format||!['decoder-metadata','decoded-content'].includes(d.trim)||!Array.isArray(d.files)||!d.files.length||d.files.length>10000)throw Error('INVALID_IMPORT_CACHE_METADATA')
  const normalized=classifyImport({streams:[{codec_type:'audio',codec_name:d.codec,profile:d.codec==='aac'?'LC':undefined,sample_rate:String(d.format.sampleRate),channels:d.format.channelCount,bit_rate:d.format.bitrate===undefined?undefined:String(d.format.bitrate*1000)}],format:{format_name:d.format.format==='aac'?(d.format.container==='adts'?'aac':'mov'):d.format.format}})
  const identity=createHash('sha256').update(JSON.stringify({version:1,sourceSha256,decoder:d.decoderSha256,recipe:'full-external-decoding-v1',frames:d.frames,format:normalized.format})).digest('hex')

@@ -1,3 +1,5 @@
+#include "GainRamp.h"
+#include "TimingStats.h"
 #include "InstrumentAnalysis.h"
 #include <algorithm>
 #include <chrono>
@@ -100,5 +102,7 @@ int main(){try{
  const auto begin=std::chrono::steady_clock::now();const auto worst=analyzeInstruments(data.data(),240000,96000,2,0,240000,c);
  require(!worst.partialAverage,"full largest averaging range");
  std::cout<<"Cold max-config ms "<<std::chrono::duration<double,std::milli>(std::chrono::steady_clock::now()-begin).count()<<"\n";
+ for(auto rate:{8000u,44100u,48000u,96000u}){GainRamp ramp(rate);float previous=0;for(uint32_t n=0;n<rate/200;++n){const auto current=ramp.next(1);require(current>=previous&&current<=1,"monotonic audition ramp");previous=current;}near(previous,1,1e-6,"5ms ramp reaches target");for(uint32_t n=0;n<rate/200;++n){const auto current=ramp.next(.25f);require(current<=previous&&current>=.25f,"monotonic attenuation ramp");previous=current;}near(previous,.25,1e-6,"attenuation ramp reaches target");}
+ TimingStats timings;require(timings.snapshot().count==0,"empty timing counters initialized");{TimingScope scope(timings);}require(timings.snapshot().count==1,"timing scope observed");
  std::cout<<"INSTRUMENT_ANALYSIS_PASS "<<checks<<" checks\n";return 0;
 }catch(const std::exception& e){std::cerr<<"INSTRUMENT_ANALYSIS_FAIL "<<e.what()<<"\n";return 1;}}

@@ -1,6 +1,6 @@
 # Trace 项目文档索引
 
-更新：2026-10-11。当前源码 **preview.31**，默认分支 `recorder/dev`。文件/故障与安全修补已由来源 **2aee519** 的完整 Windows/Linux CI 复验并生成私有工程候选：两端 portable JS **272/272**、Windows 原生/媒体 **64/64**、CTest **19/19**、Linux sanitizer 核心 8 + 原始 EBU 1、包审计/加载/重启均通过。最新状态见 [13](13-HANDOFF.md) 与 [82](82-FILE-FAULT-TESTING.md)；[81](81-SELF-BUILT-FFMPEG.md) 保留此前自建来源证明。preview.30 / InternalTest-r3（9c1ee21）与旧 f33d74d 候选保持历史身份。PDF 插图仍为云端模拟界面。
+更新：2026-10-15。当前源码 **preview.33**，默认开发分支 `recorder/dev`；本轮代码/文档复核见 [85](85-CODE-DOCUMENT-REVIEW.md)，P0/P1 实现及上一轮验证见 [84](84-P0-P1-CLOUD-ITERATION.md)。新源码继续在草稿 PR #1 评审，远程默认分支尚未合入。preview.31 私有工程候选（2aee519）、preview.30 / InternalTest-r3（9c1ee21）与旧 f33d74d 候选保持各自历史身份；本轮未建立新安装包。最新提交、验证与待验边界见 [13](13-HANDOFF.md)。PDF 插图仍为云端模拟界面。
 
 先读 [项目首页](../README.md)、[用户指南](28-USER-GUIDE.md) 或 [开发入门](../CODEX-START.md)。当前状态、未验证项和下一任务统一写在 [13-HANDOFF](13-HANDOFF.md)。带日期的阶段记录只证明当时版本的结果；旧“当前/下一步”不能覆盖 13。
 
@@ -10,7 +10,7 @@
 
 | 文档 | 用途/状态 |
 | --- | --- |
-| [用户指南](28-USER-GUIDE.md) | 当前源码操作，包含 preview.31 主题和质量提示 |
+| [用户指南](28-USER-GUIDE.md) | 当前源码操作，包含主题、采集质量、复核标记/导图及等响度回听 |
 | [源码开发入门](../CODEX-START.md) | 从现有仓库准备依赖和开始工作 |
 | [项目约定](../AGENTS.md) | 开发、验证、来源与交接规则 |
 | [Windows 环境](09-WINDOWS-SETUP.md) | 实际构建、测试和分发命令；Linux 可运行范围 |
@@ -24,6 +24,7 @@
 | [发布依赖与源码收尾](80-RELEASE-DEPENDENCY-HARDENING.md) | 固定安全工具链、实时审计门禁、FFmpeg 主源码与静态依赖资料缺口 |
 | [自建 Windows FFmpeg](81-SELF-BUILT-FFMPEG.md) | 两份官方源码、固定工具/SDK、构建与完整来源门禁；新候选复验通过 |
 | [文件与故障测试](82-FILE-FAULT-TESTING.md) | 损坏/截断、16 组 MP3、取消/进程/worker、磁盘注入及安全修补；完整 CI/新候选已通过 |
+| [GitHub 录音与仪器调研](83-GITHUB-AUDIO-PROJECT-RESEARCH.md) | 2026-10-11 外部项目/固定来源与当前源码对照；资源、故障、FFT/长文件缓存和仪器判读建议；P0/P1 已实施，见 84 |
 | [文件/故障验证清单](release/file-fault-verification.json) | 当前 2aee519 的实际两端门禁、MP3 帧数、基线反例与新候选身份 |
 | [自建与新候选验证](release/codec-verification.json) | 10 月 4 日 f33d74d 自建来源、重复构建、实际 EXE/报告及历史附件身份 |
 | [独立工程验证清单](release/independence-verification.json) | 旧工具链独立化阶段的代码提交、CI 与候选元数据；当前复验见下项 |
@@ -174,3 +175,7 @@
 | [libebur128 本地补丁](../native/vendor/libebur128/TRACE-PATCHES.md) | 1.2.6 锁定来源、数值改动与版本证据 |
 
 15（开工包自检）、65（临时未提交变更交接）和根目录 TRACE-README 兼容入口已被后续内容替代并删除，原件可从 Git 历史追溯；编号不重新排列。删除理由见 74。
+
+- [84 · P0/P1 云端迭代](84-P0-P1-CLOUD-ITERATION.md)：实现、版本变化、资源基线与验收边界。
+
+- [85 · 全量代码与文档复核](85-CODE-DOCUMENT-REVIEW.md)：问题、修复、反例回归和本轮验证。

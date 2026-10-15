@@ -1,4 +1,5 @@
-import {appendFile,lstat,mkdir,readFile,readdir,realpath,rename,unlink,writeFile} from 'node:fs/promises'
+import {readMetadata} from './metadataFile'
+import {appendFile,lstat,mkdir,readdir,realpath,rename,unlink,writeFile} from 'node:fs/promises'
 import {basename,extname,isAbsolute,join,resolve,sep} from 'node:path'
 import {randomUUID} from 'node:crypto'
 import {validateTakeName} from './naming'
@@ -37,7 +38,7 @@ async function checkOwner(root:string,directory:string,id:string):Promise<void>{
  const rootInfo=await lstat(root),dir=await lstat(directory)
  if(rootInfo.isSymbolicLink()||!rootInfo.isDirectory()||dir.isSymbolicLink()||!dir.isDirectory()||!same(await realpath(root),resolve(root))||!same(await realpath(directory),resolve(directory)))throw Error('INVALID_IMPORT_STORE_DIRECTORY')
  const path=join(directory,'owner.json'),info=await lstat(path);if(!info.isFile()||info.isSymbolicLink()||info.size>4096)throw Error('INVALID_IMPORT_STORE_OWNER')
- const owner=JSON.parse(await readFile(path,'utf8'));if(owner.product!=='TraceImportedAsset'||owner.version!==1||owner.id!==id)throw Error('INVALID_IMPORT_STORE_OWNER')
+ const owner=JSON.parse(await readMetadata(path,4096,'INVALID_IMPORT_STORE_OWNER'));if(owner.product!=='TraceImportedAsset'||owner.version!==1||owner.id!==id)throw Error('INVALID_IMPORT_STORE_OWNER')
 }
 export class StoredImportedAsset implements ExportOwner {
  private writes:Promise<void>=Promise.resolve()
@@ -47,9 +48,9 @@ export class StoredImportedAsset implements ExportOwner {
   if(Buffer.byteLength(snapshot)>maxBytes)throw Error('IMPORT_METADATA_TOO_LARGE')
   const id=this.document.sessionId
   this.writes=this.writes.catch(()=>{}).then(async()=>{
-   await checkOwner(this.root,this.directory,id);const temp=join(this.directory,'import.'+randomUUID()+'.tmp'),target=join(this.directory,'import.json')
-   try{await writeFile(temp,snapshot,{flag:'wx'});for(let n=0;;n++){await checkOwner(this.root,this.directory,id);try{await rename(temp,target);break}catch(error){if(n>=5||!['EACCES','EPERM','EBUSY'].includes((error as NodeJS.ErrnoException).code||''))throw error;await new Promise(r=>setTimeout(r,[20,50,100,200,400][n]))}}}
-   finally{await unlink(temp).catch(()=>{})}
+   await checkOwner(this.root,this.directory,id);const temp=join(this.directory,'import.'+randomUUID()+'.tmp'),target=join(this.directory,'import.json');let owned=false
+   try{await writeFile(temp,snapshot,{flag:'wx'});owned=true;for(let n=0;;n++){await checkOwner(this.root,this.directory,id);try{await rename(temp,target);break}catch(error){if(n>=5||!['EACCES','EPERM','EBUSY'].includes((error as NodeJS.ErrnoException).code||''))throw error;await new Promise(r=>setTimeout(r,[20,50,100,200,400][n]))}}}
+   finally{if(owned)await unlink(temp).catch(()=>{})}
   });return this.writes
  }
  event(type:string,details:Record<string,unknown>={}):Promise<void>{
@@ -66,7 +67,7 @@ export class ImportStore {
   const assets:StoredImportedAsset[]=[],issues:Array<{id:string;error:string}>=[]
   for(const entry of await readdir(this.root,{withFileTypes:true})){
    if(!uuid.test(entry.name))continue;const directory=join(this.root,entry.name)
-   try{await checkOwner(this.root,directory,entry.name);const file=join(directory,'import.json'),s=await lstat(file);if(!s.isFile()||s.isSymbolicLink()||s.size>maxBytes)throw Error('INVALID_IMPORT_METADATA');const d=validateImportedDocument(JSON.parse(await readFile(file,'utf8')));if(d.sessionId!==entry.name)throw Error('INVALID_IMPORT_STORE_OWNER')
+   try{await checkOwner(this.root,directory,entry.name);const file=join(directory,'import.json'),s=await lstat(file);if(!s.isFile()||s.isSymbolicLink()||s.size>maxBytes)throw Error('INVALID_IMPORT_METADATA');const d=validateImportedDocument(JSON.parse(await readMetadata(file,maxBytes,'INVALID_IMPORT_METADATA')));if(d.sessionId!==entry.name)throw Error('INVALID_IMPORT_STORE_OWNER')
     if(d.status==='preparing'){d.status='failed';d.error='上次素材准备未完成，请重试。'}
     for(const r of d.exports){if(!['ready','failed','cancelled'].includes(r.phase)){r.phase='failed';r.error='上次导出未完成，请重试。'}if(r.delivery&&['pending','copying'].includes(r.delivery.phase)){r.delivery.phase='failed';r.delivery.error='上次另存未完成，请重新选择保存位置。'}}
     assets.push(new StoredImportedAsset(this.root,directory,d))

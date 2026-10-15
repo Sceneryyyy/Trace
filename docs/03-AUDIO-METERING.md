@@ -137,3 +137,9 @@ monitoringRequested 记录用户是否需要常驻 LIVE，active 仍表示实际
 ## preview.9 缓存物化的计量语义
 
 显式保存缓存按原生 PCM 的精确 [a,b) 范围写入新文件，不从显示波形重建音频。选择整数位深或不同采样率时复用现有量化/重采样规则。新文件以自己的首帧为零重新分析，压缩成品按其自身有效解码范围分析；原监测前缀值不作为新文件的 I。
+
+## preview.32 分布与回听语义
+
+Meter v5 与原始计量容差保持不变。新增 M/S 分布按缓存原始帧时长加权；PLR/PSR 的窗口、质量排除与 10 ms TP 精度范围见 [84](84-P0-P1-CLOUD-ITERATION.md)。显示平滑/倾斜只处理线性功率显示，等响度系数与 5 ms 增益过渡只进入播放输出，不应用于录音、计量或成品导出。独立 I 对照固定 pyloudnorm 提交，不等于 LRA/TP 认证。
+
+2026-10-15 质量边界修复：Recorder 的 take 回放缓存在复制 PCM 时保留 EstimatedSilence 标志，整段/选区冻结与显式保存据此报告估计帧数；不改变 Meter v5 数值或既有质量协议。Windows 原生回归及本轮证据见 [85](85-CODE-DOCUMENT-REVIEW.md)。

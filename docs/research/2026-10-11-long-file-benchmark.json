@@ -1,0 +1,1272 @@
+{
+  "scope": "Full physically written synthetic float32 mono WAV fixtures; test-only bounded PCM reader; production portable DSP and TypeScript spectrogram services; cold means empty derived cache, not dropped OS page cache. Alternating sources are spectral service workloads, not WASAPI audition. No renderer frame timing or native capture/writer evidence.",
+  "results": [
+    {
+      "rate": 44100,
+      "durationSeconds": 30,
+      "fftSize": 2048,
+      "fixtureFrames": "1323000",
+      "fixtureBytes": 5292044,
+      "fixtureSha256": "e383add18402ed598e56c742919cccf13d769faeb4aadb86d351e57fcf1da339",
+      "generationAndHashMs": 12.288169000000003,
+      "coldMs": 312.082265,
+      "hot": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 6.964165999999977,
+        "p95Ms": 17.76544100000001,
+        "p99Ms": 34.421996999999976,
+        "maxMs": 34.421996999999976
+      },
+      "seek": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 1.2523969999999736,
+        "p95Ms": 2.826330999999982,
+        "p99Ms": 12.364552000000003,
+        "maxMs": 12.364552000000003
+      },
+      "rawHover": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 0.017676000000051317,
+        "p95Ms": 0.13828499999999622,
+        "p99Ms": 0.23241400000006252,
+        "maxMs": 0.23241400000006252
+      },
+      "alternatingSources": {
+        "count": 6,
+        "windowCount": 6,
+        "p50Ms": 13.786661000000095,
+        "p95Ms": 23.151055999999926,
+        "p99Ms": 23.151055999999926,
+        "maxMs": 23.151055999999926
+      },
+      "hiddenCancellation": true,
+      "cacheBytes": 15869857,
+      "nodePeakRssBytes": 78979072,
+      "nativePeakRssBytes": 2527232,
+      "nativeRequests": 49,
+      "transportBytes": 12320972,
+      "nodeCpuMicroseconds": {
+        "user": 573242,
+        "system": 54642
+      },
+      "overviewLevel": 1,
+      "rawAndHotIdentical": true,
+      "usage": {
+        "views": 0,
+        "bytes": 870436,
+        "tiles": 4,
+        "pending": 0,
+        "overviewBytes": 0,
+        "timings": {
+          "count": 55,
+          "windowCount": 55,
+          "p50Ms": 6.429602999999986,
+          "p95Ms": 23.102573000000007,
+          "p99Ms": 311.50395799999995,
+          "maxMs": 311.50395799999995
+        },
+        "projectionBytes": 164960
+      }
+    },
+    {
+      "rate": 44100,
+      "durationSeconds": 30,
+      "fftSize": 16384,
+      "fixtureFrames": "1323000",
+      "fixtureBytes": 5292044,
+      "fixtureSha256": "e383add18402ed598e56c742919cccf13d769faeb4aadb86d351e57fcf1da339",
+      "generationAndHashMs": 12.288169000000003,
+      "coldMs": 1109.891064,
+      "hot": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 0.9185720000000401,
+        "p95Ms": 1.2473790000001372,
+        "p99Ms": 1.4641810000000532,
+        "maxMs": 1.4641810000000532
+      },
+      "seek": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 0.6180169999997815,
+        "p95Ms": 0.868347999999969,
+        "p99Ms": 1.151157000000012,
+        "maxMs": 1.151157000000012
+      },
+      "rawHover": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 0.009113000000070315,
+        "p95Ms": 0.014480999999932465,
+        "p99Ms": 0.05235800000014024,
+        "maxMs": 0.05235800000014024
+      },
+      "alternatingSources": {
+        "count": 6,
+        "windowCount": 6,
+        "p50Ms": 18.208104999999705,
+        "p95Ms": 101.32142299999987,
+        "p99Ms": 101.32142299999987,
+        "maxMs": 101.32142299999987
+      },
+      "hiddenCancellation": true,
+      "cacheBytes": 57618780,
+      "nodePeakRssBytes": 175149056,
+      "nativePeakRssBytes": 5292032,
+      "nativeRequests": 30,
+      "transportBytes": 57615894,
+      "nodeCpuMicroseconds": {
+        "user": 768942,
+        "system": 120878
+      },
+      "overviewLevel": 0,
+      "rawAndHotIdentical": true,
+      "usage": {
+        "views": 0,
+        "bytes": 4523442,
+        "tiles": 3,
+        "pending": 0,
+        "overviewBytes": 0,
+        "timings": {
+          "count": 55,
+          "windowCount": 55,
+          "p50Ms": 0.8508119999999053,
+          "p95Ms": 98.029225,
+          "p99Ms": 1109.8296030000001,
+          "maxMs": 1109.8296030000001
+        },
+        "projectionBytes": 141876
+      }
+    },
+    {
+      "rate": 44100,
+      "durationSeconds": 600,
+      "fftSize": 2048,
+      "fixtureFrames": "26460000",
+      "fixtureBytes": 105840044,
+      "fixtureSha256": "f00672a8d3db042923d5ff1f6905230b7e29acba67bf74c1270ffc22d1dbbb5b",
+      "generationAndHashMs": 163.234465,
+      "coldMs": 6981.774531,
+      "hot": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 3.1289990000004764,
+        "p95Ms": 3.471987999999328,
+        "p99Ms": 6.8356649999986985,
+        "maxMs": 6.8356649999986985
+      },
+      "seek": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 24.94916100000046,
+        "p95Ms": 30.048790999999255,
+        "p99Ms": 30.41376399999899,
+        "maxMs": 30.41376399999899
+      },
+      "rawHover": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 0.01907799999935378,
+        "p95Ms": 0.02313500000127533,
+        "p99Ms": 0.023235000000568107,
+        "maxMs": 0.023235000000568107
+      },
+      "alternatingSources": {
+        "count": 6,
+        "windowCount": 6,
+        "p50Ms": 5.535868000000846,
+        "p95Ms": 25.789146999999502,
+        "p99Ms": 25.789146999999502,
+        "maxMs": 25.789146999999502
+      },
+      "hiddenCancellation": true,
+      "cacheBytes": 100557717,
+      "nodePeakRssBytes": 220086272,
+      "nativePeakRssBytes": 2400256,
+      "nativeRequests": 881,
+      "transportBytes": 230816068,
+      "nodeCpuMicroseconds": {
+        "user": 4780747,
+        "system": 872763
+      },
+      "overviewLevel": 5,
+      "rawAndHotIdentical": true,
+      "usage": {
+        "views": 0,
+        "bytes": 903244,
+        "tiles": 4,
+        "pending": 0,
+        "overviewBytes": 0,
+        "timings": {
+          "count": 55,
+          "windowCount": 55,
+          "p50Ms": 3.4003609999999753,
+          "p95Ms": 29.974341000001004,
+          "p99Ms": 6981.6854889999995,
+          "maxMs": 6981.6854889999995
+        },
+        "projectionBytes": 164992
+      }
+    },
+    {
+      "rate": 44100,
+      "durationSeconds": 600,
+      "fftSize": 16384,
+      "fixtureFrames": "26460000",
+      "fixtureBytes": 105840044,
+      "fixtureSha256": "f00672a8d3db042923d5ff1f6905230b7e29acba67bf74c1270ffc22d1dbbb5b",
+      "generationAndHashMs": 163.234465,
+      "coldMs": 26891.691144999997,
+      "hot": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 6.255516000004718,
+        "p95Ms": 6.991796999995131,
+        "p99Ms": 7.148939999999129,
+        "maxMs": 7.148939999999129
+      },
+      "seek": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 135.0040749999971,
+        "p95Ms": 156.85827199999767,
+        "p99Ms": 163.58554500000173,
+        "maxMs": 163.58554500000173
+      },
+      "rawHover": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 0.02511699999740813,
+        "p95Ms": 0.028441999995266087,
+        "p99Ms": 0.04356499999994412,
+        "maxMs": 0.04356499999994412
+      },
+      "alternatingSources": {
+        "count": 6,
+        "windowCount": 6,
+        "p50Ms": 121.70718199999828,
+        "p95Ms": 127.86675799999648,
+        "p99Ms": 127.86675799999648,
+        "maxMs": 127.86675799999648
+      },
+      "hiddenCancellation": true,
+      "cacheBytes": 100589748,
+      "nodePeakRssBytes": 261242880,
+      "nativePeakRssBytes": 5263360,
+      "nativeRequests": 546,
+      "transportBytes": 1137437210,
+      "nodeCpuMicroseconds": {
+        "user": 18355652,
+        "system": 1531855
+      },
+      "overviewLevel": 4,
+      "rawAndHotIdentical": true,
+      "usage": {
+        "views": 0,
+        "bytes": 5178902,
+        "tiles": 3,
+        "pending": 0,
+        "overviewBytes": 0,
+        "timings": {
+          "count": 55,
+          "windowCount": 55,
+          "p50Ms": 95.89693100000295,
+          "p95Ms": 156.7807959999991,
+          "p99Ms": 26891.562465,
+          "maxMs": 26891.562465
+        },
+        "projectionBytes": 157572
+      }
+    },
+    {
+      "rate": 44100,
+      "durationSeconds": 7200,
+      "fftSize": 2048,
+      "fixtureFrames": "317520000",
+      "fixtureBytes": 1270080044,
+      "fixtureSha256": "b478d8f2e0262178a567fe6cbfc5fea2e9a5b9c2ed224d76530622790802d6c8",
+      "generationAndHashMs": 1450.4963629999984,
+      "coldMs": 144440.245287,
+      "hot": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 2.402792999986559,
+        "p95Ms": 4.545719999994617,
+        "p99Ms": 5.093572999991011,
+        "maxMs": 5.093572999991011
+      },
+      "seek": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 44.83565200000885,
+        "p95Ms": 58.43108999999822,
+        "p99Ms": 69.80916200001957,
+        "maxMs": 69.80916200001957
+      },
+      "rawHover": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 0.022123000002466142,
+        "p95Ms": 0.02619899998535402,
+        "p99Ms": 0.03332899999804795,
+        "maxMs": 0.03332899999804795
+      },
+      "alternatingSources": {
+        "count": 6,
+        "windowCount": 6,
+        "p50Ms": 31.41326800000388,
+        "p95Ms": 34.534616999997525,
+        "p99Ms": 34.534616999997525,
+        "maxMs": 34.534616999997525
+      },
+      "hiddenCancellation": true,
+      "cacheBytes": 100627253,
+      "nodePeakRssBytes": 326750208,
+      "nativePeakRssBytes": 2404352,
+      "nativeRequests": 9791,
+      "transportBytes": 2569897387,
+      "nodeCpuMicroseconds": {
+        "user": 112685699,
+        "system": 12223453
+      },
+      "overviewLevel": 9,
+      "rawAndHotIdentical": true,
+      "usage": {
+        "views": 0,
+        "bytes": 759453,
+        "tiles": 3,
+        "pending": 0,
+        "overviewBytes": 0,
+        "timings": {
+          "count": 55,
+          "windowCount": 55,
+          "p50Ms": 31.329384000011487,
+          "p95Ms": 58.36568400001852,
+          "p99Ms": 144440.15224000002,
+          "maxMs": 144440.15224000002
+        },
+        "projectionBytes": 141296
+      }
+    },
+    {
+      "rate": 44100,
+      "durationSeconds": 7200,
+      "fftSize": 16384,
+      "fixtureFrames": "317520000",
+      "fixtureBytes": 1270080044,
+      "fixtureSha256": "b478d8f2e0262178a567fe6cbfc5fea2e9a5b9c2ed224d76530622790802d6c8",
+      "generationAndHashMs": 1450.4963629999984,
+      "coldMs": 410549.430653,
+      "hot": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 3.4323269999586046,
+        "p95Ms": 4.000179000082426,
+        "p99Ms": 4.105654999963008,
+        "maxMs": 4.105654999963008
+      },
+      "seek": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 162.4429709999822,
+        "p95Ms": 186.1608969999943,
+        "p99Ms": 199.77875699999277,
+        "maxMs": 199.77875699999277
+      },
+      "rawHover": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 0.026639000046998262,
+        "p95Ms": 0.03343000006861985,
+        "p99Ms": 0.05536200001370162,
+        "maxMs": 0.05536200001370162
+      },
+      "alternatingSources": {
+        "count": 6,
+        "windowCount": 6,
+        "p50Ms": 94.76374000008218,
+        "p95Ms": 156.12686900002882,
+        "p99Ms": 156.12686900002882,
+        "maxMs": 156.12686900002882
+      },
+      "hiddenCancellation": true,
+      "cacheBytes": 100365962,
+      "nodePeakRssBytes": 437260288,
+      "nativePeakRssBytes": 5263360,
+      "nativeRequests": 5697,
+      "transportBytes": 11945350890,
+      "nodeCpuMicroseconds": {
+        "user": 280268424,
+        "system": 16327777
+      },
+      "overviewLevel": 8,
+      "rawAndHotIdentical": true,
+      "usage": {
+        "views": 0,
+        "bytes": 3605542,
+        "tiles": 2,
+        "pending": 0,
+        "overviewBytes": 0,
+        "timings": {
+          "count": 55,
+          "windowCount": 55,
+          "p50Ms": 94.67191399994772,
+          "p95Ms": 186.01761400001124,
+          "p99Ms": 410549.32865199994,
+          "maxMs": 410549.32865199994
+        },
+        "projectionBytes": 125888
+      }
+    },
+    {
+      "rate": 48000,
+      "durationSeconds": 30,
+      "fftSize": 2048,
+      "fixtureFrames": "1440000",
+      "fixtureBytes": 5760044,
+      "fixtureSha256": "87771eee3b67919888b113c71fe39eca34a68ecbb84b151fd60ad33940c2512e",
+      "generationAndHashMs": 16.555577000021003,
+      "coldMs": 648.994321999955,
+      "hot": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 6.976283999974839,
+        "p95Ms": 8.339706000057049,
+        "p99Ms": 12.28864100005012,
+        "maxMs": 12.28864100005012
+      },
+      "seek": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 1.2105049999663606,
+        "p95Ms": 1.5133039999054745,
+        "p99Ms": 1.6057209999999031,
+        "maxMs": 1.6057209999999031
+      },
+      "rawHover": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 0.009093000087887049,
+        "p95Ms": 0.014621000038459897,
+        "p99Ms": 0.015562999993562698,
+        "maxMs": 0.015562999993562698
+      },
+      "alternatingSources": {
+        "count": 6,
+        "windowCount": 6,
+        "p50Ms": 43.58837999997195,
+        "p95Ms": 47.53307899995707,
+        "p99Ms": 47.53307899995707,
+        "maxMs": 47.53307899995707
+      },
+      "hiddenCancellation": true,
+      "cacheBytes": 3779053,
+      "nodePeakRssBytes": 370769920,
+      "nativePeakRssBytes": 2400256,
+      "nativeRequests": 68,
+      "transportBytes": 17648779,
+      "nodeCpuMicroseconds": {
+        "user": 918038,
+        "system": 61466
+      },
+      "overviewLevel": 1,
+      "rawAndHotIdentical": true,
+      "usage": {
+        "views": 0,
+        "bytes": 1022173,
+        "tiles": 4,
+        "pending": 0,
+        "overviewBytes": 0,
+        "timings": {
+          "count": 55,
+          "windowCount": 55,
+          "p50Ms": 6.560868000029586,
+          "p95Ms": 46.71649900008924,
+          "p99Ms": 648.9023649999872,
+          "maxMs": 648.9023649999872
+        },
+        "projectionBytes": 186356
+      }
+    },
+    {
+      "rate": 48000,
+      "durationSeconds": 30,
+      "fftSize": 16384,
+      "fixtureFrames": "1440000",
+      "fixtureBytes": 5760044,
+      "fixtureSha256": "87771eee3b67919888b113c71fe39eca34a68ecbb84b151fd60ad33940c2512e",
+      "generationAndHashMs": 16.555577000021003,
+      "coldMs": 1394.0786999999546,
+      "hot": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 0.9542150000343099,
+        "p95Ms": 1.332406000001356,
+        "p99Ms": 8.261659999960102,
+        "maxMs": 8.261659999960102
+      },
+      "seek": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 0.6348320000106469,
+        "p95Ms": 0.8929639999987558,
+        "p99Ms": 0.9116209999192506,
+        "maxMs": 0.9116209999192506
+      },
+      "rawHover": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 0.007671000086702406,
+        "p95Ms": 0.012098000035621226,
+        "p99Ms": 0.014069999917410314,
+        "maxMs": 0.014069999917410314
+      },
+      "alternatingSources": {
+        "count": 6,
+        "windowCount": 6,
+        "p50Ms": 125.48627500003204,
+        "p95Ms": 134.75979399995413,
+        "p99Ms": 134.75979399995413,
+        "maxMs": 134.75979399995413
+      },
+      "hiddenCancellation": true,
+      "cacheBytes": 2097600,
+      "nodePeakRssBytes": 398708736,
+      "nativePeakRssBytes": 5320704,
+      "nativeRequests": 42,
+      "transportBytes": 75936385,
+      "nodeCpuMicroseconds": {
+        "user": 1409659,
+        "system": 90692
+      },
+      "overviewLevel": 0,
+      "rawAndHotIdentical": true,
+      "usage": {
+        "views": 0,
+        "bytes": 4556215,
+        "tiles": 3,
+        "pending": 0,
+        "overviewBytes": 0,
+        "timings": {
+          "count": 55,
+          "windowCount": 55,
+          "p50Ms": 0.871201999951154,
+          "p95Ms": 130.7416469999589,
+          "p99Ms": 1393.9779710000148,
+          "maxMs": 1393.9779710000148
+        },
+        "projectionBytes": 141880
+      }
+    },
+    {
+      "rate": 48000,
+      "durationSeconds": 600,
+      "fftSize": 2048,
+      "fixtureFrames": "28800000",
+      "fixtureBytes": 115200044,
+      "fixtureSha256": "b48ac1486550a5ae35d3ec7e222c8ce1230b75809f3d08081886e062ec457dac",
+      "generationAndHashMs": 167.7187939999858,
+      "coldMs": 16150.781658999971,
+      "hot": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 3.352720000082627,
+        "p95Ms": 4.618726999964565,
+        "p99Ms": 10.601545999990776,
+        "maxMs": 10.601545999990776
+      },
+      "seek": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 51.68544400006067,
+        "p95Ms": 74.03548199997749,
+        "p99Ms": 86.89726799994241,
+        "maxMs": 86.89726799994241
+      },
+      "rawHover": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 0.022593999980017543,
+        "p95Ms": 0.030675999936647713,
+        "p99Ms": 0.11373900005128235,
+        "maxMs": 0.11373900005128235
+      },
+      "alternatingSources": {
+        "count": 6,
+        "windowCount": 6,
+        "p50Ms": 49.734296999988146,
+        "p95Ms": 68.0750560000306,
+        "p99Ms": 68.0750560000306,
+        "maxMs": 68.0750560000306
+      },
+      "hiddenCancellation": true,
+      "cacheBytes": 26200076,
+      "nodePeakRssBytes": 376451072,
+      "nativePeakRssBytes": 2404352,
+      "nativeRequests": 975,
+      "transportBytes": 255675237,
+      "nodeCpuMicroseconds": {
+        "user": 14410250,
+        "system": 932595
+      },
+      "overviewLevel": 5,
+      "rawAndHotIdentical": true,
+      "usage": {
+        "views": 0,
+        "bytes": 1013971,
+        "tiles": 4,
+        "pending": 0,
+        "overviewBytes": 0,
+        "timings": {
+          "count": 55,
+          "windowCount": 55,
+          "p50Ms": 4.468845000024885,
+          "p95Ms": 73.95955000002868,
+          "p99Ms": 16150.67096499994,
+          "maxMs": 16150.67096499994
+        },
+        "projectionBytes": 186348
+      }
+    },
+    {
+      "rate": 48000,
+      "durationSeconds": 600,
+      "fftSize": 16384,
+      "fixtureFrames": "28800000",
+      "fixtureBytes": 115200044,
+      "fixtureSha256": "b48ac1486550a5ae35d3ec7e222c8ce1230b75809f3d08081886e062ec457dac",
+      "generationAndHashMs": 167.7187939999858,
+      "coldMs": 35204.620623999974,
+      "hot": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 6.876462999964133,
+        "p95Ms": 9.52234500006307,
+        "p99Ms": 11.019674999988638,
+        "maxMs": 11.019674999988638
+      },
+      "seek": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 178.2207899999339,
+        "p95Ms": 228.82269800000358,
+        "p99Ms": 228.8484850000823,
+        "maxMs": 228.8484850000823
+      },
+      "rawHover": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 0.028621999896131456,
+        "p95Ms": 0.03611400001682341,
+        "p99Ms": 0.0400000000372529,
+        "maxMs": 0.0400000000372529
+      },
+      "alternatingSources": {
+        "count": 6,
+        "windowCount": 6,
+        "p50Ms": 171.74691300000995,
+        "p95Ms": 184.18060400011018,
+        "p99Ms": 184.18060400011018,
+        "maxMs": 184.18060400011018
+      },
+      "hiddenCancellation": true,
+      "cacheBytes": 57882741,
+      "nodePeakRssBytes": 429973504,
+      "nativePeakRssBytes": 5279744,
+      "nativeRequests": 547,
+      "transportBytes": 1139764125,
+      "nodeCpuMicroseconds": {
+        "user": 26986377,
+        "system": 1591392
+      },
+      "overviewLevel": 4,
+      "rawAndHotIdentical": true,
+      "usage": {
+        "views": 0,
+        "bytes": 5211675,
+        "tiles": 3,
+        "pending": 0,
+        "overviewBytes": 0,
+        "timings": {
+          "count": 55,
+          "windowCount": 55,
+          "p50Ms": 128.13179200002924,
+          "p95Ms": 228.73031000001356,
+          "p99Ms": 35204.52283899998,
+          "maxMs": 35204.52283899998
+        },
+        "projectionBytes": 157576
+      }
+    },
+    {
+      "rate": 48000,
+      "durationSeconds": 7200,
+      "fftSize": 2048,
+      "fixtureFrames": "345600000",
+      "fixtureBytes": 1382400044,
+      "fixtureSha256": "4d316216b0098f5b9f0ca84e6dd0ffbce520bcced0a34a772f5ae4bdc937fc78",
+      "generationAndHashMs": 1718.1749080000445,
+      "coldMs": 256788.209792,
+      "hot": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 2.7722500000381842,
+        "p95Ms": 5.606773000094108,
+        "p99Ms": 6.205169999971986,
+        "maxMs": 6.205169999971986
+      },
+      "seek": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 67.6899239999475,
+        "p95Ms": 94.19245099998079,
+        "p99Ms": 98.63094099995214,
+        "maxMs": 98.63094099995214
+      },
+      "rawHover": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 0.027701999992132187,
+        "p95Ms": 0.043775000027380884,
+        "p99Ms": 0.05130599997937679,
+        "maxMs": 0.05130599997937679
+      },
+      "alternatingSources": {
+        "count": 6,
+        "windowCount": 6,
+        "p50Ms": 59.631263000075705,
+        "p95Ms": 77.98132999998052,
+        "p99Ms": 77.98132999998052,
+        "maxMs": 77.98132999998052
+      },
+      "hiddenCancellation": true,
+      "cacheBytes": 80334532,
+      "nodePeakRssBytes": 337842176,
+      "nativePeakRssBytes": 2404352,
+      "nativeRequests": 10662,
+      "transportBytes": 2798416575,
+      "nodeCpuMicroseconds": {
+        "user": 203193587,
+        "system": 14245091
+      },
+      "overviewLevel": 9,
+      "rawAndHotIdentical": true,
+      "usage": {
+        "views": 0,
+        "bytes": 1005769,
+        "tiles": 4,
+        "pending": 0,
+        "overviewBytes": 0,
+        "timings": {
+          "count": 55,
+          "windowCount": 55,
+          "p50Ms": 53.76529200002551,
+          "p95Ms": 94.10511200001929,
+          "p99Ms": 256788.1185959999,
+          "maxMs": 256788.1185959999
+        },
+        "projectionBytes": 186340
+      }
+    },
+    {
+      "rate": 48000,
+      "durationSeconds": 7200,
+      "fftSize": 16384,
+      "fixtureFrames": "345600000",
+      "fixtureBytes": 1382400044,
+      "fixtureSha256": "4d316216b0098f5b9f0ca84e6dd0ffbce520bcced0a34a772f5ae4bdc937fc78",
+      "generationAndHashMs": 1718.1749080000445,
+      "coldMs": 499262.06637699995,
+      "hot": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 3.1797009999863803,
+        "p95Ms": 5.040248000063002,
+        "p99Ms": 10.568350000074133,
+        "maxMs": 10.568350000074133
+      },
+      "seek": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 172.34213800006546,
+        "p95Ms": 210.57242699991912,
+        "p99Ms": 230.14758900017478,
+        "maxMs": 230.14758900017478
+      },
+      "rawHover": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 0.026640000054612756,
+        "p95Ms": 0.02832199982367456,
+        "p99Ms": 0.032177000073716044,
+        "maxMs": 0.032177000073716044
+      },
+      "alternatingSources": {
+        "count": 6,
+        "windowCount": 6,
+        "p50Ms": 118.24289300013334,
+        "p95Ms": 137.5530419999268,
+        "p99Ms": 137.5530419999268,
+        "maxMs": 137.5530419999268
+      },
+      "hiddenCancellation": true,
+      "cacheBytes": 100365982,
+      "nodePeakRssBytes": 434831360,
+      "nativePeakRssBytes": 5283840,
+      "nativeRequests": 5697,
+      "transportBytes": 11945580301,
+      "nodeCpuMicroseconds": {
+        "user": 359225515,
+        "system": 18695565
+      },
+      "overviewLevel": 8,
+      "rawAndHotIdentical": true,
+      "usage": {
+        "views": 0,
+        "bytes": 3638315,
+        "tiles": 2,
+        "pending": 0,
+        "overviewBytes": 0,
+        "timings": {
+          "count": 55,
+          "windowCount": 55,
+          "p50Ms": 116.45552999991924,
+          "p95Ms": 210.4851079999935,
+          "p99Ms": 499261.97788599995,
+          "maxMs": 499261.97788599995
+        },
+        "projectionBytes": 125892
+      }
+    },
+    {
+      "rate": 96000,
+      "durationSeconds": 30,
+      "fftSize": 2048,
+      "fixtureFrames": "2880000",
+      "fixtureBytes": 11520044,
+      "fixtureSha256": "9b59682d7f1a7c5636bacaaef7cc0411cbd4ce5f03f1f58d2092127aa40bc427",
+      "generationAndHashMs": 27.069439999992028,
+      "coldMs": 1899.668874999974,
+      "hot": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 4.5034819999709725,
+        "p95Ms": 5.295123999938369,
+        "p99Ms": 7.742000000085682,
+        "maxMs": 7.742000000085682
+      },
+      "seek": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 1.5472630001604557,
+        "p95Ms": 5.392399000003934,
+        "p99Ms": 6.832773000001907,
+        "maxMs": 6.832773000001907
+      },
+      "rawHover": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 0.008192999986931682,
+        "p95Ms": 0.013500000117346644,
+        "p99Ms": 0.015153000131249428,
+        "maxMs": 0.015153000131249428
+      },
+      "alternatingSources": {
+        "count": 6,
+        "windowCount": 6,
+        "p50Ms": 91.11141599994153,
+        "p95Ms": 122.52802700013854,
+        "p99Ms": 122.52802700013854,
+        "maxMs": 122.52802700013854
+      },
+      "hiddenCancellation": true,
+      "cacheBytes": 3084706,
+      "nodePeakRssBytes": 331784192,
+      "nativePeakRssBytes": 2404352,
+      "nativeRequests": 130,
+      "transportBytes": 33837410,
+      "nodeCpuMicroseconds": {
+        "user": 2240542,
+        "system": 116669
+      },
+      "overviewLevel": 2,
+      "rawAndHotIdentical": true,
+      "usage": {
+        "views": 0,
+        "bytes": 1798030,
+        "tiles": 7,
+        "pending": 0,
+        "overviewBytes": 0,
+        "timings": {
+          "count": 55,
+          "windowCount": 55,
+          "p50Ms": 4.423012999817729,
+          "p95Ms": 111.44343399978243,
+          "p99Ms": 1899.556338999886,
+          "maxMs": 1899.556338999886
+        },
+        "projectionBytes": 308212
+      }
+    },
+    {
+      "rate": 96000,
+      "durationSeconds": 30,
+      "fftSize": 16384,
+      "fixtureFrames": "2880000",
+      "fixtureBytes": 11520044,
+      "fixtureSha256": "9b59682d7f1a7c5636bacaaef7cc0411cbd4ce5f03f1f58d2092127aa40bc427",
+      "generationAndHashMs": 27.069439999992028,
+      "coldMs": 1615.9117050000932,
+      "hot": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 0.9802520000375807,
+        "p95Ms": 1.1699630001094192,
+        "p99Ms": 1.3521439998876303,
+        "maxMs": 1.3521439998876303
+      },
+      "seek": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 0.6904430000577122,
+        "p95Ms": 1.16358399996534,
+        "p99Ms": 3.8624530001543462,
+        "maxMs": 3.8624530001543462
+      },
+      "rawHover": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 0.007390999933704734,
+        "p95Ms": 0.01412099995650351,
+        "p99Ms": 0.015263000037521124,
+        "maxMs": 0.015263000037521124
+      },
+      "alternatingSources": {
+        "count": 6,
+        "windowCount": 6,
+        "p50Ms": 157.55801100004464,
+        "p95Ms": 171.9280649998691,
+        "p99Ms": 171.9280649998691,
+        "maxMs": 171.9280649998691
+      },
+      "hiddenCancellation": true,
+      "cacheBytes": 2097600,
+      "nodePeakRssBytes": 373493760,
+      "nativePeakRssBytes": 5521408,
+      "nativeRequests": 42,
+      "transportBytes": 78001084,
+      "nodeCpuMicroseconds": {
+        "user": 1767059,
+        "system": 131036
+      },
+      "overviewLevel": 0,
+      "rawAndHotIdentical": true,
+      "usage": {
+        "views": 0,
+        "bytes": 4851172,
+        "tiles": 3,
+        "pending": 0,
+        "overviewBytes": 0,
+        "timings": {
+          "count": 55,
+          "windowCount": 55,
+          "p50Ms": 0.8995920000597835,
+          "p95Ms": 169.73757499991916,
+          "p99Ms": 1615.8468989999965,
+          "maxMs": 1615.8468989999965
+        },
+        "projectionBytes": 148572
+      }
+    },
+    {
+      "rate": 96000,
+      "durationSeconds": 600,
+      "fftSize": 2048,
+      "fixtureFrames": "57600000",
+      "fixtureBytes": 230400044,
+      "fixtureSha256": "9e55d507c2af4e6367b2744e0f75d66668a2ef7abf66cf4020c68d8c0ac43933",
+      "generationAndHashMs": 292.37299499986693,
+      "coldMs": 38506.83803600003,
+      "hot": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 3.3749609999358654,
+        "p95Ms": 4.145152000011876,
+        "p99Ms": 5.56279299990274,
+        "maxMs": 5.56279299990274
+      },
+      "seek": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 104.65831599989906,
+        "p95Ms": 127.38319600000978,
+        "p99Ms": 128.4363069999963,
+        "maxMs": 128.4363069999963
+      },
+      "rawHover": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 0.024326000129804015,
+        "p95Ms": 0.026830000104382634,
+        "p99Ms": 0.027209999971091747,
+        "maxMs": 0.027209999971091747
+      },
+      "alternatingSources": {
+        "count": 6,
+        "windowCount": 6,
+        "p50Ms": 108.57084900001064,
+        "p95Ms": 175.190316000022,
+        "p99Ms": 175.190316000022,
+        "maxMs": 175.190316000022
+      },
+      "hiddenCancellation": true,
+      "cacheBytes": 13451418,
+      "nodePeakRssBytes": 337641472,
+      "nativePeakRssBytes": 2404352,
+      "nativeRequests": 1947,
+      "transportBytes": 510649107,
+      "nodeCpuMicroseconds": {
+        "user": 34491711,
+        "system": 2177762
+      },
+      "overviewLevel": 6,
+      "rawAndHotIdentical": true,
+      "usage": {
+        "views": 0,
+        "bytes": 1777525,
+        "tiles": 7,
+        "pending": 0,
+        "overviewBytes": 0,
+        "timings": {
+          "count": 55,
+          "windowCount": 55,
+          "p50Ms": 92.2883350001648,
+          "p95Ms": 158.26572600007057,
+          "p99Ms": 38506.75175799988,
+          "maxMs": 38506.75175799988
+        },
+        "projectionBytes": 308192
+      }
+    },
+    {
+      "rate": 96000,
+      "durationSeconds": 600,
+      "fftSize": 16384,
+      "fixtureFrames": "57600000",
+      "fixtureBytes": 230400044,
+      "fixtureSha256": "9e55d507c2af4e6367b2744e0f75d66668a2ef7abf66cf4020c68d8c0ac43933",
+      "generationAndHashMs": 292.37299499986693,
+      "coldMs": 52414.4953999999,
+      "hot": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 8.802895999979228,
+        "p95Ms": 14.816778000211343,
+        "p99Ms": 48.962838999927044,
+        "maxMs": 48.962838999927044
+      },
+      "seek": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 291.84536199993454,
+        "p95Ms": 332.5463419998996,
+        "p99Ms": 399.6694529999513,
+        "maxMs": 399.6694529999513
+      },
+      "rawHover": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 0.027190000051632524,
+        "p95Ms": 0.039367999881505966,
+        "p99Ms": 0.06266299984417856,
+        "maxMs": 0.06266299984417856
+      },
+      "alternatingSources": {
+        "count": 6,
+        "windowCount": 6,
+        "p50Ms": 184.64638100005686,
+        "p95Ms": 189.66155299986713,
+        "p99Ms": 189.66155299986713,
+        "maxMs": 189.66155299986713
+      },
+      "hiddenCancellation": true,
+      "cacheBytes": 27786146,
+      "nodePeakRssBytes": 416473088,
+      "nativePeakRssBytes": 5525504,
+      "nativeRequests": 540,
+      "transportBytes": 1127146296,
+      "nodeCpuMicroseconds": {
+        "user": 34480445,
+        "system": 1916497
+      },
+      "overviewLevel": 4,
+      "rawAndHotIdentical": true,
+      "usage": {
+        "views": 0,
+        "bytes": 3408904,
+        "tiles": 2,
+        "pending": 0,
+        "overviewBytes": 0,
+        "timings": {
+          "count": 55,
+          "windowCount": 55,
+          "p50Ms": 176.65481800003909,
+          "p95Ms": 332.45129100000486,
+          "p99Ms": 52414.387540000025,
+          "maxMs": 52414.387540000025
+        },
+        "projectionBytes": 118696
+      }
+    },
+    {
+      "rate": 96000,
+      "durationSeconds": 7200,
+      "fftSize": 2048,
+      "fixtureFrames": "691200000",
+      "fixtureBytes": 2764800044,
+      "fixtureSha256": "008a7bbaf03c2b97a6bfe998002facbb915f4989b1478edae2c48357b2d095eb",
+      "generationAndHashMs": 5426.441015999997,
+      "coldMs": 537986.971746,
+      "hot": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 2.578832000028342,
+        "p95Ms": 4.388395000016317,
+        "p99Ms": 4.469164000125602,
+        "maxMs": 4.469164000125602
+      },
+      "seek": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 111.57342000002973,
+        "p95Ms": 119.89891099999659,
+        "p99Ms": 125.0824530001264,
+        "maxMs": 125.0824530001264
+      },
+      "rawHover": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 0.025718000018969178,
+        "p95Ms": 0.029113000025972724,
+        "p99Ms": 0.05171600007452071,
+        "maxMs": 0.05171600007452071
+      },
+      "alternatingSources": {
+        "count": 6,
+        "windowCount": 6,
+        "p50Ms": 106.02688899985515,
+        "p95Ms": 121.75627799984068,
+        "p99Ms": 121.75627799984068,
+        "maxMs": 121.75627799984068
+      },
+      "hiddenCancellation": true,
+      "cacheBytes": 42536932,
+      "nodePeakRssBytes": 339480576,
+      "nativePeakRssBytes": 2404352,
+      "nativeRequests": 21296,
+      "transportBytes": 5589569383,
+      "nodeCpuMicroseconds": {
+        "user": 466482299,
+        "system": 30577174
+      },
+      "overviewLevel": 10,
+      "rawAndHotIdentical": true,
+      "usage": {
+        "views": 0,
+        "bytes": 1761121,
+        "tiles": 7,
+        "pending": 0,
+        "overviewBytes": 0,
+        "timings": {
+          "count": 55,
+          "windowCount": 55,
+          "p50Ms": 104.82978499983437,
+          "p95Ms": 121.64642499992624,
+          "p99Ms": 537986.8832349998,
+          "maxMs": 537986.8832349998
+        },
+        "projectionBytes": 308176
+      }
+    },
+    {
+      "rate": 96000,
+      "durationSeconds": 7200,
+      "fftSize": 16384,
+      "fixtureFrames": "691200000",
+      "fixtureBytes": 2764800044,
+      "fixtureSha256": "008a7bbaf03c2b97a6bfe998002facbb915f4989b1478edae2c48357b2d095eb",
+      "generationAndHashMs": 5426.441015999997,
+      "coldMs": 473483.59915399994,
+      "hot": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 3.5536070000380278,
+        "p95Ms": 5.231904999818653,
+        "p99Ms": 5.884647000115365,
+        "maxMs": 5.884647000115365
+      },
+      "seek": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 174.4952770001255,
+        "p95Ms": 196.57061300007626,
+        "p99Ms": 199.93159499997273,
+        "maxMs": 199.93159499997273
+      },
+      "rawHover": {
+        "count": 24,
+        "windowCount": 24,
+        "p50Ms": 0.026498999912291765,
+        "p95Ms": 0.049362999852746725,
+        "p99Ms": 0.08385400008410215,
+        "maxMs": 0.08385400008410215
+      },
+      "alternatingSources": {
+        "count": 6,
+        "windowCount": 6,
+        "p50Ms": 123.81436700001359,
+        "p95Ms": 134.78422700008377,
+        "p99Ms": 134.78422700008377,
+        "maxMs": 134.78422700008377
+      },
+      "hiddenCancellation": true,
+      "cacheBytes": 86345304,
+      "nodePeakRssBytes": 429166592,
+      "nativePeakRssBytes": 5521408,
+      "nativeRequests": 5697,
+      "transportBytes": 11947645000,
+      "nodeCpuMicroseconds": {
+        "user": 395990623,
+        "system": 19821381
+      },
+      "overviewLevel": 8,
+      "rawAndHotIdentical": true,
+      "usage": {
+        "views": 0,
+        "bytes": 3933272,
+        "tiles": 2,
+        "pending": 0,
+        "overviewBytes": 0,
+        "timings": {
+          "count": 55,
+          "windowCount": 55,
+          "p50Ms": 121.1742179999128,
+          "p95Ms": 196.47386900009587,
+          "p99Ms": 473483.5003869999,
+          "maxMs": 473483.5003869999
+        },
+        "projectionBytes": 118760
+      }
+    }
+  ],
+  "provenance": {
+    "kind": "Local worktree production-service snapshot during implementation, with concurrent validation; not an exact final-source or isolated-device benchmark",
+    "harnessRuntimeSha256": "8ee583c22e91e90dd3c3eac8486a78ab463b965e0aa3c683285aad8e7a616c9f",
+    "probeSha256": "e8928624660da9a00c6cd2a4597f56453cef71f6130482d5e4fa00e87fbbf453",
+    "subsequentChanges": "Persistent-root registry bookkeeping and separate UI/process/report source guards were completed after this benchmark started; peak pyramid/FFT source is unchanged.",
+    "comparisonMeaning": "rawAndHotIdentical is the historical harness field: it compares the first generated overview projection with subsequent hot projections, not an independent full-resolution FFT bypass."
+  }
+}

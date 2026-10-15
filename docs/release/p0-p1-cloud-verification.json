@@ -1,0 +1,363 @@
+{
+  "schemaVersion": 1,
+  "checkedAt": "2026-10-11T18:00:47.729110+00:00",
+  "status": "pass",
+  "scope": "R83-01 through R83-08 cloud implementation and scoped evidence; synthetic/offline and no-card checks are not physical-device or package acceptance.",
+  "sourceVersion": "0.1.0-preview.32",
+  "implementationCommit": "4fd94013701d7a4c99a822dacca279ba73f405d8",
+  "ci": {
+    "runId": 38160177617,
+    "attempt": 1,
+    "url": "https://github.com/Sceneryyyy/Trace/actions/runs/38160177617",
+    "conclusion": "success",
+    "testedMergeCommit": "b31fcb9c2351afdcb40b73460e7847bd8f88ea46",
+    "testedTree": "7b246b9b7ee3e1cd8e08a7376dcac62b81dae640",
+    "sameTreeAsImplementationCommit": true,
+    "jobs": [
+      {
+        "name": "windows",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/Sceneryyyy/Trace/actions/runs/38160177617/job/114531311238"
+      },
+      {
+        "name": "portable",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/Sceneryyyy/Trace/actions/runs/38160177617/job/114531311400"
+      },
+      {
+        "name": "codec",
+        "status": "completed",
+        "conclusion": "skipped",
+        "url": "https://github.com/Sceneryyyy/Trace/actions/runs/38160177617/job/114531312252"
+      }
+    ]
+  },
+  "windows": {
+    "checkedCommit": "b31fcb9c2351afdcb40b73460e7847bd8f88ea46",
+    "sourceDirty": false,
+    "tests": [
+      {
+        "tier": "portable",
+        "files": 55,
+        "counts": {
+          "tests": 286,
+          "suites": 0,
+          "pass": 286,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0,
+          "duration_ms": 20962.6459
+        },
+        "sha256": "af494d151f8b818b08b1d75c60b3c43f3a89615af0e366d89176ce8d96cd053a",
+        "outputSha256": "66ab3002e4797641e79139b61b06006b463d770470c17fb9da00f7244b9fcb18"
+      },
+      {
+        "tier": "native",
+        "files": 12,
+        "counts": {
+          "tests": 67,
+          "suites": 0,
+          "pass": 67,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0,
+          "duration_ms": 98478.0918
+        },
+        "sha256": "915f0bf8a744f769d1b664070b6f44036da37322d4c119994ea2c83161c67174",
+        "outputSha256": "a476ffccc2d57065444de27af949aecf59994e6b356556e60f842a77938707b5"
+      }
+    ],
+    "ctest": {
+      "sha256": "a95455cb2ac5c25c5882f5af05ade4c333df3d520a63f2694ed386640c0d9b4e",
+      "tests": 19,
+      "passed": 19,
+      "failed": 0
+    },
+    "ebu": {
+      "status": "pass",
+      "summary": {
+        "passed": 68,
+        "failed": 0,
+        "excluded": 2,
+        "supported": 68,
+        "checks": {
+          "total": 112,
+          "passed": 112,
+          "failed": 0
+        },
+        "invariants": {
+          "total": 204,
+          "passed": 204,
+          "failed": 0
+        },
+        "supportedPassRate": 1
+      },
+      "sha256": "e3d7ed0888907a0f27d1ca8c0aac19b9fb0ed1c89495240c71bb96275f7b0f12",
+      "measurementConfigId": "trace-meter-v5-ebur128-1.2.6-lra10hz-msi100hz-tpaligned"
+    },
+    "security": {
+      "sha256": "4617b8ed284dd78f8a1e3c7ecc5278ae253967510bd6aa609c45a3b46faa7e9d",
+      "commit": "b31fcb9c2351afdcb40b73460e7847bd8f88ea46",
+      "sourceDirty": false,
+      "packageLockSha256": "d12bdff4457f1c06fa025cdd5b52c88e8a0b4c69d492ccf9bf171313fd679065",
+      "status": "pass",
+      "checks": [
+        {
+          "command": "npm audit --json",
+          "exitCode": 0,
+          "counts": {
+            "info": 0,
+            "low": 0,
+            "moderate": 0,
+            "high": 0,
+            "critical": 0,
+            "total": 0
+          },
+          "reportSha256": "c32ca030b773f94f2850f3e61a8a942058b82cd928537441fbaf310ea318997a"
+        },
+        {
+          "command": "npm audit --omit=dev --json",
+          "exitCode": 0,
+          "counts": {
+            "info": 0,
+            "low": 0,
+            "moderate": 0,
+            "high": 0,
+            "critical": 0,
+            "total": 0
+          },
+          "reportSha256": "c32ca030b773f94f2850f3e61a8a942058b82cd928537441fbaf310ea318997a"
+        }
+      ]
+    },
+    "verification": {
+      "sha256": "df7ce13c7532719afd1b805d9e3aacc0876122815f0ecdbcafa0865dd9ac56ba",
+      "commit": "b31fcb9c2351afdcb40b73460e7847bd8f88ea46",
+      "sourceDirty": false,
+      "platform": "win32",
+      "arch": "x64",
+      "status": "pass",
+      "checks": [
+        {
+          "command": "npm run build:trace-engine",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "command": "npm run check:security",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "command": "npm run typecheck",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "command": "npm run test:trace",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "command": "npm run build:trace",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "command": "npm run test:trace-native",
+          "exitCode": 0,
+          "status": "pass"
+        }
+      ]
+    }
+  },
+  "linux": {
+    "checkedCommit": "b31fcb9c2351afdcb40b73460e7847bd8f88ea46",
+    "sourceDirty": false,
+    "tests": [
+      {
+        "tier": "portable",
+        "files": 55,
+        "counts": {
+          "tests": 286,
+          "suites": 0,
+          "pass": 286,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0,
+          "duration_ms": 23772.3895
+        },
+        "sha256": "bc59db5e849d6b80c3d9918a9935d02654dc3b0afe88769775051bd1e453b11b",
+        "outputSha256": "eb3725a168643607821896be746ae1be2839ee29033e62ddee6f34b9b3aa802f"
+      }
+    ],
+    "ctest": {
+      "core": {
+        "sha256": "7033809c57b9ec06860b4512616f982bcca50f2ede62a25b1360122674584133",
+        "tests": 8,
+        "failures": 0,
+        "disabled": 0,
+        "seconds": 382
+      },
+      "ebu": {
+        "sha256": "8b17be5791710ebc20fb5e2aa22ab8f17d40f68ee636133b8fb110968227ea6b",
+        "tests": 1,
+        "failures": 0,
+        "disabled": 0,
+        "seconds": 800
+      }
+    },
+    "ebu": {
+      "status": "pass",
+      "summary": {
+        "passed": 68,
+        "failed": 0,
+        "excluded": 2,
+        "supported": 68,
+        "checks": {
+          "total": 112,
+          "passed": 112,
+          "failed": 0
+        },
+        "invariants": {
+          "total": 204,
+          "passed": 204,
+          "failed": 0
+        },
+        "supportedPassRate": 1
+      },
+      "sha256": "bdf96ea7dc6448a91219b23d0caa24b813aa48eca5bccecb2dc79360916e3b54",
+      "measurementConfigId": "trace-meter-v5-ebur128-1.2.6-lra10hz-msi100hz-tpaligned"
+    },
+    "security": {
+      "sha256": "4617b8ed284dd78f8a1e3c7ecc5278ae253967510bd6aa609c45a3b46faa7e9d",
+      "commit": "b31fcb9c2351afdcb40b73460e7847bd8f88ea46",
+      "sourceDirty": false,
+      "packageLockSha256": "d12bdff4457f1c06fa025cdd5b52c88e8a0b4c69d492ccf9bf171313fd679065",
+      "status": "pass",
+      "checks": [
+        {
+          "command": "npm audit --json",
+          "exitCode": 0,
+          "counts": {
+            "info": 0,
+            "low": 0,
+            "moderate": 0,
+            "high": 0,
+            "critical": 0,
+            "total": 0
+          },
+          "reportSha256": "c32ca030b773f94f2850f3e61a8a942058b82cd928537441fbaf310ea318997a"
+        },
+        {
+          "command": "npm audit --omit=dev --json",
+          "exitCode": 0,
+          "counts": {
+            "info": 0,
+            "low": 0,
+            "moderate": 0,
+            "high": 0,
+            "critical": 0,
+            "total": 0
+          },
+          "reportSha256": "c32ca030b773f94f2850f3e61a8a942058b82cd928537441fbaf310ea318997a"
+        }
+      ]
+    },
+    "verification": null
+  },
+  "portableExtraSteps": [
+    {
+      "name": "Independent pinned integrated loudness comparison",
+      "conclusion": "success"
+    },
+    {
+      "name": "Actual React subscription regression in Chromium",
+      "conclusion": "success"
+    },
+    {
+      "name": "Renderer interactions with simulated IPC",
+      "conclusion": "success"
+    },
+    {
+      "name": "P0 and P1 controls and chart conversion in Chromium",
+      "conclusion": "success"
+    }
+  ],
+  "artifacts": [
+    {
+      "id": 11710820325,
+      "name": "trace-windows-evidence",
+      "size_in_bytes": 19741,
+      "digest": "sha256:e3509bbed76b34009c52a5bd20c1246163021a18bb7cdb91ce48e0b0816eeb06",
+      "expired": false
+    },
+    {
+      "id": 11710477920,
+      "name": "trace-portable-evidence",
+      "size_in_bytes": 17239,
+      "digest": "sha256:8d2ca7b809bd71b298e8e4efc2e5e9bb8e0775a58983e05564848b67f71dcb55",
+      "expired": false
+    }
+  ],
+  "evidenceAccess": "Artifact metadata and SHA-256-reassembled CI annotations read; artifact payload download returned HTTP 403 and was not read. Independent I and UI JSON were read locally; remote execution is evidenced by successful steps.",
+  "local": {
+    "portableTests": 286,
+    "portableFailures": 0,
+    "releaseCTest": {
+      "passed": 9,
+      "total": 9
+    },
+    "sanitizedCTest": {
+      "passed": 9,
+      "total": 9,
+      "seconds": 1201.41
+    },
+    "ui": {
+      "scope": "Actual React widgets, native browser SVG-to-PNG conversion and simulated IPC; no Windows main-process, native audio or device acceptance",
+      "checks": [
+        "Smoothing and tilt apply through actual versioned controls",
+        "Optional A/B loudness matching command and attenuation readout",
+        "Add/edit marker at exact source frame",
+        "Marker jump navigates back to analysis",
+        "Switching sources hides other identity markers; reopening restores them",
+        "Both graph kinds export SVG and browser-rendered 1000 x 620 PNG",
+        "A delayed marker mutation never publishes into a different source",
+        "Remove marker through controlled request"
+      ],
+      "status": "pass"
+    },
+    "longFileCases": 18,
+    "longFileEvidence": "../research/2026-10-11-long-file-benchmark.json",
+    "independentICases": 8,
+    "independentIMaxAbsDeltaLU": 0.08483435345283397,
+    "independentIEvidence": "../research/2026-10-11-independent-i-comparison.json",
+    "portableImplementationCommit": "117212828631d1f443451f2b9a0202af8a2f29c4",
+    "finalImportReferenceTests": 19,
+    "note": "Local full portable suite preceded the final import continuity field fix; the targeted import/reference suite and type/build passed after it. Final-source full portable success on both OSes is in the CI records."
+  },
+  "unverifiedPhysical": [
+    "real WASAPI and 96 kHz audio device",
+    "2-hour physical recording",
+    "real slow/full disk and power loss",
+    "device/driver reconnection and GPU/DPI",
+    "audition transition and native save dialog",
+    "new package and signed distribution"
+  ],
+  "excludedP2": [
+    "R83-09",
+    "R83-10"
+  ],
+  "supersededRuns": [
+    38158628279,
+    38158670888,
+    38158672103,
+    38158898421,
+    38159444931
+  ]
+}

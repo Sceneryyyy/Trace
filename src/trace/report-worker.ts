@@ -1,3 +1,5 @@
+// Async work must not outlive its owner; Windows Job Objects also stop blocked native work.
+process.once('disconnect',()=>process.exit(1))
 import {buildReport} from './reportBuilder'
 import type {ReportRequest} from './reportTypes'
 let cancelled=false,started=false

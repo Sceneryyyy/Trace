@@ -35,6 +35,17 @@ int main(){
             uint64_t total=0;for(const auto& p:s.segments)total+=Trace::inspectWav(p.path).frames;REQUIRE(total==48000);
             REQUIRE(s.waveform.size()<=901&&s.loudness.size()<=601);
         }},
+        {"frozen take retains estimated silence in exact PCM ranges",[&]{
+            Trace::Recorder r;r.prepare(options(root,"quality"));
+            r.push(block(0,480));auto estimated=block(480,480,0);estimated.flags=Trace::EstimatedSilence;r.push(estimated);r.push(block(960,480));
+            r.requestStop();r.boundary();r.finishAfterProducerStopped();
+            const auto snapshot=r.snapshot();REQUIRE(snapshot.phase==Trace::RecordPhase::Complete);REQUIRE(snapshot.estimatedFrames==480);
+            const auto clip=r.freezeReplay();REQUIRE(clip&&clip->frames()==1440);
+            const auto full=clip->quality(0,1440),clean=clip->quality(0,480),partial=clip->quality(720,1200);
+            REQUIRE(full.estimatedFrames==480&&full.gapFrames==0&&!full.unknown);
+            REQUIRE(clean.estimatedFrames==0&&!clean.unknown);REQUIRE(partial.estimatedFrames==240);
+            for(size_t i=480*2;i<960*2;++i)REQUIRE(clip->samples[i]==0);
+        }},
         {"slow writer fails explicitly without overwriting its queued prefix",[&]{
             Trace::Recorder r;auto o=options(root,"slow");o.writerDelayMs=2;r.prepare(o);
             const auto start=std::chrono::steady_clock::now();
@@ -46,6 +57,19 @@ int main(){
             Trace::WavReader reader(s.segments[0].path);std::vector<float> values(4096);uint64_t frame=0;
             for(;;){auto count=reader.read(values.data(),2048);if(!count)break;for(uint32_t i=0;i<count;++i)REQUIRE(values[i*2]==static_cast<float>((frame+i)/480)*0.0001f);frame+=count;}
             REQUIRE(frame==s.writtenFrames);
+        }},
+        {"slow checkpoint never blocks producer and congestion keeps exact usable prefix",[&]{
+            Trace::Recorder r;auto o=options(root,"slow-flush");o.flushDelayMs=250;r.prepare(o);
+            for(unsigned i=0;i<100;++i)r.push(block(i*480,480));
+            const auto deadline=std::chrono::steady_clock::now()+std::chrono::seconds(5);
+            while(r.snapshot().writtenFrames<48000&&std::chrono::steady_clock::now()<deadline)std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            REQUIRE(r.snapshot().writtenFrames==48000);
+            const auto start=std::chrono::steady_clock::now();
+            for(unsigned i=100;i<1100;++i)r.push(block(i*480,480));
+            const auto seconds=std::chrono::duration<double>(std::chrono::steady_clock::now()-start).count();
+            r.requestStop();r.boundary();r.finishAfterProducerStopped();const auto result=r.snapshot();
+            REQUIRE(seconds<0.5);REQUIRE(result.phase==Trace::RecordPhase::Failed&&result.error=="DISK_BACKPRESSURE");
+            REQUIRE(result.writtenFrames==result.acceptedFrames);REQUIRE(result.acceptedFrames<528000);REQUIRE(result.flushTiming.maxUs>=200000);REQUIRE(result.writeTiming.count>0);
         }},
         {"disk failure reports only complete written frames",[&]{
             Trace::Recorder r;auto o=options(root,"disk");o.format.channels=1;o.format.blockAlign=4;o.encoding=Trace::WavEncoding::Pcm24;o.wav.failAfterPayloadBytes=1501;

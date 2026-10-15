@@ -1,0 +1,372 @@
+{
+  "scope": "Linux Release GCC14; production spectral kernel, deterministic synthetic bounded PCM, 24 queries per case; not file I/O or WASAPI",
+  "before": [
+    {
+      "rate": 44100,
+      "durationSeconds": 30,
+      "fftSize": 2048,
+      "queries": 24,
+      "pcmBytes": 274432,
+      "p50Ms": 10.3971,
+      "p95Ms": 11.3433,
+      "p99Ms": 11.37
+    },
+    {
+      "rate": 44100,
+      "durationSeconds": 30,
+      "fftSize": 16384,
+      "queries": 24,
+      "pcmBytes": 575600,
+      "p50Ms": 58.468,
+      "p95Ms": 61.9164,
+      "p99Ms": 63.4552
+    },
+    {
+      "rate": 44100,
+      "durationSeconds": 600,
+      "fftSize": 2048,
+      "queries": 24,
+      "pcmBytes": 274432,
+      "p50Ms": 10.6124,
+      "p95Ms": 14.2108,
+      "p99Ms": 15.1831
+    },
+    {
+      "rate": 44100,
+      "durationSeconds": 600,
+      "fftSize": 16384,
+      "queries": 24,
+      "pcmBytes": 575600,
+      "p50Ms": 57.9913,
+      "p95Ms": 60.475,
+      "p99Ms": 62.3764
+    },
+    {
+      "rate": 44100,
+      "durationSeconds": 7200,
+      "fftSize": 2048,
+      "queries": 24,
+      "pcmBytes": 274432,
+      "p50Ms": 10.6127,
+      "p95Ms": 11.2749,
+      "p99Ms": 11.8999
+    },
+    {
+      "rate": 44100,
+      "durationSeconds": 7200,
+      "fftSize": 16384,
+      "queries": 24,
+      "pcmBytes": 575600,
+      "p50Ms": 57.866,
+      "p95Ms": 60.506,
+      "p99Ms": 62.1695
+    },
+    {
+      "rate": 48000,
+      "durationSeconds": 30,
+      "fftSize": 2048,
+      "queries": 24,
+      "pcmBytes": 274432,
+      "p50Ms": 10.3473,
+      "p95Ms": 16.3019,
+      "p99Ms": 18.6613
+    },
+    {
+      "rate": 48000,
+      "durationSeconds": 30,
+      "fftSize": 16384,
+      "queries": 24,
+      "pcmBytes": 614912,
+      "p50Ms": 57.9885,
+      "p95Ms": 61.1698,
+      "p99Ms": 61.3283
+    },
+    {
+      "rate": 48000,
+      "durationSeconds": 600,
+      "fftSize": 2048,
+      "queries": 24,
+      "pcmBytes": 274432,
+      "p50Ms": 10.6039,
+      "p95Ms": 10.9203,
+      "p99Ms": 10.9374
+    },
+    {
+      "rate": 48000,
+      "durationSeconds": 600,
+      "fftSize": 16384,
+      "queries": 24,
+      "pcmBytes": 614912,
+      "p50Ms": 61.3083,
+      "p95Ms": 66.7957,
+      "p99Ms": 67.1438
+    },
+    {
+      "rate": 48000,
+      "durationSeconds": 7200,
+      "fftSize": 2048,
+      "queries": 24,
+      "pcmBytes": 274432,
+      "p50Ms": 10.7924,
+      "p95Ms": 11.6137,
+      "p99Ms": 14.2898
+    },
+    {
+      "rate": 48000,
+      "durationSeconds": 7200,
+      "fftSize": 16384,
+      "queries": 24,
+      "pcmBytes": 614912,
+      "p50Ms": 57.1331,
+      "p95Ms": 63.9423,
+      "p99Ms": 67.4471
+    },
+    {
+      "rate": 96000,
+      "durationSeconds": 30,
+      "fftSize": 2048,
+      "queries": 24,
+      "pcmBytes": 274432,
+      "p50Ms": 10.4276,
+      "p95Ms": 10.8676,
+      "p99Ms": 11.5474
+    },
+    {
+      "rate": 96000,
+      "durationSeconds": 30,
+      "fftSize": 16384,
+      "queries": 24,
+      "pcmBytes": 1098752,
+      "p50Ms": 63.3942,
+      "p95Ms": 69.2398,
+      "p99Ms": 69.4721
+    },
+    {
+      "rate": 96000,
+      "durationSeconds": 600,
+      "fftSize": 2048,
+      "queries": 24,
+      "pcmBytes": 274432,
+      "p50Ms": 10.4109,
+      "p95Ms": 10.7316,
+      "p99Ms": 11.1556
+    },
+    {
+      "rate": 96000,
+      "durationSeconds": 600,
+      "fftSize": 16384,
+      "queries": 24,
+      "pcmBytes": 1098752,
+      "p50Ms": 61.8002,
+      "p95Ms": 68.4735,
+      "p99Ms": 70.1374
+    },
+    {
+      "rate": 96000,
+      "durationSeconds": 7200,
+      "fftSize": 2048,
+      "queries": 24,
+      "pcmBytes": 274432,
+      "p50Ms": 10.4915,
+      "p95Ms": 10.7625,
+      "p99Ms": 10.7752
+    },
+    {
+      "rate": 96000,
+      "durationSeconds": 7200,
+      "fftSize": 16384,
+      "queries": 24,
+      "pcmBytes": 1098752,
+      "p50Ms": 61.4044,
+      "p95Ms": 64.1994,
+      "p99Ms": 67.5131
+    }
+  ],
+  "after": [
+    {
+      "rate": 44100,
+      "durationSeconds": 30,
+      "fftSize": 2048,
+      "queries": 24,
+      "pcmBytes": 274432,
+      "p50Ms": 3.68202,
+      "p95Ms": 3.8942,
+      "p99Ms": 3.93239
+    },
+    {
+      "rate": 44100,
+      "durationSeconds": 30,
+      "fftSize": 16384,
+      "queries": 24,
+      "pcmBytes": 575600,
+      "p50Ms": 37.3049,
+      "p95Ms": 38.3194,
+      "p99Ms": 38.7369
+    },
+    {
+      "rate": 44100,
+      "durationSeconds": 600,
+      "fftSize": 2048,
+      "queries": 24,
+      "pcmBytes": 274432,
+      "p50Ms": 3.60957,
+      "p95Ms": 3.90875,
+      "p99Ms": 3.96539
+    },
+    {
+      "rate": 44100,
+      "durationSeconds": 600,
+      "fftSize": 16384,
+      "queries": 24,
+      "pcmBytes": 575600,
+      "p50Ms": 37.291,
+      "p95Ms": 45.9496,
+      "p99Ms": 48.4672
+    },
+    {
+      "rate": 44100,
+      "durationSeconds": 7200,
+      "fftSize": 2048,
+      "queries": 24,
+      "pcmBytes": 274432,
+      "p50Ms": 3.58485,
+      "p95Ms": 3.78654,
+      "p99Ms": 3.78836
+    },
+    {
+      "rate": 44100,
+      "durationSeconds": 7200,
+      "fftSize": 16384,
+      "queries": 24,
+      "pcmBytes": 575600,
+      "p50Ms": 37.2035,
+      "p95Ms": 37.9603,
+      "p99Ms": 41.5039
+    },
+    {
+      "rate": 48000,
+      "durationSeconds": 30,
+      "fftSize": 2048,
+      "queries": 24,
+      "pcmBytes": 274432,
+      "p50Ms": 3.60401,
+      "p95Ms": 3.81342,
+      "p99Ms": 3.90093
+    },
+    {
+      "rate": 48000,
+      "durationSeconds": 30,
+      "fftSize": 16384,
+      "queries": 24,
+      "pcmBytes": 614912,
+      "p50Ms": 36.7944,
+      "p95Ms": 37.6908,
+      "p99Ms": 37.7331
+    },
+    {
+      "rate": 48000,
+      "durationSeconds": 600,
+      "fftSize": 2048,
+      "queries": 24,
+      "pcmBytes": 274432,
+      "p50Ms": 3.61257,
+      "p95Ms": 3.78197,
+      "p99Ms": 3.94281
+    },
+    {
+      "rate": 48000,
+      "durationSeconds": 600,
+      "fftSize": 16384,
+      "queries": 24,
+      "pcmBytes": 614912,
+      "p50Ms": 37.251,
+      "p95Ms": 39.6023,
+      "p99Ms": 41.7054
+    },
+    {
+      "rate": 48000,
+      "durationSeconds": 7200,
+      "fftSize": 2048,
+      "queries": 24,
+      "pcmBytes": 274432,
+      "p50Ms": 3.60704,
+      "p95Ms": 3.79389,
+      "p99Ms": 4.02334
+    },
+    {
+      "rate": 48000,
+      "durationSeconds": 7200,
+      "fftSize": 16384,
+      "queries": 24,
+      "pcmBytes": 614912,
+      "p50Ms": 37.4924,
+      "p95Ms": 39.486,
+      "p99Ms": 40.5405
+    },
+    {
+      "rate": 96000,
+      "durationSeconds": 30,
+      "fftSize": 2048,
+      "queries": 24,
+      "pcmBytes": 274432,
+      "p50Ms": 3.73004,
+      "p95Ms": 3.95685,
+      "p99Ms": 4.00875
+    },
+    {
+      "rate": 96000,
+      "durationSeconds": 30,
+      "fftSize": 16384,
+      "queries": 24,
+      "pcmBytes": 1098752,
+      "p50Ms": 39.0988,
+      "p95Ms": 42.487,
+      "p99Ms": 45.0493
+    },
+    {
+      "rate": 96000,
+      "durationSeconds": 600,
+      "fftSize": 2048,
+      "queries": 24,
+      "pcmBytes": 274432,
+      "p50Ms": 3.94696,
+      "p95Ms": 4.60464,
+      "p99Ms": 4.86452
+    },
+    {
+      "rate": 96000,
+      "durationSeconds": 600,
+      "fftSize": 16384,
+      "queries": 24,
+      "pcmBytes": 1098752,
+      "p50Ms": 38.2314,
+      "p95Ms": 41.3204,
+      "p99Ms": 42.0919
+    },
+    {
+      "rate": 96000,
+      "durationSeconds": 7200,
+      "fftSize": 2048,
+      "queries": 24,
+      "pcmBytes": 274432,
+      "p50Ms": 3.60666,
+      "p95Ms": 3.87865,
+      "p99Ms": 3.90344
+    },
+    {
+      "rate": 96000,
+      "durationSeconds": 7200,
+      "fftSize": 16384,
+      "queries": 24,
+      "pcmBytes": 1098752,
+      "p50Ms": 36.7624,
+      "p95Ms": 38.0468,
+      "p99Ms": 38.6356
+    }
+  ],
+  "sourceReference": {
+    "beforeCommit": "2ed9f7d8f2769ec814ca32c21232c7f8ede6d747",
+    "afterSpectralImplementationCommit": "c20c04274ab8fc76f459db0448be2ad2144461a2",
+    "note": "Only spectral kernel source comparison; full iteration and final CI identities are recorded separately in docs/84."
+  }
+}

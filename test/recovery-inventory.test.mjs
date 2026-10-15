@@ -7,7 +7,7 @@ import { pathToFileURL } from 'node:url'
 await mkdir(resolve('artifacts/m2'),{recursive:true})
 const modulePath=resolve('artifacts/m2/recovery-test.mjs')
 await build({entryPoints:['src/trace/recovery.ts'],outfile:modulePath,bundle:true,platform:'node',format:'esm'})
-const {inspectRecovery}=await import(pathToFileURL(modulePath))
+const {inspectRecovery,boundedJournalLines}=await import(pathToFileURL(modulePath))
 async function fixture(names,lines=[]){
  const root=await mkdtemp(resolve('artifacts/m2/inventory-'));await mkdir(join(root,'audio'))
  for(const name of names)await writeFile(join(root,'audio',name),'fixture')
@@ -41,4 +41,11 @@ test('recovery can inspect pre-checkpoint interruption with an absent journal',a
  await unlink(join(root,'journal.jsonl'))
  const result=await inspectRecovery(root,'声迹')
  assert.deepEqual(result.files,['声迹-1.wav']);assert.equal(result.confirmedFrames,null)
+})
+
+test('oversized journal lines are dropped while streaming and the following checkpoint remains readable',async()=>{
+ async function* chunks(){for(let n=0;n<100;n++)yield 'x'.repeat(65536);yield '\n'+JSON.stringify({event:'close',frames:'7'})+'\r\n'}
+ const lines=[];for await(const line of boundedJournalLines(chunks()))lines.push(line)
+ assert.deepEqual(lines,[null,JSON.stringify({event:'close',frames:'7'})])
+ const root=await fixture(['Test-1.wav'],['x'.repeat(1000001),JSON.stringify({event:'close',frames:'7'})]);const result=await inspectRecovery(root,'Test');assert.equal(result.confirmedFrames,'7');assert.equal(result.ignoredJournalLines,1)
 })

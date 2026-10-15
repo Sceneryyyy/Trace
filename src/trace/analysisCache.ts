@@ -1,4 +1,5 @@
-import { open, readFile, lstat, realpath } from 'node:fs/promises'
+import {readMetadata} from './metadataFile'
+import { open, lstat, realpath } from 'node:fs/promises'
 import { join, sep } from 'node:path'
 import { analysisCacheKeyVersion, analysisSchemaVersion, measurementConfigId, pageRecords, pageHeaderBytes } from './analysisTypes'
 import type { AnalysisManifest, AnalysisStream, HistoricalMetrics, FileWavePoint, FileLoudnessPoint } from './analysisTypes'
@@ -61,7 +62,7 @@ export class AnalysisCache {
     const directoryInfo=await lstat(directory)
     if(!directoryInfo.isDirectory()||directoryInfo.isSymbolicLink())corrupt('cache directory')
     const base=await realpath(directory)
-    const text=await readFile(join(base,'manifest.json'),'utf8')
+    const text=await readMetadata(join(base,'manifest.json'),4*1024*1024,'CORRUPT_CACHE: manifest file/size')
     let value:unknown
     try{value=JSON.parse(text)}catch{corrupt('manifest JSON')}
     const manifest=validateManifest(value,key)

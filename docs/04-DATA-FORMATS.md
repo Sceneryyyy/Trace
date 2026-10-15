@@ -137,3 +137,15 @@ ReplayInfo version 1 仅在内存保存，包含连续缓存帧数、实际采�
 用户点击保存缓存后，冻结 PCM 或选区通过原生 AsyncWorker 使用已有 WavWriter 分块写盘，包含检查点与恢复日志。主线程不传递 PCM，采集线程不等待保存。使用当前录音预设，必要时复用既有重采样/MP3/AAC 成品流程。
 
 新的 Session schema 2 可选 origin.kind=memory，记录原缓存来源、epoch、缓存原点及选区范围；新录音的区域从 0 开始，QPC 为未知，不伪装成一次新的设备捕获。保存文件独立建立分析缓存，不复用原监测累计 I。写入失败保留已写前缀并通过现有恢复入口处理；正常退出等待保存。
+
+## preview.32 可重建缓存与独立复核元数据
+
+原始声谱 tile v1 保持，新概览单独使用 overview v1 并带质量比例；每素材 96 MiB、持久化登记素材合计 256 MiB，优先保留高层概览。未知文件、原始/恢复音频、链接和正在读写的数据不参与删除；配额与索引恢复边界见 [84](84-P0-P1-CLOUD-ITERATION.md)。
+
+人工标记 marker v1 位于应用独立 review-markers 目录，以内容哈希及解码范围/帧/采样率/声道绑定，最多 512 条，不随分析缓存清理。Report v1 增量 marker/distribution 字段各自标 v1；InstrumentSettings v1 严格迁移至 v2。协议详情见 [06](06-CONTRACTS.md)。
+
+## preview.33 文件边界复核
+
+会话与重建导出清单独占创建唯一临时文件后原子替换，不复用 session.json.tmp/export.json.tmp；仅清理本次成功创建的临时文件。会话事件拒绝链接和非普通文件，诊断 support 根及 fatal 写入同样保护外部目标。会话清单读写上限 16 MiB、export 清单读写及分析 manifest 读取 4 MiB、偏好 512 KiB、marker 存储 1 MiB；读取同时核对已打开对象的身份/长度。过大或非法元数据拒绝读取，不影响原音频。恢复 journal 流式限制单行 1000000 字符，超限整行计入 ignoredJournalLines，后续 checkpoint 继续核验。
+
+磁盘声谱淘汰在删除前重新核对根/key 目录和已登记文件的内容摘要；未知内容、无法校验的隔离文件与链接保留。96/256 MiB 是已验证可重建数据的预算，knownBytes 不是磁盘总占用；详情见 [85](85-CODE-DOCUMENT-REVIEW.md)。

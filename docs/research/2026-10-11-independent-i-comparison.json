@@ -1,0 +1,82 @@
+{
+  "scope": "Independent integrated loudness only; original EBU fixtures; no LRA/TP certification",
+  "pyloudnormCommit": "b8d67bfd3ce5deef872f688fcfa491a0ca69fddd",
+  "numpyVersion": "2.3.5",
+  "scipyVersion": "1.17.0",
+  "toleranceLU": 0.1,
+  "cases": [
+    {
+      "file": "1kHz Sine -20 LUFS-16bit.wav",
+      "sha256": "aaf4ace76363203abf0cb005fddf83a0fe979d213492e9661bbadb784bc6299a",
+      "sampleRate": 48000,
+      "traceI": -19.95,
+      "pyloudnormI": -19.995230024442794,
+      "deltaLU": 0.04523002444279456,
+      "passed": true
+    },
+    {
+      "file": "1kHz Sine -26 LUFS-16bit.wav",
+      "sha256": "3da353df2dc6f2640886547a5285e610e36255db3519ee69ea0e4dbe6fd784cd",
+      "sampleRate": 48000,
+      "traceI": -25.950000000000003,
+      "pyloudnormI": -25.99523171559053,
+      "deltaLU": 0.04523171559052841,
+      "passed": true
+    },
+    {
+      "file": "1kHz Sine -40 LUFS-16bit.wav",
+      "sha256": "6c4a6db9fd4372d780e438a50fe0eee63e32718b0f40cff97be403383f3d514e",
+      "sampleRate": 48000,
+      "traceI": -39.95,
+      "pyloudnormI": -40.0340679550887,
+      "deltaLU": 0.08406795508869891,
+      "passed": true
+    },
+    {
+      "file": "EBU-reference_listening_signal_pinknoise_500Hz_2kHz_R128.wav",
+      "sha256": "d1ab57fd10a3f6381c1c7937aaaf9cf36b13f7ded956266259b2a7d5044d2351",
+      "sampleRate": 48000,
+      "traceI": -22.965193230819967,
+      "pyloudnormI": -23.008045443730705,
+      "deltaLU": 0.04285221291073782,
+      "passed": true
+    },
+    {
+      "file": "seq-3341-1-16bit.wav",
+      "sha256": "50dff94bf941756cae2b3e1a67931a28e1605a876be1b7f3707f2ffcf485955c",
+      "sampleRate": 48000,
+      "traceI": -22.95,
+      "pyloudnormI": -22.994964069015616,
+      "deltaLU": 0.04496406901561656,
+      "passed": true
+    },
+    {
+      "file": "seq-3341-2-16bit.wav",
+      "sha256": "7c9399188aed09980c76a67adc36b33f2d61c3e0c8457d83f7bf879122534ce3",
+      "sampleRate": 48000,
+      "traceI": -32.95,
+      "pyloudnormI": -33.001268317146526,
+      "deltaLU": 0.05126831714652269,
+      "passed": true
+    },
+    {
+      "file": "seq-3341-3-16bit-v02.wav",
+      "sha256": "1fced6ac2397d4337257185908bd49bb18314f441a0daf0ef602f671254d9efb",
+      "sampleRate": 48000,
+      "traceI": -22.970716515803193,
+      "pyloudnormI": -23.055550869256027,
+      "deltaLU": 0.08483435345283397,
+      "passed": true
+    },
+    {
+      "file": "seq-3341-4-16bit-v02.wav",
+      "sha256": "514a6edd342d20c999d30062f0371d3f33ca86aa668ed3606484564db8dbdf93",
+      "sampleRate": 48000,
+      "traceI": -22.970716515803193,
+      "pyloudnormI": -23.055550869256027,
+      "deltaLU": 0.08483435345283397,
+      "passed": true
+    }
+  ],
+  "passed": true
+}

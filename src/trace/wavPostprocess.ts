@@ -1,5 +1,5 @@
 import {sessionWavePreset} from './recordSettings'
-import {spawn} from 'node:child_process'
+import {mediaProcess} from './mediaProcess'
 import {createReadStream} from 'node:fs'
 import {mkdir,readdir,writeFile,rename,realpath,lstat,rm} from 'node:fs/promises'
 import {join,sep,basename} from 'node:path'
@@ -8,13 +8,8 @@ import {quantizeFiles} from './fileJobs'
 import type {StoredSession,SessionAsset} from './sessionStore'
 type PcmEncoding=SessionAsset['encoding']
 async function hash(path:string){const value=createHash('sha256');for await(const bytes of createReadStream(path))value.update(bytes);return value.digest('hex')}
-function execute(program:string,args:string[]):Promise<string>{
- return new Promise((resolve,reject)=>{
-  const child=spawn(program,args,{windowsHide:true,stdio:['ignore','pipe','pipe']});let output='',error=''
-  child.stdout.on('data',data=>{if(output.length<1000000)output+=data});child.stderr.on('data',data=>error=(error+data).slice(-16000))
-  child.on('error',reject);child.on('close',code=>code===0?resolve(output):reject(Error('WAV_POSTPROCESS_FAILED: '+error)))
- })
-}
+function execute(program:string,args:string[]):Promise<string>{return mediaProcess(program,args,{capture:true})}
+
 type Input={paths:string[];rate:number;channels:number;frames:bigint}
 type Output={path:string;frames:bigint;hash:string;clippedSamples:string}
 async function render(input:Input,directory:string,rate:number,channels:number,encoding:PcmEncoding,ffmpeg:string,ffprobe:string,nativePath:string):Promise<Output[]>{
@@ -80,8 +75,9 @@ export async function postprocessWav(take:StoredSession,ffmpeg:string,ffprobe:st
  const sources=d.assets.filter(a=>a.role===inputRole&&!['superseded','removed','removing'].includes(a.state||'')),usable=d.regions.filter(r=>BigInt(r.frames)>0n)
  if(!sources.length||!usable.length)return
  const target=preset.sampleRate==='source'?d.sourceFormat.sampleRate:preset.sampleRate,channels=Math.max(...usable.map(r=>r.format.channelCount))
- const token=randomUUID().slice(0,8),temp=join(take.directory,'conversion-'+token)
+ const token=randomUUID(),temp=join(take.directory,'conversion-'+token);let owned=false
  try{
+ await mkdir(temp);owned=true
  if(d.regions.length===1){
   if(compressed)return
   const r=usable[0],assets=sources.filter(a=>a.regionId===r.id),input={paths:assets.map(a=>join(take.directory,a.relativePath)),rate:r.format.sampleRate,channels:r.format.channelCount,frames:BigInt(r.frames)}
@@ -106,5 +102,5 @@ export async function postprocessWav(take:StoredSession,ffmpeg:string,ffprobe:st
   }
  }
  await take.event('session.view.ready',{sampleRate:target,channelCount:channels,frames:prefix.toString(),gapsOmitted:true,monoMapping:channels===2?'equal-power-center':'mono'})
- }finally{await cleanConversion(take.directory,temp,token)}
+ }finally{if(owned)await cleanConversion(take.directory,temp,token)}
 }

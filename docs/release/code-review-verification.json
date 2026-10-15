@@ -1,0 +1,1097 @@
+{
+  "schemaVersion": 1,
+  "collectedAt": "2026-10-15T02:52:54.724276+00:00",
+  "productVersion": "0.1.0-preview.33",
+  "sourceCommit": "1c00c07ed7906ae85837e5f518bf0b5586694725",
+  "sourceTree": "05f1ff4d7f6f9edf9b81ca171f600fdadcaee4a7",
+  "run": {
+    "id": 38671033132,
+    "attempt": 1,
+    "url": "https://github.com/Sceneryyyy/Trace/actions/runs/38671033132",
+    "headSha": "1c00c07ed7906ae85837e5f518bf0b5586694725",
+    "status": "completed",
+    "conclusion": "success"
+  },
+  "jobs": [
+    {
+      "name": "windows",
+      "jobId": 116214240220,
+      "checkRunId": 116214240220,
+      "conclusion": "success",
+      "url": "https://github.com/Sceneryyyy/Trace/actions/runs/38671033132/job/116214240220",
+      "startedAt": "2026-10-15T02:27:59Z",
+      "completedAt": "2026-10-15T02:35:55Z",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-15T02:28:00Z",
+          "completed_at": "2026-10-15T02:28:01Z"
+        },
+        {
+          "name": "Run actions/checkout@v6",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-15T02:28:01Z",
+          "completed_at": "2026-10-15T02:28:16Z"
+        },
+        {
+          "name": "Run actions/setup-node@v6",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-15T02:28:16Z",
+          "completed_at": "2026-10-15T02:28:30Z"
+        },
+        {
+          "name": "Install locked dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-15T02:28:30Z",
+          "completed_at": "2026-10-15T02:28:43Z"
+        },
+        {
+          "name": "Run npm run check:independence",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-15T02:28:43Z",
+          "completed_at": "2026-10-15T02:28:44Z"
+        },
+        {
+          "name": "Fetch pinned Electron SDK without building another application",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-15T02:28:44Z",
+          "completed_at": "2026-10-15T02:28:48Z"
+        },
+        {
+          "name": "Compile independent Trace diagnostic fixtures",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-15T02:28:48Z",
+          "completed_at": "2026-10-15T02:29:08Z"
+        },
+        {
+          "name": "Run actions/cache/restore@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-15T02:29:08Z",
+          "completed_at": "2026-10-15T02:29:09Z"
+        },
+        {
+          "name": "Prepare pinned codec with readable failure diagnostics",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-15T02:29:09Z",
+          "completed_at": "2026-10-15T02:29:13Z"
+        },
+        {
+          "name": "Run actions/cache/save@v4",
+          "status": "completed",
+          "conclusion": "skipped",
+          "started_at": "2026-10-15T02:29:13Z",
+          "completed_at": "2026-10-15T02:29:13Z"
+        },
+        {
+          "name": "Verify Trace and retain command outcomes",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-15T02:29:13Z",
+          "completed_at": "2026-10-15T02:35:49Z"
+        },
+        {
+          "name": "Require this run's complete portable success before packing a candidate",
+          "status": "completed",
+          "conclusion": "skipped",
+          "started_at": "2026-10-15T02:35:49Z",
+          "completed_at": "2026-10-15T02:35:49Z"
+        },
+        {
+          "name": "Build and inspect candidate package",
+          "status": "completed",
+          "conclusion": "skipped",
+          "started_at": "2026-10-15T02:35:49Z",
+          "completed_at": "2026-10-15T02:35:49Z"
+        },
+        {
+          "name": "Publish selected verification evidence in readable annotations",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-15T02:35:49Z",
+          "completed_at": "2026-10-15T02:35:50Z"
+        },
+        {
+          "name": "Run actions/upload-artifact@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-15T02:35:50Z",
+          "completed_at": "2026-10-15T02:35:51Z"
+        },
+        {
+          "name": "Run actions/upload-artifact@v4",
+          "status": "completed",
+          "conclusion": "skipped",
+          "started_at": "2026-10-15T02:35:51Z",
+          "completed_at": "2026-10-15T02:35:51Z"
+        },
+        {
+          "name": "Post Run actions/setup-node@v6",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-15T02:35:51Z",
+          "completed_at": "2026-10-15T02:35:51Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v6",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-15T02:35:51Z",
+          "completed_at": "2026-10-15T02:35:53Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-15T02:35:53Z",
+          "completed_at": "2026-10-15T02:35:53Z"
+        }
+      ],
+      "testedCommit": "9a87e204b5cbf5e1a7cd8768df5201e92d491c63",
+      "tree": "05f1ff4d7f6f9edf9b81ca171f600fdadcaee4a7",
+      "annotationParts": 4,
+      "annotationPayloadSha256": "08cae4553ec82e818fa13fc9443e35a4acb8677d52be71a4efd17d706e1f708d",
+      "summary": {
+        "schemaVersion": 1,
+        "commit": "9a87e204b5cbf5e1a7cd8768df5201e92d491c63",
+        "sourceDirty": false,
+        "platform": "win32",
+        "arch": "x64",
+        "codecBuildReused": true,
+        "tests": [
+          {
+            "sha256": "8163fe2b0513dd0fb280faa8a14e168e0a62cd62be445baad7ef0e8639873ec9",
+            "commit": "9a87e204b5cbf5e1a7cd8768df5201e92d491c63",
+            "tier": "portable",
+            "files": 56,
+            "exitCode": 0,
+            "status": "pass",
+            "counts": {
+              "tests": 307,
+              "suites": 0,
+              "pass": 307,
+              "fail": 0,
+              "cancelled": 0,
+              "skipped": 0,
+              "todo": 0,
+              "duration_ms": 22385.1566
+            },
+            "failureDetails": null,
+            "observations": {},
+            "outputSha256": "8406b052806056c604ecd4193dedb1ef0093a9ce1f788864ab41b60b65bc2c79"
+          },
+          {
+            "sha256": "10b30ec753881b7da11a72609f9361bdba24a0510a0baf4fce152d210ebbaba2",
+            "commit": "9a87e204b5cbf5e1a7cd8768df5201e92d491c63",
+            "tier": "native",
+            "files": 12,
+            "exitCode": 0,
+            "status": "pass",
+            "counts": {
+              "tests": 68,
+              "suites": 0,
+              "pass": 68,
+              "fail": 0,
+              "cancelled": 0,
+              "skipped": 0,
+              "todo": 0,
+              "duration_ms": 116432.2944
+            },
+            "failureDetails": null,
+            "observations": {
+              "TRACE_MP3_IMPORT_MATRIX": {
+                "ffmpegSha256": "c647e20c508af6421efb3c78b59e2a693f7b905c6a27384282ad76b5ad37d5ee",
+                "matrix": [
+                  {
+                    "rate": 8000,
+                    "channels": 1,
+                    "mode": "cbr",
+                    "inputFrames": 1737,
+                    "declaredDecodedFrames": "1775",
+                    "importedFrames": "1775"
+                  },
+                  {
+                    "rate": 8000,
+                    "channels": 1,
+                    "mode": "vbr",
+                    "inputFrames": 1737,
+                    "declaredDecodedFrames": "1775",
+                    "importedFrames": "1775"
+                  },
+                  {
+                    "rate": 8000,
+                    "channels": 2,
+                    "mode": "cbr",
+                    "inputFrames": 1737,
+                    "declaredDecodedFrames": "1775",
+                    "importedFrames": "1775"
+                  },
+                  {
+                    "rate": 8000,
+                    "channels": 2,
+                    "mode": "vbr",
+                    "inputFrames": 1737,
+                    "declaredDecodedFrames": "1775",
+                    "importedFrames": "1775"
+                  },
+                  {
+                    "rate": 16000,
+                    "channels": 1,
+                    "mode": "cbr",
+                    "inputFrames": 3337,
+                    "declaredDecodedFrames": "3337",
+                    "importedFrames": "3337"
+                  },
+                  {
+                    "rate": 16000,
+                    "channels": 1,
+                    "mode": "vbr",
+                    "inputFrames": 3337,
+                    "declaredDecodedFrames": "3337",
+                    "importedFrames": "3337"
+                  },
+                  {
+                    "rate": 16000,
+                    "channels": 2,
+                    "mode": "cbr",
+                    "inputFrames": 3337,
+                    "declaredDecodedFrames": "3337",
+                    "importedFrames": "3337"
+                  },
+                  {
+                    "rate": 16000,
+                    "channels": 2,
+                    "mode": "vbr",
+                    "inputFrames": 3337,
+                    "declaredDecodedFrames": "3337",
+                    "importedFrames": "3337"
+                  },
+                  {
+                    "rate": 44100,
+                    "channels": 1,
+                    "mode": "cbr",
+                    "inputFrames": 8957,
+                    "declaredDecodedFrames": "8957",
+                    "importedFrames": "8957"
+                  },
+                  {
+                    "rate": 44100,
+                    "channels": 1,
+                    "mode": "vbr",
+                    "inputFrames": 8957,
+                    "declaredDecodedFrames": "8957",
+                    "importedFrames": "8957"
+                  },
+                  {
+                    "rate": 44100,
+                    "channels": 2,
+                    "mode": "cbr",
+                    "inputFrames": 8957,
+                    "declaredDecodedFrames": "8957",
+                    "importedFrames": "8957"
+                  },
+                  {
+                    "rate": 44100,
+                    "channels": 2,
+                    "mode": "vbr",
+                    "inputFrames": 8957,
+                    "declaredDecodedFrames": "8957",
+                    "importedFrames": "8957"
+                  },
+                  {
+                    "rate": 48000,
+                    "channels": 1,
+                    "mode": "cbr",
+                    "inputFrames": 9737,
+                    "declaredDecodedFrames": "9737",
+                    "importedFrames": "9737"
+                  },
+                  {
+                    "rate": 48000,
+                    "channels": 1,
+                    "mode": "vbr",
+                    "inputFrames": 9737,
+                    "declaredDecodedFrames": "9737",
+                    "importedFrames": "9737"
+                  },
+                  {
+                    "rate": 48000,
+                    "channels": 2,
+                    "mode": "cbr",
+                    "inputFrames": 9737,
+                    "declaredDecodedFrames": "9737",
+                    "importedFrames": "9737"
+                  },
+                  {
+                    "rate": 48000,
+                    "channels": 2,
+                    "mode": "vbr",
+                    "inputFrames": 9737,
+                    "declaredDecodedFrames": "9737",
+                    "importedFrames": "9737"
+                  }
+                ],
+                "scope": "Generated external files; decoder metadata governs frames, not a claim of bit-exact encoder roundtrip"
+              },
+              "TRACE_CODEC_MINUTE": {
+                "ffmpegSha256": "c647e20c508af6421efb3c78b59e2a693f7b905c6a27384282ad76b5ad37d5ee",
+                "sourceRate": 96000,
+                "sourceFrames": 5760000,
+                "channels": 2,
+                "timings": [
+                  {
+                    "rate": 44100,
+                    "extension": "mp3",
+                    "elapsedMs": 907,
+                    "physicalFrames": "2646000",
+                    "audibleFrames": "2646000"
+                  },
+                  {
+                    "rate": 44100,
+                    "extension": "m4a",
+                    "elapsedMs": 1488,
+                    "physicalFrames": "2646000",
+                    "audibleFrames": "2646000"
+                  },
+                  {
+                    "rate": 48000,
+                    "extension": "mp3",
+                    "elapsedMs": 892,
+                    "physicalFrames": "2880000",
+                    "audibleFrames": "2880000"
+                  },
+                  {
+                    "rate": 48000,
+                    "extension": "m4a",
+                    "elapsedMs": 1473,
+                    "physicalFrames": "2880000",
+                    "audibleFrames": "2880000"
+                  }
+                ],
+                "scope": "Offline generated signal; not WASAPI or physical-device real-time acceptance"
+              }
+            },
+            "outputSha256": "45eeb0ab9df9526b910fe05c0b7cf05cb895528a751fbdbcba60cca861ed6833"
+          }
+        ],
+        "ctest": {
+          "sha256": "351459caf4506e9630d910af40614dd47a43bae873c09c5cf9ad2247914234bf",
+          "tests": 19,
+          "passed": 19,
+          "failed": 0
+        },
+        "ebu": {
+          "sha256": "ceafc92102c0ae86c4bfa07fd97f194d5b267d0b2a6e9ccacebed506c80541a4",
+          "commit": "9a87e204b5cbf5e1a7cd8768df5201e92d491c63",
+          "sourceDirty": false,
+          "status": "pass",
+          "measurementConfigId": "trace-meter-v5-ebur128-1.2.6-lra10hz-msi100hz-tpaligned",
+          "summary": {
+            "passed": 68,
+            "failed": 0,
+            "excluded": 2,
+            "supported": 68,
+            "checks": {
+              "total": 112,
+              "passed": 112,
+              "failed": 0
+            },
+            "invariants": {
+              "total": 204,
+              "passed": 204,
+              "failed": 0
+            },
+            "supportedPassRate": 1
+          },
+          "sourceSha256": {
+            "native/src/recorder/Meter.cpp": "a01a7b96641bf8113faba731aa8338e642753febf725f2fdc599c6bedd4a5e91",
+            "native/src/recorder/Meter.h": "e4066aac8d89fdec565f177c7a08e076448e384536202d175d4d1ede3b066409",
+            "native/src/recorder/MeasurementConfig.h": "de90bfa7762c80b2ba3155a5f1a5ea4a255292c4b307e79c5a60f1c1d160f1a6",
+            "native/src/recorder/FileAnalysis.cpp": "e9702a0dea47e2da2ca56611564d6a03f5c57743b64b8b650b3aacded843d82d",
+            "native/vendor/libebur128/ebur128.c": "36726095b74a13fde0cb74992a06400d3f7cb1a228fa95df2a4cc5bf38231783",
+            "test/native/ebu_wav_probe.cpp": "51763a9073bce6d2f39226299b3c5e3175d985d07f8721929a4eb65108368722",
+            "tools/metering/run-ebu-wav-tests.py": "b8710789684f94d2e15e306993b7d8ca1a44d2d8f3bef2cf304e563edc9413a9"
+          }
+        },
+        "security": {
+          "sha256": "a86992ac331fb6e2f38bdabc863ba658f9658a7e11b7ea24f773f12551f20477",
+          "commit": "9a87e204b5cbf5e1a7cd8768df5201e92d491c63",
+          "sourceDirty": false,
+          "packageLockSha256": "49c0bddb41fac5a94590b789796140ce48e8c0c88275fbc049bdf971db0a22f1",
+          "status": "pass",
+          "checks": [
+            {
+              "command": "npm audit --json",
+              "exitCode": 0,
+              "counts": {
+                "info": 0,
+                "low": 0,
+                "moderate": 0,
+                "high": 0,
+                "critical": 0,
+                "total": 0
+              },
+              "reportSha256": "c32ca030b773f94f2850f3e61a8a942058b82cd928537441fbaf310ea318997a"
+            },
+            {
+              "command": "npm audit --omit=dev --json",
+              "exitCode": 0,
+              "counts": {
+                "info": 0,
+                "low": 0,
+                "moderate": 0,
+                "high": 0,
+                "critical": 0,
+                "total": 0
+              },
+              "reportSha256": "c32ca030b773f94f2850f3e61a8a942058b82cd928537441fbaf310ea318997a"
+            }
+          ]
+        },
+        "verification": {
+          "sha256": "d25bde80ea03f0431771188c42971f81f96ca64abbd8a2915cf6aa333068d8eb",
+          "commit": "9a87e204b5cbf5e1a7cd8768df5201e92d491c63",
+          "sourceDirty": false,
+          "platform": "win32",
+          "arch": "x64",
+          "status": "pass",
+          "checks": [
+            {
+              "command": "npm run build:trace-engine",
+              "exitCode": 0,
+              "status": "pass"
+            },
+            {
+              "command": "npm run check:security",
+              "exitCode": 0,
+              "status": "pass"
+            },
+            {
+              "command": "npm run typecheck",
+              "exitCode": 0,
+              "status": "pass"
+            },
+            {
+              "command": "npm run test:trace",
+              "exitCode": 0,
+              "status": "pass"
+            },
+            {
+              "command": "npm run build:trace",
+              "exitCode": 0,
+              "status": "pass"
+            },
+            {
+              "command": "npm run test:trace-native",
+              "exitCode": 0,
+              "status": "pass"
+            }
+          ]
+        },
+        "portableGate": null,
+        "packageLoad": null,
+        "packageAudit": null,
+        "runtime": null,
+        "codec": {
+          "sha256": "e305461d392c76fec8c7355194c2fbd6b1fd4b579c862f4f5cd7bdb01fa0d047",
+          "buildLockSha256": "ed3e90d50ae39a4c3364197a5145490d36526f955e744f3585cb5c4cd37e84d1",
+          "systemInventorySha256": "b895920269ac9faa7827c4467f407268e4bd1dbf0ca2d539ff5a53f42b1ce48f",
+          "configHeaderSha256": "2f386f2de7862231e29b33eb202e152b605367d48e8ffa7b8ce7a004143bbbfb",
+          "configMakSha256": "b8ea4983a6603fbe52cef68c155a6f2d2c0031e639b70f8715f0532d1be96669",
+          "recipes": {
+            "tools/codec/build.cjs": "7b1d08dfefdb06c70292c5886540570c158a8037a530f72f4e00d9722470917a",
+            "tools/codec/identity.cjs": "0f69a737f54676409a12ca26f169a8392c1dd9040bb9a3fd36ad2244210bcffc",
+            "tools/release/dependency-sources.cjs": "c53a60e479767c12b7036b36278de5b37035f035fa428c475ba9082c284a12ae"
+          },
+          "matchesPinnedReport": true,
+          "ffmpegSha256": "c647e20c508af6421efb3c78b59e2a693f7b905c6a27384282ad76b5ad37d5ee",
+          "ffprobeSha256": "73337f082639e4f3f867a50fc69ec681ed81cdc8faf5df5d8fed4f677530bef5"
+        },
+        "candidate": null,
+        "scope": "Selected actual CI-produced test/numerical/build/package records; generated/offline and no-card checks, not physical-device or release acceptance"
+      }
+    },
+    {
+      "name": "portable",
+      "jobId": 116214240375,
+      "checkRunId": 116214240375,
+      "conclusion": "success",
+      "url": "https://github.com/Sceneryyyy/Trace/actions/runs/38671033132/job/116214240375",
+      "startedAt": "2026-10-15T02:27:59Z",
+      "completedAt": "2026-10-15T02:51:05Z",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-15T02:28:00Z",
+          "completed_at": "2026-10-15T02:28:01Z"
+        },
+        {
+          "name": "Run actions/checkout@v6",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-15T02:28:01Z",
+          "completed_at": "2026-10-15T02:28:13Z"
+        },
+        {
+          "name": "Run actions/setup-node@v6",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-15T02:28:13Z",
+          "completed_at": "2026-10-15T02:28:19Z"
+        },
+        {
+          "name": "Install locked dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-15T02:28:19Z",
+          "completed_at": "2026-10-15T02:28:25Z"
+        },
+        {
+          "name": "Run npm run check:independence",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-15T02:28:25Z",
+          "completed_at": "2026-10-15T02:28:26Z"
+        },
+        {
+          "name": "Run npm run check:security",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-15T02:28:26Z",
+          "completed_at": "2026-10-15T02:28:27Z"
+        },
+        {
+          "name": "Run npm run typecheck",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-15T02:28:27Z",
+          "completed_at": "2026-10-15T02:28:35Z"
+        },
+        {
+          "name": "Run npm run test:trace",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-15T02:28:35Z",
+          "completed_at": "2026-10-15T02:29:02Z"
+        },
+        {
+          "name": "Run npm run build:trace",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-15T02:29:02Z",
+          "completed_at": "2026-10-15T02:29:06Z"
+        },
+        {
+          "name": "Portable C++ with ASan and UBSan",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-15T02:29:06Z",
+          "completed_at": "2026-10-15T02:48:34Z"
+        },
+        {
+          "name": "Run actions/setup-python@v6",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-15T02:48:34Z",
+          "completed_at": "2026-10-15T02:48:34Z"
+        },
+        {
+          "name": "Independent pinned integrated loudness comparison",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-15T02:48:34Z",
+          "completed_at": "2026-10-15T02:50:39Z"
+        },
+        {
+          "name": "Actual React subscription regression in Chromium",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-15T02:50:39Z",
+          "completed_at": "2026-10-15T02:50:48Z"
+        },
+        {
+          "name": "Renderer interactions with simulated IPC",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-15T02:50:48Z",
+          "completed_at": "2026-10-15T02:50:53Z"
+        },
+        {
+          "name": "P0 and P1 controls and chart conversion in Chromium",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-15T02:50:53Z",
+          "completed_at": "2026-10-15T02:50:57Z"
+        },
+        {
+          "name": "Publish selected verification evidence in readable annotations",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-15T02:50:57Z",
+          "completed_at": "2026-10-15T02:50:57Z"
+        },
+        {
+          "name": "Run actions/upload-artifact@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-15T02:50:57Z",
+          "completed_at": "2026-10-15T02:50:59Z"
+        },
+        {
+          "name": "Post Run actions/setup-python@v6",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-15T02:50:59Z",
+          "completed_at": "2026-10-15T02:50:59Z"
+        },
+        {
+          "name": "Post Run actions/setup-node@v6",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-15T02:50:59Z",
+          "completed_at": "2026-10-15T02:51:02Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v6",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-15T02:51:02Z",
+          "completed_at": "2026-10-15T02:51:02Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-15T02:51:02Z",
+          "completed_at": "2026-10-15T02:51:02Z"
+        }
+      ],
+      "testedCommit": "9a87e204b5cbf5e1a7cd8768df5201e92d491c63",
+      "tree": "05f1ff4d7f6f9edf9b81ca171f600fdadcaee4a7",
+      "annotationParts": 2,
+      "annotationPayloadSha256": "7f7bca23ebfc3c734297165d22913e151dd99577e640591661eab95f534ebbf5",
+      "summary": {
+        "schemaVersion": 1,
+        "commit": "9a87e204b5cbf5e1a7cd8768df5201e92d491c63",
+        "sourceDirty": false,
+        "platform": "linux",
+        "arch": "x64",
+        "codecBuildReused": false,
+        "tests": [
+          {
+            "sha256": "7e9de2878f6e7a5fef73833cd63286f7b30cc9eea43de89af093d43512c9d144",
+            "commit": "9a87e204b5cbf5e1a7cd8768df5201e92d491c63",
+            "tier": "portable",
+            "files": 56,
+            "exitCode": 0,
+            "status": "pass",
+            "counts": {
+              "tests": 307,
+              "suites": 0,
+              "pass": 307,
+              "fail": 0,
+              "cancelled": 0,
+              "skipped": 0,
+              "todo": 0,
+              "duration_ms": 27526.820566
+            },
+            "failureDetails": null,
+            "observations": {},
+            "outputSha256": "fcc0ebb0d69404542c4a98de3aa61d8989cf88d7523b6ada027c26e0d5faa949"
+          }
+        ],
+        "ctest": {
+          "core": {
+            "sha256": "5c20b16d34db847c84a3d931856030fbd27ccf8cd2bee29255f4a790a762124b",
+            "tests": 8,
+            "failures": 0,
+            "disabled": 0,
+            "seconds": 316
+          },
+          "ebu": {
+            "sha256": "4221488e326a93200f13ad7b5bdbdb56f2599fdeec983ec49a4c2bf4baf4b6a3",
+            "tests": 1,
+            "failures": 0,
+            "disabled": 0,
+            "seconds": 812
+          }
+        },
+        "ebu": {
+          "sha256": "490aa4660ede703f49b829fe9e3d8edc7413942fd593faad966d40ab08986a74",
+          "commit": "9a87e204b5cbf5e1a7cd8768df5201e92d491c63",
+          "sourceDirty": false,
+          "status": "pass",
+          "measurementConfigId": "trace-meter-v5-ebur128-1.2.6-lra10hz-msi100hz-tpaligned",
+          "summary": {
+            "passed": 68,
+            "failed": 0,
+            "excluded": 2,
+            "supported": 68,
+            "checks": {
+              "total": 112,
+              "passed": 112,
+              "failed": 0
+            },
+            "invariants": {
+              "total": 204,
+              "passed": 204,
+              "failed": 0
+            },
+            "supportedPassRate": 1
+          },
+          "sourceSha256": {
+            "native/src/recorder/Meter.cpp": "d77d0d2f948d576977935ba0990a98fddc0738f3fc5219f6895a38a2597e2e42",
+            "native/src/recorder/Meter.h": "532a775edae2000a6f132db39b1684c7f7138484706dc6268999a2d4c1835cad",
+            "native/src/recorder/MeasurementConfig.h": "0a3619610a959edc91172767203f7695649c79573edd406e4185a6cdd49e8078",
+            "native/src/recorder/FileAnalysis.cpp": "5151b30051df30202880bb10b6a28417ce78e6284d9fa9da50f75d1d2de9ce5d",
+            "native/vendor/libebur128/ebur128.c": "9d3d75d880e7f514b0669341501ce55b159d86c25012b6d8c9340ad7ed8e7d5f",
+            "test/native/ebu_wav_probe.cpp": "15b983a60ee21cc86277d17707fad87f04b03f87e9d302d439c623befac23aa0",
+            "tools/metering/run-ebu-wav-tests.py": "872930365b8ff8e16f468fe85b0abbc436ff37ed5c41d6cb6d399ccc84f5cba6"
+          }
+        },
+        "security": {
+          "sha256": "a86992ac331fb6e2f38bdabc863ba658f9658a7e11b7ea24f773f12551f20477",
+          "commit": "9a87e204b5cbf5e1a7cd8768df5201e92d491c63",
+          "sourceDirty": false,
+          "packageLockSha256": "49c0bddb41fac5a94590b789796140ce48e8c0c88275fbc049bdf971db0a22f1",
+          "status": "pass",
+          "checks": [
+            {
+              "command": "npm audit --json",
+              "exitCode": 0,
+              "counts": {
+                "info": 0,
+                "low": 0,
+                "moderate": 0,
+                "high": 0,
+                "critical": 0,
+                "total": 0
+              },
+              "reportSha256": "c32ca030b773f94f2850f3e61a8a942058b82cd928537441fbaf310ea318997a"
+            },
+            {
+              "command": "npm audit --omit=dev --json",
+              "exitCode": 0,
+              "counts": {
+                "info": 0,
+                "low": 0,
+                "moderate": 0,
+                "high": 0,
+                "critical": 0,
+                "total": 0
+              },
+              "reportSha256": "c32ca030b773f94f2850f3e61a8a942058b82cd928537441fbaf310ea318997a"
+            }
+          ]
+        },
+        "verification": null,
+        "portableGate": null,
+        "packageLoad": null,
+        "packageAudit": null,
+        "runtime": null,
+        "codec": null,
+        "candidate": null,
+        "scope": "Selected actual CI-produced test/numerical/build/package records; generated/offline and no-card checks, not physical-device or release acceptance"
+      }
+    }
+  ],
+  "artifacts": [
+    {
+      "id": 11945011649,
+      "name": "trace-portable-evidence",
+      "size_in_bytes": 17298,
+      "digest": "sha256:4240f5ad0bc73f7ab03ec8d9882349af9b020ef27651c4a7817f1f53545f23d5",
+      "expired": false,
+      "created_at": "2026-10-15T02:50:59Z",
+      "expires_at": "2027-01-13T02:26:56Z"
+    },
+    {
+      "id": 11944064069,
+      "name": "trace-windows-evidence",
+      "size_in_bytes": 19762,
+      "digest": "sha256:ccf16e32d8ddf4de414f7a0191afa9335de792bd099f2e1d9bf70a64913a91e3",
+      "expired": false,
+      "created_at": "2026-10-15T02:35:51Z",
+      "expires_at": "2027-01-13T02:26:56Z"
+    }
+  ],
+  "local": {
+    "schemaVersion": 1,
+    "checkedAt": "2026-10-15T02:28:24.052223+00:00",
+    "scope": "Local generated fixtures and browser boundary mocks; actual Windows native and clean-commit verification are separate CI records. No physical device or release acceptance.",
+    "source": {
+      "baseline": "4a9019f08b144a734c920623d19433e8003b239a",
+      "mainFixes": "4f93181f74390c640b16df38c6c800ca8b02efdb",
+      "cspFollowup": "4320865c476daa80538eddbbd799fd642dfb3458",
+      "localChecksUsedDirtyWorktree": true,
+      "workerFollowup": "1c00c07ed7906ae85837e5f518bf0b5586694725",
+      "headDuringFinalLocalChecks": "4320865c476daa80538eddbbd799fd642dfb3458"
+    },
+    "baselineOriginal": {
+      "log": "artifacts/review-20261015/baseline-tests.log",
+      "sha256": "e33761f270afcdfec48cc321743fb81d267e590775a1bc1b82777c2008ffe7e1",
+      "counts": {
+        "tests": 286,
+        "pass": 286,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      }
+    },
+    "baselineWithNewPortableRegressions": {
+      "log": "artifacts/review-20261015/baseline-new-regressions.log",
+      "sha256": "4d71d005bc646570b3e90f3d21f41ffa987f408c9e3792d792cd4b6cacd61c38",
+      "counts": {
+        "tests": 43,
+        "pass": 25,
+        "fail": 18,
+        "cancelled": 0,
+        "skipped": 0
+      }
+    },
+    "fixedPortable": {
+      "log": "artifacts/review-20261015/full-tests.log",
+      "sha256": "ba139e46348b954f36ce904abd21c2b2ed969ddee4f364986951b3324d4bc7f2",
+      "counts": {
+        "tests": 307,
+        "pass": 307,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      }
+    },
+    "targetedFixed": {
+      "log": "artifacts/review-20261015/targeted-all.log",
+      "sha256": "d3556fe924d3e154f35f6db193f0f064f5fb9ad312749d3ea60d84b484dc2708",
+      "counts": {
+        "tests": 43,
+        "pass": 43,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      }
+    },
+    "portableReleaseCore": {
+      "tests": 8,
+      "passed": 8,
+      "log": "artifacts/review-20261015/cpp-core.log",
+      "sha256": "6d493f9dbf8e616042495aecb1f7cd8be3a86220ff40ead6cadd81b7cb16cecc",
+      "scope": "Linux portable kernels; excludes Windows Recorder"
+    },
+    "checks": {
+      "typecheck": {
+        "log": "artifacts/review-20261015/typecheck.log",
+        "sha256": "24562141cccc814b9813139c325b756ef79c87d2dc900b3c3aaf032d11b7689b"
+      },
+      "build": {
+        "log": "artifacts/review-20261015/build.log",
+        "sha256": "fc0b339c5289075d6549b0f1ccd9289edc88c14aa1cd8cb3c4012f02ce6c2753"
+      },
+      "independence": {
+        "log": "artifacts/review-20261015/independence.log",
+        "sha256": "24544c96b95178fcab57f8c1c719c9d8e2440aa3bad7a4bb1595d261e649ad52"
+      },
+      "security": {
+        "log": "artifacts/review-20261015/security.log",
+        "sha256": "d0473a62e0fb1767f66658f3cb53077f4bdbf81f71e0addc2d12569a2d156d22"
+      },
+      "reactSelector": {
+        "log": "artifacts/review-20261015/browser-selector.log",
+        "sha256": "38fba0a7c9ee2b199abe3d2ab4df7e6062c8d701bf4b5d56d3e12933b7462c91"
+      },
+      "renderer": {
+        "log": "artifacts/review-20261015/browser-renderer.log",
+        "sha256": "7fd2384b93840c87ea606ed515717b793bad222bea5bdc8ad39086dc2fe739cf"
+      },
+      "productionCspBeforeFix": {
+        "log": "artifacts/review-20261015/browser-csp-before.log",
+        "sha256": "b7c44a7d3104ba499edfdeaf7457c7d27b688f0d800ac022e012746f1562ae2a"
+      },
+      "productionCspAfterFix": {
+        "log": "artifacts/review-20261015/browser-csp-fixed.log",
+        "sha256": "81c3e68a12d3d36a0e54023d6bc9fa6e7e1157c77ba932f2e8c900ee9f484dbb",
+        "checks": 9
+      }
+    },
+    "documentLinks": {
+      "files": 90,
+      "localLinks": 584,
+      "broken": []
+    },
+    "baselineProcessRegressions": {
+      "log": "artifacts/review-20261015/baseline-process-regressions.log",
+      "sha256": "eac8e991c4458998eed4bc0fec5e551f9b9b49f7bcc7036a3ecdefdb72a57dbf",
+      "counts": {
+        "tests": 13,
+        "pass": 10,
+        "fail": 3,
+        "cancelled": 0,
+        "skipped": 0
+      }
+    },
+    "fixedProcessRegressions": {
+      "log": "artifacts/review-20261015/process-regressions-fixed.log",
+      "sha256": "e31f299770d9f9482eaa6f1050a98d93a51f6ff9df1d5502622f1b31fe39ac48",
+      "counts": {
+        "tests": 13,
+        "pass": 13,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      }
+    }
+  },
+  "artifactDownloads": [
+    {
+      "id": 11944064069,
+      "name": "trace-windows-evidence",
+      "exitCode": 1,
+      "metadataDigest": "sha256:ccf16e32d8ddf4de414f7a0191afa9335de792bd099f2e1d9bf70a64913a91e3",
+      "httpStatus": null,
+      "status": "unavailable"
+    },
+    {
+      "id": 11945011649,
+      "name": "trace-portable-evidence",
+      "exitCode": 1,
+      "metadataDigest": "sha256:4240f5ad0bc73f7ab03ec8d9882349af9b020ef27651c4a7817f1f53545f23d5",
+      "httpStatus": null,
+      "status": "unavailable",
+      "reason": "Get \"[URL redacted] Forbidden\n"
+    }
+  ],
+  "ffmpegAdvisoryAncestry": {
+    "checkedAt": "2026-10-15T02:30:24.807382+00:00",
+    "url": "https://ffmpeg.org/security.html",
+    "pageSha256": "382bddbb0454a8945a36a082ae14c35afe12426103e2c9b60cd582bf6b18d496",
+    "pinnedCommit": "946fcce07b6dcd0331c8cc609192aeff5e1924f8",
+    "scope": "Ancestry comparison of fixes listed in official git-master and 9.0 sections, not a complete vulnerability or enabled-component assessment. Paired mainline/backport commits are alternatives.",
+    "checks": [
+      {
+        "cve": "CVE-2025-59733",
+        "fix": "0469d68acb52081ca8385b844b9650398242be0f",
+        "status": "ahead",
+        "included": true
+      },
+      {
+        "cve": "CVE-2025-59734",
+        "fix": "d311382c38df9c2237b33a9e8e860a5da7d2895d",
+        "status": "ahead",
+        "included": true
+      },
+      {
+        "cve": "CVE-2025-59734",
+        "fix": "c41a70b6bb79707e1e3a4b0e31950cd986b9f50e",
+        "status": "ahead",
+        "included": true
+      },
+      {
+        "cve": "CVE-2025-63757",
+        "fix": "0c6b7f9483a38657c9be824572b4c0c45d4d9fef",
+        "status": "ahead",
+        "included": true
+      },
+      {
+        "cve": "CVE-2026-8461",
+        "fix": "c23d4da3128c279b714b282e6ec292e8755007e3",
+        "status": "ahead",
+        "included": true
+      },
+      {
+        "cve": "CVE-2026-8461",
+        "fix": "5806e8b9f34f1b0663b3017ef9dd1aa5d08116d1",
+        "status": "ahead",
+        "included": true
+      },
+      {
+        "cve": "CVE-2026-8461",
+        "fix": "374b726ffa878ee1cadb987bd1e1e20cc7ed8845",
+        "status": "ahead",
+        "included": true
+      },
+      {
+        "cve": "CVE-2026-30998",
+        "fix": "18b83f2d0a0f9bcbafb0001a2911327c4b8df056",
+        "status": "ahead",
+        "included": true
+      },
+      {
+        "cve": "CVE-2026-30999",
+        "fix": "144af8f81abc1385631b4e1f4672cd415a9c6e05",
+        "status": "ahead",
+        "included": true
+      },
+      {
+        "cve": "CVE-2026-12706",
+        "fix": "2f60af465ad78ae4be85e0bbde4067846d80b582",
+        "status": "ahead",
+        "included": true
+      },
+      {
+        "cve": "CVE-2026-30997",
+        "fix": "1a2c16fe514b60e1860829c42ce199de77a007e5",
+        "status": "ahead",
+        "included": true
+      },
+      {
+        "cve": "CVE-2026-66038",
+        "fix": "7c0b8c8594501dd904ebbb3b45bb3f6e2c745b7d",
+        "status": "ahead",
+        "included": true
+      },
+      {
+        "cve": "CVE-2026-66038",
+        "fix": "e7cbfd1c507b57a806a5825b87d609963e862c8c",
+        "status": "diverged",
+        "included": false
+      },
+      {
+        "cve": "CVE-2026-70629",
+        "fix": "a5fe21a1a410a680fe93c33b0dd696b7e1c3aea4",
+        "status": "ahead",
+        "included": true
+      },
+      {
+        "cve": "CVE-2026-70629",
+        "fix": "cd1f545cf27ba08f6f5b31b1e92665d7874d4fd7",
+        "status": "diverged",
+        "included": false
+      },
+      {
+        "cve": "CVE-2026-70631",
+        "fix": "3c287af3affe1286350faa69c02bcc5d49de18bb",
+        "status": "ahead",
+        "included": true
+      },
+      {
+        "cve": "CVE-2026-70631",
+        "fix": "2f234ea34c81288e3840fca632dd16481d8de39f",
+        "status": "diverged",
+        "included": false
+      }
+    ],
+    "summary": {
+      "cves": 11,
+      "coveredCves": 11,
+      "includedCommits": 14,
+      "alternativeBackportsNotAncestors": 3
+    }
+  },
+  "scope": "Generated fixtures and cloud CI, including Windows native/file paths and Linux sanitizers. No physical device or new installation package acceptance.",
+  "documentationLinksFinal": {
+    "files": 90,
+    "localLinks": 593,
+    "broken": []
+  }
+}

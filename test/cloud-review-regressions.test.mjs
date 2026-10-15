@@ -28,10 +28,10 @@ await fs.writeFile(mediaStub,`const fs=require('node:fs/promises'),path=require(
 const {ExportService:ExportWithMockEncoder}=await bundle('export-publish','src/trace/exportService.ts',{plugins:[{name:'mock-encoder',setup(b){b.onResolve({filter:/^\.\/mediaTasks$/},()=>({path:mediaStub}))}}]})
 await build({entryPoints:['src/trace/file-worker.ts'],outfile:path.join(root,'file-worker.js'),bundle:true,platform:'node',format:'cjs'})
 const electron=path.join(root,'electron.cjs')
-await fs.writeFile(electron,`exports.app={getPath:()=>${JSON.stringify(root)},setPath(){},setName(){},requestSingleInstanceLock:()=>true,on(){},whenReady:()=>new Promise(()=>{}),exit(){},quit(){}};exports.ipcMain={};`)
+await fs.writeFile(electron,`exports.app={getPath:()=>${JSON.stringify(root)},setPath(){},setName(){},requestSingleInstanceLock:()=>true,on(){},whenReady:()=>new Promise(()=>{}),exit(){},quit(){}};exports.ipcMain={};exports.nativeImage={createFromBuffer(){throw Error('UNEXPECTED_IMAGE_DECODE')}};`)
 const {review}=await bundle('main','src/trace/main.ts',{
  plugins:[{name:'electron-boundary',setup(b){b.onResolve({filter:/^electron$/},()=>({path:electron}))}}],
- footer:{js:`module.exports.review={dispatch,makeReportInput,set(v){engine=v.engine;playback=v.playback;reports=v.reports;analyses=v.analyses;recordings=v.recordings;retention=v.retention;deliveries=v.deliveries;exporter=v.exporter;imports=v.imports;references=v.references;state=v.state;managingLibrary=!!v.managingLibrary;exiting=!!v.exiting;recordingCaptureHeld=false},state:()=>state};`}
+ footer:{js:`module.exports.review={dispatch,makeReportInput,ticket(id,playbackId){chartTickets.set(id,{svg:'',metadata:{},playbackId,created:Date.now()})},handle(raw){const webContents={mainFrame:{}};window={webContents,isDestroyed:()=>false};return handle({sender:webContents,senderFrame:webContents.mainFrame},raw)},ipc:()=>({completed:[...completed.values()],pending:pending.size}),set(v){markers=v.markers;instruments=v.instruments;engine=v.engine;playback=v.playback;reports=v.reports;analyses=v.analyses;recordings=v.recordings;retention=v.retention;deliveries=v.deliveries;exporter=v.exporter;imports=v.imports;references=v.references;state=v.state;managingLibrary=!!v.managingLibrary;exiting=!!v.exiting;recordingCaptureHeld=false},state:()=>state};`}
 })
 const noop=()=>{},metric=(value,unit='LUFS')=>({value,unit,status:'ready'})
 const metrics={positionFrame:'0',levelIndexFrame:'0',loudnessIndexFrame:'0',channels:[{samplePeak:metric(-6,'dBFS'),rms:metric(-9,'dBFS'),truePeak:metric(-5,'dBTP')}],momentary:metric(-23),shortTerm:metric(-23),integratedToCursor:metric(-23),loudnessRange:metric(1,'LU'),maxTruePeak:metric(-5,'dBTP'),wholeFileIntegrated:metric(-23),wholeFileLoudnessRange:metric(1,'LU'),wholeFileMaxTruePeak:metric(-5,'dBTP')}
@@ -48,6 +48,7 @@ class Native{
  playbackSnapshot(){return {...this.s}}
  playbackPlay(){this.s.phase='playing';this.s.playing=true}
  playbackSeek(position,resume){this.s={...this.s,generation:String(Number(this.s.generation)+1),positionFrame:position,phase:resume?'playing':'paused',playing:resume};return this.s.generation}
+ async playbackReplayOpen(id){return this.playbackOpen(id)}
  playbackVolume(){}
 }
 const region=(patch={})=>({id:'r',nativeId:'r',ordinal:1,baseName:'Test',journalFile:'journal.jsonl',format:{sampleRate:48000,channelCount:1},frames:'48000',startFrame:'0',endFrameExclusive:'48000',clock:{domain:'d',startQpc100ns:null,endQpc100ns:null,startEstimated:false,endEstimated:false},encoding:'float32',status:'closed',error:null,estimatedFrames:'0',clippedSamples:'0',...patch})
@@ -108,13 +109,18 @@ test('report uses a region export quality rather than unrelated interrupted capt
 })
 test('report event jump releases output, seeks silently and restores requested monitoring',async()=>{
  for(const playing of [true,false]){
-  const p=new PlaybackService(new Native(),new Analysis(),noop),source={takeId:'take',role:'source',label:'fixture',sources:['test.wav'],cacheRoot:root,sampleRate:48000,channelCount:1,frames:'48000'}
+  const f=await fixture(),source=await f.service.resolve('take',f.record.id),analysis=new Analysis(),hash=f.record.result.sourceSha256[0]
+  analysis.reportInput=()=>({manifest:{sourceSha256:[hash],cacheKey:'cache'},directory:root,source:{sources:source.sources}})
+  const p=new PlaybackService(new Native(),analysis,noop)
   await p.open(source,'device');const id=p.view().id;if(playing)await p.play(id)
-  let started=0;const t=context({playback:p,reports:{setRecordingBusy:noop,result:()=>({source:{takeId:'take',role:'source'},analysis:{sourceSha256:['hash']},eventPreview:[{startFrame:'24000'}]})},engine:{snapshot:()=>({active:false}),start:()=>{started++},stop:noop}})
+  let started=0;const t=context({playback:p,analyses:analysis,reports:{setRecordingBusy:noop,result:()=>({source:{takeId:source.takeId,role:source.role,exportId:source.exportId},analysis:{sourceSha256:[hash]},eventPreview:[{startFrame:'24000'}]})},engine:{snapshot:()=>({active:false}),start:()=>{started++},stop:noop}})
   p.selection(id,'0','12000',true);review.set(t)
   const reply=await review.dispatch(request('report.jump',{reportId:'report',index:0}))
   assert.equal(reply.ok,true);assert.equal(p.view().phase,'paused');assert.equal(p.view().outputReady,false);assert.equal(p.view().positionFrame,'24000');assert.equal(p.view().loop,false)
-  assert.equal(started,1);assert.equal(review.state().active,true);await p.close()
+  assert.equal(started,1);assert.equal(review.state().active,true)
+  await fs.appendFile(source.sources[0],'changed')
+  const changed=await review.dispatch({...request('report.jump',{reportId:'report',index:0}),expectedStateRevision:review.state().revision})
+  assert.equal(changed.ok,false);assert.equal(changed.error.code,'REVIEW_SOURCE_CHANGED');assert.equal(p.view().positionFrame,'24000');await p.close()
  }
 })
 test('failed recording startup resumes actual delivery so a later user-authorized copy completes',async()=>{
@@ -183,4 +189,58 @@ test('first-paint proof rejects null, missing, non-finite and late marks',()=>{
  const {assertThemeBeforeFirstPaint}=require('../tools/themes/first-paint.cjs')
  for(const proof of [{mark:1,paint:null},{mark:null,paint:2},{mark:NaN,paint:2},{mark:1,paint:Infinity},{mark:2,paint:1},{mark:2,paint:2}])assert.throws(()=>assertThemeBeforeFirstPaint(proof))
  assert.doesNotThrow(()=>assertThemeBeforeFirstPaint({mark:0,paint:2}))
+})
+
+test('marker jumps release audition and restore monitoring, including selection binding',async()=>{
+ const f=await fixture(),source=await f.service.resolve('take',f.record.id),analysis=new Analysis(),hash=f.record.result.sourceSha256[0]
+ analysis.reportInput=()=>({manifest:{sourceSha256:[hash],cacheKey:'cache'},directory:root,source:{sources:source.sources}})
+ const p=new PlaybackService(new Native(),analysis,noop);await p.open(source,'device');const id=p.view().id;await p.play(id)
+ let starts=0,ranges=0
+ review.set(context({playback:p,analyses:analysis,markers:{list:async()=>[{id:'marker',startFrame:'12000',endFrame:'24000'}]},references:{activeSlot:'a',range:async()=>ranges++},engine:{snapshot:()=>({active:false}),start:()=>starts++,stop:noop}}))
+ const reply=await review.dispatch(request('markers.jump',{playbackId:id,markerId:'marker'}))
+ assert.equal(reply.ok,true);assert.equal(p.view().outputReady,false);assert.equal(p.view().positionFrame,'12000');assert.equal(starts,1);assert.equal(ranges,1);await p.close()
+})
+test('chart preparation failure after releasing output restores requested monitoring',async()=>{
+ const p=new PlaybackService(new Native(),new Analysis(),noop);await p.openReplay('device',{quality:{version:1,estimatedFrames:'0',gapFrames:'0',unknown:false},frames:'48000',originFrame:'0',captureStartFrame:'0',sourceId:'device',epochId:'1',measurementEpoch:'1',sampleRate:48000,channelCount:1})
+ const id=p.view().id;await p.play(id);let starts=0
+ review.set(context({playback:p,instruments:{query:async()=>{throw Error('EXPECTED_CHART_FAILURE')}},engine:{snapshot:()=>({active:false}),start:()=>starts++,stop:noop}}))
+ const reply=await review.dispatch(request('chart.prepare',{playbackId:id}));assert.equal(reply.ok,false);assert.equal(p.view().outputReady,false);assert.equal(starts,1);await p.close()
+})
+test('IPC deduplication stores compact mutation outcomes and refreshes reply state',async()=>{
+ review.set(context());const r={...request('view.window',{seconds:30}),protocolVersion:1}
+ assert.equal((await review.handle(r)).ok,true);const cached=review.ipc().completed.at(-1)
+ assert.equal(cached.signature.length,64);assert.equal(cached.reply.state,undefined)
+ review.state().revision=99;assert.equal((await review.handle(r)).state.revision,99)
+ const read={...request('state.get'),protocolVersion:1};await review.handle(read)
+ assert.equal(review.ipc().completed.length,1)
+})
+test('a completed marker read cannot resume retention during recording preparation',async()=>{
+ const f=await fixture(),source=await f.service.resolve('take',f.record.id),analysis=new Analysis(),hash=f.record.result.sourceSha256[0]
+ analysis.reportInput=()=>({manifest:{sourceSha256:[hash]},source:{sources:source.sources}})
+ const p=new PlaybackService(new Native(),analysis,noop);await p.open(source,'device');let finishMarkers,finishPause,resumes=0,busy=false
+ const t=context({playback:p,analyses:analysis,markers:{list:()=>new Promise(resolve=>finishMarkers=resolve)},retention:{pause:async()=>{},resume:()=>resumes++},deliveries:{pause:()=>new Promise(resolve=>finishPause=resolve),resume:noop},recordings:{directory:root,busy:()=>busy,start:async()=>{busy=true}},engine:{snapshot:()=>({active:true,format:{sampleRate:48000,channelCount:1},epochId:'1'}),stop:noop}})
+ review.set(t);const listing=review.dispatch(request('markers.list',{playbackId:p.view().id}));for(let n=0;n<200&&!finishMarkers;n++)await new Promise(r=>setTimeout(r,5));assert(finishMarkers)
+ const starting=review.dispatch(request('record.start'));for(let n=0;n<200&&!finishPause;n++)await new Promise(r=>setTimeout(r,5));assert(finishPause)
+ finishMarkers([]);assert.equal((await listing).ok,true);assert.equal(resumes,0);finishPause();assert.equal((await starting).ok,true);assert.equal(resumes,0);await p.close()
+})
+test('a ready selected range can generate a report when the whole-file analysis was cancelled',async()=>{
+ const f=await fixture(),source=await f.service.resolve('take',f.record.id),analysis=new Analysis(),hash=f.record.result.sourceSha256[0]
+ const p=new PlaybackService(new Native(),analysis,noop);await p.open(source,'device');const id=p.view().id;p.selection(id,'12000','24000',false)
+ const selected=p.view().selectionAnalysis.id;analysis.jobs[0].phase='cancelled'
+ analysis.reportInput=job=>{if(job!==selected)throw Error('ANALYSIS_NOT_READY');return {manifest:{sourceSha256:[hash],cacheKey:'selection'},directory:root,source:{sources:source.sources}}}
+ let received;review.set(context({playback:p,analyses:analysis,recordings:{busy:()=>false,session:()=>f.take},imports:{has:()=>false},markers:{list:async()=>[]},reports:{setRecordingBusy:noop,start:async input=>{received=input;return 'selected-report'}}}))
+ const reply=await review.dispatch(request('report.prepare',{playbackId:id,scope:'selection'}));assert.equal(reply.ok,true);assert.deepEqual(received.request.source.scope,{kind:'selection',startFrame:'12000',endFrame:'24000'});await p.close()
+})
+test('IPC rejects excess concurrent work and releases all pending capacity on completion',async()=>{
+ const waiters=[];review.set(context({analyses:{metrics:()=>new Promise(resolve=>waiters.push(resolve)),setRecordingBusy:noop}}))
+ const replies=Array.from({length:32},()=>review.handle({...request('metrics.query',{analysisId:'a',positionFrame:'0',requestGeneration:0}),protocolVersion:1}))
+ const excess=await review.handle({...request('state.get'),protocolVersion:1});assert.equal(excess.error.code,'IPC_QUEUE_FULL');assert.equal(review.ipc().pending,32)
+ waiters.forEach(resolve=>resolve(metrics));assert((await Promise.all(replies)).every(r=>r.ok));assert.equal(review.ipc().pending,0)
+ assert.equal((await review.handle({...request('state.get'),protocolVersion:1})).ok,true)
+})
+
+test('PNG export rejects oversized image dimensions before invoking the image decoder',async()=>{
+ const p={active:()=>true,view:()=>({id:'image-file'})};review.set(context({playback:p}));review.ticket('image-ticket','image-file')
+ const bytes=Buffer.alloc(33);Buffer.from([137,80,78,71,13,10,26,10]).copy(bytes);bytes.writeUInt32BE(13,8);bytes.write('IHDR',12);bytes.writeUInt32BE(100000,16);bytes.writeUInt32BE(100000,20)
+ const reply=await review.dispatch(request('chart.save',{ticket:'image-ticket',format:'png',png:bytes.toString('base64')}));assert.equal(reply.ok,false);assert.equal(reply.error.code,'INVALID_CHART_PNG')
 })

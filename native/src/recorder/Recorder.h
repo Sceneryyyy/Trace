@@ -5,6 +5,7 @@
 #include "ReplayBuffer.h"
 #include "SpscQueue.h"
 #include "WavFile.h"
+#include "TimingStats.h"
 #include <atomic>
 #include <condition_variable>
 #include <filesystem>
@@ -19,9 +20,11 @@ struct RecordOptions {
     SourceFormat format;
     WavEncoding encoding=WavEncoding::Pcm24;
     WavOptions wav;
+    unsigned flushDelayMs=0; // Native fault tests only.
     unsigned writerDelayMs=0; // Native fault tests only.
 };
 struct RecordSnapshot {
+    TimingSnapshot writeTiming,flushTiming;
     RecordPhase phase=RecordPhase::Idle;
     std::string id,error;
     SourceFormat format;
@@ -37,6 +40,7 @@ struct RecordSnapshot {
     std::vector<LoudnessPoint> loudness;
 };
 class Recorder {
+    TimingStats writeTiming_,flushTiming_;
     using Queue=SpscQueue<AudioBlock,kQueueBlocks>;
     std::unique_ptr<Queue> queue_;
     std::thread worker_;

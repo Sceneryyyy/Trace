@@ -1,4 +1,5 @@
-import {lstat,readdir,realpath,readFile} from 'node:fs/promises'
+import {readMetadata} from './metadataFile'
+import {lstat,readdir,realpath} from 'node:fs/promises'
 import {join,resolve,sep} from 'node:path'
 import type {AssetFormat} from './assetFormat'
 import {ImportStore,type ImportedDocument,type StoredImportedAsset} from './importStore'
@@ -94,7 +95,7 @@ export class ImportService {
    const decoded=await this.ops.read(join(a.directory,'decoded'),cached.id,source.sha256,controller.signal)
    if(decoded.mediaIdentity!==cached.mediaIdentity||decoded.frames!==cached.frames||decoded.decoderSha256!==this.tools.ffmpegSha256||(['format','sampleRate','channelCount','encoding','container','bitrate'] as const).some(key=>decoded.format[key]!==cached.format[key]))throw Error('IMPORT_CACHE_IDENTITY_CHANGED')
    check(controller.signal);if(this.epoch(id)!==epoch||this.holds.has(id)||d.status!=='ready'||d.revision!==revision||d.cache?.id!==cached.id)throw Error('IMPORT_SOURCE_CHANGED')
-   return {takeId:id,role:'source' as const,label:d.name+' · 外部素材',sources:decoded.files.map(f=>join(decoded.directory,f.file)),cacheRoot:join(a.directory,'cache'),sampleRate:decoded.format.sampleRate,channelCount:decoded.format.channelCount,frames:decoded.frames,mediaIdentity:decoded.mediaIdentity,assetFormat:decoded.format}
+   return {continuity:'complete' as const,takeId:id,role:'source' as const,label:d.name+' · 外部素材',sources:decoded.files.map(f=>join(decoded.directory,f.file)),cacheRoot:join(a.directory,'cache'),sampleRate:decoded.format.sampleRate,channelCount:decoded.format.channelCount,frames:decoded.frames,mediaIdentity:decoded.mediaIdentity,assetFormat:decoded.format}
   }catch(error){if(!controller.signal.aborted&&!this.holds.has(id)&&this.epoch(id)===epoch){d.status=missing(error)?'missing':String(error).includes('SOURCE_CHANGED')?'changed':'failed';d.error=String(error);await a.save().catch(()=>{});this.changed()}throw error}
   finally{this.reads.delete(id)}})()
   this.reads.set(id,{controller,promise});return promise
@@ -120,7 +121,7 @@ export class ImportService {
    try{const parent=await lstat(join(a.directory,'exports')),info=await lstat(directory),actual=await realpath(directory)
     if(parent.isSymbolicLink()||!parent.isDirectory()||info.isSymbolicLink()||!info.isDirectory()||actual.toLowerCase()!==directory.toLowerCase())throw Error('INVALID_EXPORT_DIRECTORY')
     const metadata=join(actual,'export.json'),meta=await lstat(metadata);if(!meta.isFile()||meta.isSymbolicLink()||meta.size>4*1024*1024)throw Error('INVALID_EXPORT_MANIFEST')
-    const owner=JSON.parse(await readFile(metadata,'utf8'));if(owner.id!==exportId||owner.source?.takeId!==id)throw Error('LIBRARY_IDENTITY_CHANGED')
+    const owner=JSON.parse(await readMetadata(metadata,4*1024*1024,'LIBRARY_IDENTITY_CHANGED'));if(owner.id!==exportId||owner.source?.takeId!==id)throw Error('LIBRARY_IDENTITY_CHANGED')
     await trash(actual)
    }catch(error){if(!missing(error))throw error}
    const previous=a.document.exports;a.document.exports=previous.filter(r=>r.id!==exportId);try{await a.save()}catch(error){a.document.exports=previous;throw error}this.exportAvailability.delete(exportId)

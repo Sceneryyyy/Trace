@@ -7,7 +7,7 @@ import {createRequire} from 'node:module'
 const require=createRequire(import.meta.url),root=path.resolve('.')
 await fs.mkdir('artifacts/iteration',{recursive:true})
 const buildRoot=await fs.mkdtemp(path.join(root,'artifacts/iteration/cache-service-'))
-for(const [entry,out]of [['src/trace/recording.ts','recording.cjs'],['src/trace/file-worker.ts','file-worker.js'],['src/trace/contracts.ts','contracts.cjs']])await build({entryPoints:[entry],outfile:path.join(buildRoot,out),bundle:true,platform:'node',format:'cjs'})
+for(const [entry,out]of [['src/trace/recording.ts','recording.cjs'],['src/trace/file-worker.ts','file-worker.js'],['src/trace/media-runner.ts','media-runner.js'],['src/trace/contracts.ts','contracts.cjs']])await build({entryPoints:[entry],outfile:path.join(buildRoot,out),bundle:true,platform:'node',format:'cjs'})
 const {RecordingService}=require(path.join(buildRoot,'recording.cjs')),{validateRequest}=require(path.join(buildRoot,'contracts.cjs'))
 const identity={sourceId:'test-source',epochId:'1',measurementEpoch:'1',originFrame:'24000',captureStartFrame:'24000',frames:'96000',sampleRate:48000,channelCount:2}
 async function wave(options,frames){

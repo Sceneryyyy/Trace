@@ -1,3 +1,5 @@
+// Async work must not outlive its owner; Windows Job Objects also stop blocked native work.
+process.once('disconnect',()=>process.exit(1))
 import {nativeFilePath} from './nativeFilePath'
 import { createRequire } from 'node:module'
 import { analyzeAsset,sha256 } from './analysisWorker'

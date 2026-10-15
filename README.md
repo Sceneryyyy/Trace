@@ -16,7 +16,7 @@ Audio Recorder & Analyzer
 
 Trace 是 LeoMoon 系列的桌面音频录音与分析工作台。它把系统声音采集、录音、历史回听和多种测量仪器放在同一个窗口，让你既能观察正在发生的声音，也能沿时间轴回到刚才的细节。
 
-当前源码为 **0.1.0-preview.31**，开发分支为 `recorder/dev`。preview.31 独立工程已通过完整 Windows/Linux CI，并生成 **Windows x64 私有工程候选**（来源提交 `2aee519`）；产物身份见 [当前交接](docs/13-HANDOFF.md)。历史同事内测交付包为 **0.1.0-preview.30 / InternalTest-r3**（来源提交 `9c1ee21`）。[新版 PDF 快速上手](output/pdf/LeoMoon-Trace-Quick-Start-preview.31-zh-CN.pdf) 已更新，界面插图明确使用云端模拟数据。macOS 移植方案已记录，当前分支的 Trace 音频后端仍为 Windows/WASAPI，Mac 采集实现与实机验收尚未完成。
+当前源码为 **0.1.0-preview.33**（代码与文档复核修复，见 [85](docs/85-CODE-DOCUMENT-REVIEW.md)），开发分支为 `recorder/dev`。已验证的 preview.31 独立工程通过完整 Windows/Linux CI，并生成 **Windows x64 私有工程候选**（来源提交 `2aee519`）；产物身份见 [当前交接](docs/13-HANDOFF.md)。历史同事内测交付包为 **0.1.0-preview.30 / InternalTest-r3**（来源提交 `9c1ee21`）。[新版 PDF 快速上手](output/pdf/LeoMoon-Trace-Quick-Start-preview.31-zh-CN.pdf) 已更新，界面插图明确使用云端模拟数据。macOS 移植方案已记录，当前分支的 Trace 音频后端仍为 Windows/WASAPI，Mac 采集实现与实机验收尚未完成。
 
 ![Trace 工作台：波形、电平与响度共享时间轴](docs/assets/quick-start-preview28/workbench.png)
 
@@ -29,6 +29,7 @@ Trace 是 LeoMoon 系列的桌面音频录音与分析工作台。它把系统�
 - **统一时间轴**：波形与响度历史共享游标，支持拖动定位、选区循环、跟随游标及波形复位。实时监测、历史查看和文件回听在同一工作台完成。
 - **多仪器分析**：电平、Peak/RMS/True Peak，M/S/I 响度及 LRA，频谱、2D/3D 声谱图，以及立体声声场、相关度和平衡。
 - **按任务组织界面**：选择要显示的仪器，编辑位置与尺寸，保存命名布局预设；从精简录音视图切换到完整分析工作台。
+- **复核与导图**：持久化人工标记与评论，导出频谱/声谱 SVG、PNG 及来源元数据；报告增加时间加权响度分布、PLR/PSR，参考比较支持保守的等响度回听。
 - **素材检查与参考比较**：导入外部音频，用 A/B 参考对比观察差异；设置响度目标，查看超限事件，导出 CSV/HTML 测量报告。
 - **本地文件与诊断**：管理录音、原件与导出成品，提供单实例保护、脱敏诊断导出和邮件反馈入口。
 
@@ -49,6 +50,8 @@ Trace 是 LeoMoon 系列的桌面音频录音与分析工作台。它把系统�
 详细操作见 [用户指南](docs/28-USER-GUIDE.md)。内测分发包包含中文 PDF 快速上手手册，手册的适用版本与维护说明见 [用户手册记录](docs/62-USER-MANUAL.md)。
 
 ### 当前验证边界
+
+preview.33 的代码、文档复核与本轮验证见 [85](docs/85-CODE-DOCUMENT-REVIEW.md) 和 [当前交接](docs/13-HANDOFF.md)。下段是 preview.31 私有工程候选的历史验证身份；当前源码尚未生成新安装包。
 
 本项目仍处于开发预览阶段。preview.31 独立工程的 [完整 CI](https://github.com/Sceneryyyy/Trace/actions/runs/38099859270)（`2aee519`）已成功：Windows CTest **19/19**、Trace 原生/FFmpeg 测试 **64/64**、两端可移植 JS **272/272**，Linux ASan/UBSan 的 8 项核心测试与 1 项原始 EBU 门禁、浏览器回归、类型与应用构建均通过；Windows 私有工程候选已生成，包审计及加载/重启通过。自建来源证明见 [81](docs/81-SELF-BUILT-FFMPEG.md)，本轮文件/故障复验见 [82](docs/82-FILE-FAULT-TESTING.md) 和 [当前交接](docs/13-HANDOFF.md)。
 

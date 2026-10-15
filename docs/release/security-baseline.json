@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-10-11T01:13:25.709801+00:00",
-  "packageLockSha256": "17ce7b17ef9ce0821c8025284884e32550ed020f4752f6b39d37108cf8b545df",
+  "checkedAt": "2026-10-15T01:52:57.598672+00:00",
+  "packageLockSha256": "49c0bddb41fac5a94590b789796140ce48e8c0c88275fbc049bdf971db0a22f1",
   "releaseReady": false,
   "npmDependencyGateReady": true,
   "allDependencies": {
@@ -21,7 +21,7 @@
     "total": 0
   },
   "scope": "Full npm advisory gate plus pinned Trace-source-codec provenance. Codec/Microsoft component security, licensing and physical release acceptance remain separate.",
-  "inventorySource": "Current full/production local audits and exact-source Windows/Linux CI after source-map-js 1.2.2 patch; historical codec/dependency proof retained separately",
+  "inventorySource": "Fresh full/production audits for preview.33 code review; dependency versions unchanged from preview.32. Historical CI and codec provenance retained separately.",
   "directToolchain": {
     "@electron/asar": "3.4.1",
     "@types/node": "24.12.0",
@@ -106,5 +106,9 @@
       "vcruntime140.dll": "d5e4d9a3e835fa679450145d6a7d94e36573a509317111904d9b3712c30d9066",
       "vcruntime140_1.dll": "1f2d41c4aa5db0bc33ebf7b66d72943a817d7ce6cbe880502a9403823633093f"
     }
+  },
+  "ffmpegKnownCveSnapshot": {
+    "verification": "docs/release/ffmpeg-advisory-ancestry-20261015.json",
+    "scope": "Official master/9.0 listed fix ancestry only; 11 CVEs covered, not a complete FFmpeg/LAME or Microsoft component assessment."
   }
 }

@@ -1,4 +1,5 @@
-import {mkdir,lstat,realpath,unlink,rmdir,readdir,readFile,writeFile,open} from 'node:fs/promises'
+import {readMetadata} from './metadataFile'
+import {mkdir,lstat,realpath,unlink,rmdir,readdir,writeFile,open} from 'node:fs/promises'
 import {createReadStream} from 'node:fs'
 import {join,resolve,sep} from 'node:path'
 import {randomUUID,createHash} from 'node:crypto'
@@ -25,7 +26,7 @@ export class ReportService {
  async initialize():Promise<void>{
   await mkdir(this.root,{recursive:true});if((await lstat(this.root)).isSymbolicLink())throw Error('INVALID_REPORT_ROOT')
   for(const entry of await readdir(this.root,{withFileTypes:true})){if(!entry.isDirectory()||entry.isSymbolicLink()||!/^[-a-f0-9]{36}$/.test(entry.name))continue
-   const directory=join(this.root,entry.name),marker=join(directory,'owner.json');try{const info=await lstat(marker);if(!info.isFile()||info.isSymbolicLink())continue;const value=JSON.parse(await readFile(marker,'utf8'));if(value.product==='TraceReportDraft'&&value.version===1&&value.id===entry.name)await this.clean(directory)}catch(e){if((e as NodeJS.ErrnoException).code!=='ENOENT'&&!(e instanceof SyntaxError))throw e}}
+   const directory=join(this.root,entry.name),marker=join(directory,'owner.json');try{const info=await lstat(marker);if(!info.isFile()||info.isSymbolicLink()||info.size>4096)continue;const value=JSON.parse(await readMetadata(marker,4096,'INVALID_REPORT_OWNER'));if(value.product==='TraceReportDraft'&&value.version===1&&value.id===entry.name)await this.clean(directory)}catch(e){if((e as NodeJS.ErrnoException).code!=='ENOENT'&&!(e instanceof SyntaxError))throw e}}
  }
  views():ReportJobView[]{return [...this.jobs.values()].reverse().map(j=>structuredClone(j.view))}
  usesTake(id:string):boolean{return [...this.jobs.values()].some(j=>j.view.takeId===id&&Boolean(j.release))}

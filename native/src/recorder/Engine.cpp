@@ -264,6 +264,7 @@ void Engine::captureLoop(std::string id) {
                 if (count) silence(first, count, EstimatedSilence);
             }
             while (next && !stopCapture_) {
+                TimingScope packetTiming(captureTiming_);
                 BYTE* data = nullptr;
                 UINT32 frames = 0; DWORD flags = 0; UINT64 position = 0, qpc = 0;
                 site = 3;
@@ -347,6 +348,7 @@ void Engine::analysisLoop() {
 }
 Snapshot Engine::snapshot(unsigned seconds, size_t columns) {
     Snapshot result;
+    result.captureTiming=captureTiming_.snapshot();
     result.format = format_; result.deviceId = deviceId_; result.captureEpoch = captureEpoch_;
     result.active = active_; result.capturedFrames = captured_; result.analyzedFrames = analyzed_;
     result.estimatedFrames = estimated_; result.droppedFrames = dropped_; result.queueHighWater = highWater_;

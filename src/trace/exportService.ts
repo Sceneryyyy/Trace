@@ -1,5 +1,6 @@
+import {replaceMetadata,readMetadata} from './metadataFile'
 import {createHash,randomUUID} from 'node:crypto'
-import {mkdir,writeFile,rename,lstat,realpath,rm,readFile,readdir} from 'node:fs/promises'
+import {mkdir,writeFile,rename,lstat,realpath,rm,readdir} from 'node:fs/promises'
 import {join,sep,basename,extname} from 'node:path'
 import {encodeMedia,decodeMedia} from './mediaTasks'
 import {hashFiles,copyExportFile} from './fileJobs'
@@ -12,6 +13,7 @@ import type {AnalysisSource,SourceContinuity} from './analysisService'
 import {sourceContinuity} from './captureIntegrity'
 
 type Task={record:ExportRecord;take:ExportOwner;controller?:AbortController;cancelled:boolean;suspended:boolean}
+const exportManifestBytes=4*1024*1024
 const terminal=(phase:ExportPhase)=>['ready','failed','cancelled'].includes(phase)
 export class ExportService {
  private tasks=new Map<string,Task>()
@@ -112,7 +114,8 @@ export class ExportService {
   const record:ExportResult={continuity,version:1,directory:'exports/'+task.record.id,codec:result.codec,container:result.container,sampleRate:result.sampleRate,channelCount:result.channelCount,frames:result.frames,
    actualBitrate:result.actualBitrate,files,decoded,recipe:result.decodeRecipe,mediaIdentity,encoderSha256:result.encoderSha256,sourceSha256:result.sourceSha256}
   const final={...task.record,phase:'ready' as const,fraction:1,error:null,result:record};validateExportRecord(final)
-  await writeFile(join(ready,'export.json'),JSON.stringify(final,null,2),{flag:'wx'})
+  const manifest=JSON.stringify(final,null,2);if(Buffer.byteLength(manifest)>exportManifestBytes)throw Error('INVALID_EXPORT_MANIFEST')
+  await writeFile(join(ready,'export.json'),manifest,{flag:'wx'})
   if(task.controller?.signal.aborted)throw Error('MEDIA_CANCELLED')
   const parent=join(task.take.directory,'exports');await mkdir(parent,{recursive:true})
   const base=await realpath(task.take.directory),actual=await realpath(parent),info=await lstat(parent)
@@ -143,14 +146,14 @@ export class ExportService {
   for(const entry of await readdir(take.directory,{withFileTypes:true})){
    if(!entry.isDirectory()||entry.isSymbolicLink()||!entry.name.startsWith('.media-'+record.id+'-'))continue
    const directory=join(take.directory,entry.name)
-   try{const file=join(directory,'owner.json'),info=await lstat(file);if(!info.isFile()||info.isSymbolicLink()||info.size>4096)continue;const owner=JSON.parse(await readFile(file,'utf8'));if(owner.version===1&&owner.exportId===record.id&&owner.takeId===take.document.sessionId)await this.cleanup(take,directory)}catch(error){if((error as NodeJS.ErrnoException).code!=='ENOENT')throw error}
+   try{const file=join(directory,'owner.json'),info=await lstat(file);if(!info.isFile()||info.isSymbolicLink()||info.size>4096)continue;const owner=JSON.parse(await readMetadata(file,exportManifestBytes,'INVALID_EXPORT_MANIFEST'));if(owner.version===1&&owner.exportId===record.id&&owner.takeId===take.document.sessionId)await this.cleanup(take,directory)}catch(error){if((error as NodeJS.ErrnoException).code!=='ENOENT')throw error}
   }
  }
  private async recoverCommitted(record:ExportRecord,take:ExportOwner):Promise<boolean>{
   try{
    const directory=join(take.directory,'exports',record.id),file=join(directory,'export.json'),details=await lstat(file)
-   if(!details.isFile()||details.isSymbolicLink()||details.size>4000000)throw Error('INVALID_EXPORT_MANIFEST')
-   const recovered=validateExportRecord(JSON.parse(await readFile(file,'utf8')))
+   if(!details.isFile()||details.isSymbolicLink()||details.size>exportManifestBytes)throw Error('INVALID_EXPORT_MANIFEST')
+   const recovered=validateExportRecord(JSON.parse(await readMetadata(file,exportManifestBytes,'INVALID_EXPORT_MANIFEST')))
    if(recovered.id!==record.id||recovered.phase!=='ready'||JSON.stringify(recovered.source)!==JSON.stringify(record.source)||JSON.stringify(recovered.preset)!==JSON.stringify(record.preset))throw Error('EXPORT_MANIFEST_CONFLICT')
    const before={result:record.result,phase:record.phase,fraction:record.fraction,error:record.error}
    try{record.result=recovered.result;record.phase='ready';record.fraction=1;record.error=null;await this.resolveNow(take.document.sessionId,record.id);await take.save();this.changed();return true}
@@ -171,7 +174,7 @@ export class ExportService {
     await rename(decoded[i].path,join(directory,file));files.push({file,frames:decoded[i].frames,sha256:decoded[i].sha256})
    }
    const replacement:ExportRecord={...record,result:{...result,decoded:files}};validateExportRecord(replacement)
-   await writeFile(join(directory,'export.json.tmp'),JSON.stringify(replacement,null,2));await rename(join(directory,'export.json.tmp'),join(directory,'export.json'))
+   await replaceMetadata(join(directory,'export.json'),JSON.stringify(replacement,null,2),exportManifestBytes,'INVALID_EXPORT_MANIFEST')
    result.decoded=files;await take.save();this.changed();return files.map(f=>join(directory,f.file))
   }finally{this.rebuilds.delete(controller);if(owned)await this.cleanup(take,working)}
  }

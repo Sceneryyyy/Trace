@@ -11,7 +11,10 @@ function cancel():void{
  child.kill()
  // SIGTERM can be ignored on POSIX. Keep the supervisor alive until close so
  // cancellation/disconnect cannot leave an encoder writing in the background.
- if(!forceKill)forceKill=setTimeout(()=>child?.kill('SIGKILL'),2000)
+ if(!forceKill)forceKill=setTimeout(()=>{
+  if(process.platform!=='win32')try{process.kill(-process.pid,'SIGKILL');return}catch{}
+  child?.kill('SIGKILL')
+ },2000)
 }
 process.on('disconnect',cancel)
 process.on('message',(message:unknown)=>{
@@ -33,6 +36,7 @@ process.on('message',(message:unknown)=>{
   pipes.stderr.on('data',chunk=>{if(stderrBytes<32000){stderrBytes+=chunk.length;send({type:'stderr',text:chunk.toString().slice(-16000)})}})
   child.on('error',error=>{send({type:'error',message:String(error)})})
   child.on('close',code=>{
+   if(cancelled&&process.platform!=='win32')try{process.kill(-process.pid,'SIGKILL');return}catch{}
    if(forceKill)clearTimeout(forceKill)
    const result=cancelled?1:code??1
    if(process.connected)process.send?.({type:'exit',code:result},()=>process.exit(result===0?0:1));else process.exit(result===0?0:1)
