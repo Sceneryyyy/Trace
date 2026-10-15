@@ -88,3 +88,10 @@ test('5000 stable identifiers remain reachable with a bounded 50-row page',()=>{
 test('list durations stay compact while preserving hour boundaries without rounding up',()=>{
  assert.equal(libraryDuration(0n),'—');assert.equal(libraryDuration(999999999n),'0:00');assert.equal(libraryDuration(59999999999n),'0:59');assert.equal(libraryDuration(3600000000000n),'1:00:00')
 })
+
+test('unknown dates stay last and never match date ranges; capture quality warnings remain in attention filter',()=>{
+ const rows=[recordingRow(take('broken',{status:'unreadable',createdAt:'',roles:[]})),recordingRow(take('quality',{continuity:'estimated-silence'})),recordingRow(take('normal'))],f={query:'',status:'all',from:'',to:'',sort:'newest'}
+ for(const sort of ['newest','oldest'])assert.equal(filterLibrary(rows,{...f,sort}).at(-1).id,'broken')
+ assert(!filterLibrary(rows,{...f,from:'2020-01-01'}).some(r=>r.id==='broken'))
+ assert.deepEqual(filterLibrary(rows,{...f,status:'attention'}).map(r=>r.id),['quality','broken'])
+})

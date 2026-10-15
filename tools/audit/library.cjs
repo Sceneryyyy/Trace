@@ -88,8 +88,8 @@ async function main(){
   await ev('[...document.querySelectorAll(".library-detail-content button")].find(b=>b.textContent==="重命名").click()');await wait('!!document.querySelector("[aria-label=录音名称]")')
   const playBeforeTyping=await count('playback.play'),recordBeforeTyping=await count('record.start');await click('[aria-label="录音名称"]');await key('r','KeyR');await key(' ','Space');assert.equal(await count('playback.play'),playBeforeTyping);assert.equal(await count('record.start'),recordBeforeTyping)
   await key('Escape');assert.equal(await ev('!!document.querySelector("[aria-label=录音名称]")'),false);assert.equal(await ev('document.querySelector(".library-panel").hidden'),false)
-  await ev('document.querySelector("[data-library-row=rec-00000]").focus()');await key('End');assert.equal(await ev('document.activeElement.dataset.libraryRow'),'unknown')
-  await key('F10','F10',8);await wait('!!document.querySelector("[role=menu]")');await key('Escape');assert.equal(await ev('document.activeElement.dataset.rowMore'),'unknown')
+  await ev('document.querySelector("[data-library-row=rec-00000]").focus()');await key('End');assert.equal(await ev('document.activeElement.dataset.libraryRow'),'broken')
+  await key('F10','F10',8);await wait('!!document.querySelector("[role=menu]")');await key('Escape');assert.equal(await ev('document.activeElement.dataset.rowMore'),'broken')
   report.checks.push('Rename input suppresses global R/Space; Escape cancels form; row End and keyboard context menu keep local focus')
 
   const beforeFailure=await count('playback.play');await ev('window.__fail()');await click('[data-library-play="unknown"]');await wait('!!document.querySelector(".library-panel [role=alert]")');assert.equal(await count('playback.play'),beforeFailure);await click('[aria-label="关闭列表提示"]');report.checks.push('Failed opening stays visible inside the drawer, sends no play and can be dismissed')

@@ -29,7 +29,7 @@ export type LibraryRow={id:string;kind:LibraryCategory;name:string;createdAt:str
 const nanos=(frames:string|undefined,rate:number|undefined)=>frames&&rate&&rate>0?BigInt(frames)*1000000000n/BigInt(rate):0n
 export function recordingRow(take:TakeSummary):LibraryRow{
  const processing=take.status==='processing'||take.status==='recording'||Boolean(take.exports?.some(e=>!['ready','failed','cancelled'].includes(e.phase)))
- const attention=['failed','recoverable','unreadable'].includes(take.status)||Boolean(take.availability&&take.availability!=='present')||Boolean(take.exports?.some(e=>e.phase==='failed'||e.delivery?.phase==='failed'))
+ const attention=['failed','recoverable','unreadable'].includes(take.status)||Boolean(take.hasDiscontinuities)||Boolean(take.continuity&&take.continuity!=='complete')||Boolean(take.clippedSamples&&BigInt(take.clippedSamples)>0n)||Boolean(take.availability&&take.availability!=='present')||Boolean(take.exports?.some(e=>e.phase==='failed'||e.delivery?.phase==='failed'))
  const status=take.status==='unreadable'?'记录无法读取':take.status==='recoverable'?'可恢复':take.status==='failed'?'未完整完成':take.status==='recovered'?'已恢复':take.hasDiscontinuities?'音频有中断':processing?'正在处理':take.status==='ready'?'已保存':'正在录音'
  const source=preferredSource(take)
  return {id:take.id,kind:'recordings',name:take.name,createdAt:take.createdAt,durationNs:take.durationNs?BigInt(take.durationNs):nanos(take.frames,take.sampleRate),format:take.encoding==='mp3'?'MP3':take.encoding==='aac'?'AAC':take.encoding==='float32'?'WAV 32f':take.encoding==='pcm24'?'WAV 24-bit':'WAV 16-bit',status,attention,processing,ready:Boolean(source&&['ready','recovered','failed'].includes(take.status)),source,take}
@@ -44,11 +44,13 @@ const collator=new Intl.Collator('zh-CN',{numeric:true,sensitivity:'base'})
 export function filterLibrary(rows:LibraryRow[],filter:LibraryFilter):LibraryRow[]{
  const query=filter.query.trim().toLocaleLowerCase()
  return rows.filter(row=>{
-  const date=day(row.createdAt)
-  return (row.name+' '+(row.asset?.sourceName||'')).toLocaleLowerCase().includes(query)&&(!filter.from||date>=filter.from)&&(!filter.to||date<=filter.to)&&
+  const date=day(row.createdAt),dated=Number.isFinite(Date.parse(row.createdAt))
+  return (row.name+' '+(row.asset?.sourceName||'')).toLocaleLowerCase().includes(query)&&(!(filter.from||filter.to)||dated)&&(!filter.from||date>=filter.from)&&(!filter.to||date<=filter.to)&&
    (filter.status==='all'||filter.status==='ready'&&row.ready||filter.status==='processing'&&row.processing||filter.status==='attention'&&row.attention)
  }).sort((a,b)=>{
-  const order=filter.sort==='name'?collator.compare(a.name,b.name):filter.sort==='duration'?(a.durationNs>b.durationNs?-1:a.durationNs<b.durationNs?1:0):filter.sort==='oldest'?Date.parse(a.createdAt)-Date.parse(b.createdAt):Date.parse(b.createdAt)-Date.parse(a.createdAt)
+  const at=Date.parse(a.createdAt),bt=Date.parse(b.createdAt)
+  const dates=!Number.isFinite(at)?Number.isFinite(bt)?1:0:!Number.isFinite(bt)?-1:filter.sort==='oldest'?at-bt:bt-at
+  const order=filter.sort==='name'?collator.compare(a.name,b.name):filter.sort==='duration'?(a.durationNs>b.durationNs?-1:a.durationNs<b.durationNs?1:0):dates
   return order||a.id.localeCompare(b.id)
  })
 }
