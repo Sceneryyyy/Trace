@@ -194,7 +194,7 @@ export default function App(): React.JSX.Element {
     const key=(event:KeyboardEvent)=>{
       const target=event.target as HTMLElement
       if(event.defaultPrevented||document.querySelector('[role="dialog"]:not(.library-panel)'))return
-      if(event.code!=='Escape'&&(target?.isContentEditable||['INPUT','TEXTAREA','SELECT','BUTTON','SUMMARY'].includes(target?.tagName)))return
+      if(event.code!=='Escape'&&(target?.isContentEditable||['INPUT','TEXTAREA','SELECT'].includes(target?.tagName)||Boolean(target?.closest('.library-panel')&&['BUTTON','SUMMARY'].includes(target.tagName))))return
       const file=current.current.playback
       if(busyRef.current&&event.code!=='Escape')return
       if(event.ctrlKey&&!event.altKey&&!event.metaKey&&event.code==='KeyD'){
