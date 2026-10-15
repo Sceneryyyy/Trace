@@ -33,7 +33,22 @@
 
 50/500/5000 条元数据分别检查提交呈现后的实际行数和面板 DOM；均保持 50 行，列表换页不会累积旧页。时序记录包含两次 requestAnimationFrame，属于本机单次界面提交观察，不据此宣称搜索性能随数据量提升，也不等同于真实磁盘、解码或音频性能测试。机器可读报告见 `artifacts/library/browser-report.json`；CI 将摘要写入可读取的分片注解并上传报告。
 
-本地执行类型/构建、完整 portable、原 renderer 9 项、P0/P1 9 项、独立工程与 npm 安全门禁。完整 Windows/Linux CI 的最终身份与实际计数将在交接中记录，不沿用 preview.33 作为本轮通过证据。
+本地执行类型/构建、完整 portable、原 renderer 9 项、P0/P1 9 项、独立工程与 npm 安全门禁。本轮完整 Windows/Linux CI 的最终身份见下表和当前交接，不沿用 preview.33 作为本轮通过证据。
+
+## 本轮完整 CI 与来源身份
+
+源码 `bf42e6c0938ff8b145774379d2a4fcfda5ce85d7`，完整 [CI 38744154945](https://github.com/Sceneryyyy/Trace/actions/runs/38744154945)，attempt 1：Windows 与 Linux 验证 job 均成功。实际 PR 合并测试提交 `742f186251faa5d08f3cdc22d999a220cf2b6d76` 的内容树与交付源码一致（`9fa3ebd2390f37ce12ae74c5f31b67db989b578d`），两端 sourceDirty=false。最终交接文档提交不代表新增音频测试。
+
+| 范围 | 实际结果 |
+| --- | --- |
+| Portable | Linux / Windows 各 **321/321**，0 fail/skip；新增 14 项列表/回听检查及录音服务 quality summary 断言包含在内 |
+| Windows | CTest **19/19**、原生/媒体 **68/68**；锁定组件安装、类型/应用构建和完整/生产安全门禁成功 |
+| Linux | ASan/UBSan 核心 **8/8** + 原始 EBU **1/1**；独立 I 对照、React selector、原 renderer 及 P0/P1 浏览器步骤成功 |
+| 原始 EBU | 两端适用素材各 **68/68**，112/112 数值与 204/204 一致性；两份不支持的多声道素材排除，不算通过 |
+| 新列表 UI | CI 实际 React / 产品 CSP / 模拟 IPC 的 **13 组**交互通过；50/500/5000 条元数据均只挂载 50 行；含原走带按钮聚焦后的 Space 回归 |
+| 本地 | 完整 portable 321/321、类型/构建、工程独立边界、完整/生产 npm 零公告、原 9 + 9 项浏览器、新 13 组列表、React selector 通过；报告分别标明源身份和模拟范围 |
+
+固定摘要、job/step 状态、分片 SHA-256 与来源树见 [验证 JSON](release/recording-library-verification.json)。已读取并校验 CI 注解分片，没有下载附件 payload。FFmpeg 本轮复用固定构建并重新校验安装身份，不是新组件源码构建；本轮未创建 preview.34 安装包或更新旧 PDF。
 
 ## 待人工验收
 

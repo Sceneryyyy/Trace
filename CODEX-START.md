@@ -9,7 +9,7 @@
 3. 按 [Windows 开发环境](docs/09-WINDOWS-SETUP.md) 准备依赖与引擎；本仓库根即构建工作目录，无需重新克隆 Prism 或建立第二层 `app/`。
 4. 根据任务实现、运行对应验证，更新相关契约与当前交接。历史记录不能替代本次版本的验证。
 
-依赖、编码与下载回归修复已交付到 `recorder/dev`；自建 FFmpeg 已接入；完整 CI 与新候选绑定 `2aee519`，证据见 [82](docs/82-FILE-FAULT-TESTING.md)。本轮最新源码及验证以 [87](docs/87-RECORDING-LIBRARY-ITERATION.md) 与当前交接为准。下一会话的同步检查、证据位置和云端/实机后续顺序见 [接力说明](docs/13-HANDOFF.md#下一会话接力)。忽略目录里的原始日志不会随 clone 下载，可从已提交的验证摘要和 Actions 继续核查。
+依赖、编码与下载回归修复已交付到 `recorder/dev`；自建 FFmpeg 已接入；完整 CI 与新候选绑定 `2aee519`，证据见 [82](docs/82-FILE-FAULT-TESTING.md)。preview.34 列表源码 `bf42e6c` / PR #2 的完整两端 CI 已通过；PR #2 尚未合入远程默认分支。最新源码及证据以 [87](docs/87-RECORDING-LIBRARY-ITERATION.md) 与当前交接为准。下一会话的同步检查、证据位置和云端/实机后续顺序见 [接力说明](docs/13-HANDOFF.md#下一会话接力)。忽略目录里的原始日志不会随 clone 下载，可从已提交的验证摘要和 Actions 继续核查。
 
 ## Windows 构建入口
 
@@ -38,7 +38,7 @@ npm test
 npm run build
 ```
 
-这组命令验证工程依赖边界、静态类型、可移植业务逻辑和应用资源；`npm ci` 安装声明的依赖，不构建本项目或上游的原生 addon。可移植 C++、FFT 与原始 EBU 素材检查使用 `native/portable`，命令见 [09](docs/09-WINDOWS-SETUP.md)。Windows WASAPI、原生引擎加载与分发包须另验；最新本轮结果以 [85](docs/85-CODE-DOCUMENT-REVIEW.md) 和当前交接为准。macOS 路线见 [70](docs/70-MACOS-PORT-PLAN.md)，当前分支没有完成 Trace 的 Mac 采集实现。
+这组命令验证工程依赖边界、静态类型、可移植业务逻辑和应用资源；`npm ci` 安装声明的依赖，不构建本项目或上游的原生 addon。可移植 C++、FFT 与原始 EBU 素材检查使用 `native/portable`，命令见 [09](docs/09-WINDOWS-SETUP.md)。Windows WASAPI、原生引擎加载与分发包须另验；最新本轮结果以 [87](docs/87-RECORDING-LIBRARY-ITERATION.md) 和当前交接为准。macOS 路线见 [70](docs/70-MACOS-PORT-PLAN.md)，当前分支没有完成 Trace 的 Mac 采集实现。
 
 ## 项目来源与约定
 
