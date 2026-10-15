@@ -2,15 +2,19 @@
 
 更新：2026-10-15。默认开发分支 `recorder/dev`；源码仓库根为当前 checkout（本次云端 `/workspace/Trace`）。项目规则见 [AGENTS.md](../AGENTS.md)，全部资料见 [文档索引](README.md)。早期会话已移至 [交接历史](archive/13-HANDOFF-HISTORY.md)，其“下一步”和当时分支状态不代表当前待办。
 
+## 2026-10-15 · 正式合并
+
+用户已明确授权正式合并。[PR #1](https://github.com/Sceneryyyy/Trace/pull/1) 已由草稿转为就绪并合入 `recorder/dev`，合并提交 `2454bad17d7d00ead556704385114bc646aa9dd2`，保留全部原提交历史。合并时评审分支 HEAD 为 `457d29b`、默认分支原 HEAD 为 `2ed9f7d`，GitHub 确认无冲突；合并内容树与 `457d29b` 一致。以下保留各轮测试及分发身份；合并和本次交接文档更新不代表新增实机验收或安装包。
+
 ## 2026-10-15 · 代码与文档复核
 
 当前源码 preview.33；用户要求完整复核并即时修复，范围、反例与修复见 [85](85-CODE-DOCUMENT-REVIEW.md)。本轮修复录音冻结质量、元数据/诊断写入及缓存误删边界、监测/参考选区恢复、复核与 REC 准备竞态、IPC 资源、选区报告、匹配音量及 PNG/CSV/生产 CSP 输出边界；补齐旧 WAV 后处理及文件/报告 worker 的进程所有权，修复强退后继续写盘；同步陈旧文档入口。原始计量和既有协议版本保持，新依赖版本未升级。
 
-代码 `1c00c07` 的 [完整 CI 38671033132](https://github.com/Sceneryyyy/Trace/actions/runs/38671033132) 已成功：两端 portable 307/307，Windows CTest 19/19、原生/媒体 68/68，Linux ASan/UBSan 核心 8/8 + 原始 EBU 1/1；两端原始 EBU 68/68，112 项数值及 204 项一致性检查通过。CI 合并提交 `9a87e20` 与交付代码 Git tree 相同，两端 sourceDirty=false。独立 I 对照、实际 React selector 及 9 + 9 项模拟 IPC 浏览器检查通过；已校验分片注解，附件 payload 未读取。来源/计数/校验见 [本轮验证 JSON](release/code-review-verification.json)。仍使用 [草稿 PR #1](https://github.com/Sceneryyyy/Trace/pull/1)，不直接合入默认分支。未建立 preview.33 安装包；当前候选仍为下表 preview.31。下方 10-11 记录属于上一轮源码验证，不代表本轮通过。
+代码 `1c00c07` 的 [完整 CI 38671033132](https://github.com/Sceneryyyy/Trace/actions/runs/38671033132) 已成功：两端 portable 307/307，Windows CTest 19/19、原生/媒体 68/68，Linux ASan/UBSan 核心 8/8 + 原始 EBU 1/1；两端原始 EBU 68/68，112 项数值及 204 项一致性检查通过。CI 合并提交 `9a87e20` 与交付代码 Git tree 相同，两端 sourceDirty=false。独立 I 对照、实际 React selector 及 9 + 9 项模拟 IPC 浏览器检查通过；已校验分片注解，附件 payload 未读取。来源/计数/校验见 [本轮验证 JSON](release/code-review-verification.json)。已通过 [PR #1](https://github.com/Sceneryyyy/Trace/pull/1) 正式合入默认分支 `recorder/dev`，合并身份见顶部。未建立 preview.33 安装包；当前候选仍为下表 preview.31。下方 10-11 记录属于上一轮源码验证，不代表本轮通过。
 
 ## 2026-10-11 · P0/P1 上一轮迭代
 
-按用户要求顺序完成 83 的 R83-01～08，所有云端可完成内容已交付，到此停止迭代。源码 preview.32，代码 `4fd9401` 已推到 [草稿 PR #1](https://github.com/Sceneryyyy/Trace/pull/1)（`codex/p0-p1-cloud-20261011`）；本地继续在 `recorder/dev`，远程默认分支尚未合入该 PR。
+按用户要求顺序完成 83 的 R83-01～08，所有云端可完成内容已交付，到此停止迭代。源码 preview.32，代码 `4fd9401` 已推到 [草稿 PR #1](https://github.com/Sceneryyyy/Trace/pull/1)（`codex/p0-p1-cloud-20261011`）；该阶段提交时本地继续在 `recorder/dev`，远程默认分支当时尚未合入该 PR；现已合并，见顶部。
 
 [完整 CI 38160177617](https://github.com/Sceneryyyy/Trace/actions/runs/38160177617) 全成功：Linux / Windows portable 286/286；Linux ASan/UBSan 8/8 + 原始 EBU 1/1；Windows CTest 19/19、native/媒体 67/67，两平台原始 EBU 68/68、sourceDirty=false。CI 临时合并提交 `b31fcb9` 与代码 `4fd9401` 的 Git tree 相同。独立 I 对照 8/8、浏览器交互、18 组实际长文件基线全通过；详细范围/数值见 [84](84-P0-P1-CLOUD-ITERATION.md)，固定来源/摘要/附件身份见 [验证 JSON](release/p0-p1-cloud-verification.json)。附件 payload 下载 HTTP 403，未在本地读取；实际 CI 分片注解已校验，成功步骤与本地记录分别标明证据范围。
 
@@ -182,7 +186,7 @@ Node Undici 内部断言，未上传新候选。下载改为保持代理/TLS 的
 | 本云端原始材料 | 忽略目录 artifacts/review-20261015/、artifacts/file-faults/、artifacts/codec-build/、artifacts/release-security/ 与 artifacts/independence/；原始日志、公开来源归档、同步收据不会随 clone 下载 |
 | 私有 EBU | 执行 `python3 references/ebu-loudness-test-set-v5/prepare.py` 还原/核验；公开源码归档排除原始素材，强制门禁缺素材必须失败 |
 
-先检查目录、分支、PR 合入状态与未提交修改。PR 未合入时，preview.33 源码仍在 `codex/p0-p1-cloud-20261011`；不要把远程默认分支当成已包含本轮修复。保留本地后续提交；默认分支干净且无本地分叉时才执行 `git switch recorder/dev`
+先检查目录、分支、远程提交与未提交修改。PR #1 已合入 `recorder/dev`，preview.33 的 P0/P1 与复核修复均已包含；后续开发默认从此分支继续。保留本地后续提交；默认分支干净且无本地分叉时才执行 `git switch recorder/dev`
 和 `git pull --ff-only origin recorder/dev`。有分叉保留两边历史，不 reset 覆盖。
 仅更新文档检查链接/diff；依赖、音频或构建变化时重新取得相应实际门禁。
 
