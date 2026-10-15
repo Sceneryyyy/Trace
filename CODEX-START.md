@@ -1,6 +1,6 @@
 # Trace 声迹 · 开发入门
 
-2026-10-15 更新。本目录已经是完整源码仓库；默认开发分支为 `recorder/dev`。当前源码 preview.33（[本轮复核](docs/85-CODE-DOCUMENT-REVIEW.md)）；来源 `2aee519` 的 preview.31 私有工程候选已由完整 CI 生成，preview.30 / InternalTest-r3 保留为历史同事内测交付包。版本、产物身份与验证边界见 [当前交接](docs/13-HANDOFF.md)，独立工程边界见 [79](docs/79-TRACE-INDEPENDENT-PROJECT.md)，自建组件原始证明见 [81](docs/81-SELF-BUILT-FFMPEG.md)，本轮文件/故障与工具更新复验见 [82](docs/82-FILE-FAULT-TESTING.md)。
+2026-10-15 更新。本目录已经是完整源码仓库；默认开发分支为 `recorder/dev`。当前源码 preview.33（[本轮复核](docs/85-CODE-DOCUMENT-REVIEW.md)）；来源 `2aee519` 的 preview.31 私有工程候选已由完整 CI 生成，preview.30 / InternalTest-r3 保留为历史同事内测交付包。版本、产物身份与验证边界见 [当前交接](docs/13-HANDOFF.md)，独立工程边界见 [79](docs/79-TRACE-INDEPENDENT-PROJECT.md)，自建组件原始证明见 [81](docs/81-SELF-BUILT-FFMPEG.md)，上一轮文件/故障与工具更新复验见 [82](docs/82-FILE-FAULT-TESTING.md)。
 
 ## 开始工作
 
@@ -9,7 +9,7 @@
 3. 按 [Windows 开发环境](docs/09-WINDOWS-SETUP.md) 准备依赖与引擎；本仓库根即构建工作目录，无需重新克隆 Prism 或建立第二层 `app/`。
 4. 根据任务实现、运行对应验证，更新相关契约与当前交接。历史记录不能替代本次版本的验证。
 
-依赖、编码与下载回归修复已交付到 `recorder/dev`；自建 FFmpeg 已接入；完整 CI 与新候选绑定 `2aee519`，证据见 [82](docs/82-FILE-FAULT-TESTING.md)。下一会话的同步检查、证据位置和云端/实机后续顺序见 [接力说明](docs/13-HANDOFF.md#下一会话接力)。忽略目录里的原始日志不会随 clone 下载，可从已提交的验证摘要和 Actions 继续核查。
+依赖、编码与下载回归修复已交付到 `recorder/dev`；自建 FFmpeg 已接入；完整 CI 与新候选绑定 `2aee519`，证据见 [82](docs/82-FILE-FAULT-TESTING.md)。本轮最新源码及验证以 [85](docs/85-CODE-DOCUMENT-REVIEW.md) 为准。下一会话的同步检查、证据位置和云端/实机后续顺序见 [接力说明](docs/13-HANDOFF.md#下一会话接力)。忽略目录里的原始日志不会随 clone 下载，可从已提交的验证摘要和 Actions 继续核查。
 
 ## Windows 构建入口
 

@@ -31,17 +31,31 @@ P0 是本项目数据完整性/误写误删的修复优先级。文件系统问�
 
 ## 版本、资源与数据边界
 
-Meter v5、Request/Reply v1、Session v2、analysis schema v1/key v3、ReplayQuality v1、InstrumentSettings v2 均保持。质量标志修复恢复既有质量协议的真实含义，不改计量公式、容差、原始 EBU 素材或 FFT 来源。唯一依赖变更是根产品版本字段；已锁定 npm 依赖版本未升级。
+Meter v5、Request/Reply v1、Session v2、analysis schema v1/key v3、ReplayQuality v1、InstrumentSettings v2 均保持。质量标志修复恢复既有质量协议的真实含义，不改计量公式、容差、原始 EBU 素材或 FFT 来源。根产品版本字段升为 preview.33，已锁定 npm 依赖版本未升级。
 
-96/256 MiB 声谱磁盘配额针对已验证的可重建文件；未知文件、无法验证的损坏隔离文件、链接及正在读写的文件继续保留，不计作可淘汰数据。诊断 knownBytes 不是磁盘总占用。未访问的离线旧根仍遵循 84 的发现限制。本轮不重复运行未受改动的 18 组长文件性能矩阵，其数值继续只属于 84 的源码身份。
+96/256 MiB 声谱磁盘配额针对已验证的可重建文件；未知文件、无法验证的损坏隔离文件、链接及正在读写的文件继续保留，不计作可淘汰数据。诊断 knownBytes 不是磁盘总占用。未访问的离线旧根仍遵循 84 的发现限制。本轮未重跑 18 组长文件性能矩阵；84 的性能数值继续只属于当时源码，不外推为 preview.33 的资源结果。本轮验证缓存保护及有界数据结构。
 
 元数据错误会拒绝该条目/任务或回退偏好；不会用缺失或损坏数据冒充完整采集。坏 journal 行被跳过并计数，不影响之后完整 checkpoint 的检查。CSV 回归验证输出的文本中和规则，不声称已在所有电子表格软件中运行。
 
 ## 验证记录
 
-本轮最终 Windows/Linux CI 及源码身份正在收集，完成后补入本节及 13。原始日志保存在忽略目录 `artifacts/review-20261015/`；提交摘要保存可复核的命令、范围与结果。源码提交完成前的本地记录是 dirty worktree 验证，不冒充干净提交 CI。
+最终代码为 `1c00c07ed7906ae85837e5f518bf0b5586694725`，Git tree `05f1ff4d7f6f9edf9b81ca171f600fdadcaee4a7`。完整 [CI 38671033132](https://github.com/Sceneryyyy/Trace/actions/runs/38671033132)（attempt 1）成功；实际测试的 PR 临时合并提交 `9a87e204b5cbf5e1a7cd8768df5201e92d491c63` 与交付代码 tree 相同，两平台均 `sourceDirty=false`。
 
-本地已通过类型、完整 portable 307/307（无跳过）、独立工程边界、应用构建、npm 全量/生产审计（均为 0）；Release portable CTest 核心 8/8；实际 React selector、模拟 IPC 浏览器既有 9 项和 P0/P1 9 项（含实际产品 CSP）。文档本地链接全部有效；最终 CI 待补。文件/链接测试使用生成夹具；Windows 的目录边界由 junction 覆盖，文件链接的 POSIX 分支不能冒充 Windows 文件链接验收。
+| 范围 | 本轮结果 |
+| --- | --- |
+| 基线反例 | 原基线 portable 286/286；新增 21 项在旧源码分别出现 18 + 3 个失败，修复后两组定向 43/43 + 13/13；Windows 新增的阻塞 worker 场景另由真实 Job Object 覆盖 |
+| Linux CI | portable 307/307；ASan/UBSan 核心 8/8（JUnit 316 s）及原始 EBU 1/1（812 s），0 failure/disabled；独立固定响度引擎对照步骤成功 |
+| Windows CI | portable 307/307、原生/媒体 68/68（12 文件）、原生 CTest 19/19；均 0 fail/skip；包含 Recorder 冻结质量及阻塞文件 worker 强退回归 |
+| 原始 EBU | 两平台各 68/68 适用单/双声道素材，112/112 数值检查及 204/204 一致性检查；2 个不支持的多声道文件不计入通过分母 |
+| 浏览器 | 实际 React selector、既有 9 项交互、P0/P1 9 项（含生产 CSP、两种图的 SVG/PNG 转换）通过；IPC/读数为明确的模拟边界 |
+| 工程/依赖 | 类型、独立工程边界、应用构建、完整与生产 npm 审计均通过；两类 npm 告警均为 0；依赖版本未升级 |
+| 云端本地补充 | Release portable 核心 8/8；本地完整 portable 307/307。提交前使用 dirty worktree，单独保留记录，不冒充干净提交 CI |
+
+完整来源、命令、计数、JUnit/EBU/测试记录 SHA256、GitHub 注解分片 SHA256 与附件身份见 [验证 JSON](release/code-review-verification.json)。Windows 注解 4 片、Linux 2 片，均已完整拼接并校验 SHA256。附件 payload 下载未成功（portable 返回 Forbidden），未在本地读取；独立 I 与浏览器的 CI 结论来自成功步骤，本轮不编写未读取 payload 的详细数值。原始本地日志位于忽略目录 `artifacts/review-20261015/`，日志摘要/校验已提交。
+
+文件/链接测试使用生成夹具；Windows 目录边界使用 junction，文件链接的 POSIX 分支不冒充 Windows 文件链接验收。阻塞 worker 使用注入的同步写盘夹具，Job Object 为真实原生实现。后续仅文档提交不代表新增音频/Windows/安装包运行。
+
+官方 [FFmpeg 安全清单](https://ffmpeg.org/security.html) 的 master/9.0 两节另已做固定源码祖先检查：11 个 CVE 均有对应修复，14 个主线修复提交在锁定的 946fcce07b6dcd0331c8cc609192aeff5e1924f8 之前；3 个成对的分支回移提交不是该主线的祖先。快照 SHA256、逐项结果及范围见 [advisory 记录](release/ffmpeg-advisory-ancestry-20261015.json)。这项核对不关闭 LAME、微软组件或全部第三方安全审计。
 
 ## 后续边界
 
