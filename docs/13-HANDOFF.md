@@ -2,9 +2,13 @@
 
 更新：2026-10-15。默认开发分支 `recorder/dev`；源码仓库根为当前 checkout（本次云端 `/workspace/Trace`）。项目规则见 [AGENTS.md](../AGENTS.md)，全部资料见 [文档索引](README.md)。早期会话已移至 [交接历史](archive/13-HANDOFF-HISTORY.md)，其“下一步”和当时分支状态不代表当前待办。
 
-## 2026-10-15 · 新阶段：录音列表调研
+## 2026-10-15 · 录音列表迭代
 
-用户指定下一阶段聚焦已有录音的播放列表，先参考其他播放器/录音机。基线 `6b37ed4` / preview.33，报告见 [86](86-RECORDING-LIST-RESEARCH.md)，[固定来源](research/2026-10-15-recording-list-sources.json) 记录 KRecorder、Dopamine、Strawberry、Audacious 共 17 份源码和三份公开截图。建议先精简列表与保留 UI 状态，再做显式回听/工作台侧栏，最后测量大列表资源；L86-01～03 尚未实施，具体偏好待用户反馈。本轮仅文档/JSON，不更新产品版本、不新增安装包、不复用调研作为音频验收。
+用户授权按同步任务单继续推进；当前源码 preview.34，L86-01～03 云端实现见 [87](87-RECORDING-LIBRARY-ITERATION.md)。紧凑录音/导入分类、单份详情、右侧栏/窄屏抽屉、选择/载入/回听区分、当前文件版本与游标/选区复用、有界最新播放意图、状态保留、查找/排序/定位与 50 行分页已接入。TakeSummary 新增可选 continuity，复用既有采集质量，不改 Meter v5、Session v2 或协议版本；依赖 pin 不变。
+
+本地类型/应用构建、portable、原 renderer/P0-P1 浏览器、13 组新列表交互及安全门禁通过；完整 Windows/Linux CI 的本轮实际身份待记录，不能沿用 preview.33 的结果。5000 条模拟元数据始终只挂载 50 行；快照/报告位于忽略目录 artifacts/library，源码保留检查入口。没有新安装包，Windows 实机回听/快速切换/监测与 A/B、DPI/原生对话框及用户视觉反馈仍待验。
+
+本轮开发继续在本地 `recorder/dev`，远程评审/合入状态以 GitHub 实际记录为准；不得将本地新源码误当远程默认分支已经包含。调研基线 `6b37ed4` / preview.33 和四个项目的固定来源保留在 [86](86-RECORDING-LIST-RESEARCH.md)。
 
 ## 2026-10-15 · 正式合并
 
@@ -30,7 +34,7 @@
 
 | 项目 | 当前记录 |
 | --- | --- |
-| 源码 | `0.1.0-preview.33`；计量配置已升级 Meter v5，EBU 修复见 [78](78-EBU-METER-RECALIBRATION.md)；云端发布准备见 [75](75-CLOUD-RELEASE-PREPARATION.md) |
+| 源码 | `0.1.0-preview.34`；录音列表见 [87](87-RECORDING-LIBRARY-ITERATION.md)；计量配置已升级 Meter v5，EBU 修复见 [78](78-EBU-METER-RECALIBRATION.md)；云端发布准备见 [75](75-CLOUD-RELEASE-PREPARATION.md) |
 | Git | `Sceneryyyy/Trace`，默认 `recorder/dev`；preview.33 代码 `1c00c07` / CI `38671033132`，复核见 85；上一轮 P0/P1 `4fd9401`（评审分支 `codex/p0-p1-cloud-20261011`）；上一轮文件/故障修复 `2aee519`；保留提交身份及合并历史。自建编码组件 `f33d74d`；此前依赖/编码/下载修复 `3d63d8f` / `ef51603` / `6835af9`；独立化历史为 `a986a0d` / `ab466d8` / `db005b5`；最后文档提交不算新音频测试，远程身份以 Git 为准 |
 | 仪表主题 | 实现 `2938c8e`、审计修复 `c67e9e9` 等已于 2026-09-30 合入 `recorder/dev`；用户已验收开发构建并接受 71-D5 差异 |
 | 当前工程候选 | Windows x64 preview.31，文件/故障修复来源 `2aee519`；[CI 38099859270](https://github.com/Sceneryyyy/Trace/actions/runs/38099859270) 全部成功，私有附件 `11688230696`，未签名 |
@@ -180,7 +184,7 @@ Node Undici 内部断言，未上传新候选。下载改为保持代理/TLS 的
 
 ## 下一会话接力
 
-最新复核代码为 `1c00c07`（preview.33），[CI 38671033132](https://github.com/Sceneryyyy/Trace/actions/runs/38671033132) 已全成功，实际测试提交/内容树及最终证据见顶部与 85。preview.31 私有工程候选继续绑定 `2aee519` / run `38099859270`；后续文档提交不算新的音频、Windows 或候选运行。
+当前列表源码为 preview.34，实现/本轮验证以顶部及 87 为准。上一轮复核代码为 `1c00c07`（preview.33），[CI 38671033132](https://github.com/Sceneryyyy/Trace/actions/runs/38671033132) 已全成功，实际测试提交/内容树及最终证据见顶部与 85。preview.31 私有工程候选继续绑定 `2aee519` / run `38099859270`；后续文档提交不算新的音频、Windows 或候选运行。
 
 | 接力材料 | 位置与用途 |
 | --- | --- |
@@ -196,7 +200,7 @@ Node Undici 内部断言，未上传新候选。下载改为保持代理/TLS 的
 
 下一工作顺序（按用户最新方向更新）：
 
-1. 先与用户讨论 86 的录音列表方案，再按 L86-01 → L86-02 → L86-03 推进；当前只交付调研和建议。84 的云端 P0/P1 与 85 的代码/文档复核已完成并合入默认分支，不重复已完成的长文件/进程云端工作。组件安全及微软/GPL 系统库分发条款复核继续单列，R83-09/10 保留 P2。
+1. L86-01～03 云端实现已完成，先核对 87 的本轮 CI/分支身份并收集 Windows 用户视觉与回听反馈；不自动扩展连播、歌单、拖动排序或批量任务。84 的云端 P0/P1 与 85 的代码/文档复核已完成并合入默认分支，不重复已完成的长文件/进程云端工作。组件安全及微软/GPL 系统库分发条款复核继续单列，R83-09/10 保留 P2。
 2. Windows 实机到位，按 76 的 WIN/FLOW/DEV/METER 跑三分钟视频、真实采集、录音/回听/缓存/选区/导出、96 kHz、长测与 GPU/DPI。
 3. 发布门禁关闭后处理签名、下载首次启动、独立用户和邀请测试。当前附件保持私有工程候选身份。
 

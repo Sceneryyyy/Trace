@@ -16,7 +16,7 @@ Audio Recorder & Analyzer
 
 Trace 是 LeoMoon 系列的桌面音频录音与分析工作台。它把系统声音采集、录音、历史回听和多种测量仪器放在同一个窗口，让你既能观察正在发生的声音，也能沿时间轴回到刚才的细节。
 
-当前源码为 **0.1.0-preview.33**（代码与文档复核修复，见 [85](docs/85-CODE-DOCUMENT-REVIEW.md)），开发分支为 `recorder/dev`。已验证的 preview.31 独立工程通过完整 Windows/Linux CI，并生成 **Windows x64 私有工程候选**（来源提交 `2aee519`）；产物身份见 [当前交接](docs/13-HANDOFF.md)。历史同事内测交付包为 **0.1.0-preview.30 / InternalTest-r3**（来源提交 `9c1ee21`）。[新版 PDF 快速上手](output/pdf/LeoMoon-Trace-Quick-Start-preview.31-zh-CN.pdf) 已更新，界面插图明确使用云端模拟数据。macOS 移植方案已记录，当前分支的 Trace 音频后端仍为 Windows/WASAPI，Mac 采集实现与实机验收尚未完成。
+当前源码为 **0.1.0-preview.34**（录音列表迭代，见 [87](docs/87-RECORDING-LIBRARY-ITERATION.md)），开发分支为 `recorder/dev`。已验证的 preview.31 独立工程通过完整 Windows/Linux CI，并生成 **Windows x64 私有工程候选**（来源提交 `2aee519`）；产物身份见 [当前交接](docs/13-HANDOFF.md)。历史同事内测交付包为 **0.1.0-preview.30 / InternalTest-r3**（来源提交 `9c1ee21`）。[新版 PDF 快速上手](output/pdf/LeoMoon-Trace-Quick-Start-preview.31-zh-CN.pdf) 已更新，界面插图明确使用云端模拟数据。macOS 移植方案已记录，当前分支的 Trace 音频后端仍为 Windows/WASAPI，Mac 采集实现与实机验收尚未完成。
 
 ![Trace 工作台：波形、电平与响度共享时间轴](docs/assets/quick-start-preview28/workbench.png)
 
@@ -51,7 +51,7 @@ Trace 是 LeoMoon 系列的桌面音频录音与分析工作台。它把系统�
 
 ### 当前验证边界
 
-preview.33 的代码、文档复核与本轮验证见 [85](docs/85-CODE-DOCUMENT-REVIEW.md) 和 [当前交接](docs/13-HANDOFF.md)。下段是 preview.31 私有工程候选的历史验证身份；当前源码尚未生成新安装包。
+preview.34 录音列表迭代见 [87](docs/87-RECORDING-LIBRARY-ITERATION.md)；preview.33 的历史代码/文档复核见 [85](docs/85-CODE-DOCUMENT-REVIEW.md) 和 [当前交接](docs/13-HANDOFF.md)。下段是 preview.31 私有工程候选的历史验证身份；当前源码尚未生成新安装包。
 
 本项目仍处于开发预览阶段。preview.31 独立工程的 [完整 CI](https://github.com/Sceneryyyy/Trace/actions/runs/38099859270)（`2aee519`）已成功：Windows CTest **19/19**、Trace 原生/FFmpeg 测试 **64/64**、两端可移植 JS **272/272**，Linux ASan/UBSan 的 8 项核心测试与 1 项原始 EBU 门禁、浏览器回归、类型与应用构建均通过；Windows 私有工程候选已生成，包审计及加载/重启通过。自建来源证明见 [81](docs/81-SELF-BUILT-FFMPEG.md)，本轮文件/故障复验见 [82](docs/82-FILE-FAULT-TESTING.md) 和 [当前交接](docs/13-HANDOFF.md)。
 

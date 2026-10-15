@@ -19,6 +19,7 @@ const audit=json('artifacts/m6/package-audit-latest.json')
 const report={schemaVersion:1,commit,sourceDirty:Boolean(execFileSync('git',['status','--porcelain'],{cwd:root,encoding:'utf8'}).trim()),platform:process.platform,arch:process.arch,
  codecBuildReused:process.env.TRACE_CI_CODEC_CACHE_HIT==='true',
  tests,ctest:windows?windowsCtest():{core:junit('build/trace-portable/portable-core-results.xml'),ebu:junit('build/trace-portable/ebu-wav-results.xml')},ebu,
+ library:fields('artifacts/library/browser-report.json',['commit','sourceDirty','scope','status','checks','sizes']),
  security:fields('artifacts/release/security-audit.json',['commit','sourceDirty','packageLockSha256','status','checks']),
  verification:fields('artifacts/release/verification.json',['commit','sourceDirty','platform','arch','status','checks']),
  portableGate:fields('artifacts/release/portable-ci-gate.json',['status','headSha','runId','attempt','jobId']),
@@ -26,7 +27,7 @@ const report={schemaVersion:1,commit,sourceDirty:Boolean(execFileSync('git',['st
  packageAudit:audit?{sha256:audit.sha256,status:audit.value.status,checks:audit.value.checks,files:Object.fromEntries(['Trace.exe','resources/app.asar'].map(n=>[n,audit.value.files?.[n]]))}:null,
  runtime:fields(output+'/win-unpacked/resources/licenses/runtime-provenance.json',['electron','electronBuilder','vcRedist','dlls']),codec,candidate,
  scope:'Selected actual CI-produced test/numerical/build/package records; generated/offline and no-card checks, not physical-device or release acceptance'}
-for(const record of [...tests,ebu,report.security,report.verification,report.packageLoad,candidate].filter(Boolean))if(record.commit!==commit)throw Error('STALE_CI_EVIDENCE')
+for(const record of [...tests,ebu,report.library,report.security,report.verification,report.packageLoad,candidate].filter(Boolean))if(record.commit!==commit)throw Error('STALE_CI_EVIDENCE')
 const bytes=JSON.stringify(report)
 if(Buffer.byteLength(bytes)>60000)throw Error('CI_ANNOTATION_TOO_LARGE')
 fs.mkdirSync(path.join(root,'artifacts/release'),{recursive:true});fs.writeFileSync(path.join(root,'artifacts/release/ci-summary.json'),JSON.stringify(report,null,2)+'\n')

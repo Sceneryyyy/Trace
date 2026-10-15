@@ -4,6 +4,7 @@ import {AnalysisSettings} from './AnalysisInstruments'
 import {defaultInstrumentSettings,type InstrumentSettings} from '../instrumentTypes'
 import {OperationNotice,useOperationNotice} from './OperationNotice'
 import {RecordingLibrary,preferredSource} from './RecordingLibrary'
+import {LibraryPlayback} from './libraryPlayback'
 import {panRange} from './zoom'
 import {HistoryPresentation} from './historyPresentation'
 import {useCallback,useEffect,useMemo,useRef,useState} from 'react'
@@ -42,7 +43,12 @@ export default function App(): React.JSX.Element {
   const current = useRef(initial)
   const {notice,trackExport,trackSavedRecord,dismiss:dismissNotice}=useOperationNotice(state)
   const [dismissedRecovery,setDismissedRecovery]=useState(false)
-  const [libraryAttention,setLibraryAttention]=useState(false),[copied,setCopied]=useState(false)
+  const [libraryOpen,setLibraryOpen]=useState(false),[libraryAttention,setLibraryAttention]=useState(0),[libraryPending,setLibraryPending]=useState(false),[libraryError,setLibraryError]=useState(''),[copied,setCopied]=useState(false)
+  const [libraryNarrow,setLibraryNarrow]=useState(()=>window.matchMedia('(max-width:1399px)').matches)
+  const libraryPlayback=useRef<LibraryPlayback|null>(null),libraryPanel=useRef<HTMLElement|null>(null)
+  const showLibrary=useCallback((attention=false)=>{if(attention)setLibraryAttention(n=>n+1);setLibraryOpen(true)},[])
+  useEffect(()=>{const media=window.matchMedia('(max-width:1399px)'),change=()=>setLibraryNarrow(media.matches);media.addEventListener('change',change);return()=>media.removeEventListener('change',change)},[])
+  useEffect(()=>{if(!libraryOpen)return;const trigger=document.activeElement as HTMLElement|null;libraryPanel.current?.querySelector<HTMLInputElement>('input')?.focus();return()=>{if(trigger?.isConnected)trigger.focus()}},[libraryOpen])
   const [devices, setDevices] = useState<Device[]>([])
   const [presentation]=useState(()=>new HistoryPresentation())
   const [busy, setBusy] = useState(false),busyRef=useRef(false)
@@ -52,10 +58,11 @@ export default function App(): React.JSX.Element {
   const gain=displayDraft.gain??state.displaySettings?.waveGain??4,seconds=displayDraft.seconds??state.windowSeconds
   const [selectionMode,setSelectionMode]=useState(false)
   const refreshingLibrary=useRef(false)
-  const [modal,setModal]=useState<'settings'|'files'|'export'|'display'|'targets'|'reports'|null>(null)
+  const [modal,setModal]=useState<'settings'|'export'|'display'|'targets'|'reports'|null>(null)
   // The display dialog previews themes locally; closing it without applying falls back to the saved theme.
   // Until the first state arrives the startup theme from the URL stays in effect (no default-theme flash).
   useEffect(()=>{if(modal!=='display'&&state.instrumentTheme)applyTheme(state.instrumentTheme)},[state.instrumentTheme,modal])
+  useEffect(()=>{if(libraryOpen&&libraryNarrow&&!modal&&!libraryPanel.current?.contains(document.activeElement))libraryPanel.current?.querySelector<HTMLInputElement>('input')?.focus()},[libraryOpen,libraryNarrow,modal])
   const [exportSource,setExportSource]=useState<ExportSource|null>(null)
   const [exportDescription,setExportDescription]=useState<ExportDescription|null>(null),[exportInfoError,setExportInfoError]=useState('')
   const [draft,setDraft]=useState<RecordSettings>({encoding:'pcm24',sampleRate:'source',namePrefix:'Trace'})
@@ -71,13 +78,16 @@ export default function App(): React.JSX.Element {
       if(next.windowVisible!==false){setState(next);if(wasHidden&&presentation.snapshot)publishSnapshot({...presentation.snapshot})}
     }
   },[presentation])
-  const command=useCallback((name: Command, payload: Record<string, unknown> = {}): Promise<unknown> => {
+  const command=useCallback((name: Command, payload: Record<string, unknown> = {},valid?:()=>boolean): Promise<unknown> => {
+    if(!valid&&['record.start','record.chooseDirectory','devices.select','file.open','file.close','view.live','live.replay','reference.activate','reference.set','reference.clear','playback.play','playback.pause','playback.seek','library.remove','imports.remove','imports.relocate','imports.prepare','library.clearCache','imports.clearCache'].includes(name))libraryPlayback.current?.cancel()
     const independent=['app.exportDiagnostics','app.feedback','app.rendererFault','app.reloadUI','imports.refresh','imports.cancel','report.get','report.cancel','preferences.retry','library.storage','export.describe','app.diagnostics'].includes(name)
     const execute=async()=>{
+      if(valid&&!valid())return
       const foreground=!independent&&!['playback.seek','view.inspect','library.refresh','workspace.configure','instrument.configure','spectrogram.configure'].includes(name)
       if(foreground){busyRef.current=true;setBusy(true)}
       try {
         for (let attempt = 0; attempt < 2; attempt++) {
+          if(valid&&!valid())return
           const reply = await window.trace.request({ protocolVersion: 1, requestId: crypto.randomUUID(), expectedStateRevision: current.current.revision, command: name, payload })
           accept(reply.state)
           if (!reply.ok) {
@@ -87,13 +97,16 @@ export default function App(): React.JSX.Element {
           if(!independent&&name!=='library.refresh')setMessage('')
           return reply.data
         }
-      } catch (error) { if(!independent)setMessage(String(error)); throw error }
+      } catch (error) { if(!independent&&(!valid||valid()))setMessage(String(error)); throw error }
       finally { if(foreground){busyRef.current=false;setBusy(false)} }
     }
     const task=independent?execute():queue.current.catch(()=>undefined).then(execute)
     if(!independent)queue.current = task
     return task
   },[accept])
+  if(!libraryPlayback.current)libraryPlayback.current=new LibraryPlayback(()=>current.current,command,setLibraryPending,error=>{setLibraryError(userError(error));setMessage(userError(error))})
+  useEffect(()=>()=>libraryPlayback.current?.cancel(),[])
+  const openLibrarySource=useCallback((source:ExportSource,play:boolean)=>{setLibraryError('');latest.current.delete('window');latest.current.delete('inspect');latest.current.delete('seek');setWindowDraft(null);presentation.cancel();void libraryPlayback.current!.activate(source,play)},[presentation])
   useEffect(()=>{if(modal==='settings')void command('record.capacity').catch(()=>{})},[modal,state.recordDirectory,state.deviceId,command])
   useEffect(()=>{
     if(modal!=='export'||!exportSource)return
@@ -153,14 +166,14 @@ export default function App(): React.JSX.Element {
     if(['reference.activate','file.open','file.close','view.live','playback.seek','playback.follow'].includes(name)){latest.current.delete('window');setWindowDraft(null)}
     if(['reference.activate','file.open','file.close','view.live','record.start','playback.retryAnalysis','playback.clearSelection'].includes(name)){latest.current.delete('inspect');latest.current.delete('seek');presentation.cancel()}
      if(name==='view.live')setRecordWindow({mode:'follow',start:'0',end:'0'})
-     command(name, payload).then(()=>{if(name==='file.open')setModal(null)}).catch(() => {})
+     command(name, payload).catch(() => {})
   },[changeWindow,command,presentation])
   useEffect(()=>{
-    if(modal!=='files')return
+    if(!libraryOpen)return
     const refresh=()=>{void command('imports.refresh').catch(()=>{});if(!current.current.currentRecord&&!refreshingLibrary.current){refreshingLibrary.current=true;void command('library.refresh').catch(()=>{}).finally(()=>{refreshingLibrary.current=false})}}
     refresh();const timer=setInterval(refresh,5000);window.addEventListener('focus',refresh)
     return()=>{clearInterval(timer);window.removeEventListener('focus',refresh)}
-  },[modal,command])
+  },[libraryOpen,command])
   async function saveCache():Promise<void>{
     latest.current.delete('inspect');latest.current.delete('seek');presentation.cancel()
     try{
@@ -180,8 +193,8 @@ export default function App(): React.JSX.Element {
   useEffect(()=>{
     const key=(event:KeyboardEvent)=>{
       const target=event.target as HTMLElement
-      if(document.querySelector('[role="dialog"]'))return
-      if(event.code!=='Escape'&&(target?.isContentEditable||['INPUT','TEXTAREA','SELECT'].includes(target?.tagName)))return
+      if(event.defaultPrevented||document.querySelector('[role="dialog"]:not(.library-panel)'))return
+      if(event.code!=='Escape'&&(target?.isContentEditable||['INPUT','TEXTAREA','SELECT','BUTTON','SUMMARY'].includes(target?.tagName)))return
       const file=current.current.playback
       if(busyRef.current&&event.code!=='Escape')return
       if(event.ctrlKey&&!event.altKey&&!event.metaKey&&event.code==='KeyD'){
@@ -235,7 +248,7 @@ export default function App(): React.JSX.Element {
   const configureInstruments=useCallback((settings:InstrumentSettings)=>queueLatest('instrumentSettings','instrument.configure',{settings}),[queueLatest])
   const openTargets=useCallback(()=>setModal('targets'),[])
   const openDisplay=useCallback(()=>setModal('display'),[])
-  const openFiles=useCallback(()=>setModal('files'),[])
+  const openFiles=useCallback(()=>showLibrary(),[showLibrary])
   const timelineJob=file?state.analysisJobs?.find(j=>j.id===file.analysisId):undefined
   const contents=useMemo(()=>({
     comparison:<ReferencePanel value={state.reference} settings={instrumentSettings} recording={isRecording} file={file} request={command} choose={openFiles}/>,
@@ -252,7 +265,8 @@ export default function App(): React.JSX.Element {
     spectrum:<AnalysisSettings kind="spectrum" value={instrumentSettings} apply={configureInstruments}/>,
     soundfield:<AnalysisSettings kind="soundfield" value={instrumentSettings} apply={configureInstruments}/>
   }),[spectrogramSettings,configureSpectrogram,instrumentSettings,configureInstruments])
-  return <main className="trace-app" onDragOver={e=>{if(e.dataTransfer.types.includes('Files')){e.preventDefault();e.dataTransfer.dropEffect='copy'}}} onDrop={e=>{if(!e.dataTransfer.files.length)return;e.preventDefault();const files=Array.from(e.dataTransfer.files);void window.trace.importFiles(files).then(result=>{setMessage(result.errors.map(e=>e.name+'：'+userError(e.message)).join('；'));setModal('files')}).catch(error=>setMessage(userError(error)))}}>
+  return <main className="trace-app library-layout" onDragOver={e=>{if(e.dataTransfer.types.includes('Files')){e.preventDefault();e.dataTransfer.dropEffect='copy'}}} onDrop={e=>{if(!e.dataTransfer.files.length)return;e.preventDefault();const files=Array.from(e.dataTransfer.files);void window.trace.importFiles(files).then(result=>{setMessage(result.errors.map(e=>e.name+'：'+userError(e.message)).join('；'));showLibrary()}).catch(error=>setMessage(userError(error)))}}>
+    <div className="trace-main" inert={libraryOpen&&libraryNarrow&&!modal?true:undefined}>
     <header className="topbar">
       <BrandLockup/>
       <div className="top-status"><span className={'live-badge '+(isRecording?'is-rec':state.active?'is-live':'')}><i />{isRecording?'REC':state.active?'采集中':'待机'}</span><span className="preview-badge">开发预览</span><button className="header-settings" aria-label="测量目标" aria-pressed={targets.enabled} onClick={openTargets}>目标</button><button className="header-settings" aria-label="显示与帮助" onClick={openDisplay}>显示与帮助</button></div>
@@ -268,7 +282,7 @@ export default function App(): React.JSX.Element {
       <div className="sourcebar-spacer" />
     </section>}
 
-    {state.support?.previousInterrupted&&!dismissedRecovery&&<div className="error-banner" role="status"><strong>上次未正常退出</strong><span>请检查录音与恢复状态；可在帮助中导出诊断。</span><button onClick={()=>{setLibraryAttention(true);setModal('files');setDismissedRecovery(true)}}>查看音频文件</button><button onClick={()=>setDismissedRecovery(true)}>关闭提示</button></div>}
+    {state.support?.previousInterrupted&&!dismissedRecovery&&<div className="error-banner" role="status"><strong>上次未正常退出</strong><span>请检查录音与恢复状态；可在帮助中导出诊断。</span><button onClick={()=>{showLibrary(true);setDismissedRecovery(true)}}>查看音频文件</button><button onClick={()=>setDismissedRecovery(true)}>关闭提示</button></div>}
     <div className="workbench-heading"><WorkbenchSourceBar inputs={viewInputs} file={file} busy={busy} run={run} inspectAt={inspectAt} changeWindow={changeWindow} changeDisplay={changeDisplay} setRecordWindow={setRecordWindow} isRecording={isRecording}/><WorkspaceToolbar value={workspace.value} change={workspace.change} error={workspace.error} retry={workspace.retry}/></div>
     {!workspace.value.locked&&<div className="layout-edit-hint" role="status"><span>拖动标题移动仪器 · 拖动分隔线调整大小</span><span>也可在仪器设置中选择“移动仪器”</span></div>}
     <TargetStripContainer inputs={viewInputs} settings={targets} wholeSummary={wholeSummary} file={file} isRecording={isRecording} multiRegion={multiRegion} configure={openTargets}/>
@@ -277,7 +291,7 @@ export default function App(): React.JSX.Element {
     </WorkspaceFrame>
     <SelectionStatsRow inputs={viewInputs} file={file} hidden={workspace.value.layout.hidden.includes('comparison')}/>
     {state.preferencesError&&<div className="error-banner" role="status"><strong>设置未保存</strong><span>设置文件暂时被占用或无法写入；已保留上次保存的配置。</span><button onClick={()=>void command('preferences.retry').catch(()=>{})}>重试保存</button></div>}
-    {(sourceError || file?.error || message) && <div className="error-banner" role="alert"><strong>需要处理</strong><span>{file?.error?(file.error.startsWith('FILE_SNAPSHOT_FAILED:')?userError(file.error):'回听输出不可用；历史数据仍可查看。'):snapshotFailure ? '录音数据更新失败，已停止本次录音并保留已写入的文件。请重新连接后重试。' : sourceError ? '声音来源暂不可用，请重试或选择其他设备。' : userError(message)}</span>{file&&!file.temporary&&(file.error?.startsWith('FILE_SNAPSHOT_FAILED:')||['failed','cancelled'].includes(file.analysisPhase))&&<button disabled={busy||isRecording} onClick={()=>run('playback.retryAnalysis',{playbackId:file.id})}>重新分析</button>}<button disabled={busy} onClick={()=>{setLibraryAttention(true);setModal('files')}}>查看文件</button><button disabled={busy} onClick={()=>command('app.copyDiagnostics').then(()=>setCopied(true)).catch(()=>{})}>{copied?'已复制诊断':'复制诊断'}</button>{file?.error&&!file.error.startsWith('FILE_SNAPSHOT_FAILED:')&&<button disabled={busy||isRecording} onClick={()=>run('playback.play',{playbackId:file.id})}>重试回听</button>}{sourceError && state.deviceId && !isRecording && !file?.outputReady && <button onClick={() => run('live.start', { deviceId: state.deviceId })} disabled={busy}>重新连接</button>}</div>}
+    {(sourceError || file?.error || message) && <div className="error-banner" role="alert"><strong>需要处理</strong><span>{file?.error?(file.error.startsWith('FILE_SNAPSHOT_FAILED:')?userError(file.error):'回听输出不可用；历史数据仍可查看。'):snapshotFailure ? '录音数据更新失败，已停止本次录音并保留已写入的文件。请重新连接后重试。' : sourceError ? '声音来源暂不可用，请重试或选择其他设备。' : userError(message)}</span>{file&&!file.temporary&&(file.error?.startsWith('FILE_SNAPSHOT_FAILED:')||['failed','cancelled'].includes(file.analysisPhase))&&<button disabled={busy||isRecording} onClick={()=>run('playback.retryAnalysis',{playbackId:file.id})}>重新分析</button>}<button disabled={busy} onClick={()=>{showLibrary(true)}}>查看文件</button><button disabled={busy} onClick={()=>command('app.copyDiagnostics').then(()=>setCopied(true)).catch(()=>{})}>{copied?'已复制诊断':'复制诊断'}</button>{file?.error&&!file.error.startsWith('FILE_SNAPSHOT_FAILED:')&&<button disabled={busy||isRecording} onClick={()=>run('playback.play',{playbackId:file.id})}>重试回听</button>}{sourceError && state.deviceId && !isRecording && !file?.outputReady && <button onClick={() => run('live.start', { deviceId: state.deviceId })} disabled={busy}>重新连接</button>}</div>}
     <footer className="transport">
       <div className="transport-buttons" role="group" aria-label="走带控制">
         <button className="transport-icon file-home" aria-label="起点" title="起点（Home）：定位到当前文件或缓存开头" disabled={busy||!file} onClick={()=>file&&run('playback.seek',{playbackId:file.id,positionFrame:'0',resume:false})}><TransportIcon kind="start"/></button>
@@ -293,7 +307,7 @@ export default function App(): React.JSX.Element {
       <label className="monitor-gain">音量<input aria-label="文件回听音量" type="range" min="0" max="1" step=".01" value={state.reference?.active?state.reference[state.reference.active]?.gain??file?.gain??1:file?.gain??1} disabled={!file||busy} onChange={e=>file&&run('playback.volume',{playbackId:file.id,gain:Number(e.target.value)})}/><span>{Math.round((state.reference?.active?state.reference[state.reference.active]?.gain??file?.gain??1:file?.gain??1)*100)}%</span></label>
       <button className="file-export-button" disabled={busy||isRecording||(!file&&!chrome.replayAvailable)} title={file&&!file.temporary?'导出当前文件或选区':'将'+(file?.selection?'选区':'最近缓存')+'按录音设置保存为独立文件'} onClick={()=>file&&!file.temporary?openExport({takeId:file.takeId,role:file.role,regionId:file.regionId,exportId:file.exportId,...(file.selection?{range:file.selection}:{})}):void saveCache()}>{file&&!file.temporary?'导出':'保存缓存'}</button>
       <button className="report-button" title="测量报告与超限事件" onClick={()=>setModal('reports')}>报告</button>
-      <button data-open-files className="files-button" onClick={()=>{setLibraryAttention(false);setModal('files')}}>音频文件 {(state.recordings?.length||0)+(state.imports?.length||0)}</button>
+      <button data-open-files className="files-button" aria-expanded={libraryOpen} aria-controls="recording-library-panel" onClick={()=>{setLibraryOpen(value=>!value)}}>音频文件 {(state.recordings?.length||0)+(state.imports?.length||0)}</button>
       <button className="reset-button" disabled={busy||!state.active||isRecording||Boolean(file)} onClick={()=>run('live.reset')} title="重新开始本轮响度统计"><Icon name="reset"/></button>
     </footer>
 
@@ -301,17 +315,28 @@ export default function App(): React.JSX.Element {
 
     {notice&&!modal&&<OperationNotice notice={notice} busy={busy||isRecording} close={dismissNotice} open={()=>{
       if(notice.setup){setDraft(state.recordSettings||draft);setModal('settings');dismissNotice();return}
-      if(!notice.ready){setLibraryAttention(Boolean(notice.recovery||notice.failed));setModal('files');dismissNotice();return}
+      if(!notice.ready){showLibrary(Boolean(notice.recovery||notice.failed));dismissNotice();return}
       const take=state.recordings?.find(t=>t.id===notice.takeId),source=notice.exportId?{takeId:notice.takeId!,role:'export' as const,exportId:notice.exportId}:take?preferredSource(take):undefined
       if(source)run('file.open',{...source});dismissNotice()
     }} folder={()=>notice.exportId?run(state.exportJobs?.find(j=>j.id===notice.exportId)?.delivery?.phase==='ready'?'export.openDeliveryFolder':'export.openFolder',{exportId:notice.exportId}):run('record.openFolder',{takeId:notice.takeId})} retry={()=>run(state.exportJobs?.find(j=>j.id===notice.exportId)?.phase==='ready'?'export.saveCopy':'export.retry',{exportId:notice.exportId})}/>}
+    </div>
+    <div className="library-backdrop" hidden={!libraryOpen||!libraryNarrow||Boolean(modal)} onClick={()=>setLibraryOpen(false)}/>
+    <aside id="recording-library-panel" ref={libraryPanel} className="library-panel" hidden={!libraryOpen} inert={modal?true:undefined} role={libraryOpen&&libraryNarrow&&!modal?'dialog':'complementary'} aria-modal={libraryOpen&&libraryNarrow&&!modal?true:undefined} aria-label="音频文件" onKeyDown={e=>{
+      if(e.defaultPrevented)return
+      if(e.ctrlKey&&!e.altKey&&!e.metaKey&&e.key.toLowerCase()==='f'){e.preventDefault();e.stopPropagation();e.currentTarget.querySelector<HTMLInputElement>('input[aria-label="搜索音频文件"]')?.focus();return}
+      if(e.key==='Escape'){e.preventDefault();e.stopPropagation();setLibraryOpen(false);return}
+      if(e.key==='Tab'&&libraryNarrow){const nodes=Array.from(e.currentTarget.querySelectorAll<HTMLElement>('button:not(:disabled),input:not(:disabled),select:not(:disabled),summary,[tabindex="0"]')).filter(node=>node.tabIndex>=0&&node.getClientRects().length>0);const first=nodes[0],last=nodes[nodes.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus()}}
+    }}>
+      <header><h2>音频文件</h2><small>选中后查看 · 双击回听</small><button aria-label="关闭音频文件" onClick={()=>setLibraryOpen(false)}>×</button></header>
+      <RecordingLibrary state={state} busy={busy||isRecording} visible={libraryOpen&&!modal} attentionRequest={libraryAttention} pending={libraryPending} playbackError={libraryError} dismissError={()=>setLibraryError('')} run={run} request={command} onOpen={openLibrarySource} onExport={openExport}/>
+    </aside>
     {modal && <div className="modal-backdrop" onMouseDown={e => { if(e.target===e.currentTarget&&!busy)setModal(null) }}>
-      <section className={'trace-modal '+(modal==='files'?'file-library':modal==='reports'?'report-modal':'')} role="dialog" aria-modal="true" aria-labelledby="modal-title" onKeyDown={e => {
+      <section className={'trace-modal '+(modal==='reports'?'report-modal':'')} role="dialog" aria-modal="true" aria-labelledby="modal-title" onKeyDown={e => {
         if(e.key==='Escape'&&!busy)setModal(null)
         if(e.key==='Tab'){const nodes=Array.from(e.currentTarget.querySelectorAll<HTMLElement>('button:not(:disabled),input:not(:disabled),select:not(:disabled),summary,[tabindex="0"]')).filter(node=>node.tabIndex>=0&&node.getClientRects().length>0);const first=nodes[0],last=nodes[nodes.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus()}}
       }}>
         <header><h2 id="modal-title">{modal==='settings'?'录音保存设置':modal==='export'?'导出音频':modal==='display'?'显示与帮助':modal==='targets'?'测量目标':modal==='reports'?'测量报告':'音频文件'}</h2><button aria-label="关闭对话框" onClick={()=>setModal(null)}>×</button></header>
-        {modal==='reports'?<ReportPanel file={file} targets={targets} jobs={state.reportJobs||[]} recording={isRecording} request={command} onNavigate={()=>{presentation.cancel();setModal(null)}}/>:modal==='targets'?<TargetSettingsForm value={targets} apply={settings=>command('targets.configure',{settings}).then(()=>setModal(null))}/>:modal==='display'?<DisplaySettingsForm support={state.support} confirmExit={state.confirmExitWhileRecording!==false} theme={state.instrumentTheme||defaultThemeId} request={command} value={{...displaySettings,waveGain:gain}} busy={busy} apply={(value,confirmExitWhileRecording,theme)=>command('view.settings',value).then(()=>command('view.theme',{theme})).then(()=>command('app.configure',{confirmExitWhileRecording})).then(()=>setModal(null)).catch(()=>{})}/>:modal==='settings'?<RecordSettingsForm value={draft} change={setDraft} busy={busy||isRecording} directoryBusy={Boolean(state.exportJobs?.some(j=>!['ready','failed','cancelled'].includes(j.phase)))} sourceRate={format?.sampleRate} sourceChannels={format?.channelCount} capacity={state.recordingCapacity?.directory===state.recordDirectory?state.recordingCapacity:undefined} directory={state.recordDirectory} chooseDirectory={()=>run('record.chooseDirectory')} apply={()=>command('record.configure',draft).then(()=>setModal(null)).catch(()=>{})}/>:modal==='export'&&exportSource?exportDescription?<ExportDialog source={exportSource} description={exportDescription} saved={state.lastExportPreset} saveCopyDefault={state.lastExportSaveCopy===true} remember={preset=>queueLatest('exportPrefs','export.configure',{...preset})} busy={busy} submit={(preset,selection,saveCopy)=>command('export.start',{...exportSource,range:selection?exportSource.range:undefined,preset,saveCopy}).then(data=>{const result=data as {jobId?:string}|null;if(result?.jobId){trackExport(result.jobId);setModal(null)}}).catch(()=>{})}/>:<div className="settings-content" role="status">{exportInfoError||'正在读取文件信息…'}{exportInfoError&&<button onClick={()=>setExportSource({...exportSource})}>重试</button>}</div>:<RecordingLibrary initialStatus={libraryAttention?'attention':'all'} state={state} busy={busy} run={run} request={command} onExport={openExport}/>}
+        {modal==='reports'?<ReportPanel file={file} targets={targets} jobs={state.reportJobs||[]} recording={isRecording} request={command} onNavigate={()=>{presentation.cancel();setModal(null)}}/>:modal==='targets'?<TargetSettingsForm value={targets} apply={settings=>command('targets.configure',{settings}).then(()=>setModal(null))}/>:modal==='display'?<DisplaySettingsForm support={state.support} confirmExit={state.confirmExitWhileRecording!==false} theme={state.instrumentTheme||defaultThemeId} request={command} value={{...displaySettings,waveGain:gain}} busy={busy} apply={(value,confirmExitWhileRecording,theme)=>command('view.settings',value).then(()=>command('view.theme',{theme})).then(()=>command('app.configure',{confirmExitWhileRecording})).then(()=>setModal(null)).catch(()=>{})}/>:modal==='settings'?<RecordSettingsForm value={draft} change={setDraft} busy={busy||isRecording} directoryBusy={Boolean(state.exportJobs?.some(j=>!['ready','failed','cancelled'].includes(j.phase)))} sourceRate={format?.sampleRate} sourceChannels={format?.channelCount} capacity={state.recordingCapacity?.directory===state.recordDirectory?state.recordingCapacity:undefined} directory={state.recordDirectory} chooseDirectory={()=>run('record.chooseDirectory')} apply={()=>command('record.configure',draft).then(()=>setModal(null)).catch(()=>{})}/>:modal==='export'&&exportSource?exportDescription?<ExportDialog source={exportSource} description={exportDescription} saved={state.lastExportPreset} saveCopyDefault={state.lastExportSaveCopy===true} remember={preset=>queueLatest('exportPrefs','export.configure',{...preset})} busy={busy} submit={(preset,selection,saveCopy)=>command('export.start',{...exportSource,range:selection?exportSource.range:undefined,preset,saveCopy}).then(data=>{const result=data as {jobId?:string}|null;if(result?.jobId){trackExport(result.jobId);setModal(null)}}).catch(()=>{})}/>:<div className="settings-content" role="status">{exportInfoError||'正在读取文件信息…'}{exportInfoError&&<button onClick={()=>setExportSource({...exportSource})}>重试</button>}</div>:null}
 
       </section>
     </div>}

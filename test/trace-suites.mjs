@@ -29,6 +29,7 @@ export const portable = [
   'instrument-themes.test.mjs',
   'interaction-settings.test.mjs',
   'library-service.test.mjs',
+  'library-playback.test.mjs',
   'library-visibility.test.mjs',
   'm6-settings.test.mjs',
   'media-process-faults.test.mjs',

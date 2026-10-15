@@ -33,8 +33,14 @@ test('corrupt sessions cannot stop a valid directory from loading',async()=>{
  await service.setDirectory(root)
  const summaries=service.summaries()
  const result=summaries.find(s=>s.id==='good')
+ assert.equal(result.continuity,'complete')
  assert.equal(result.frames,'44100')
  assert.equal(result.sampleRate,44100)
+ const capture=service.session('good').document.regions[0]
+ capture.estimatedFrames='480'
+ assert.equal(service.summaries().find(s=>s.id==='good').continuity,'estimated-silence')
+ capture.estimatedFrames='0';capture.captureQuality={version:1,estimatedFrames:'0',gapFrames:'0',unknown:true}
+ assert.equal(service.summaries().find(s=>s.id==='good').continuity,'unknown')
  assert.equal(summaries.find(s=>s.id==='interrupted').status,'recoverable')
  assert.equal(summaries.find(s=>s.id==='mixed').durationNs,'2000000000')
  assert.equal(summaries.find(s=>s.id==='mixed').mixedSampleRate,true)

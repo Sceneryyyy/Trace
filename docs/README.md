@@ -1,6 +1,6 @@
 # Trace 项目文档索引
 
-更新：2026-10-15。当前源码 **preview.33**，默认开发分支 `recorder/dev`；本轮代码/文档复核见 [85](85-CODE-DOCUMENT-REVIEW.md)，P0/P1 实现及上一轮验证见 [84](84-P0-P1-CLOUD-ITERATION.md)。PR #1 已正式合入 `recorder/dev`；下一阶段聚焦已有录音列表，调研与方案见 [86](86-RECORDING-LIST-RESEARCH.md)。preview.31 私有工程候选（2aee519）、preview.30 / InternalTest-r3（9c1ee21）与旧 f33d74d 候选保持各自历史身份；本轮未建立新安装包。最新提交、验证与待验边界见 [13](13-HANDOFF.md)。PDF 插图仍为云端模拟界面。
+更新：2026-10-15。当前源码 **preview.34**，默认开发分支 `recorder/dev`；本轮代码/文档复核见 [85](85-CODE-DOCUMENT-REVIEW.md)，P0/P1 实现及上一轮验证见 [84](84-P0-P1-CLOUD-ITERATION.md)。PR #1 已正式合入 `recorder/dev`；录音列表调研见 [86](86-RECORDING-LIST-RESEARCH.md)，preview.34 实现与验证见 [87](87-RECORDING-LIBRARY-ITERATION.md)。preview.31 私有工程候选（2aee519）、preview.30 / InternalTest-r3（9c1ee21）与旧 f33d74d 候选保持各自历史身份；本轮未建立新安装包。最新提交、验证与待验边界见 [13](13-HANDOFF.md)。PDF 插图仍为云端模拟界面。
 
 先读 [项目首页](../README.md)、[用户指南](28-USER-GUIDE.md) 或 [开发入门](../CODEX-START.md)。当前状态、未验证项和下一任务统一写在 [13-HANDOFF](13-HANDOFF.md)。带日期的阶段记录只证明当时版本的结果；旧“当前/下一步”不能覆盖 13。
 
@@ -24,7 +24,8 @@
 | [发布依赖与源码收尾](80-RELEASE-DEPENDENCY-HARDENING.md) | 固定安全工具链、实时审计门禁、FFmpeg 主源码与静态依赖资料缺口 |
 | [自建 Windows FFmpeg](81-SELF-BUILT-FFMPEG.md) | 两份官方源码、固定工具/SDK、构建与完整来源门禁；新候选复验通过 |
 | [文件与故障测试](82-FILE-FAULT-TESTING.md) | 损坏/截断、16 组 MP3、取消/进程/worker、磁盘注入及安全修补；完整 CI/新候选已通过 |
-| [录音列表调研与改版建议](86-RECORDING-LIST-RESEARCH.md) | 四个播放器/录音机的固定源码与界面观察；紧凑列表、播放状态和工作台侧栏的建议，尚未实施 |
+| [录音列表迭代](87-RECORDING-LIBRARY-ITERATION.md) | preview.34 的紧凑列表/单份详情、侧栏/抽屉、回听代次与 50 行分页；本轮检查和实机待验 |
+| [录音列表调研与改版建议](86-RECORDING-LIST-RESEARCH.md) | 四个播放器/录音机的固定源码与界面观察；实施前调研快照，交付见 87 |
 | [GitHub 录音与仪器调研](83-GITHUB-AUDIO-PROJECT-RESEARCH.md) | 2026-10-11 外部项目/固定来源与当前源码对照；资源、故障、FFT/长文件缓存和仪器判读建议；P0/P1 已实施，见 84 |
 | [文件/故障验证清单](release/file-fault-verification.json) | 当前 2aee519 的实际两端门禁、MP3 帧数、基线反例与新候选身份 |
 | [自建与新候选验证](release/codec-verification.json) | 10 月 4 日 f33d74d 自建来源、重复构建、实际 EXE/报告及历史附件身份 |
