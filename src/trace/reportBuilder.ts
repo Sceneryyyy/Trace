@@ -10,7 +10,7 @@ import {validateTargetSettings,evaluateTargets,targetKey,targetPresets} from './
 import type {ReportRequest,ReportResult,ReportEvent} from './reportTypes'
 import type {Metric} from './shared'
 
-export function csvText(value:unknown):string {let s=String(value??'');if(/^[=+\-@\t\r]/.test(s))s="'"+s;return '"'+s.replace(/"/g,'""')+'"'}
+export function csvText(value:unknown):string {let s=String(value??'');if(/^[\s\x00-\x1f]*[=+\-@]|^[\t\r\n]/.test(s))s="'"+s;return '"'+s.replace(/"/g,'""')+'"'}
 export function htmlText(value:unknown):string {return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!))}
 const num=(metric:Metric)=>metric.status==='ready'&&metric.value!==null?String(metric.value):''
 const sameRange=(a:{startFrame:string;endFrame:string}|undefined,b:{startFrame:string;endFrame:string}|undefined)=>a===undefined&&b===undefined||Boolean(a&&b&&a.startFrame===b.startFrame&&a.endFrame===b.endFrame)

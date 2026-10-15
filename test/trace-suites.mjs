@@ -13,6 +13,7 @@
 // their Trace equivalents here exercise production Trace N-API and C++ kernels.
 
 export const portable = [
+  'code-review-storage.test.mjs',
   'p0-p1-analysis.test.mjs',
   'analysis-retention.test.mjs',
   'canvas-surface.test.mjs',

@@ -178,7 +178,7 @@ void Recorder::run(RecordOptions options) {
                     published_.endQpc100ns=end;published_.endQpcEstimated=(block->flags&EstimatedSilence)!=0;
                     // Meter sinks update the overview here. Publish their prefix, counts and
                     // clock together so snapshot() cannot pair new points with old bounds.
-                    replay_->push(block->samples.data(),static_cast<uint32_t>(std::min<uint64_t>(good,block->frames)));
+                    replay_->push(block->samples.data(),static_cast<uint32_t>(std::min<uint64_t>(good,block->frames)),block->flags);
                     meter->push(block->samples.data(),static_cast<uint32_t>(std::min<uint64_t>(good,block->frames)),block->flags);
                     if(block->flags&EstimatedSilence)published_.estimatedFrames+=good;
                     published_.writtenFrames=writer->frames();published_.clippedSamples=writer->clippedSamples();

@@ -1,5 +1,6 @@
+import {readRegularFile} from './metadataFile'
 import {createHash,randomUUID} from 'node:crypto'
-import {lstat,readFile,writeFile,rename,unlink,mkdir} from 'node:fs/promises'
+import {lstat,writeFile,rename,unlink,mkdir} from 'node:fs/promises'
 import {join} from 'node:path'
 import type {SpectrogramTile} from './spectrogramTile'
 import {enforceSpectralBudget,protectSpectralFile} from './spectralDiskBudget'
@@ -45,13 +46,13 @@ export class SpectrogramOverviewStore {
   if(cached){this.cache.delete(id);this.cache.set(id,cached);return cached}
   const file=this.root?join(this.root,this.key,`overview-v1-${level}-${frame}.bin`):undefined
   let value:SpectralOverview|undefined
-  if(file){const release=protectSpectralFile(file);try{const stat=await lstat(file);if(stat.isSymbolicLink())throw Error('LINKED_SPECTROGRAM_CACHE');if(!stat.isFile()||stat.size>4*1024*1024)throw Error('CORRUPT_SPECTRAL_OVERVIEW');value=decodeOverview(await readFile(file),this.key,level,frame)}catch(e){if((e as NodeJS.ErrnoException).code!=='ENOENT'&&String(e).includes('CORRUPT_'))await rename(file,file+'.corrupt-'+randomUUID());else if((e as NodeJS.ErrnoException).code!=='ENOENT')throw e}finally{release()}}
+  if(file){const release=protectSpectralFile(file);try{const stat=await lstat(file);if(stat.isSymbolicLink())throw Error('LINKED_SPECTROGRAM_CACHE');if(!stat.isFile()||stat.size>4*1024*1024)throw Error('CORRUPT_SPECTRAL_OVERVIEW');value=decodeOverview(await readRegularFile(file,4*1024*1024,'CORRUPT_SPECTRAL_OVERVIEW'),this.key,level,frame)}catch(e){if((e as NodeJS.ErrnoException).code!=='ENOENT'&&String(e).includes('CORRUPT_'))await rename(file,file+'.corrupt-'+randomUUID());else if((e as NodeJS.ErrnoException).code!=='ENOENT')throw e}finally{release()}}
   if(!value){
    const left=await this.get(level-1,block,first,hop,lastBlock,current),rightBlock=block+(1n<<BigInt(level-1))
    value=mergeOverview(left,rightBlock<=lastBlock?await this.get(level-1,rightBlock,first,hop,lastBlock,current):undefined)
    current();if(file){const dir=join(this.root!,this.key);await mkdir(dir,{recursive:true});if((await lstat(this.root!)).isSymbolicLink()||(await lstat(dir)).isSymbolicLink())throw Error('LINKED_SPECTROGRAM_CACHE')
-    const temp=file+'.'+randomUUID()+'.tmp',release=protectSpectralFile(file)
-    try{await writeFile(temp,encodeOverview(value),{flag:'wx'});await rename(temp,file);await enforceSpectralBudget(this.root!,undefined,file)}finally{release();await unlink(temp).catch(e=>{if(e.code!=='ENOENT')throw e})}
+    const temp=file+'.'+randomUUID()+'.tmp',release=protectSpectralFile(file);let owned=false
+    try{await writeFile(temp,encodeOverview(value),{flag:'wx'});owned=true;await rename(temp,file);await enforceSpectralBudget(this.root!,undefined,file)}finally{release();if(owned)await unlink(temp).catch(e=>{if(e.code!=='ENOENT')throw e})}
    }
   }
   this.cache.set(id,value);this.bytes+=value.peaks.byteLength+value.masks.byteLength+value.ready.byteLength+512

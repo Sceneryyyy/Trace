@@ -35,6 +35,17 @@ int main(){
             uint64_t total=0;for(const auto& p:s.segments)total+=Trace::inspectWav(p.path).frames;REQUIRE(total==48000);
             REQUIRE(s.waveform.size()<=901&&s.loudness.size()<=601);
         }},
+        {"frozen take retains estimated silence in exact PCM ranges",[&]{
+            Trace::Recorder r;r.prepare(options(root,"quality"));
+            r.push(block(0,480));auto estimated=block(480,480,0);estimated.flags=Trace::EstimatedSilence;r.push(estimated);r.push(block(960,480));
+            r.requestStop();r.boundary();r.finishAfterProducerStopped();
+            const auto snapshot=r.snapshot();REQUIRE(snapshot.phase==Trace::RecordPhase::Complete);REQUIRE(snapshot.estimatedFrames==480);
+            const auto clip=r.freezeReplay();REQUIRE(clip&&clip->frames()==1440);
+            const auto full=clip->quality(0,1440),clean=clip->quality(0,480),partial=clip->quality(720,1200);
+            REQUIRE(full.estimatedFrames==480&&full.gapFrames==0&&!full.unknown);
+            REQUIRE(clean.estimatedFrames==0&&!clean.unknown);REQUIRE(partial.estimatedFrames==240);
+            for(size_t i=480*2;i<960*2;++i)REQUIRE(clip->samples[i]==0);
+        }},
         {"slow writer fails explicitly without overwriting its queued prefix",[&]{
             Trace::Recorder r;auto o=options(root,"slow");o.writerDelayMs=2;r.prepare(o);
             const auto start=std::chrono::steady_clock::now();

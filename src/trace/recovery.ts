@@ -1,6 +1,5 @@
-import { createReadStream } from 'node:fs'
-import { readdir, realpath } from 'node:fs/promises'
-import { createInterface } from 'node:readline'
+import { constants } from 'node:fs'
+import { readdir, realpath,lstat,open } from 'node:fs/promises'
 import { join, sep, basename } from 'node:path'
 
 const u64 = (v: unknown): v is string => typeof v === 'string' && /^\d{1,20}$/.test(v) && BigInt(v) <= 0xffffffffffffffffn
@@ -11,6 +10,18 @@ export type RecoveryInventory = {
   captureStartFrame:string|null
   clock:{startQpc100ns:string|null;endQpc100ns:string|null;startEstimated:boolean;endEstimated:boolean}|null
   ignoredJournalLines: number
+}
+/** Drop oversized lines while streaming; readline would first allocate the entire line. */
+export async function* boundedJournalLines(stream:AsyncIterable<string>,maximum=1000000):AsyncGenerator<string|null>{
+ let pending='',oversized=false
+ for await(const chunk of stream){let start=0
+  for(;;){const end=chunk.indexOf('\n',start),part=chunk.slice(start,end<0?undefined:end)
+   if(!oversized){if(pending.length+part.length>maximum){pending='';oversized=true}else pending+=part}
+   if(end<0)break
+   yield oversized?null:pending.replace(/\r$/,'');pending='';oversized=false;start=end+1
+  }
+ }
+ if(oversized)yield null;else if(pending)yield pending.replace(/\r$/,'')
 }
 export async function inspectRecovery(directory: string, name: string, journalFile='journal.jsonl'): Promise<RecoveryInventory> {
   if(basename(journalFile)!==journalFile||!journalFile.endsWith('.jsonl'))throw Error('INVALID_JOURNAL_PATH')
@@ -32,10 +43,13 @@ export async function inspectRecovery(directory: string, name: string, journalFi
     files.push(entry.name)
   }
   const result: RecoveryInventory = { files, confirmedFrames:null, checkpointSegments:[], captureStartFrame:null,clock:null,ignoredJournalLines:0 }
-  const stream = createReadStream(join(base,journalFile), { encoding:'utf8' })
-  const lines = createInterface({ input:stream, crlfDelay:Infinity })
+  const journal=join(base,journalFile),info=await lstat(journal).catch(error=>{if(error.code!=='ENOENT')throw error;return undefined})
+  if(info&&(!info.isFile()||info.isSymbolicLink()))throw Error('INVALID_JOURNAL_PATH')
+  if(!info)return result
+  const stream = (await open(journal,constants.O_RDONLY|(process.platform==='win32'?0:constants.O_NOFOLLOW))).createReadStream({encoding:'utf8'})
   try {
-    for await (const line of lines) {
+    for await (const line of boundedJournalLines(stream)) {
+      if(line===null){result.ignoredJournalLines++;continue}
       if (!line.trim()) continue
       try {
         if(line.length>1000000)throw Error('OVERSIZE_JOURNAL_LINE')
@@ -60,7 +74,7 @@ export async function inspectRecovery(directory: string, name: string, journalFi
     }
   } catch(error) {
     if((error as NodeJS.ErrnoException).code!=='ENOENT')throw error
-  } finally { lines.close();stream.destroy() }
+  } finally { stream.destroy() }
   for(const segment of result.checkpointSegments)if(!files.includes(segment.file))throw Error('RECOVERY_SEGMENT_MISSING: '+segment.file)
   return result
 }

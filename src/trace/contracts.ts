@@ -14,7 +14,7 @@ function plain(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && (Object.getPrototypeOf(value) === Object.prototype || Object.getPrototypeOf(value) === null)
 }
 export function validateRequest(value: unknown): Request {
-  if (!plain(value)) throw Error('INVALID_REQUEST')
+  if (!plain(value)||Object.keys(value).sort().join(',')!=='command,expectedStateRevision,payload,protocolVersion,requestId') throw Error('INVALID_REQUEST')
   const r = value as Request
   if (r.protocolVersion !== 1 || typeof r.requestId !== 'string' || r.requestId.length < 1 || r.requestId.length > 100 ||
       !Number.isSafeInteger(r.expectedStateRevision) || r.expectedStateRevision < 0 || !commands.has(r.command) ||

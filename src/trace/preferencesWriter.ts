@@ -23,15 +23,15 @@ export class PreferencesWriter {
   }
  }
  private async write(data:string):Promise<boolean>{
-  const temp=this.target+'.'+randomUUID()+'.tmp'
+  const temp=this.target+'.'+randomUUID()+'.tmp';let owned=false
   try{
-   await this.io.mkdir(dirname(this.target),{recursive:true});await this.io.writeFile(temp,data,{flag:'wx'})
+   await this.io.mkdir(dirname(this.target),{recursive:true});await this.io.writeFile(temp,data,{flag:'wx'});owned=true
    for(let attempt=0;;attempt++){
     if(this.next!==undefined)return false
     try{await this.io.rename(temp,this.target);return true}
     catch(error){if(attempt>=5||!['EPERM','EACCES','EBUSY'].includes((error as NodeJS.ErrnoException).code||''))throw error;this.retries++;await this.delay([20,50,100,200,400][attempt])}
    }
-  }finally{await this.io.unlink(temp).catch(()=>{})}
+  }finally{if(owned)await this.io.unlink(temp).catch(()=>{})}
  }
  async flush():Promise<void>{while(this.task||this.next!==undefined){this.start();await this.task}if(this.error)throw this.error}
 }

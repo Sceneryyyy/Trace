@@ -1,6 +1,6 @@
 # 07 · 开发里程碑与任务单
 
-2026-10-09 更新。当前源码 preview.31，默认分支 `recorder/dev`；preview.30 / InternalTest-r3 为历史同事内测交付包。preview.31 独立工程已通过完整 Windows/Linux CI，并生成来源 `f33d74d` 的私有工程候选。当前提交、产物身份、验证和阻塞以 [13](13-HANDOFF.md) 为准，下方早期任务保留 ID 与证据，不要求重做已经交付的功能。
+2026-10-15 更新。当前源码 preview.33，默认开发分支 `recorder/dev`；本轮复核修复见 [85](85-CODE-DOCUMENT-REVIEW.md)，83 的 P0/P1 云端工作已完成（84）。preview.31 私有工程候选和 preview.30 / InternalTest-r3 保留各自历史身份；本轮未建立新安装包。当前提交、验证和阻塞以 [13](13-HANDOFF.md) 为准，下方早期任务保留 ID 与证据，不要求重做已经交付的功能。
 
 ## 当前待办与阶段状态
 

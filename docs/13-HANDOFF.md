@@ -1,6 +1,12 @@
 # 13 · 当前状态与下一会话
 
-更新：2026-10-11。默认开发分支 `recorder/dev`；源码仓库根为当前 checkout（本次云端 `/workspace/Trace`）。项目规则见 [AGENTS.md](../AGENTS.md)，全部资料见 [文档索引](README.md)。早期会话已移至 [交接历史](archive/13-HANDOFF-HISTORY.md)，其“下一步”和当时分支状态不代表当前待办。
+更新：2026-10-15。默认开发分支 `recorder/dev`；源码仓库根为当前 checkout（本次云端 `/workspace/Trace`）。项目规则见 [AGENTS.md](../AGENTS.md)，全部资料见 [文档索引](README.md)。早期会话已移至 [交接历史](archive/13-HANDOFF-HISTORY.md)，其“下一步”和当时分支状态不代表当前待办。
+
+## 2026-10-15 · 代码与文档复核
+
+当前源码 preview.33；用户要求完整复核并即时修复，范围、反例与修复见 [85](85-CODE-DOCUMENT-REVIEW.md)。本轮修复录音冻结质量、元数据/诊断写入及缓存误删边界、监测/参考选区恢复、复核与 REC 准备竞态、IPC 资源、选区报告、匹配音量及 PNG/CSV 输出边界；同步陈旧文档入口。原始计量和既有协议版本保持，新依赖版本未升级。
+
+本轮完整 Windows/Linux CI 正在准备；完成后在此记录精确源码与证据。仍使用 [草稿 PR #1](https://github.com/Sceneryyyy/Trace/pull/1)，不直接合入默认分支。未建立 preview.33 安装包；当前候选仍为下表 preview.31。下方 10-11 记录属于上一轮源码验证，不代表本轮通过。
 
 ## 2026-10-11 · P0/P1 当前迭代
 
@@ -16,8 +22,8 @@
 
 | 项目 | 当前记录 |
 | --- | --- |
-| 源码 | `0.1.0-preview.32`；计量配置已升级 Meter v5，EBU 修复见 [78](78-EBU-METER-RECALIBRATION.md)；云端发布准备见 [75](75-CLOUD-RELEASE-PREPARATION.md) |
-| Git | `Sceneryyyy/Trace`，默认 `recorder/dev`；本轮 P0/P1 `4fd9401`（评审分支 `codex/p0-p1-cloud-20261011`）；上一轮文件/故障修复 `2aee519`；保留提交身份及合并历史。自建编码组件 `f33d74d`；此前依赖/编码/下载修复 `3d63d8f` / `ef51603` / `6835af9`；独立化历史为 `a986a0d` / `ab466d8` / `db005b5`；最后文档提交不算新音频测试，远程身份以 Git 为准 |
+| 源码 | `0.1.0-preview.33`；计量配置已升级 Meter v5，EBU 修复见 [78](78-EBU-METER-RECALIBRATION.md)；云端发布准备见 [75](75-CLOUD-RELEASE-PREPARATION.md) |
+| Git | `Sceneryyyy/Trace`，默认 `recorder/dev`；preview.33 复核见 85；本轮 P0/P1 `4fd9401`（评审分支 `codex/p0-p1-cloud-20261011`）；上一轮文件/故障修复 `2aee519`；保留提交身份及合并历史。自建编码组件 `f33d74d`；此前依赖/编码/下载修复 `3d63d8f` / `ef51603` / `6835af9`；独立化历史为 `a986a0d` / `ab466d8` / `db005b5`；最后文档提交不算新音频测试，远程身份以 Git 为准 |
 | 仪表主题 | 实现 `2938c8e`、审计修复 `c67e9e9` 等已于 2026-09-30 合入 `recorder/dev`；用户已验收开发构建并接受 71-D5 差异 |
 | 当前工程候选 | Windows x64 preview.31，文件/故障修复来源 `2aee519`；[CI 38099859270](https://github.com/Sceneryyyy/Trace/actions/runs/38099859270) 全部成功，私有附件 `11688230696`，未签名 |
 | 历史同事内测包 | Windows x64 preview.30 / InternalTest-r3，来源 `9c1ee21`，包名/校验见 [69](69-INTERNAL-TEST-R3.md) |

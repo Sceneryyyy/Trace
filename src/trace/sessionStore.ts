@@ -1,7 +1,8 @@
 import type {MemoryOrigin} from './replaySaveTypes'
 import type {ReplayQuality} from './replaySaveTypes'
 import {validateReplayQuality} from './replaySaveTypes'
-import { mkdir, readFile, writeFile, rename, appendFile } from 'node:fs/promises'
+import { mkdir,lstat } from 'node:fs/promises'
+import {readMetadata,replaceMetadata,appendMetadata} from './metadataFile'
 import { join, basename } from 'node:path'
 import { SessionTimeline, u64 } from './sessionTimeline'
 import {validateExportRecord} from './exportTypes'
@@ -59,6 +60,7 @@ export function normalizeSession(value:unknown):SessionDocument {
 export class StoredSession {
  private writes:Promise<void>=Promise.resolve()
  constructor(readonly directory:string,readonly document:SessionDocument){}
+ private async ensureDirectory():Promise<void>{await mkdir(this.directory,{recursive:true});const info=await lstat(this.directory);if(!info.isDirectory()||info.isSymbolicLink())throw Error('INVALID_SESSION_DIRECTORY')}
  private synchronize():void{
   const d=this.document,timeline=new SessionTimeline(d.regions)
   d.durationNs=timeline.durationNs;d.frames=d.regions.reduce((n,r)=>n+BigInt(r.frames),0n).toString();d.hasDiscontinuities=d.regions.length>1||d.hasDiscontinuities
@@ -77,19 +79,19 @@ export class StoredSession {
  }
  save():Promise<void>{
   this.writes=this.writes.catch(()=>{}).then(async()=>{
-   this.synchronize();await mkdir(this.directory,{recursive:true})
+   this.synchronize();await this.ensureDirectory()
    const target=join(this.directory,'session.json')
-   await writeFile(target+'.tmp',JSON.stringify(this.document,null,2)+'\n');await rename(target+'.tmp',target)
+   await replaceMetadata(target,JSON.stringify(this.document,null,2)+'\n',16*1024*1024,'INVALID_SESSION_FILE')
   })
   return this.writes
  }
  event(type:string,details:Record<string,unknown>={}):Promise<void>{
   const event={seq:++this.document.eventSequence,type,at:new Date().toISOString(),...details};this.document.events.push(event)
-  this.writes=this.writes.catch(()=>{}).then(async()=>{await mkdir(this.directory,{recursive:true});await appendFile(join(this.directory,'events.jsonl'),JSON.stringify(event)+'\n')})
+  this.writes=this.writes.catch(()=>{}).then(async()=>{await this.ensureDirectory();await appendMetadata(join(this.directory,'events.jsonl'),JSON.stringify(event)+'\n')})
   return this.writes
  }
  async settled():Promise<void>{await this.writes}
 }
 export async function readSession(directory:string):Promise<StoredSession>{
- return new StoredSession(directory,normalizeSession(JSON.parse(await readFile(join(directory,'session.json'),'utf8'))))
+ return new StoredSession(directory,normalizeSession(JSON.parse(await readMetadata(join(directory,'session.json'),16*1024*1024,'INVALID_SESSION_FILE'))))
 }

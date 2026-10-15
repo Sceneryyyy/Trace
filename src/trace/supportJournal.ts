@@ -1,5 +1,7 @@
-import {mkdir,readFile,stat} from 'node:fs/promises'
-import {writeFileSync} from 'node:fs'
+import {mkdir,lstat} from 'node:fs/promises'
+import {readMetadata} from './metadataFile'
+import {randomUUID} from 'node:crypto'
+import {writeFileSync,renameSync,unlinkSync,lstatSync} from 'node:fs'
 import {join} from 'node:path'
 import {PreferencesWriter} from './preferencesWriter'
 
@@ -15,7 +17,7 @@ const event=(raw:unknown):SupportEvent|null=>{
  return {at:v.at,kind:v.kind,count:Math.min(v.count,1000000),...(Number.isSafeInteger(v.detail)?{detail:Math.max(-2147483648,Math.min(4294967295,v.detail!))}:{})}
 }
 async function boundedJSON(file:string,maximum=65536):Promise<unknown>{
- try{if((await stat(file)).size>maximum)return null;return JSON.parse(await readFile(file,'utf8'))}catch{return null}
+ try{return JSON.parse(await readMetadata(file,maximum,'INVALID_SUPPORT_FILE'))}catch{return null}
 }
 /** Fixed-field journal: no exception strings, paths, media, identifiers or command arguments. */
 export class SupportJournal {
@@ -25,19 +27,20 @@ export class SupportJournal {
  private writer:PreferencesWriter
  private lastFault:SupportEvent|null=null
  private available=true
+ private writable=true
  private previousInterrupted=false
  private constructor(private directory:string,private changed:()=>void){
   this.writer=new PreferencesWriter(join(directory,'events.json'),error=>{const next=!error;if(this.available!==next){this.available=next;this.changed()}})
  }
  static async open(directory:string,changed:()=>void=()=>{}):Promise<SupportJournal>{
   const journal=new SupportJournal(directory,changed)
-  try{await mkdir(directory,{recursive:true})}catch{journal.available=false}
-  const old=await boundedJSON(join(directory,'events.json')) as {schemaVersion?:number;clean?:boolean;events?:unknown[]}|null
+  try{await mkdir(directory,{recursive:true});const info=await lstat(directory);if(!info.isDirectory()||info.isSymbolicLink())throw Error('INVALID_SUPPORT_DIRECTORY')}catch{journal.available=false;journal.writable=false}
+  const old=(journal.writable?await boundedJSON(join(directory,'events.json')):null) as {schemaVersion?:number;clean?:boolean;events?:unknown[]}|null
   if(old?.schemaVersion===1&&Array.isArray(old.events)){
    journal.events=old.events.slice(-128).map(event).filter((e):e is SupportEvent=>Boolean(e))
    journal.previousInterrupted=old.clean!==true
   }
-  const fatal=event(await boundedJSON(join(directory,'fatal.json'),1024))
+  const fatal=event(journal.writable?await boundedJSON(join(directory,'fatal.json'),1024):null)
   const last=journal.events.at(-1)
   if(fatal&&(!last||fatal.at>last.at)){journal.events.push(fatal);journal.previousInterrupted=true}
   journal.lastFault=[...journal.events].reverse().find(e=>/failed|gone|uncaught|rejection|timeout|file-worker-exit|renderer-(react|script|promise)/.test(e.kind))||null
@@ -55,11 +58,14 @@ export class SupportJournal {
   if(/failed|gone|uncaught|rejection|timeout|file-worker-exit|renderer-(react|script|promise)/.test(kind))this.lastFault=next
   this.save();this.changed()
  }
- private save(){this.writer.save(JSON.stringify({schemaVersion:1,clean:this.clean,events:this.events}))}
+ private save(){if(!this.writable)return;this.writer.save(JSON.stringify({schemaVersion:1,clean:this.clean,events:this.events}))}
  async flush(){try{await this.writer.flush()}catch{this.available=false}}
  async finish(){if(!this.timedOut){this.clean=true;this.record('clean-exit')}await this.flush()}
  fatal(kind:'main-uncaught'|'main-rejection'|'startup-failed'):void{
   // Only the fatal path uses a bounded synchronous record before immediate termination.
-  try{writeFileSync(join(this.directory,'fatal.json'),JSON.stringify({at:new Date().toISOString(),kind,count:1}))}catch{}
+  const temporary=join(this.directory,'fatal.'+randomUUID()+'.tmp');let owned=false
+  try{if(!this.writable)return;const info=lstatSync(this.directory);if(!info.isDirectory()||info.isSymbolicLink())return
+   writeFileSync(temporary,JSON.stringify({at:new Date().toISOString(),kind,count:1}),{flag:'wx'});owned=true;renameSync(temporary,join(this.directory,'fatal.json'))
+  }catch{}finally{if(owned)try{unlinkSync(temporary)}catch{}}
  }
 }

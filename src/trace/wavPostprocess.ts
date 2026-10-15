@@ -80,8 +80,9 @@ export async function postprocessWav(take:StoredSession,ffmpeg:string,ffprobe:st
  const sources=d.assets.filter(a=>a.role===inputRole&&!['superseded','removed','removing'].includes(a.state||'')),usable=d.regions.filter(r=>BigInt(r.frames)>0n)
  if(!sources.length||!usable.length)return
  const target=preset.sampleRate==='source'?d.sourceFormat.sampleRate:preset.sampleRate,channels=Math.max(...usable.map(r=>r.format.channelCount))
- const token=randomUUID().slice(0,8),temp=join(take.directory,'conversion-'+token)
+ const token=randomUUID(),temp=join(take.directory,'conversion-'+token);let owned=false
  try{
+ await mkdir(temp);owned=true
  if(d.regions.length===1){
   if(compressed)return
   const r=usable[0],assets=sources.filter(a=>a.regionId===r.id),input={paths:assets.map(a=>join(take.directory,a.relativePath)),rate:r.format.sampleRate,channels:r.format.channelCount,frames:BigInt(r.frames)}
@@ -106,5 +107,5 @@ export async function postprocessWav(take:StoredSession,ffmpeg:string,ffprobe:st
   }
  }
  await take.event('session.view.ready',{sampleRate:target,channelCount:channels,frames:prefix.toString(),gapsOmitted:true,monoMapping:channels===2?'equal-power-center':'mono'})
- }finally{await cleanConversion(take.directory,temp,token)}
+ }finally{if(owned)await cleanConversion(take.directory,temp,token)}
 }

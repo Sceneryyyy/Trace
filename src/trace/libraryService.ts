@@ -1,6 +1,7 @@
+import {readMetadata} from './metadataFile'
 import {libraryUsage,clearOwnedCache} from './libraryStorage'
 import {validateTakeName} from './naming'
-import {lstat,realpath,readFile} from 'node:fs/promises'
+import {lstat,realpath} from 'node:fs/promises'
 import {dirname,join,sep} from 'node:path'
 import type {RecordingService} from './recording'
 import type {ExportView} from './exportTypes'
@@ -8,7 +9,7 @@ import type {TakeSummary} from './shared'
 export type Availability='present'|'missing'|'unavailable'
 type Inventory={status:Availability;missingFiles:number;missingRoles:string[]}
 async function identity(file:string):Promise<Record<string,unknown>>{
- try{const info=await lstat(file);if(!info.isFile()||info.isSymbolicLink()||info.size>16*1024*1024)throw Error();return JSON.parse(await readFile(file,'utf8'))}
+ try{const info=await lstat(file);if(!info.isFile()||info.isSymbolicLink()||info.size>16*1024*1024)throw Error();return JSON.parse(await readMetadata(file,16*1024*1024,'LIBRARY_IDENTITY_CHANGED'))}
  catch{throw Error('LIBRARY_IDENTITY_CHANGED')}
 }
 const absent=(error:unknown)=>['ENOENT','ENOTDIR'].includes((error as NodeJS.ErrnoException).code||'')
@@ -58,7 +59,7 @@ export class LibraryService{
   catch(e){if(absent(e))return {path:target,name:take.document.name,missing:true,takeMissing:true,exportId};throw e}
   const manifestPath=join(actual,'session.json'),manifestStat=await lstat(manifestPath)
   if(!manifestStat.isFile()||manifestStat.isSymbolicLink()||manifestStat.size>16*1024*1024)throw Error('LIBRARY_IDENTITY_CHANGED')
-  const manifest=JSON.parse(await readFile(manifestPath,'utf8'))
+  const manifest=JSON.parse(await readMetadata(manifestPath,16*1024*1024,'LIBRARY_IDENTITY_CHANGED'))
   if(manifest.product!=='Trace'||manifest.sessionId!==takeId)throw Error('LIBRARY_IDENTITY_CHANGED')
   if(!exportId)return {path:actual,name:take.document.name,missing:false}
   const parent=join(actual,'exports'),child=join(parent,exportId)

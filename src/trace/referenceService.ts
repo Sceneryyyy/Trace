@@ -26,13 +26,13 @@ export class ReferenceService {
  private linked=true
  private matching=false
  stopQueries:()=>Promise<void>=async()=>{}
- constructor(private analyses:AnalysisService,private resolve:(source:ExportSource)=>Promise<AnalysisSource>,private changed:()=>void){}
+ constructor(private analyses:AnalysisService,private resolve:(source:ExportSource)=>Promise<AnalysisSource>,private changed:()=>void,private restoreAudition:(playbackId:string,gain:number)=>void=()=>{}){}
  get version(){return this.revision}
  get activeSlot(){return this.active}
  usesTake(id:string):boolean{const needs=(s:ExportSource|AnalysisSource|undefined)=>Boolean(s&&s.takeId===id&&s.role!=='export'&&s.role!=='deliverable');return needs(this.peers.a?.source)||needs(this.peers.b?.source)||needs(this.pendingA)||needs(this.requested?.ref)||needs(this.loadingRef)}
  peer(slot:ReferenceSlot):ReferencePeer|undefined{return this.peers[slot]}
  private publish(){this.revision++;this.changed()}
- private drop(slot:ReferenceSlot){this.matching=false;const p=this.peers[slot];if(p)this.analyses.release(p.analysisId,true);delete this.peers[slot];if(this.active===slot)this.active=null}
+ private drop(slot:ReferenceSlot){this.matching=false;const p=this.peers[slot];if(p){if(this.active===slot&&p.playbackId){p.auditionFactor=1;this.restoreAudition(p.playbackId,p.gain)}this.analyses.release(p.analysisId,true);}delete this.peers[slot];if(this.active===slot)this.active=null}
  private create(source:AnalysisSource,view?:PlaybackView):ReferencePeer{
   const range=referenceRange(view?.selection||undefined,source.frames),selection=view?.selection||null
   const reuse=selection?view?.selectionAnalysis?.id:view?.analysisId
