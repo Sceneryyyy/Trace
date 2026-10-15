@@ -1,0 +1,197 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-15",
+  "traceBaseline": "6b37ed4f102d3f14d36ea93b4c19912ffc4e02cf",
+  "traceVersion": "0.1.0-preview.33",
+  "scope": "Read-only design research; 17 source files and 3 published screenshots; no competitor execution or performance comparison; no source/artwork copied into product",
+  "projects": [
+    {
+      "repository": "KDE/krecorder",
+      "commit": "b2f50f70320647f85a96ea75a8ac0df6f4a32a3e",
+      "commitDate": "2026-10-10T02:24:26Z",
+      "observedBranch": "master",
+      "sourceTreeTruncated": false,
+      "licenseScope": "GPL-3.0-or-later in inspected QML headers",
+      "filesRead": [
+        {
+          "path": "src/contents/ui/RecordingListDelegate.qml",
+          "url": "https://raw.githubusercontent.com/KDE/krecorder/b2f50f70320647f85a96ea75a8ac0df6f4a32a3e/src/contents/ui/RecordingListDelegate.qml",
+          "blobSha": "1dc227c375788fe96ce0a078617a5e2a43a59ec9",
+          "sha256": "353acd606572f263f5ac377ac02f62ea4d0848027420501118b42a5a8ce12869",
+          "bytes": 2914
+        },
+        {
+          "path": "src/contents/ui/RecordingListPage.qml",
+          "url": "https://raw.githubusercontent.com/KDE/krecorder/b2f50f70320647f85a96ea75a8ac0df6f4a32a3e/src/contents/ui/RecordingListPage.qml",
+          "blobSha": "e428fd528007f759419ae76c8895a1033cb74866",
+          "sha256": "3eafc9daf9aa822b717b959045e1dd6ea79a8f3c5094035e1de4055e361ec624",
+          "bytes": 8264
+        },
+        {
+          "path": "src/contents/ui/Main.qml",
+          "url": "https://raw.githubusercontent.com/KDE/krecorder/b2f50f70320647f85a96ea75a8ac0df6f4a32a3e/src/contents/ui/Main.qml",
+          "blobSha": "93e0a19e46a5ca6c4fafda4b1d4ceda762f94809",
+          "sha256": "5b68ff63e0842a88b4d2f6c6549148fa1945cd7a2371023e61a7146c11a65700",
+          "bytes": 3165
+        },
+        {
+          "path": "src/contents/ui/PlayerPage.qml",
+          "url": "https://raw.githubusercontent.com/KDE/krecorder/b2f50f70320647f85a96ea75a8ac0df6f4a32a3e/src/contents/ui/PlayerPage.qml",
+          "blobSha": "1129d2cae32a0a80ebb5477125c22e361b582224",
+          "sha256": "76deec24b1132e9de2da93c80101687eb2e73cd8f15a9ddea8a7686efc10b83f",
+          "bytes": 4263
+        }
+      ]
+    },
+    {
+      "repository": "digimezzo/dopamine",
+      "commit": "c1d4e8f5936e1c5734944613c48c889c91a67771",
+      "commitDate": "2026-10-05T20:35:52Z",
+      "observedBranch": "master",
+      "sourceTreeTruncated": false,
+      "licenseScope": "GPL-3.0 repository metadata; no source reuse",
+      "filesRead": [
+        {
+          "path": "src/app/ui/components/collection/track/track.component.html",
+          "url": "https://raw.githubusercontent.com/digimezzo/dopamine/c1d4e8f5936e1c5734944613c48c889c91a67771/src/app/ui/components/collection/track/track.component.html",
+          "blobSha": "6ed691c061a9a909c027329278d32808bbd0c305",
+          "sha256": "fbdee9cf3cd04b104b21bd0a96ad1fa4f1b08b9b95771677f88f98c6f6c3c0b6",
+          "bytes": 3016
+        },
+        {
+          "path": "src/app/ui/components/collection/track/track.component.scss",
+          "url": "https://raw.githubusercontent.com/digimezzo/dopamine/c1d4e8f5936e1c5734944613c48c889c91a67771/src/app/ui/components/collection/track/track.component.scss",
+          "blobSha": "c351d928853326bce4f610d6f75c6579562136fe",
+          "sha256": "a64e371f4dd870193d82fe25f9f1ac4b6bc869c67aabaf19d6f9e6dc076be781",
+          "bytes": 1449
+        },
+        {
+          "path": "src/app/ui/components/collection/track-browser/track-browser.component.html",
+          "url": "https://raw.githubusercontent.com/digimezzo/dopamine/c1d4e8f5936e1c5734944613c48c889c91a67771/src/app/ui/components/collection/track-browser/track-browser.component.html",
+          "blobSha": "95b6cedadbf2dbc441a35242e1ce6d2a3d391eb2",
+          "sha256": "c3c2854e2e2619ba26b96ca56eada69c9ae65efc366300196da237fa697a3710",
+          "bytes": 4175
+        },
+        {
+          "path": "src/app/ui/components/collection/collection-tracks/collection-tracks-table/collection-tracks-table.component.html",
+          "url": "https://raw.githubusercontent.com/digimezzo/dopamine/c1d4e8f5936e1c5734944613c48c889c91a67771/src/app/ui/components/collection/collection-tracks/collection-tracks-table/collection-tracks-table.component.html",
+          "blobSha": "593139d9a37c522844439868dbc99d7b6eda5ba9",
+          "sha256": "25ab167c87b3c15e94e22f2604b402a6e0bd7ea3972195d9d837e97afb4b4fa5",
+          "bytes": 13277
+        },
+        {
+          "path": "src/app/ui/components/collection/collection-playlists/playlist-track-browser/playlist-track-browser.component.html",
+          "url": "https://raw.githubusercontent.com/digimezzo/dopamine/c1d4e8f5936e1c5734944613c48c889c91a67771/src/app/ui/components/collection/collection-playlists/playlist-track-browser/playlist-track-browser.component.html",
+          "blobSha": "911db15c3b2e0d823888944dcb995e7077f53b89",
+          "sha256": "a5b86e31add58230fb08fc7891312ef25a432a8ff5d1c1993d3ce20e4ea6d1ae",
+          "bytes": 2578
+        }
+      ]
+    },
+    {
+      "repository": "strawberrymusicplayer/strawberry",
+      "commit": "d45cfa1604b959530822e9642061371c86b37682",
+      "commitDate": "2026-10-14T21:22:55Z",
+      "observedBranch": "master",
+      "sourceTreeTruncated": false,
+      "licenseScope": "GPL-3.0-or-later in inspected C++ headers",
+      "filesRead": [
+        {
+          "path": "src/playlist/playlistview.cpp",
+          "url": "https://raw.githubusercontent.com/strawberrymusicplayer/strawberry/d45cfa1604b959530822e9642061371c86b37682/src/playlist/playlistview.cpp",
+          "blobSha": "f285f4d0224e48feae5e1b0bed953f8c4bc8e240",
+          "sha256": "4575fe436138075e9aeed1dd9cad3826c24e7cdb84facc9e9bbae831386b325f",
+          "bytes": 63252
+        },
+        {
+          "path": "src/playlist/playlistfilter.cpp",
+          "url": "https://raw.githubusercontent.com/strawberrymusicplayer/strawberry/d45cfa1604b959530822e9642061371c86b37682/src/playlist/playlistfilter.cpp",
+          "blobSha": "158151dd23b976c71d5145ab305016ebc7f48df8",
+          "sha256": "a9095604e1fc0f7c33883bbe0e757dfba5fa1fac509293abe05c265655f73dda",
+          "bytes": 2152
+        },
+        {
+          "path": "src/playlist/playlistmanager.cpp",
+          "url": "https://raw.githubusercontent.com/strawberrymusicplayer/strawberry/d45cfa1604b959530822e9642061371c86b37682/src/playlist/playlistmanager.cpp",
+          "blobSha": "301bce9be95c1e80e534f8f38e90655607c99263",
+          "sha256": "f301354a5e02a759a8f87e06f12b39fa6dca3da451e45c036d7a345196f97b8f",
+          "bytes": 27088
+        }
+      ]
+    },
+    {
+      "repository": "audacious-media-player/audacious-plugins",
+      "commit": "10a90c1aa412d1ab63ec3261806719bbf6608d13",
+      "commitDate": "2026-10-11T20:45:01Z",
+      "observedBranch": "master",
+      "sourceTreeTruncated": false,
+      "licenseScope": "Inspected Qt UI files carry BSD-style notices; repository API reports NOASSERTION; no whole-repository license conclusion",
+      "filesRead": [
+        {
+          "path": "src/qtui/playlist-qt.cc",
+          "url": "https://raw.githubusercontent.com/audacious-media-player/audacious-plugins/10a90c1aa412d1ab63ec3261806719bbf6608d13/src/qtui/playlist-qt.cc",
+          "blobSha": "679d2512344460c682f98c027fcd8bb5a73469f0",
+          "sha256": "d8cec8c6d325ec226fc2b3727d62828fc3c97e56600ce0d26439b3c30a2a0ead",
+          "bytes": 16014
+        },
+        {
+          "path": "src/qtui/playlist_header.cc",
+          "url": "https://raw.githubusercontent.com/audacious-media-player/audacious-plugins/10a90c1aa412d1ab63ec3261806719bbf6608d13/src/qtui/playlist_header.cc",
+          "blobSha": "1e864bf836a8fe6a101e4873460898b4983dbe7f",
+          "sha256": "d4bbef1be939b8b8771c84dde66fb5167c496418a73f3f19887517f2b6a4cf9b",
+          "bytes": 11161
+        },
+        {
+          "path": "src/qtui/playlist_model.cc",
+          "url": "https://raw.githubusercontent.com/audacious-media-player/audacious-plugins/10a90c1aa412d1ab63ec3261806719bbf6608d13/src/qtui/playlist_model.cc",
+          "blobSha": "62e8f9b5edfc11d74a20db7f9045147a8f065e4a",
+          "sha256": "b9ada621680cba047b3cbbfe1fb57d0565e280fa9bbacab5982b03fb93a46a75",
+          "bytes": 10578
+        },
+        {
+          "path": "src/qtui/search_bar.cc",
+          "url": "https://raw.githubusercontent.com/audacious-media-player/audacious-plugins/10a90c1aa412d1ab63ec3261806719bbf6608d13/src/qtui/search_bar.cc",
+          "blobSha": "c7e4ce3428fe7fd5dd439f16e61dfad0609ec673",
+          "sha256": "85d1bd428a977f4add3810eef39ea14e590659956c864fb9dedee553bb4a28d2",
+          "bytes": 3097
+        },
+        {
+          "path": "src/qtui/menus.cc",
+          "url": "https://raw.githubusercontent.com/audacious-media-player/audacious-plugins/10a90c1aa412d1ab63ec3261806719bbf6608d13/src/qtui/menus.cc",
+          "blobSha": "268dbef30a6ae3d654b053f53be8f4b5766c48e9",
+          "sha256": "e0a9924a8024efb2e46c4ef2a496e924a98ee881d41a21f66a0add97a9085142",
+          "bytes": 15175
+        }
+      ]
+    }
+  ],
+  "screenshotsViewed": [
+    {
+      "project": "KRecorder",
+      "url": "https://plasma-mobile.org/2022/11/30/plasma-mobile-gear-22-11/krecorder-1.png",
+      "sha256": "328db6396f6baf0e7a08c2d2d735a620bf1d69eb0b8d9446ecfba740e95cb853",
+      "bytes": 41442,
+      "scope": "Published screenshot viewed; no application runtime verification; not vendored into Trace"
+    },
+    {
+      "project": "Dopamine",
+      "url": "https://raw.githubusercontent.com/digimezzo/dopamine/c1d4e8f5936e1c5734944613c48c889c91a67771/Dopamine.screenshot.1.png",
+      "sha256": "96a6b528ed72e3d144f2ec466cf93b73f29aafc561122e8e7ee6f935dfaa9f62",
+      "bytes": 332393,
+      "scope": "Published screenshot viewed; no application runtime verification; not vendored into Trace"
+    },
+    {
+      "project": "Strawberry",
+      "url": "https://raw.githubusercontent.com/strawberrymusicplayer/strawberry/d45cfa1604b959530822e9642061371c86b37682/data/screenshot/screenshot.png",
+      "sha256": "21319023a21eb176eca9015f552fd0fd6c689f3eb5b133fad9e93c6e4efa6ba7",
+      "bytes": 980282,
+      "scope": "Published screenshot viewed; no application runtime verification; not vendored into Trace"
+    }
+  ],
+  "excludedSources": [
+    {
+      "url": "https://api.github.com/repos/GNOME/gnome-sound-recorder",
+      "observation": "HTTP 404; GNOME historical design search results excluded from current implementation claims"
+    }
+  ]
+}

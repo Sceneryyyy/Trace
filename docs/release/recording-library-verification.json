@@ -1,0 +1,933 @@
+{
+  "schemaVersion": 1,
+  "collectedAt": "2026-10-15T13:59:48.218487+00:00",
+  "productVersion": "0.1.0-preview.34",
+  "sourceCommit": "bf42e6c0938ff8b145774379d2a4fcfda5ce85d7",
+  "sourceTree": "9fa3ebd2390f37ce12ae74c5f31b67db989b578d",
+  "pullRequest": {
+    "number": 2,
+    "url": "https://github.com/Sceneryyyy/Trace/pull/2",
+    "base": "recorder/dev",
+    "head": "codex/recording-library-20261015",
+    "merged": false
+  },
+  "run": {
+    "id": 38744154945,
+    "attempt": 1,
+    "url": "https://github.com/Sceneryyyy/Trace/actions/runs/38744154945",
+    "headSha": "bf42e6c0938ff8b145774379d2a4fcfda5ce85d7",
+    "status": "completed",
+    "conclusion": "success"
+  },
+  "jobs": [
+    {
+      "name": "windows",
+      "jobId": 116453466030,
+      "checkRunId": 116453466030,
+      "conclusion": "success",
+      "url": "https://github.com/Sceneryyyy/Trace/actions/runs/38744154945/job/116453466030",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v6",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/setup-node@v6",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Install locked dependencies",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run npm run check:independence",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Fetch pinned Electron SDK without building another application",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Compile independent Trace diagnostic fixtures",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/cache/restore@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Prepare pinned codec with readable failure diagnostics",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/cache/save@v4",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Verify Trace and retain command outcomes",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Require this run's complete portable success before packing a candidate",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Build and inspect candidate package",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Publish selected verification evidence in readable annotations",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/upload-artifact@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/upload-artifact@v4",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Post Run actions/setup-node@v6",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/checkout@v6",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ],
+      "testedCommit": "742f186251faa5d08f3cdc22d999a220cf2b6d76",
+      "tree": "9fa3ebd2390f37ce12ae74c5f31b67db989b578d",
+      "annotationParts": 4,
+      "annotationPayloadSha256": "7c013fb1cdfe602e83c017f9e867f5e50e116c46a35f49b2a3444d15b1775375",
+      "summary": {
+        "schemaVersion": 1,
+        "commit": "742f186251faa5d08f3cdc22d999a220cf2b6d76",
+        "sourceDirty": false,
+        "platform": "win32",
+        "arch": "x64",
+        "codecBuildReused": true,
+        "tests": [
+          {
+            "sha256": "4364132e688ed020b2c4b44cac020f5788c9995c0dffe2dd5bf064ea29649fb6",
+            "commit": "742f186251faa5d08f3cdc22d999a220cf2b6d76",
+            "tier": "portable",
+            "files": 57,
+            "exitCode": 0,
+            "status": "pass",
+            "counts": {
+              "tests": 321,
+              "suites": 0,
+              "pass": 321,
+              "fail": 0,
+              "cancelled": 0,
+              "skipped": 0,
+              "todo": 0,
+              "duration_ms": 19079.8366
+            },
+            "failureDetails": null,
+            "observations": {},
+            "outputSha256": "39569189009092d061c412f3c8b9bd2041d8f8d39cec095bb87a9cc30c260c44"
+          },
+          {
+            "sha256": "0d11b3b132f88c9b625c48ecdd09a06539bc8a4f87cbceacd310e02b3d31b63f",
+            "commit": "742f186251faa5d08f3cdc22d999a220cf2b6d76",
+            "tier": "native",
+            "files": 12,
+            "exitCode": 0,
+            "status": "pass",
+            "counts": {
+              "tests": 68,
+              "suites": 0,
+              "pass": 68,
+              "fail": 0,
+              "cancelled": 0,
+              "skipped": 0,
+              "todo": 0,
+              "duration_ms": 86440.9485
+            },
+            "failureDetails": null,
+            "observations": {
+              "TRACE_MP3_IMPORT_MATRIX": {
+                "ffmpegSha256": "c647e20c508af6421efb3c78b59e2a693f7b905c6a27384282ad76b5ad37d5ee",
+                "matrix": [
+                  {
+                    "rate": 8000,
+                    "channels": 1,
+                    "mode": "cbr",
+                    "inputFrames": 1737,
+                    "declaredDecodedFrames": "1775",
+                    "importedFrames": "1775"
+                  },
+                  {
+                    "rate": 8000,
+                    "channels": 1,
+                    "mode": "vbr",
+                    "inputFrames": 1737,
+                    "declaredDecodedFrames": "1775",
+                    "importedFrames": "1775"
+                  },
+                  {
+                    "rate": 8000,
+                    "channels": 2,
+                    "mode": "cbr",
+                    "inputFrames": 1737,
+                    "declaredDecodedFrames": "1775",
+                    "importedFrames": "1775"
+                  },
+                  {
+                    "rate": 8000,
+                    "channels": 2,
+                    "mode": "vbr",
+                    "inputFrames": 1737,
+                    "declaredDecodedFrames": "1775",
+                    "importedFrames": "1775"
+                  },
+                  {
+                    "rate": 16000,
+                    "channels": 1,
+                    "mode": "cbr",
+                    "inputFrames": 3337,
+                    "declaredDecodedFrames": "3337",
+                    "importedFrames": "3337"
+                  },
+                  {
+                    "rate": 16000,
+                    "channels": 1,
+                    "mode": "vbr",
+                    "inputFrames": 3337,
+                    "declaredDecodedFrames": "3337",
+                    "importedFrames": "3337"
+                  },
+                  {
+                    "rate": 16000,
+                    "channels": 2,
+                    "mode": "cbr",
+                    "inputFrames": 3337,
+                    "declaredDecodedFrames": "3337",
+                    "importedFrames": "3337"
+                  },
+                  {
+                    "rate": 16000,
+                    "channels": 2,
+                    "mode": "vbr",
+                    "inputFrames": 3337,
+                    "declaredDecodedFrames": "3337",
+                    "importedFrames": "3337"
+                  },
+                  {
+                    "rate": 44100,
+                    "channels": 1,
+                    "mode": "cbr",
+                    "inputFrames": 8957,
+                    "declaredDecodedFrames": "8957",
+                    "importedFrames": "8957"
+                  },
+                  {
+                    "rate": 44100,
+                    "channels": 1,
+                    "mode": "vbr",
+                    "inputFrames": 8957,
+                    "declaredDecodedFrames": "8957",
+                    "importedFrames": "8957"
+                  },
+                  {
+                    "rate": 44100,
+                    "channels": 2,
+                    "mode": "cbr",
+                    "inputFrames": 8957,
+                    "declaredDecodedFrames": "8957",
+                    "importedFrames": "8957"
+                  },
+                  {
+                    "rate": 44100,
+                    "channels": 2,
+                    "mode": "vbr",
+                    "inputFrames": 8957,
+                    "declaredDecodedFrames": "8957",
+                    "importedFrames": "8957"
+                  },
+                  {
+                    "rate": 48000,
+                    "channels": 1,
+                    "mode": "cbr",
+                    "inputFrames": 9737,
+                    "declaredDecodedFrames": "9737",
+                    "importedFrames": "9737"
+                  },
+                  {
+                    "rate": 48000,
+                    "channels": 1,
+                    "mode": "vbr",
+                    "inputFrames": 9737,
+                    "declaredDecodedFrames": "9737",
+                    "importedFrames": "9737"
+                  },
+                  {
+                    "rate": 48000,
+                    "channels": 2,
+                    "mode": "cbr",
+                    "inputFrames": 9737,
+                    "declaredDecodedFrames": "9737",
+                    "importedFrames": "9737"
+                  },
+                  {
+                    "rate": 48000,
+                    "channels": 2,
+                    "mode": "vbr",
+                    "inputFrames": 9737,
+                    "declaredDecodedFrames": "9737",
+                    "importedFrames": "9737"
+                  }
+                ],
+                "scope": "Generated external files; decoder metadata governs frames, not a claim of bit-exact encoder roundtrip"
+              },
+              "TRACE_CODEC_MINUTE": {
+                "ffmpegSha256": "c647e20c508af6421efb3c78b59e2a693f7b905c6a27384282ad76b5ad37d5ee",
+                "sourceRate": 96000,
+                "sourceFrames": 5760000,
+                "channels": 2,
+                "timings": [
+                  {
+                    "rate": 44100,
+                    "extension": "mp3",
+                    "elapsedMs": 739,
+                    "physicalFrames": "2646000",
+                    "audibleFrames": "2646000"
+                  },
+                  {
+                    "rate": 44100,
+                    "extension": "m4a",
+                    "elapsedMs": 1622,
+                    "physicalFrames": "2646000",
+                    "audibleFrames": "2646000"
+                  },
+                  {
+                    "rate": 48000,
+                    "extension": "mp3",
+                    "elapsedMs": 1085,
+                    "physicalFrames": "2880000",
+                    "audibleFrames": "2880000"
+                  },
+                  {
+                    "rate": 48000,
+                    "extension": "m4a",
+                    "elapsedMs": 1376,
+                    "physicalFrames": "2880000",
+                    "audibleFrames": "2880000"
+                  }
+                ],
+                "scope": "Offline generated signal; not WASAPI or physical-device real-time acceptance"
+              }
+            },
+            "outputSha256": "bef55710065fd84ebd848a5323b7ad2a04d3e285f81a5d21c871e464b04fcbc8"
+          }
+        ],
+        "ctest": {
+          "sha256": "f3b049a784c573e0d1af7d778110587f47d1001e660ed15fc17aaed948d30b7d",
+          "tests": 19,
+          "passed": 19,
+          "failed": 0
+        },
+        "ebu": {
+          "sha256": "511374eaee91fc20846fb1bb6928e401fdaaa7d77a87a88b9b374b6822789c56",
+          "commit": "742f186251faa5d08f3cdc22d999a220cf2b6d76",
+          "sourceDirty": false,
+          "status": "pass",
+          "measurementConfigId": "trace-meter-v5-ebur128-1.2.6-lra10hz-msi100hz-tpaligned",
+          "summary": {
+            "passed": 68,
+            "failed": 0,
+            "excluded": 2,
+            "supported": 68,
+            "checks": {
+              "total": 112,
+              "passed": 112,
+              "failed": 0
+            },
+            "invariants": {
+              "total": 204,
+              "passed": 204,
+              "failed": 0
+            },
+            "supportedPassRate": 1
+          },
+          "sourceSha256": {
+            "native/src/recorder/Meter.cpp": "a01a7b96641bf8113faba731aa8338e642753febf725f2fdc599c6bedd4a5e91",
+            "native/src/recorder/Meter.h": "e4066aac8d89fdec565f177c7a08e076448e384536202d175d4d1ede3b066409",
+            "native/src/recorder/MeasurementConfig.h": "de90bfa7762c80b2ba3155a5f1a5ea4a255292c4b307e79c5a60f1c1d160f1a6",
+            "native/src/recorder/FileAnalysis.cpp": "e9702a0dea47e2da2ca56611564d6a03f5c57743b64b8b650b3aacded843d82d",
+            "native/vendor/libebur128/ebur128.c": "36726095b74a13fde0cb74992a06400d3f7cb1a228fa95df2a4cc5bf38231783",
+            "test/native/ebu_wav_probe.cpp": "51763a9073bce6d2f39226299b3c5e3175d985d07f8721929a4eb65108368722",
+            "tools/metering/run-ebu-wav-tests.py": "b8710789684f94d2e15e306993b7d8ca1a44d2d8f3bef2cf304e563edc9413a9"
+          }
+        },
+        "library": null,
+        "security": {
+          "sha256": "96d85cef3cd97d4cbb5a480c2262eafdc97f41141a56e87d791b59b9d3e3ee26",
+          "commit": "742f186251faa5d08f3cdc22d999a220cf2b6d76",
+          "sourceDirty": false,
+          "packageLockSha256": "9afb18c09a8f3f9a8ba9b0f40d88ce6b3ed523087c923561fa824b4c3b86c751",
+          "status": "pass",
+          "checks": [
+            {
+              "command": "npm audit --json",
+              "exitCode": 0,
+              "counts": {
+                "info": 0,
+                "low": 0,
+                "moderate": 0,
+                "high": 0,
+                "critical": 0,
+                "total": 0
+              },
+              "reportSha256": "c32ca030b773f94f2850f3e61a8a942058b82cd928537441fbaf310ea318997a"
+            },
+            {
+              "command": "npm audit --omit=dev --json",
+              "exitCode": 0,
+              "counts": {
+                "info": 0,
+                "low": 0,
+                "moderate": 0,
+                "high": 0,
+                "critical": 0,
+                "total": 0
+              },
+              "reportSha256": "c32ca030b773f94f2850f3e61a8a942058b82cd928537441fbaf310ea318997a"
+            }
+          ]
+        },
+        "verification": {
+          "sha256": "1bc4f8e2385cc8036794cf565f343b7cb5f6f1249936c196a6f8b6a2218b956b",
+          "commit": "742f186251faa5d08f3cdc22d999a220cf2b6d76",
+          "sourceDirty": false,
+          "platform": "win32",
+          "arch": "x64",
+          "status": "pass",
+          "checks": [
+            {
+              "command": "npm run build:trace-engine",
+              "exitCode": 0,
+              "status": "pass"
+            },
+            {
+              "command": "npm run check:security",
+              "exitCode": 0,
+              "status": "pass"
+            },
+            {
+              "command": "npm run typecheck",
+              "exitCode": 0,
+              "status": "pass"
+            },
+            {
+              "command": "npm run test:trace",
+              "exitCode": 0,
+              "status": "pass"
+            },
+            {
+              "command": "npm run build:trace",
+              "exitCode": 0,
+              "status": "pass"
+            },
+            {
+              "command": "npm run test:trace-native",
+              "exitCode": 0,
+              "status": "pass"
+            }
+          ]
+        },
+        "portableGate": null,
+        "packageLoad": null,
+        "packageAudit": null,
+        "runtime": null,
+        "codec": {
+          "sha256": "e305461d392c76fec8c7355194c2fbd6b1fd4b579c862f4f5cd7bdb01fa0d047",
+          "buildLockSha256": "ed3e90d50ae39a4c3364197a5145490d36526f955e744f3585cb5c4cd37e84d1",
+          "systemInventorySha256": "b895920269ac9faa7827c4467f407268e4bd1dbf0ca2d539ff5a53f42b1ce48f",
+          "configHeaderSha256": "2f386f2de7862231e29b33eb202e152b605367d48e8ffa7b8ce7a004143bbbfb",
+          "configMakSha256": "b8ea4983a6603fbe52cef68c155a6f2d2c0031e639b70f8715f0532d1be96669",
+          "recipes": {
+            "tools/codec/build.cjs": "7b1d08dfefdb06c70292c5886540570c158a8037a530f72f4e00d9722470917a",
+            "tools/codec/identity.cjs": "0f69a737f54676409a12ca26f169a8392c1dd9040bb9a3fd36ad2244210bcffc",
+            "tools/release/dependency-sources.cjs": "c53a60e479767c12b7036b36278de5b37035f035fa428c475ba9082c284a12ae"
+          },
+          "matchesPinnedReport": true,
+          "ffmpegSha256": "c647e20c508af6421efb3c78b59e2a693f7b905c6a27384282ad76b5ad37d5ee",
+          "ffprobeSha256": "73337f082639e4f3f867a50fc69ec681ed81cdc8faf5df5d8fed4f677530bef5"
+        },
+        "candidate": null,
+        "scope": "Selected actual CI-produced test/numerical/build/package records; generated/offline and no-card checks, not physical-device or release acceptance"
+      }
+    },
+    {
+      "name": "portable",
+      "jobId": 116453466504,
+      "checkRunId": 116453466504,
+      "conclusion": "success",
+      "url": "https://github.com/Sceneryyyy/Trace/actions/runs/38744154945/job/116453466504",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v6",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/setup-node@v6",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Install locked dependencies",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run npm run check:independence",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run npm run check:security",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run npm run typecheck",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run npm run test:trace",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run npm run build:trace",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Portable C++ with ASan and UBSan",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/setup-python@v6",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Independent pinned integrated loudness comparison",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Actual React subscription regression in Chromium",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Renderer interactions with simulated IPC",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Recording library interactions and bounded lists in Chromium",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "P0 and P1 controls and chart conversion in Chromium",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Publish selected verification evidence in readable annotations",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/upload-artifact@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/setup-python@v6",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/setup-node@v6",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/checkout@v6",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ],
+      "testedCommit": "742f186251faa5d08f3cdc22d999a220cf2b6d76",
+      "tree": "9fa3ebd2390f37ce12ae74c5f31b67db989b578d",
+      "annotationParts": 3,
+      "annotationPayloadSha256": "b072e8cb83aee1d890865fa760c226ec8dce46e188c362dd470b4d151d2c22cb",
+      "summary": {
+        "schemaVersion": 1,
+        "commit": "742f186251faa5d08f3cdc22d999a220cf2b6d76",
+        "sourceDirty": false,
+        "platform": "linux",
+        "arch": "x64",
+        "codecBuildReused": false,
+        "tests": [
+          {
+            "sha256": "3681f5a4d155f1cc882a61bff832c625ff6de289fd382ed27560087f7a0ac70d",
+            "commit": "742f186251faa5d08f3cdc22d999a220cf2b6d76",
+            "tier": "portable",
+            "files": 57,
+            "exitCode": 0,
+            "status": "pass",
+            "counts": {
+              "tests": 321,
+              "suites": 0,
+              "pass": 321,
+              "fail": 0,
+              "cancelled": 0,
+              "skipped": 0,
+              "todo": 0,
+              "duration_ms": 25804.108918
+            },
+            "failureDetails": null,
+            "observations": {},
+            "outputSha256": "4a3ec1abd9bb2de622e118118c066a99fdec10d9ca923c1b4c4837226a2e7a47"
+          }
+        ],
+        "ctest": {
+          "core": {
+            "sha256": "653b88cc036dc816f9b2669f648b89168fb686ea32da39090548be1910a6f09e",
+            "tests": 8,
+            "failures": 0,
+            "disabled": 0,
+            "seconds": 342
+          },
+          "ebu": {
+            "sha256": "d1cccb676ab7f25317e73240bfdb5d9cd1f4cac5cb393813ef2c88f57f1cda4c",
+            "tests": 1,
+            "failures": 0,
+            "disabled": 0,
+            "seconds": 723
+          }
+        },
+        "ebu": {
+          "sha256": "75b2a1c5ad6cdefa788beed1d048825525b4e7fb983b0acb923d1380f8010dcb",
+          "commit": "742f186251faa5d08f3cdc22d999a220cf2b6d76",
+          "sourceDirty": false,
+          "status": "pass",
+          "measurementConfigId": "trace-meter-v5-ebur128-1.2.6-lra10hz-msi100hz-tpaligned",
+          "summary": {
+            "passed": 68,
+            "failed": 0,
+            "excluded": 2,
+            "supported": 68,
+            "checks": {
+              "total": 112,
+              "passed": 112,
+              "failed": 0
+            },
+            "invariants": {
+              "total": 204,
+              "passed": 204,
+              "failed": 0
+            },
+            "supportedPassRate": 1
+          },
+          "sourceSha256": {
+            "native/src/recorder/Meter.cpp": "d77d0d2f948d576977935ba0990a98fddc0738f3fc5219f6895a38a2597e2e42",
+            "native/src/recorder/Meter.h": "532a775edae2000a6f132db39b1684c7f7138484706dc6268999a2d4c1835cad",
+            "native/src/recorder/MeasurementConfig.h": "0a3619610a959edc91172767203f7695649c79573edd406e4185a6cdd49e8078",
+            "native/src/recorder/FileAnalysis.cpp": "5151b30051df30202880bb10b6a28417ce78e6284d9fa9da50f75d1d2de9ce5d",
+            "native/vendor/libebur128/ebur128.c": "9d3d75d880e7f514b0669341501ce55b159d86c25012b6d8c9340ad7ed8e7d5f",
+            "test/native/ebu_wav_probe.cpp": "15b983a60ee21cc86277d17707fad87f04b03f87e9d302d439c623befac23aa0",
+            "tools/metering/run-ebu-wav-tests.py": "872930365b8ff8e16f468fe85b0abbc436ff37ed5c41d6cb6d399ccc84f5cba6"
+          }
+        },
+        "library": {
+          "sha256": "753bda61bad9e0331767cd0d56f84989f2ddf749dbb86cc96ddf2e54b1250090",
+          "commit": "742f186251faa5d08f3cdc22d999a220cf2b6d76",
+          "sourceDirty": false,
+          "scope": "Actual React renderer, production CSP, simulated IPC/devices/metadata only; no native/Windows/disk/audio acceptance",
+          "status": "passed",
+          "checks": [
+            "Single click selects only; wide sidebar coexists with workbench; 50 mounted rows",
+            "Inspect stays paused; play/pause uses real returned context and preserves selection/cursor",
+            "Rapid A→B supersedes pending autoplay; only newest source is started",
+            "Export dialog isolates sidebar focus and returns focus to invoking row",
+            "Closing/reopening retains query, selected row, page and scroll",
+            "Locate current crosses pages and explicitly clears hiding filters",
+            "Import category uses existing source path; unreadable/estimated/unknown quality remain visible",
+            "Row audition preserves an explicitly loaded alternate export instead of reopening preferred source",
+            "Rename input suppresses global R/Space; Escape cancels form; row End and keyboard context menu keep local focus",
+            "Failed opening stays visible inside the drawer, sends no play and can be dismissed",
+            "REC leaves list browsable and disables audition",
+            "50/500/5000 metadata items keep mounted rows bounded at 50",
+            "Narrow drawer isolates background, traps focus, Escape closes and restores trigger (simulated 150% raster scale)"
+          ],
+          "sizes": [
+            {
+              "items": 50,
+              "settleMs": 35.699999999953434,
+              "rows": 50,
+              "panelNodes": 596
+            },
+            {
+              "items": 500,
+              "settleMs": 34.5999999998603,
+              "rows": 50,
+              "panelNodes": 596
+            },
+            {
+              "items": 5000,
+              "settleMs": 72.29999999981374,
+              "rows": 50,
+              "panelNodes": 595
+            }
+          ]
+        },
+        "security": {
+          "sha256": "96d85cef3cd97d4cbb5a480c2262eafdc97f41141a56e87d791b59b9d3e3ee26",
+          "commit": "742f186251faa5d08f3cdc22d999a220cf2b6d76",
+          "sourceDirty": false,
+          "packageLockSha256": "9afb18c09a8f3f9a8ba9b0f40d88ce6b3ed523087c923561fa824b4c3b86c751",
+          "status": "pass",
+          "checks": [
+            {
+              "command": "npm audit --json",
+              "exitCode": 0,
+              "counts": {
+                "info": 0,
+                "low": 0,
+                "moderate": 0,
+                "high": 0,
+                "critical": 0,
+                "total": 0
+              },
+              "reportSha256": "c32ca030b773f94f2850f3e61a8a942058b82cd928537441fbaf310ea318997a"
+            },
+            {
+              "command": "npm audit --omit=dev --json",
+              "exitCode": 0,
+              "counts": {
+                "info": 0,
+                "low": 0,
+                "moderate": 0,
+                "high": 0,
+                "critical": 0,
+                "total": 0
+              },
+              "reportSha256": "c32ca030b773f94f2850f3e61a8a942058b82cd928537441fbaf310ea318997a"
+            }
+          ]
+        },
+        "verification": null,
+        "portableGate": null,
+        "packageLoad": null,
+        "packageAudit": null,
+        "runtime": null,
+        "codec": null,
+        "candidate": null,
+        "scope": "Selected actual CI-produced test/numerical/build/package records; generated/offline and no-card checks, not physical-device or release acceptance"
+      }
+    }
+  ],
+  "local": {
+    "libraryBrowser": {
+      "path": "artifacts/library/browser-report.json",
+      "sha256": "9083f95d0983a767282754ffd9fd49e70db14c0c7ce9e9b6c108884de3596cd3",
+      "record": {
+        "commit": "bf42e6c0938ff8b145774379d2a4fcfda5ce85d7",
+        "sourceDirty": false,
+        "scope": "Actual React renderer, production CSP, simulated IPC/devices/metadata only; no native/Windows/disk/audio acceptance",
+        "checks": [
+          "Single click selects only; wide sidebar coexists with workbench; 50 mounted rows",
+          "Inspect stays paused; play/pause uses real returned context and preserves selection/cursor",
+          "Rapid A→B supersedes pending autoplay; only newest source is started",
+          "Export dialog isolates sidebar focus and returns focus to invoking row",
+          "Closing/reopening retains query, selected row, page and scroll",
+          "Locate current crosses pages and explicitly clears hiding filters",
+          "Import category uses existing source path; unreadable/estimated/unknown quality remain visible",
+          "Row audition preserves an explicitly loaded alternate export instead of reopening preferred source",
+          "Rename input suppresses global R/Space; Escape cancels form; row End and keyboard context menu keep local focus",
+          "Failed opening stays visible inside the drawer, sends no play and can be dismissed",
+          "REC leaves list browsable and disables audition",
+          "50/500/5000 metadata items keep mounted rows bounded at 50",
+          "Narrow drawer isolates background, traps focus, Escape closes and restores trigger (simulated 150% raster scale)"
+        ],
+        "sizes": [
+          {
+            "items": 50,
+            "settleMs": 61.89999999990687,
+            "rows": 50,
+            "panelNodes": 596
+          },
+          {
+            "items": 500,
+            "settleMs": 78.8000000002794,
+            "rows": 50,
+            "panelNodes": 596
+          },
+          {
+            "items": 5000,
+            "settleMs": 51,
+            "rows": 50,
+            "panelNodes": 595
+          }
+        ],
+        "screenshots": [
+          "artifacts/library/library-wide.png",
+          "artifacts/library/library-drawer-150.png",
+          "artifacts/library/library-drawer-200.png"
+        ],
+        "status": "passed"
+      }
+    },
+    "security": {
+      "path": "artifacts/release/security-audit.json",
+      "sha256": "d4b48dbde12f6fb78fcfb5e7f7570df0e4df1e20145f211de844bd8740583d24",
+      "record": {
+        "schemaVersion": 1,
+        "commit": "ea34d8df5d53f312b73ddac3dad7211b5eeb046b",
+        "sourceDirty": true,
+        "packageLockSha256": "9afb18c09a8f3f9a8ba9b0f40d88ce6b3ed523087c923561fa824b4c3b86c751",
+        "status": "pass",
+        "scope": "Current npm advisory gate for full locked dependencies; not physical-device, FFmpeg static-dependency or release approval",
+        "checks": [
+          {
+            "command": "npm audit --json",
+            "exitCode": 0,
+            "counts": {
+              "info": 0,
+              "low": 0,
+              "moderate": 0,
+              "high": 0,
+              "critical": 0,
+              "total": 0
+            },
+            "reportSha256": "c32ca030b773f94f2850f3e61a8a942058b82cd928537441fbaf310ea318997a"
+          },
+          {
+            "command": "npm audit --omit=dev --json",
+            "exitCode": 0,
+            "counts": {
+              "info": 0,
+              "low": 0,
+              "moderate": 0,
+              "high": 0,
+              "critical": 0,
+              "total": 0
+            },
+            "reportSha256": "c32ca030b773f94f2850f3e61a8a942058b82cd928537441fbaf310ea318997a"
+          }
+        ]
+      }
+    },
+    "portable": {
+      "sourceCommit": "bf42e6c0938ff8b145774379d2a4fcfda5ce85d7",
+      "logSha256": "82a81aea68cf82f92005f6bd4f97764aac93d8b2d8f698001c2f0e5a6a60ce02",
+      "counts": {
+        "tests": 321,
+        "pass": 321,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "duration_ms": 31308.595223
+      },
+      "scope": "Parsed actual local Node output; not a CI-generated report"
+    }
+  },
+  "localLogs": [
+    {
+      "name": "trace-playlist-baseline.log",
+      "sha256": "48af6b1806b6ed50ace99e4f6198cecb5629c018ba47cb62647237429a4769b8",
+      "bytes": 30770
+    },
+    {
+      "name": "trace-playlist-build.log",
+      "sha256": "4757b0f8e2c391663ec98c4c5052612cd8fa784697a88d349aea30bfd2dda301",
+      "bytes": 6471
+    },
+    {
+      "name": "trace-playlist-independence.log",
+      "sha256": "8757dc031d04255ca6bcabcc05b8981b5b1693ecac746998fd7624ef92a75cdb",
+      "bytes": 334
+    },
+    {
+      "name": "trace-playlist-p0p1.log",
+      "sha256": "81c3e68a12d3d36a0e54023d6bc9fa6e7e1157c77ba932f2e8c900ee9f484dbb",
+      "bytes": 16
+    },
+    {
+      "name": "trace-playlist-renderer.log",
+      "sha256": "d279caa7a5f06e306c09393d641294e2dd5da5c58915adcef8c5ef48da1ed6ae",
+      "bytes": 79
+    },
+    {
+      "name": "trace-playlist-security.log",
+      "sha256": "32a993679ae2f41164a584788d20d3df46611c85c2f536fa155f141baf52af6b",
+      "bytes": 171
+    },
+    {
+      "name": "trace-playlist-selector.log",
+      "sha256": "faa4f362ce8250880dd206b2bd6801274fe4e857a73d39ad249924c3c8479f6b",
+      "bytes": 195
+    },
+    {
+      "name": "trace-playlist-tests.log",
+      "sha256": "82a81aea68cf82f92005f6bd4f97764aac93d8b2d8f698001c2f0e5a6a60ce02",
+      "bytes": 32195
+    },
+    {
+      "name": "trace-playlist-typecheck.log",
+      "sha256": "9776cecf8a535cf7cf7983f3069ce0de7e1340caae9629e52269e46479a85428",
+      "bytes": 121
+    }
+  ],
+  "scope": "Generated fixtures and actual clean cloud CI; browser IPC/devices simulated. No physical WASAPI/audio/DPI/native dialog/new installation package acceptance. CI annotation payloads decoded and SHA-256 verified; artifact payloads not downloaded."
+}

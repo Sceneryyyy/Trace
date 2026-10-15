@@ -44,7 +44,7 @@ export function ExportItems({items,takeId,jobs,disabled,run}:{items:ExportView[]
    <strong>{exportLabel(item.preset)}{item.range?' · 选区':''}{item.automatic?' · 录音成品':''}</strong>
    <div className="analysis-line"><span>{missing?(item.availability==='missing'?'文件已移除或移动':'文件暂不可访问'):labels[item.phase]}{active?' · '+Math.round(item.fraction*100)+'%':''}</span>
     {active?<button onClick={()=>run('job.cancel',{jobId:item.id})}>取消导出</button>:item.phase==='ready'?<div className="export-actions">
-     <button data-export-play disabled={disabled||Boolean(missing)} onClick={()=>run('file.open',{takeId,role:'export',exportId:item.id})}>回听</button>
+     <button data-export-play disabled={disabled||Boolean(missing)} onClick={()=>run('file.open',{takeId,role:'export',exportId:item.id})}>查看分析</button>
      <button data-export-analyze disabled={disabled||Boolean(missing)} onClick={()=>run('analysis.start',{takeId,role:'export',exportId:item.id})}>分析</button>
      <button data-export-save disabled={disabled||Boolean(missing)} onClick={()=>run('export.saveCopy',{exportId:item.id})}>另存副本</button>
      <button onClick={()=>run('export.openFolder',{exportId:item.id})}>打开目录</button>

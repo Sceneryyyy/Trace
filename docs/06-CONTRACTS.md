@@ -1,6 +1,8 @@
 # 06 · 模块接口与消息契约
 
-2026-10-15 对照 preview.33 源码更新。唯一类型定义为 [shared.ts](../src/trace/shared.ts)，命令与参数校验为 [contracts.ts](../src/trace/contracts.ts)，状态控制器为 [main.ts](../src/trace/main.ts)。本文列出实际接线；完整类型以源码为准，早期拟定的 `selection.analyze`、`view.returnLive` 等不是现有命令。
+2026-10-15 对照 preview.34 源码更新。唯一类型定义为 [shared.ts](../src/trace/shared.ts)，命令与参数校验为 [contracts.ts](../src/trace/contracts.ts)，状态控制器为 [main.ts](../src/trace/main.ts)。本文列出实际接线；完整类型以源码为准，早期拟定的 `selection.analyze`、`view.returnLive` 等不是现有命令。
+
+preview.34：`TakeSummary.continuity` 新增可选值 `complete/gaps/estimated-silence/unknown`，复用既有来源质量判定以呈现列表警告。录音列表通过前端有界意图调度复用 `file.open` 与 `playback.play/pause`，以回复中的播放 ID、role/regionId/exportId 及请求代次核对来源；协议版本、命令白名单、会话与缓存格式不变。见 [87](87-RECORDING-LIBRARY-ITERATION.md)。
 
 ## 版本与基本类型
 

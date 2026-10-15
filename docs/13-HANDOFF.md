@@ -2,6 +2,14 @@
 
 更新：2026-10-15。默认开发分支 `recorder/dev`；源码仓库根为当前 checkout（本次云端 `/workspace/Trace`）。项目规则见 [AGENTS.md](../AGENTS.md)，全部资料见 [文档索引](README.md)。早期会话已移至 [交接历史](archive/13-HANDOFF-HISTORY.md)，其“下一步”和当时分支状态不代表当前待办。
 
+## 2026-10-15 · 录音列表迭代
+
+用户授权按同步任务单继续推进；当前源码 preview.34，L86-01～03 云端实现见 [87](87-RECORDING-LIBRARY-ITERATION.md)。紧凑录音/导入分类、单份详情、右侧栏/窄屏抽屉、选择/载入/回听区分、当前文件版本与游标/选区复用、有界最新播放意图、状态保留、查找/排序/定位与 50 行分页已接入。TakeSummary 新增可选 continuity，复用既有采集质量，不改 Meter v5、Session v2 或协议版本；依赖 pin 不变。
+
+代码 `bf42e6c` 的 [完整 CI 38744154945](https://github.com/Sceneryyyy/Trace/actions/runs/38744154945) 成功：两端 portable 321/321；Windows CTest 19/19、原生/媒体 68/68；Linux ASan/UBSan 核心 8/8 + 原始 EBU 1/1。两端适用 EBU 68/68、112 数值及 204 一致性检查通过，sourceDirty=false。13 组新列表浏览器及原 renderer/P0-P1、React selector、独立 I 对照与安全门禁成功；来源树、分片校验及完整范围见 [验证 JSON](release/recording-library-verification.json)。5000 条模拟元数据始终只挂载 50 行；快照/报告位于忽略目录 artifacts/library，源码保留检查入口。没有新安装包，Windows 实机回听/快速切换/监测与 A/B、DPI/原生对话框及用户视觉反馈仍待验。
+
+本轮本地继续在 `recorder/dev`；源码和交接推送至 `codex/recording-library-20261015` / [PR #2](https://github.com/Sceneryyyy/Trace/pull/2)，尚未合入远程默认分支（仍为 `6b37ed4`）。新会话先核对该 PR 与分支；不得将默认分支当成已包含 preview.34。调研基线 `6b37ed4` / preview.33 和四个项目的固定来源保留在 [86](86-RECORDING-LIST-RESEARCH.md)。
+
 ## 2026-10-15 · 正式合并
 
 用户已明确授权正式合并。[PR #1](https://github.com/Sceneryyyy/Trace/pull/1) 已由草稿转为就绪并合入 `recorder/dev`，合并提交 `2454bad17d7d00ead556704385114bc646aa9dd2`，保留全部原提交历史。合并时评审分支 HEAD 为 `457d29b`、默认分支原 HEAD 为 `2ed9f7d`，GitHub 确认无冲突；合并内容树与 `457d29b` 一致。以下保留各轮测试及分发身份；合并和本次交接文档更新不代表新增实机验收或安装包。
@@ -26,8 +34,8 @@
 
 | 项目 | 当前记录 |
 | --- | --- |
-| 源码 | `0.1.0-preview.33`；计量配置已升级 Meter v5，EBU 修复见 [78](78-EBU-METER-RECALIBRATION.md)；云端发布准备见 [75](75-CLOUD-RELEASE-PREPARATION.md) |
-| Git | `Sceneryyyy/Trace`，默认 `recorder/dev`；preview.33 代码 `1c00c07` / CI `38671033132`，复核见 85；上一轮 P0/P1 `4fd9401`（评审分支 `codex/p0-p1-cloud-20261011`）；上一轮文件/故障修复 `2aee519`；保留提交身份及合并历史。自建编码组件 `f33d74d`；此前依赖/编码/下载修复 `3d63d8f` / `ef51603` / `6835af9`；独立化历史为 `a986a0d` / `ab466d8` / `db005b5`；最后文档提交不算新音频测试，远程身份以 Git 为准 |
+| 源码 | `0.1.0-preview.34`；录音列表见 [87](87-RECORDING-LIBRARY-ITERATION.md)；计量配置已升级 Meter v5，EBU 修复见 [78](78-EBU-METER-RECALIBRATION.md)；云端发布准备见 [75](75-CLOUD-RELEASE-PREPARATION.md) |
+| Git | `Sceneryyyy/Trace`，默认 `recorder/dev`；preview.34 代码 `bf42e6c` / CI `38744154945` / PR #2 尚未合入，见 87；preview.33 代码 `1c00c07` / CI `38671033132`，复核见 85；上一轮 P0/P1 `4fd9401`（评审分支 `codex/p0-p1-cloud-20261011`）；上一轮文件/故障修复 `2aee519`；保留提交身份及合并历史。自建编码组件 `f33d74d`；此前依赖/编码/下载修复 `3d63d8f` / `ef51603` / `6835af9`；独立化历史为 `a986a0d` / `ab466d8` / `db005b5`；最后文档提交不算新音频测试，远程身份以 Git 为准 |
 | 仪表主题 | 实现 `2938c8e`、审计修复 `c67e9e9` 等已于 2026-09-30 合入 `recorder/dev`；用户已验收开发构建并接受 71-D5 差异 |
 | 当前工程候选 | Windows x64 preview.31，文件/故障修复来源 `2aee519`；[CI 38099859270](https://github.com/Sceneryyyy/Trace/actions/runs/38099859270) 全部成功，私有附件 `11688230696`，未签名 |
 | 历史同事内测包 | Windows x64 preview.30 / InternalTest-r3，来源 `9c1ee21`，包名/校验见 [69](69-INTERNAL-TEST-R3.md) |
@@ -176,23 +184,23 @@ Node Undici 内部断言，未上传新候选。下载改为保持代理/TLS 的
 
 ## 下一会话接力
 
-最新复核代码为 `1c00c07`（preview.33），[CI 38671033132](https://github.com/Sceneryyyy/Trace/actions/runs/38671033132) 已全成功，实际测试提交/内容树及最终证据见顶部与 85。preview.31 私有工程候选继续绑定 `2aee519` / run `38099859270`；后续文档提交不算新的音频、Windows 或候选运行。
+当前列表源码 preview.34，代码 `bf42e6c` / PR #2，完整 CI 已成功，最新交接为文档增量；实现/本轮验证以顶部及 87 为准。上一轮复核代码为 `1c00c07`（preview.33），[CI 38671033132](https://github.com/Sceneryyyy/Trace/actions/runs/38671033132) 已全成功，实际测试提交/内容树及最终证据见顶部与 85。preview.31 私有工程候选继续绑定 `2aee519` / run `38099859270`；后续文档提交不算新的音频、Windows 或候选运行。
 
 | 接力材料 | 位置与用途 |
 | --- | --- |
 | 当前入口/固定工具链 | [开发入门](../CODEX-START.md)、[09](09-WINDOWS-SETUP.md)、[81](81-SELF-BUILT-FFMPEG.md)；toolchain.trace.json 当前，M0 清单历史 |
-| 可克隆证据 | [code-review-verification.json](release/code-review-verification.json) 与 85 为当前复核；[p0-p1-cloud-verification.json](release/p0-p1-cloud-verification.json) 为上一轮 P0/P1；[file-fault-verification.json](release/file-fault-verification.json) 为 preview.31 文件/故障复验；[codec-verification.json](release/codec-verification.json) 为此前自建证明；[dependency-verification.json](release/dependency-verification.json) 为旧 Gyan 工具链证明；[independence-verification.json](release/independence-verification.json) 为旧工具链独立化证明 |
+| 可克隆证据 | [recording-library-verification.json](release/recording-library-verification.json) 与 87 为当前列表迭代；[code-review-verification.json](release/code-review-verification.json) 与 85 为当前复核；[p0-p1-cloud-verification.json](release/p0-p1-cloud-verification.json) 为上一轮 P0/P1；[file-fault-verification.json](release/file-fault-verification.json) 为 preview.31 文件/故障复验；[codec-verification.json](release/codec-verification.json) 为此前自建证明；[dependency-verification.json](release/dependency-verification.json) 为旧 Gyan 工具链证明；[independence-verification.json](release/independence-verification.json) 为旧工具链独立化证明 |
 | 远程原始证据/附件 | 顶部 Actions run、完成 job 日志与私有候选；下载后按内部 manifest/SHA256SUMS 核验，GitHub 归档 digest 单独记录 |
-| 本云端原始材料 | 忽略目录 artifacts/review-20261015/、artifacts/file-faults/、artifacts/codec-build/、artifacts/release-security/ 与 artifacts/independence/；原始日志、公开来源归档、同步收据不会随 clone 下载 |
+| 本云端原始材料 | 忽略目录 artifacts/library/、artifacts/review-20261015/、artifacts/file-faults/、artifacts/codec-build/、artifacts/release-security/ 与 artifacts/independence/；原始日志、公开来源归档、同步收据不会随 clone 下载 |
 | 私有 EBU | 执行 `python3 references/ebu-loudness-test-set-v5/prepare.py` 还原/核验；公开源码归档排除原始素材，强制门禁缺素材必须失败 |
 
-先检查目录、分支、远程提交与未提交修改。PR #1 已合入 `recorder/dev`，preview.33 的 P0/P1 与复核修复均已包含；后续开发默认从此分支继续。保留本地后续提交；默认分支干净且无本地分叉时才执行 `git switch recorder/dev`
+先检查目录、分支、远程提交与未提交修改。PR #1 已合入 `recorder/dev`；preview.34 的 PR #2 仍在 `codex/recording-library-20261015` 评审。若 PR #2 尚未合入，拉取默认分支只能得到 preview.33；先保留并核查本轮评审分支与 Git 提交，再继续开发。保留本地后续提交；默认分支干净且无本地分叉时才执行 `git switch recorder/dev`
 和 `git pull --ff-only origin recorder/dev`。有分叉保留两边历史，不 reset 覆盖。
 仅更新文档检查链接/diff；依赖、音频或构建变化时重新取得相应实际门禁。
 
-下一工作顺序：
+下一工作顺序（按用户最新方向更新）：
 
-1. 84 的云端 P0/P1 与 85 的代码/文档复核已实施；本轮完整 CI 已成功，到此停止本次迭代。先核对评审分支与合入状态，保留证据；不重复已完成的长文件/进程云端工作。组件安全及微软/GPL 系统库分发条款复核继续单列，R83-09/10 保留 P2。
+1. L86-01～03 云端实现已完成，先核对 87 的本轮 CI/分支身份并收集 Windows 用户视觉与回听反馈；不自动扩展连播、歌单、拖动排序或批量任务。84 的云端 P0/P1 与 85 的代码/文档复核已完成并合入默认分支，不重复已完成的长文件/进程云端工作。组件安全及微软/GPL 系统库分发条款复核继续单列，R83-09/10 保留 P2。
 2. Windows 实机到位，按 76 的 WIN/FLOW/DEV/METER 跑三分钟视频、真实采集、录音/回听/缓存/选区/导出、96 kHz、长测与 GPU/DPI。
 3. 发布门禁关闭后处理签名、下载首次启动、独立用户和邀请测试。当前附件保持私有工程候选身份。
 
