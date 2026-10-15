@@ -50,6 +50,10 @@
 
 固定摘要、job/step 状态、分片 SHA-256 与来源树见 [验证 JSON](release/recording-library-verification.json)。已读取并校验 CI 注解分片，没有下载附件 payload。FFmpeg 本轮复用固定构建并重新校验安装身份，不是新组件源码构建；本轮未创建 preview.34 安装包或更新旧 PDF。
 
+## 合并记录
+
+用户明确授权后，[PR #2](https://github.com/Sceneryyyy/Trace/pull/2) 于 2026-10-15 15:05:39 UTC 合入 `recorder/dev`，合并提交 `ba461e599bfb3d3f246d5bce6de7022c4e807464`。合并前 HEAD `5db06b49199028b52c06188aa6f283dcabd7827f`、base `6b37ed4f102d3f14d36ea93b4c19912ffc4e02cf`；GitHub 确认无冲突，采用 merge 保留提交历史。合并树与最终 PR HEAD 一致（`8b0c6fd83f5ac9884fe68b7e0bae0aa738729bc8`），最终 HEAD 相对已验证源码仅增加交接文档。本地已快进到合并提交；本次仅检查合并身份、文档链接和 diff，不新增产品测试、安装包或实机验收结论。
+
 ## 待人工验收
 
 按 [76](76-RELEASE-CHECKLIST.md) 检查真实播放设备、快速连续切换的听感、A/B 音量/监测恢复、REC 期间操作、声卡/96 kHz、长录音、GPU/DPI、原生保存/目录/回收站对话框。浏览器模拟和离线文件门禁不关闭这些项目。视觉布局仍需用户在 Windows 上试用反馈。

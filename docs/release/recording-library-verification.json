@@ -9,7 +9,14 @@
     "url": "https://github.com/Sceneryyyy/Trace/pull/2",
     "base": "recorder/dev",
     "head": "codex/recording-library-20261015",
-    "merged": false
+    "merged": true,
+    "mergedAt": "2026-10-15T15:05:39Z",
+    "statusCheckedAt": "2026-10-15T15:06:28.629079+00:00",
+    "mergeCommitSha": "ba461e599bfb3d3f246d5bce6de7022c4e807464",
+    "mergedHeadSha": "5db06b49199028b52c06188aa6f283dcabd7827f",
+    "previousBaseSha": "6b37ed4f102d3f14d36ea93b4c19912ffc4e02cf",
+    "mergeTree": "8b0c6fd83f5ac9884fe68b7e0bae0aa738729bc8",
+    "mergeTreeMatchesHead": true
   },
   "run": {
     "id": 38744154945,

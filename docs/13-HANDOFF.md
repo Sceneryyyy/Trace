@@ -8,7 +8,7 @@
 
 代码 `bf42e6c` 的 [完整 CI 38744154945](https://github.com/Sceneryyyy/Trace/actions/runs/38744154945) 成功：两端 portable 321/321；Windows CTest 19/19、原生/媒体 68/68；Linux ASan/UBSan 核心 8/8 + 原始 EBU 1/1。两端适用 EBU 68/68、112 数值及 204 一致性检查通过，sourceDirty=false。13 组新列表浏览器及原 renderer/P0-P1、React selector、独立 I 对照与安全门禁成功；来源树、分片校验及完整范围见 [验证 JSON](release/recording-library-verification.json)。5000 条模拟元数据始终只挂载 50 行；快照/报告位于忽略目录 artifacts/library，源码保留检查入口。没有新安装包，Windows 实机回听/快速切换/监测与 A/B、DPI/原生对话框及用户视觉反馈仍待验。
 
-本轮本地继续在 `recorder/dev`；源码和交接推送至 `codex/recording-library-20261015` / [PR #2](https://github.com/Sceneryyyy/Trace/pull/2)，尚未合入远程默认分支（仍为 `6b37ed4`）。新会话先核对该 PR 与分支；不得将默认分支当成已包含 preview.34。调研基线 `6b37ed4` / preview.33 和四个项目的固定来源保留在 [86](86-RECORDING-LIST-RESEARCH.md)。
+用户随后明确授权合并；[PR #2](https://github.com/Sceneryyyy/Trace/pull/2) 已于 2026-10-15 15:05:39 UTC 合入 `recorder/dev`，合并提交 `ba461e599bfb3d3f246d5bce6de7022c4e807464`，保留原提交历史。本地已快进同步。合并前 PR HEAD 为 `5db06b4`、默认分支为 `6b37ed4`；合并内容树与最终 PR HEAD 一致（`8b0c6fd83f5ac9884fe68b7e0bae0aa738729bc8`）。`5db06b4` 相对已验证代码 `bf42e6c` 仅增交接文档；本次合并及随后文档同步不代表新增音频测试或实机验收。调研基线 `6b37ed4` / preview.33 和四个项目的固定来源保留在 [86](86-RECORDING-LIST-RESEARCH.md)。
 
 ## 2026-10-15 · 正式合并
 
@@ -35,7 +35,7 @@
 | 项目 | 当前记录 |
 | --- | --- |
 | 源码 | `0.1.0-preview.34`；录音列表见 [87](87-RECORDING-LIBRARY-ITERATION.md)；计量配置已升级 Meter v5，EBU 修复见 [78](78-EBU-METER-RECALIBRATION.md)；云端发布准备见 [75](75-CLOUD-RELEASE-PREPARATION.md) |
-| Git | `Sceneryyyy/Trace`，默认 `recorder/dev`；preview.34 代码 `bf42e6c` / CI `38744154945` / PR #2 尚未合入，见 87；preview.33 代码 `1c00c07` / CI `38671033132`，复核见 85；上一轮 P0/P1 `4fd9401`（评审分支 `codex/p0-p1-cloud-20261011`）；上一轮文件/故障修复 `2aee519`；保留提交身份及合并历史。自建编码组件 `f33d74d`；此前依赖/编码/下载修复 `3d63d8f` / `ef51603` / `6835af9`；独立化历史为 `a986a0d` / `ab466d8` / `db005b5`；最后文档提交不算新音频测试，远程身份以 Git 为准 |
+| Git | `Sceneryyyy/Trace`，默认 `recorder/dev`；preview.34 代码 `bf42e6c` / CI `38744154945` / PR #2 已合入（`ba461e5`），见 87；preview.33 代码 `1c00c07` / CI `38671033132`，复核见 85；上一轮 P0/P1 `4fd9401`（评审分支 `codex/p0-p1-cloud-20261011`）；上一轮文件/故障修复 `2aee519`；保留提交身份及合并历史。自建编码组件 `f33d74d`；此前依赖/编码/下载修复 `3d63d8f` / `ef51603` / `6835af9`；独立化历史为 `a986a0d` / `ab466d8` / `db005b5`；最后文档提交不算新音频测试，远程身份以 Git 为准 |
 | 仪表主题 | 实现 `2938c8e`、审计修复 `c67e9e9` 等已于 2026-09-30 合入 `recorder/dev`；用户已验收开发构建并接受 71-D5 差异 |
 | 当前工程候选 | Windows x64 preview.31，文件/故障修复来源 `2aee519`；[CI 38099859270](https://github.com/Sceneryyyy/Trace/actions/runs/38099859270) 全部成功，私有附件 `11688230696`，未签名 |
 | 历史同事内测包 | Windows x64 preview.30 / InternalTest-r3，来源 `9c1ee21`，包名/校验见 [69](69-INTERNAL-TEST-R3.md) |
@@ -184,7 +184,7 @@ Node Undici 内部断言，未上传新候选。下载改为保持代理/TLS 的
 
 ## 下一会话接力
 
-当前列表源码 preview.34，代码 `bf42e6c` / PR #2，完整 CI 已成功，最新交接为文档增量；实现/本轮验证以顶部及 87 为准。上一轮复核代码为 `1c00c07`（preview.33），[CI 38671033132](https://github.com/Sceneryyyy/Trace/actions/runs/38671033132) 已全成功，实际测试提交/内容树及最终证据见顶部与 85。preview.31 私有工程候选继续绑定 `2aee519` / run `38099859270`；后续文档提交不算新的音频、Windows 或候选运行。
+当前列表源码 preview.34，代码 `bf42e6c` / PR #2 已合入 `recorder/dev`（`ba461e5`），完整 CI 已成功，最新交接为文档增量；实现/本轮验证以顶部及 87 为准。上一轮复核代码为 `1c00c07`（preview.33），[CI 38671033132](https://github.com/Sceneryyyy/Trace/actions/runs/38671033132) 已全成功，实际测试提交/内容树及最终证据见顶部与 85。preview.31 私有工程候选继续绑定 `2aee519` / run `38099859270`；后续文档提交不算新的音频、Windows 或候选运行。
 
 | 接力材料 | 位置与用途 |
 | --- | --- |
@@ -194,7 +194,7 @@ Node Undici 内部断言，未上传新候选。下载改为保持代理/TLS 的
 | 本云端原始材料 | 忽略目录 artifacts/library/、artifacts/review-20261015/、artifacts/file-faults/、artifacts/codec-build/、artifacts/release-security/ 与 artifacts/independence/；原始日志、公开来源归档、同步收据不会随 clone 下载 |
 | 私有 EBU | 执行 `python3 references/ebu-loudness-test-set-v5/prepare.py` 还原/核验；公开源码归档排除原始素材，强制门禁缺素材必须失败 |
 
-先检查目录、分支、远程提交与未提交修改。PR #1 已合入 `recorder/dev`；preview.34 的 PR #2 仍在 `codex/recording-library-20261015` 评审。若 PR #2 尚未合入，拉取默认分支只能得到 preview.33；先保留并核查本轮评审分支与 Git 提交，再继续开发。保留本地后续提交；默认分支干净且无本地分叉时才执行 `git switch recorder/dev`
+先检查目录、分支、远程提交与未提交修改。PR #1、preview.34 的 PR #2 均已合入 `recorder/dev`；从默认分支继续开发，并核对顶部合并与 CI 身份。保留本地后续提交；默认分支干净且无本地分叉时才执行 `git switch recorder/dev`
 和 `git pull --ff-only origin recorder/dev`。有分叉保留两边历史，不 reset 覆盖。
 仅更新文档检查链接/diff；依赖、音频或构建变化时重新取得相应实际门禁。
 
