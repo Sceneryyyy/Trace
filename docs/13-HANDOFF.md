@@ -4,6 +4,8 @@
 
 ## 2026-10-17 · 下一版本前端精简调研与计划
 
+后续用户已授权继续实现。规划文档已保存为 `69fdca5`；UI88-00 和 A 批完成，正在推进 B/C 批及最终双平台 CI。当前产品迭代过程、批次检查和边界见 [89](89-FRONTEND-SIMPLIFICATION-ITERATION.md)；下方“仅文档/未实现”为此前规划阶段快照，不代表最新工作状态。
+
 用户要求先总结全前端冗余，再参考成熟同类项目形成下一版本迭代文档。本轮交付 [88](88-FRONTEND-SIMPLIFICATION-PLAN.md) 与 [来源清单](research/2026-10-17-frontend-simplification-sources.json)：核查 Audacity、Sonic Visualiser、REW、Insight 2、ocenaudio 共 9 份官方页面，实际查看 4 张官方示意图；两个 Audacity 图片请求 403，未声称查看。没有安装或运行这些产品，也没有性能/用户横评或复制外部代码/素材。
 
 UI88-00～09 全部待实施：基线/原型 → 工作台/仪器 → 文件详情/成品/导出和报告 → 设置/A-B/3D/目标与故障提示 → 整体验收。建议目标 preview.35，当前包版本仍为 preview.34，基线 `2277625`。已发现 `src/trace/product.ts` 关于页版本仍为 preview.33，列入 00/09，未在仅文档任务中改代码。动作迁移、来源/选区/计量区别、三批顺序和验收指标见 88。

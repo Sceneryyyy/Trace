@@ -1,0 +1,18 @@
+/* UI88: all colours continue to use the shared instrument theme tokens. */
+.action-menu{position:fixed;z-index:90;width:210px;max-height:calc(100vh - 8px);overflow:auto;display:flex;flex-direction:column;gap:3px;padding:5px;background:var(--panel);border:1px solid var(--control-border-strong);border-radius:5px;box-shadow:0 8px 24px var(--shadow-soft)}
+.action-menu button{min-height:34px;flex-shrink:0;justify-content:flex-start;text-align:left;font-size:12px;border-color:transparent;background:transparent;padding:6px 10px}
+.action-menu .danger-action{color:var(--attention);border-top-color:var(--border)}
+.trace-app.library-layout .workbench-heading{height:52px;flex:0 0 52px;gap:5px;padding-right:8px}
+.trace-app.library-layout .workbench-heading .file-sourcebar{padding:0 8px 0 12px;gap:7px;height:100%;flex-basis:auto}
+.trace-app.library-layout .workbench-heading .file-title{max-width:none;min-width:80px;overflow:hidden}
+.trace-app.library-layout .file-title>b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.context-settings{display:flex;align-items:center;gap:5px;flex-shrink:0}
+.context-settings button{height:30px;min-height:30px;padding:0 8px;font-size:11px;max-width:165px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.context-settings .device-summary{display:flex;flex-direction:column;gap:0;align-items:flex-start;min-width:75px}
+.context-settings .device-summary small{font-size:10px;color:var(--secondary)}
+.trace-app.library-layout .workspace-toolbar{padding:0 0 0 3px;gap:4px}
+.trace-app.library-layout .workspace-toolbar>select{width:118px}
+.settings-content .device-format{display:flex;flex-wrap:wrap;gap:12px;color:var(--secondary)}
+.settings-content .device-format p{margin:0;line-height:1.7}
+.instrument-heading .action-menu-trigger{font-size:19px}
+@media(max-width:1120px){.trace-app.library-layout .workspace-toolbar>select{width:104px}.trace-app.library-layout .workbench-heading{gap:3px}.context-settings button{max-width:108px}.context-settings .device-summary{min-width:66px}.trace-app.library-layout .workspace-toolbar>button{padding:0 6px}.trace-app.library-layout .file-title .asset-format{display:none}}

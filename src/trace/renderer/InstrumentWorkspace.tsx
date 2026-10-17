@@ -1,3 +1,4 @@
+import {ActionMenu} from './ActionMenu'
 import {memo,useCallback,useEffect,useRef,useState,type ReactNode} from 'react'
 import {createPortal} from 'react-dom'
 import {defaultWorkspace,instruments,factoryLayouts,visibleTree,toggleInstrument,loadWorkspacePreset,saveWorkspacePreset,renameWorkspacePreset,deleteWorkspacePreset,dockInstrument,resizeSplit,type WorkspaceState,type InstrumentId,type LayoutNode,type PanelOptions} from '../workspace'
@@ -96,9 +97,12 @@ export const InstrumentWorkspace=memo(function InstrumentWorkspace({value,change
     <h2>{!value.locked&&!maximized&&<span className="instrument-drag-grip"><InstrumentIcon kind="grip"/></span>}{info.title}<small>{info.unit}</small></h2>
     {id==='history'&&<div className="legend">{value.layout.options.historyTraces.map(k=><span key={k} className={'legend-'+k}>{k.toUpperCase()}</span>)}</div>}
     <div>
-     <button aria-label={info.title+'设置'} title={info.title+(value.locked?'设置与说明':'设置与移动')} onClick={()=>{focusOrigin.current=document.activeElement as HTMLElement;setSettings(id);setTarget(instruments.find(i=>i.id!==id)!.id)}}><InstrumentIcon kind="settings"/></button>
      <button aria-label={maximized===id?'恢复'+info.title:'最大化'+info.title} title={maximized===id?'恢复布局':'最大化仪器'} onClick={()=>setMaximized(maximized===id?null:id)}><InstrumentIcon kind={maximized===id?'restore':'maximize'}/></button>
-     <button aria-label={'隐藏'+info.title} title={'隐藏'+info.title} onClick={()=>change(toggleInstrument(value,id))}><InstrumentIcon kind="hide"/></button>
+     <ActionMenu label={info.title+'更多操作'} items={[
+      {label:info.title+'设置',onSelect:()=>{focusOrigin.current=document.activeElement as HTMLElement;setSettings(id);setTarget(instruments.find(i=>i.id!==id)!.id)}},
+      {label:'隐藏'+info.title,onSelect:()=>{change(toggleInstrument(value,id));document.querySelector<HTMLButtonElement>('.instrument-chooser')?.focus()}}
+     ]}/>
+
     </div>
    </header>
    <div className="instrument-content" data-loudness-mode={value.layout.options.loudness} data-level-readout={value.layout.options.levelReadout}>{contents[id]}</div>
