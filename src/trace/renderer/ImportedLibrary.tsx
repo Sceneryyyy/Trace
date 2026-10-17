@@ -24,7 +24,7 @@ export function ImportedDetails({item,state,busy,run,act}:{item:ImportView;state
 
 </>}
   {editing&&<form className="take-rename" onKeyDown={e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();setEditing(false)}}} onSubmit={e=>{e.preventDefault();void act('imports.rename',{assetId:item.id,name}).then(ok=>{if(ok)setEditing(false)})}}><input autoFocus aria-label="素材名称" value={name} maxLength={120} onChange={e=>setName(e.target.value)}/><button disabled={locked}>保存名称</button><button type="button" onClick={()=>setEditing(false)}>取消</button></form>}
-  <div className="take-actions"><ActionMenu label="外部素材管理" text="管理素材" items={[
+  <div className="take-actions"><ActionMenu label="管理素材" text="管理素材" items={[
    ...(item.status==='ready'?[{label:'重新准备',attributes:{'data-import-prepare':''},disabled:locked||active,onSelect:()=>void act('imports.prepare',{assetId:item.id,acceptChanged:false})}]:[]),
    ...(item.status!=='missing'?[{label:'重新定位',disabled:locked,onSelect:()=>void act('imports.relocate',{assetId:item.id})}]:[]),
    {label:'原文件位置',onSelect:()=>run('imports.openSource',{assetId:item.id})},

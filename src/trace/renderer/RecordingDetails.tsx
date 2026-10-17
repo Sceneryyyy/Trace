@@ -58,7 +58,7 @@ export function RecordingDetails({take,state,busy,run,act,onExport}:{take:TakeSu
   {take.retention&&take.retention.phase!=='kept'&&<p className={take.retention.phase==='error'?'take-error':'settings-hint'}>{take.retention.phase==='removed'?'独立成品已核验，原始 WAV 已按设置整理':take.retention.phase==='error'?'原始文件整理未完成：'+userError(take.retention.error):'正在核验独立成品，原始文件仍保留'}</p>}
   {take.retention?.phase==='error'&&<button disabled={locked} onClick={()=>void act('retention.retry',{takeId:take.id})}>重试整理</button>}
   {editing&&<form className="take-rename" onKeyDown={e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();setEditing(false)}}} onSubmit={e=>{e.preventDefault();void act('library.rename',{takeId:take.id,name}).then(ok=>{if(ok)setEditing(false)})}}><input autoFocus aria-label="录音名称" value={name} maxLength={120} onChange={e=>setName(e.target.value)}/><button disabled={locked}>保存名称</button><button type="button" onClick={()=>setEditing(false)}>取消</button></form>}
-  <div className="take-actions"><ActionMenu label="录音管理" text="管理录音" items={[
+  <div className="take-actions"><ActionMenu label="管理录音" text="管理录音" items={[
    {label:'重命名',disabled:locked,onSelect:()=>{setName(take.name);setEditing(true)}},
    {label:'打开目录',onSelect:()=>run('record.openFolder',{takeId:take.id})},
    {label:'仅清理缓存',disabled:locked,onSelect:()=>void act('library.clearCache',{takeId:take.id})},

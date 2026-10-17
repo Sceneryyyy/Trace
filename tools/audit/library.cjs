@@ -85,7 +85,7 @@ async function main(){
   await click('[data-library-row="rec-00000"]');await click('.library-selected button[aria-expanded]');
   // It may already be expanded; make sure it is visible before testing a form.
   if(!await ev('!!document.querySelector(".library-detail-content")'))await click('.library-selected button[aria-expanded]')
-  await click('[aria-label="录音管理"]');await ev('[...document.querySelectorAll(".action-menu button")].find(b=>b.textContent==="重命名").click()');await wait('!!document.querySelector("[aria-label=录音名称]")')
+  await click('[aria-label="管理录音"]');await ev('[...document.querySelectorAll(".action-menu button")].find(b=>b.textContent==="重命名").click()');await wait('!!document.querySelector("[aria-label=录音名称]")')
   const playBeforeTyping=await count('playback.play'),recordBeforeTyping=await count('record.start');await click('[aria-label="录音名称"]');await key('r','KeyR');await key(' ','Space');assert.equal(await count('playback.play'),playBeforeTyping);assert.equal(await count('record.start'),recordBeforeTyping)
   await key('Escape');assert.equal(await ev('!!document.querySelector("[aria-label=录音名称]")'),false);assert.equal(await ev('document.querySelector(".library-panel").hidden'),false)
   await ev('document.querySelector("[data-library-row=rec-00000]").focus()');await key('End');assert.equal(await ev('document.activeElement.dataset.libraryRow'),'broken')
