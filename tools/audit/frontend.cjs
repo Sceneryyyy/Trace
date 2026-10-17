@@ -11,6 +11,9 @@ async function main(){
   const ev=c.evaluate,wait=c.wait
   const click=async selector=>{await wait('!!document.querySelector('+JSON.stringify(selector)+')');await ev('(()=>{const n=document.querySelector('+JSON.stringify(selector)+');if(n.disabled)throw Error("DISABLED "+'+JSON.stringify(selector)+');n.click()})()');await c.delay(40)}
   const key=async(key,code=key)=>{await c.send('Input.dispatchKeyEvent',{type:'keyDown',key,code,text:key==='Enter'?'\r':key===' '?' ':undefined,windowsVirtualKeyCode:({Enter:13,Escape:27,Home:36,End:35,ArrowDown:40,ArrowUp:38,Tab:9,' ':32})[key]});await c.send('Input.dispatchKeyEvent',{type:'keyUp',key,code,windowsVirtualKeyCode:({Enter:13,Escape:27,Home:36,End:35,ArrowDown:40,ArrowUp:38,Tab:9,' ':32})[key]});await c.delay(30)}
+  const select=async(selector,value)=>{await ev('(()=>{const n=document.querySelector('+JSON.stringify(selector)+');n.value='+JSON.stringify(value)+';n.dispatchEvent(new Event("change",{bubbles:true}))})()');await c.delay(50)}
+  const input=async(selector,value)=>{await ev('(()=>{const n=document.querySelector('+JSON.stringify(selector)+');Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,"value").set.call(n,'+JSON.stringify(value)+');n.dispatchEvent(new Event("input",{bubbles:true}))})()');await c.delay(50)}
+  const count=command=>ev('window.__calls.filter(c=>c.command==='+JSON.stringify(command)+').length')
   const shot=async name=>{const r=await c.send('Page.captureScreenshot',{format:'png',captureBeyondViewport:false}),p=path.join(folder,name+'.png');await fs.writeFile(p,Buffer.from(r.data,'base64'));report.screenshots.push(path.relative(root,p))}
   await wait('document.querySelectorAll("[data-instrument]").length===4')
   assert.equal(await ev('document.querySelectorAll(".instrument-heading button").length'),8)
@@ -30,7 +33,32 @@ async function main(){
   await ev('window.__publish({currentRecord:{id:"simulated-rec",phase:"recording"}})');await click('[aria-label="采集设备设置"]');assert.equal(await ev('document.querySelector("[aria-label=\\"系统播放设备\\"]").disabled'),true);await click('[aria-label="关闭对话框"]');await ev('window.__publish({currentRecord:null})')
   report.checks.push('Device configuration moved into dialog; live remains actionable and REC disables changing the source')
   if(!process.argv.includes('--batch-a')){
-   // Further task-level interactions are added with their implementation batches.
+   await click('[data-open-files]');await click('[data-library-row="record-0"]');await click('.library-selected [aria-expanded]');await wait('!!document.querySelector("[aria-label=\\"录音文件版本\\"]")')
+   const opens=await count('file.open'),plays=await count('playback.play')
+   await select('[aria-label="录音文件版本"]','source:region-b');assert.equal(await count('file.open'),opens);assert.equal(await count('playback.play'),plays)
+   assert.equal(await ev('document.querySelectorAll(".library-detail-content [data-analysis-role]").length'),1)
+   await click('[data-file-open="source"]');await wait('window.__state().playback?.regionId==="region-b"');assert.equal(await count('playback.play'),plays)
+   await select('[aria-label="录音文件版本"]','export:output-1');assert.equal(await count('file.open'),opens+1);await click('[data-export-play]');await wait('window.__state().playback?.exportId==="output-1"')
+   assert.equal(await ev('document.querySelectorAll(".export-actions>button").length'),2)
+   await click('[aria-label="成品更多操作"]');assert.equal(await ev('document.querySelectorAll(".action-menu [data-remove-export]").length'),1);await key('Escape');assert.equal(await ev('document.activeElement.ariaLabel'),'成品更多操作')
+   await select('[aria-label="录音文件版本"]','source:region-a');await click('[aria-label="原始文件更多操作"]');await click('[data-export-source="source"]');await wait('!!document.querySelector("[data-export-submit]")')
+   assert.equal(await ev('window.__calls.filter(c=>c.command==="export.describe").at(-1).payload.regionId'),'region-a');await click('[aria-label="关闭对话框"]')
+   report.checks.push('One chosen source/region/output detail; selection never opens or plays; explicit inspect/export binds the selected version; output actions and focus preserved')
+   await click('.library-categories button:nth-child(2)');await click('[data-import-id]');assert.equal(await ev('[...document.querySelectorAll(".library-detail-content button")].filter(n=>n.textContent==="重新定位").length'),1);await click('[aria-label="外部素材管理"]');assert.equal(await ev('[...document.querySelectorAll(".action-menu button")].filter(n=>n.textContent==="重新定位").length'),0);await key('Escape');await click('[aria-label="关闭音频文件"]')
+   report.checks.push('Missing external asset has exactly one relocate action, with other management commands still reachable')
+   await ev('window.__load({takeId:"record-0",role:"source"});window.__reports()');await click('.report-button');await wait('!!document.querySelector("[data-report-result]")');await select('[aria-label="报告任务"]','report-2');await click('.report-pages button:last-child')
+   const beforeTasks=await count('report.prepare'),beforePlays=await count('playback.play')
+   await click('[data-section="markers"]');await input('[aria-label="标记名称"]','保留的标记草稿');await input('[aria-label="标记评论"]','跨分区保持')
+   await click('[data-section="chart"]');assert.equal(await ev('document.querySelectorAll(".review-chart button[data-chart-export]").length'),1)
+   for(const kind of ['spectrum','spectrogram'])for(const format of ['svg','png']){await select('[aria-label="分析图类型"]',kind);await select('[aria-label="分析图格式"]',format);const saved=await count('chart.save');await click('[data-chart-export]');await wait('window.__calls.filter(c=>c.command==="chart.save").length==='+String(saved+1));await c.delay(30)}
+   const saves=await ev('window.__calls.filter(c=>c.command==="chart.save")');assert.equal(saves.length,4);for(const save of saves.filter(s=>s.payload.format==='png'))assert(Buffer.from(save.payload.png,'base64').subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10])))
+   await click('[data-section="report"]');assert.equal(await ev('document.querySelector("[aria-label=\\"报告任务\\"]").value'),'report-2');assert.equal(await ev('document.querySelector(".report-pages span").textContent'),'2 / 2')
+   await click('[data-section="markers"]');assert.equal(await ev('document.querySelector("[aria-label=\\"标记名称\\"]").value'),'保留的标记草稿');assert.equal(await count('report.prepare'),beforeTasks);assert.equal(await count('playback.play'),beforePlays)
+   await click('[data-section="chart"]');await ev('window.__holdChart()');const saved=await count('chart.save');await click('[data-chart-export]');await ev('window.__load({takeId:"record-1",role:"source"});window.__releaseChart()');await wait('!document.querySelector("[data-chart-export]").disabled');assert.equal(await count('chart.save'),saved)
+   report.checks.push('Report sections preserve draft, chosen report and event page; four graph/format outputs work under product CSP; stale prepared graph cannot save after a source switch')
+   await click('[aria-label="关闭对话框"]')
+   // Settings, reference, spectrogram and feedback checks follow with C batch.
+
   }
   assert.deepEqual(await ev('window.__uiErrors'),[])
  });await fs.writeFile(path.join(base,'browser-report.json'),JSON.stringify(report,null,2)+'\n');console.log('Frontend browser checks passed: '+report.checks.length)

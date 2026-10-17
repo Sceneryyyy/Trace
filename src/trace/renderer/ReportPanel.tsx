@@ -1,3 +1,4 @@
+import {SectionTabs} from './SectionTabs'
 import {ReviewPanel} from './ReviewPanel'
 import {useEffect,useMemo,useState} from 'react'
 import {userError} from '../userErrors'
@@ -13,6 +14,7 @@ import type {Command,PlaybackView} from '../shared'
 import './reports.css'
 const labels={'true-peak':'TP 超限','integrated-high':'累计 I 高于目标','integrated-low':'累计 I 低于目标','momentary-high':'M 超限','short-term-high':'S 超限','data-gap':'电平数据缺口','data-error':'电平数据错误','loudness-gap':'响度窗口缺口','loudness-error':'响度窗口错误'}
 export function ReportPanel({file,targets,jobs,recording,request,onNavigate}:{file?:PlaybackView|null;targets:TargetSettings;jobs:ReportJobView[];recording:boolean;onNavigate:()=>void;request:(name:Command,payload?:Record<string,unknown>)=>Promise<unknown>}){
+ const [section,setSection]=useState<'report'|'markers'|'chart'>('report')
  const [scope,setScope]=useState<'whole'|'selection'>(file?.selection?'selection':'whole'),[selected,setSelected]=useState(jobs[0]?.id||''),[result,setResult]=useState<ReportResult|null>(null),[error,setError]=useState(''),[page,setPage]=useState(0)
  const job=jobs.find(j=>j.id===selected),ready=Boolean(file&&!file.temporary&&!recording&&(scope==='whole'?file.analysisPhase==='ready':file.selection&&file.selectionAnalysis?.phase==='ready'))
  useEffect(()=>{if(!jobs.some(j=>j.id===selected)){setSelected(jobs[0]?.id||'');setResult(null)}},[jobs,selected])
@@ -20,7 +22,9 @@ export function ReportPanel({file,targets,jobs,recording,request,onNavigate}:{fi
  const action=(name:Command,payload:Record<string,unknown>)=>{setError('');void request(name,payload).then(v=>{const value=v as {reportId?:string};if(value?.reportId)setSelected(value.reportId);if(['report.jump','report.markerJump'].includes(name))onNavigate()}).catch(e=>setError(userError(e)))}
  const sameSource=Boolean(file&&result&&file.takeId===result.source.takeId&&file.role===result.source.role&&file.regionId===result.source.regionId&&file.exportId===result.source.exportId)
  const events=useMemo(()=>result?.eventPreview.map((event,index)=>({event,index})).sort((a,b)=>BigInt(a.event.startFrame)<BigInt(b.event.startFrame)?-1:BigInt(a.event.startFrame)>BigInt(b.event.startFrame)?1:0)||[],[result])
- return <div className="report-panel"><ReviewPanel file={file} recording={recording} request={request} onNavigate={onNavigate}/>
+ return <div className="report-panel"><SectionTabs prefix="report-section-" label="报告任务分类" value={section} change={setSection} tabs={[{id:'report',label:'测量报告'},{id:'markers',label:'复核标记'},{id:'chart',label:'分析图'}]}/>
+  <ReviewPanel file={file} recording={recording} request={request} onNavigate={onNavigate} mode={section==='markers'?'markers':'chart'} hidden={section==='report'}/>
+  <div id="report-section-report" role="tabpanel" aria-labelledby="report-section-tab-report" hidden={section!=='report'}>
   <div className="report-create"><div><strong>{file?.label||'选择已保存的文件'}</strong><small>{file?.temporary?'请先保存缓存，再生成报告。':'报告不会改写音频。临时预览请通过“导出报告”保存。'}</small></div><select aria-label="报告范围" value={scope} onChange={e=>setScope(e.target.value as typeof scope)}><option value="whole">整段</option><option value="selection" disabled={!file?.selection}>选区独立分析</option></select><button disabled={!ready} onClick={()=>file&&action('report.prepare',{playbackId:file.id,scope})}>生成报告</button></div>
   {!ready&&file&&!file.temporary&&<small>{recording?'结束录音后可生成报告。':'等待所选范围的分析完成。'}</small>}
   {jobs.length>0&&<label className="report-select">本次报告<select aria-label="报告任务" value={selected} onChange={e=>setSelected(e.target.value)}>{jobs.map(j=><option key={j.id} value={j.id}>{j.label} · {j.scope.kind==='whole'?'整段':'选区'} · {phases[j.phase]} · {new Date(j.createdAt).toLocaleTimeString('zh-CN',{hour12:false})}</option>)}</select></label>}
@@ -39,6 +43,7 @@ export function ReportPanel({file,targets,jobs,recording,request,onNavigate}:{fi
    {events.length>50&&<div className="report-pages"><button disabled={page===0} onClick={()=>setPage(page-1)}>上一页</button><span>{page+1} / {Math.ceil(events.length/50)}</span><button disabled={(page+1)*50>=events.length} onClick={()=>setPage(page+1)}>下一页</button></div>}
    <p className="small-note">TP 为 10 ms 观察窗口，M/S/I 为 10 ms 快照；累计 I 事件不等于最终整段结论。CSV 记录原始数值和状态。</p>
   </>}
+  </div>
   {error&&<p className="report-error" role="status">{error}</p>}
  </div>
 }
