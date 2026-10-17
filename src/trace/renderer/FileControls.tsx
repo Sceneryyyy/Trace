@@ -24,7 +24,7 @@ export function FileSourceBar({file,busy,run,live}:Props):React.JSX.Element{
  const ready=!busy&&!file.error&&file.phase!=='preparing'
  const selection=file.selection
  return <section className="sourcebar file-sourcebar" aria-label="统一时间轴与选区">
-  <div className="file-title" title={file.label}><b>{file.label}</b><span>{live?'跟随最新':file.phase==='playing'||file.phase==='buffering'?'播放中':'查看历史'}<FileFormat file={file}/></span></div>
+  <div className="file-title" title={file.label}><b>{file.label}</b><span>{live?'跟随最新':file.phase==='playing'||file.phase==='buffering'?'播放中':'查看历史'}{!live&&<FileFormat file={file}/>}</span></div>
    <div className="timeline-actions" role="group" aria-label="时间轴控制">
    <button className="full-length-button" aria-label="波形复位" title="波形复位：恢复完整时间范围" disabled={!ready||!total} onClick={()=>run('playback.window',{playbackId:file.id,startFrame:'0',endFrame:file.totalFrames,pixelWidth:900})}><TimelineActionIcon kind="reset"/></button>
    <button className="follow-button" aria-label="跟随游标" title="跟随游标：画面随播放位置滚动" aria-pressed={file.follow} disabled={!ready||live} onClick={()=>run('playback.follow',{playbackId:file.id,enabled:!file.follow})}><TimelineActionIcon kind="follow"/></button>

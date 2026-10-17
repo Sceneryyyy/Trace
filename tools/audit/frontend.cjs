@@ -17,6 +17,7 @@ async function main(){
   const shot=async name=>{const r=await c.send('Page.captureScreenshot',{format:'png',captureBeyondViewport:false}),p=path.join(folder,name+'.png');await fs.writeFile(p,Buffer.from(r.data,'base64'));report.screenshots.push(path.relative(root,p))}
   await wait('document.querySelectorAll("[data-instrument]").length===4')
   assert.equal(await ev('document.querySelectorAll(".instrument-heading button").length'),8)
+  assert.equal(await ev('document.querySelector(".file-title .asset-format")'),null,'LIVE uses capture identity, never a synthetic file format')
   for(const [width,height] of [[1024,700],[1280,800],[1399,800],[1400,800],[1600,900]]){
    await c.send('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:false});await c.delay(60)
    const geometry=await ev('(()=>{const r=n=>n.getBoundingClientRect().toJSON();return {width:innerWidth,context:r(document.querySelector(".workbench-heading")),buttons:[...document.querySelectorAll(".context-settings button,.transport button,.workspace-toolbar>button,.workspace-toolbar>select")].map(n=>({label:n.ariaLabel||n.textContent,rect:r(n)})),canvas:[...document.querySelectorAll(".instrument-content")].map(n=>({instrument:n.parentElement.dataset.instrument,rect:r(n)}))}})()')
