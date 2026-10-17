@@ -1,6 +1,6 @@
 # 89 · 前端精简迭代实施与验证
 
-2026-10-17。按 [88](88-FRONTEND-SIMPLIFICATION-PLAN.md) 推进 UI88-00～09；当前源码 preview.35，A/B/C 批本地实现完成，完整 CI 与最终提交身份在收尾时记录。基线产品 `2277625`，规划文档提交 `69fdca5` 不改变产品树。模拟设备与文件不等于 Windows 实机验收。
+2026-10-17。按 [88](88-FRONTEND-SIMPLIFICATION-PLAN.md) 推进 UI88-00～09；当前源码 preview.35，UI88-00～09 云端内容完成；最终提交、完整 CI 与实机待验边界见末节。基线产品 `2277625`，规划文档提交 `69fdca5` 不改变产品树。模拟设备与文件不等于 Windows 实机验收。
 
 ## 批次状态
 
@@ -10,7 +10,7 @@
 | UI88-01/02 | 完整设备栏收进采集设备模态，上下文保留监测状态和采样率及录音保存摘要；来源栏去除重复主时间码；仪器每项保留最大化和更多，菜单内设置/隐藏及原键盘停靠 | A 批完成 |
 | UI88-03/04 | 详情只显示选中的文件角色/连续段/成品；正常成品为查看分析与更多；管理低频动作收起；缺失导入项保留单一定位。报告分为测量报告、复核标记、分析图，图表类型/格式选择配一个导出动作 | B 批完成 |
 | UI88-05～08 | 设置分类保持草稿/应用/回退；A/B 空态引导和高级区；3D 视角/参数及独立时间窗；单份主分析进度与分离故障；目标参数按需展开 | C 批本地完成 |
-| UI88-09 | 版本、整体回归、完整双平台 CI 与交接 | 待实施 |
+| UI88-09 | preview.35、整体验证、完整双平台 CI、界面插图和交接均已同步；最终身份见末节 | 云端完成；实机待验 |
 
 ## A 批验证
 
@@ -18,7 +18,7 @@
 
 默认四仪器常驻管理按钮由 12 减至 8。同一旧版/新版模拟状态下，普通全局工具区减少 38 CSS px；默认波形内容高度在 1024/1280/1600 宽分别增加约 23.55/23.56/23.56 CSS px，其余空间按现有布局比例分配。这是固定模拟状态的布局测量，不是音频、渲染速度或用户效率结论。
 
-原始基线与批次画面位于忽略目录 `artifacts/frontend/baseline/`、`artifacts/frontend/batch-a/`；新增审计的实际 geometry、控件和截图在 `artifacts/frontend/browser-report.json` 与相应 browser 子目录。当前批次报告来自工作中源码，最终 clean 提交身份另行采集。
+原始基线与批次画面位于忽略目录 `artifacts/frontend/baseline/`、`artifacts/frontend/batch-a/`；新增审计的实际 geometry、控件和截图在 `artifacts/frontend/browser-report.json` 与相应 browser 子目录。上述阶段报告来自工作中源码，最终 clean 提交身份与完整验证见末节。
 
 ## 必须保持的边界
 
@@ -26,12 +26,31 @@ B 批类型检查、既有列表 13 组、P0/P1 9 组通过；新增 frontend �
 
 不更改引擎、计量、协议、缓存和磁盘格式，不引入新依赖。实时/监测/REC、选中/载入/回听、来源/成品/选区统计及移除/缓存清理语义保持。主菜单使用 body portal 避免仪器/侧栏裁切，键盘有方向键、Home/End、Enter、Escape、Tab 和入口焦点恢复；不通过仅悬停隐藏功能。
 
-Windows 声卡、听感、96 kHz、长录音、物理 GPU/系统 DPI 与原生目录/保存/回收站仍按 76 待验。本记录不是新安装包或新音频测试结论。
+Windows 声卡、听感、96 kHz、长录音、物理 GPU/系统 DPI 与原生目录/保存/回收站仍按 76 待验。上述本地界面检查不替代实机项目；最终离线数值门禁结果见末节。
 
 ## C 批与整体收尾
 
 当前包版本与关于页均为 preview.35。根包 JSON 不允许被 Trace 源码直接导入（独立工程门禁）；保留产品版本常量，并用实际“关于”界面对包版本做一致性检查，避免再次漂移。锁文件仅改变根版本，依赖 pin 不变。完整与生产 npm audit 均为零公告，库存绑定新锁文件哈希。
 
-新增 frontend 审计累计 11 组，使用产品 CSP，检查浏览器错误与 CSP 违规均为空；包括关闭 details 内控件的可见性、全部禁用的菜单仍能按 Escape 退出而不停止 REC。报告保存草稿、当前来源/版本、独立时间窗和并发采集/文件故障均有检查。既有 renderer 9、P0/P1 9、列表 13、React selector 通过；完整 portable 已跑 321/321，最终 clean 提交会再次绑定证据。类型与应用构建通过，独立工程门禁按当前结构复验。新增前端审计已接入 CI 和可读取摘要。
+新增 frontend 审计累计 11 组，使用产品 CSP，检查浏览器错误与 CSP 违规均为空；包括关闭 details 内控件的可见性、全部禁用的菜单仍能按 Escape 退出而不停止 REC。报告保存草稿、当前来源/版本、独立时间窗和并发采集/文件故障均有检查。既有 renderer 9、P0/P1 9、列表 13、React selector 通过；最终 clean 源码 portable 321/321，完整来源见末节。类型与应用构建通过，独立工程门禁通过。新增前端审计已接入 CI 和可读取摘要。
 
-尚未取得本轮完整双平台 CI，UI88-09 未结项；不能将 preview.34 的 CI 作为本轮证据。Windows 实机待验保持，未生成 preview.35 安装包或改写旧 PDF。
+本轮完整双平台 CI 已成功，UI88-09 云端内容结项，见末节。Windows 实机待验保持，未生成 preview.35 安装包或改写旧 PDF。
+
+## 最终提交与完整 CI
+
+源码 `3e665d92f0fc95b245956347fad56e0b43707107`，完整 [CI 39035516698](https://github.com/Sceneryyyy/Trace/actions/runs/39035516698)，attempt 1：Windows / portable 两个验证 job 均成功。实际 PR 合并测试提交 `11831764ebad1fb0be9aa6cfb2fb36e88b08b507` 的内容树与源码一致（`b0d76559b16f355776f68003c5ffa9d1f63c9f7e`），两端 sourceDirty=false；后续交接文档增量不代表新增音频测试。可克隆的来源、job/step、注解分片哈希及本地范围见 [frontend-verification.json](release/frontend-verification.json)。
+
+| 范围 | 实际结果与边界 |
+| --- | --- |
+| Portable | Linux / Windows 各 321/321，0 fail/skip |
+| Windows | CTest 19/19，原生/媒体 68/68；类型/应用构建、锁定组件安装和安全门禁成功；不是实体声卡验收 |
+| Linux | ASan/UBSan 核心 8/8、原始 EBU 1/1；独立 I 对照及 React selector 步骤成功 |
+| 原始 EBU | 两端适用 WAV 各 68/68，112/112 数值、204/204 一致性；两份不支持的多声道排除，不算通过 |
+| 前端 CI | Linux 实际 React/产品 CSP/模拟 IPC：新增 frontend 11 组、既有 library 13 组及 renderer/P0-P1 步骤成功；列表 50/500/5000 元数据均保持 50 行 |
+| 本地 clean 源码 | 321 portable、类型/构建、完整/生产 npm 零公告、工程独立边界、frontend 11、library 13、renderer 9、P0/P1 9、selector；长中/英文 × 5 主题 × 3 尺寸 × 列表开关共 60 组合边界通过 |
+
+已读取并 SHA-256 校验 CI 注解分片；未下载 CI 附件 payload。FFmpeg 与依赖 pin 沿用，组件/安装身份见摘要，不宣称新编码器版本或新安装包。实现中的旧 CI 被最终提交替代，不作为当前通过证据。
+
+本轮 [PR #3](https://github.com/Sceneryyyy/Trace/pull/3) 推送到 `codex/frontend-simplification-20261017`，尚未合入远程默认 `recorder/dev`（仍为 `2277625` / preview.34）；本地 recorder/dev 保留本轮后续提交。当前界面示例见 [preview.35 插图说明](assets/frontend-preview35/README.md)，来自实际 React 与模拟读数，旧 PDF/插图和 preview.31 候选未覆盖。
+
+云端可完成内容到此结束；后续按 76 执行真实设备/快速回听/A-B/监测恢复、96 kHz、长录音、GPU/系统 DPI、原生对话框及用户视觉/听感验收。自动连播、歌单、批量、P2 和 Mac 不在本轮范围。

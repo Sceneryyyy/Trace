@@ -1,6 +1,6 @@
 # Trace 声迹 · 开发入门
 
-2026-10-17：当前源码 preview.35，按 [88](docs/88-FRONTEND-SIMPLIFICATION-PLAN.md) 实施 UI88-00～09，A/B/C 批本地实现与检查已完成，整体验证和完整 CI 正在收尾，见 [89](docs/89-FRONTEND-SIMPLIFICATION-ITERATION.md)。没有新安装包；后续提交、双平台测试和实机待验状态以 13 为准。
+2026-10-17：当前源码 preview.35，按 [88](docs/88-FRONTEND-SIMPLIFICATION-PLAN.md) 完成 UI88-00～09 云端内容，完整 Windows/Linux CI 已通过，见 [89](docs/89-FRONTEND-SIMPLIFICATION-ITERATION.md)。没有新安装包；后续提交、双平台测试和实机待验状态以 13 为准。
 
 2026-10-15 更新。本目录已经是完整源码仓库；默认开发分支为 `recorder/dev`。当时源码 preview.34（[录音列表迭代](docs/87-RECORDING-LIBRARY-ITERATION.md)）；来源 `2aee519` 的 preview.31 私有工程候选已由完整 CI 生成，preview.30 / InternalTest-r3 保留为历史同事内测交付包。版本、产物身份与验证边界见 [当前交接](docs/13-HANDOFF.md)，独立工程边界见 [79](docs/79-TRACE-INDEPENDENT-PROJECT.md)，自建组件原始证明见 [81](docs/81-SELF-BUILT-FFMPEG.md)，上一轮文件/故障与工具更新复验见 [82](docs/82-FILE-FAULT-TESTING.md)。
 

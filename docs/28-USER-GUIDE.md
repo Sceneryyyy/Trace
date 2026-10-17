@@ -4,6 +4,10 @@
 
 界面以 LeoMoon 为系列品牌，TRACE 为当前产品名；绿色至青色的狮子月牙标识同时用于顶部和 Windows 图标。
 
+![preview.35 工作台：实际界面与模拟信号](assets/frontend-preview35/workbench.png)
+
+界面插图使用模拟信号，来源见 [插图说明](assets/frontend-preview35/README.md)，不作为 Windows 实机验收。
+
 ## 启动
 
 完整解压软件包，运行 Trace.exe。保留同目录的 resources、DLL 与编码组件；窗口中的“设置与帮助”可以查看版本和快捷键。

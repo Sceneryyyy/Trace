@@ -2,17 +2,17 @@
 
 更新：2026-10-17。默认开发分支 `recorder/dev`；源码仓库根为当前 checkout（本次云端 `/workspace/Trace`）。项目规则见 [AGENTS.md](../AGENTS.md)，全部资料见 [文档索引](README.md)。早期会话已移至 [交接历史](archive/13-HANDOFF-HISTORY.md)，其“下一步”和当时分支状态不代表当前待办。
 
-## 2026-10-17 · preview.35 前端精简实施
+## 2026-10-17 · preview.35 前端精简完成
 
-用户已授权按 88 继续迭代。当前源码 preview.35，UI88-00～08 的 A/B/C 批本地实现与检查完成，UI88-09 的 clean 来源复验和完整双平台 CI 收尾中，见 [89](89-FRONTEND-SIMPLIFICATION-ITERATION.md)。设备摘要、仪器更多、单版本详情、报告三分区、分类设置、A/B/3D 高级区及任务/故障分层均已接入；协议、计量、依赖 pin、文件保护和 87 的列表行为保持。
+用户授权按 88 继续迭代；UI88-00～09 云端内容完成，见 [89](89-FRONTEND-SIMPLIFICATION-ITERATION.md)。设备/录音摘要、仪器最大化＋更多、单版本详情、报告三分区、分类设置、A/B/3D 高级区、目标参数和任务/故障分层均已交付。协议、Meter v5、Session v2、缓存、依赖 pin、文件保护与 L86 列表规则保持；关于页与包版本均为 preview.35，实际 UI 审计验证一致性。
 
-已运行 portable 321/321、类型/构建、完整与生产 npm 零公告、独立工程、原 renderer 9、P0/P1 9、列表 13、新 frontend 11 组及 React selector。最终 clean 提交和新 CI 尚待记录；以下 bf42e6c/run 38744154945 是 preview.34 的旧证据，不能替代本轮。关于页与包版本统一为 preview.35，版本一致性由实际 UI 审计检查；根包 JSON 不直接导入 Trace 源码，以符合工程边界。
+源码 `3e665d92f0fc95b245956347fad56e0b43707107` 的 [完整 CI 39035516698](https://github.com/Sceneryyyy/Trace/actions/runs/39035516698) 成功；两端 portable 321/321，Windows CTest 19/19、原生/媒体 68/68；Linux ASan/UBSan 核心 8/8＋原始 EBU 1/1。两端适用 EBU 68/68、112 数值、204 一致性通过，两个不支持的多声道排除；新 frontend 11、原 library/renderer/P0-P1、selector 与安全门禁成功。实际测试提交 `11831764ebad1fb0be9aa6cfb2fb36e88b08b507` 与交付源码内容树一致，两端 sourceDirty=false。注解分片已校验，完整来源与本地 60 组合布局检查见 [验证 JSON](release/frontend-verification.json) 和 89；不是实机验收。
 
-本地继续 `recorder/dev`，远程默认仍 `2277625`；本轮计划推送独立评审分支取得 CI，不自动合并。没有新安装包或 PDF，Windows 真实设备/听感/96 kHz/长录音/GPU/DPI/原生对话框/用户视觉仍待验。下节是规划阶段历史快照。
+本地继续 recorder/dev，源码/交接推送到 `codex/frontend-simplification-20261017` / [PR #3](https://github.com/Sceneryyyy/Trace/pull/3)，尚未合入远程默认（仍为 `2277625` / preview.34）。新会话先核对 PR/后续提交，不能把默认分支当成包含 preview.35。当前插图为实际 React＋模拟数据，未建立新安装包或覆盖旧 PDF；Windows 声卡/听感/96 kHz/长录音/GPU/系统 DPI/原生对话框及用户视觉仍按 76 待验。本轮云端开发到此停止。下节为规划阶段历史快照。
 
 ## 2026-10-17 · 下一版本前端精简调研与计划
 
-后续用户已授权继续实现。规划文档已保存为 `69fdca5`；当前源码 preview.35，UI88-00～08 的 A/B/C 批本地实现与检查完成，正在完成 UI88-09 的完整双平台 CI。当前产品迭代过程、批次检查和边界见 [89](89-FRONTEND-SIMPLIFICATION-ITERATION.md)；下方“仅文档/未实现”为此前规划阶段快照，不代表最新工作状态。
+后续用户已授权继续实现。规划文档已保存为 `69fdca5`；当前源码 preview.35，UI88-00～09 云端实现与完整双平台 CI 已完成，见顶部。当前产品迭代过程、批次检查和边界见 [89](89-FRONTEND-SIMPLIFICATION-ITERATION.md)；下方“仅文档/未实现”为此前规划阶段快照，不代表最新工作状态。
 
 用户要求先总结全前端冗余，再参考成熟同类项目形成下一版本迭代文档。本轮交付 [88](88-FRONTEND-SIMPLIFICATION-PLAN.md) 与 [来源清单](research/2026-10-17-frontend-simplification-sources.json)：核查 Audacity、Sonic Visualiser、REW、Insight 2、ocenaudio 共 9 份官方页面，实际查看 4 张官方示意图；两个 Audacity 图片请求 403，未声称查看。没有安装或运行这些产品，也没有性能/用户横评或复制外部代码/素材。
 
@@ -53,7 +53,7 @@ UI88-00～09 全部待实施：基线/原型 → 工作台/仪器 → 文件详�
 | 项目 | 当前记录 |
 | --- | --- |
 | 源码 | `0.1.0-preview.35`；前端精简见 [89](89-FRONTEND-SIMPLIFICATION-ITERATION.md)；录音列表见 [87](87-RECORDING-LIBRARY-ITERATION.md)；计量配置已升级 Meter v5，EBU 修复见 [78](78-EBU-METER-RECALIBRATION.md)；云端发布准备见 [75](75-CLOUD-RELEASE-PREPARATION.md) |
-| Git | `Sceneryyyy/Trace`，默认 `recorder/dev`；preview.35 前端精简实现及 CI 收尾见 89；preview.34 代码 `bf42e6c` / CI `38744154945` / PR #2 已合入（`ba461e5`），见 87；preview.33 代码 `1c00c07` / CI `38671033132`，复核见 85；上一轮 P0/P1 `4fd9401`（评审分支 `codex/p0-p1-cloud-20261011`）；上一轮文件/故障修复 `2aee519`；保留提交身份及合并历史。自建编码组件 `f33d74d`；此前依赖/编码/下载修复 `3d63d8f` / `ef51603` / `6835af9`；独立化历史为 `a986a0d` / `ab466d8` / `db005b5`；最后文档提交不算新音频测试，远程身份以 Git 为准 |
+| Git | `Sceneryyyy/Trace`，默认 `recorder/dev`；preview.35 代码 `3e665d9` / CI `39035516698` / PR #3 尚未合入，见 89；preview.34 代码 `bf42e6c` / CI `38744154945` / PR #2 已合入（`ba461e5`），见 87；preview.33 代码 `1c00c07` / CI `38671033132`，复核见 85；上一轮 P0/P1 `4fd9401`（评审分支 `codex/p0-p1-cloud-20261011`）；上一轮文件/故障修复 `2aee519`；保留提交身份及合并历史。自建编码组件 `f33d74d`；此前依赖/编码/下载修复 `3d63d8f` / `ef51603` / `6835af9`；独立化历史为 `a986a0d` / `ab466d8` / `db005b5`；最后文档提交不算新音频测试，远程身份以 Git 为准 |
 | 仪表主题 | 实现 `2938c8e`、审计修复 `c67e9e9` 等已于 2026-09-30 合入 `recorder/dev`；用户已验收开发构建并接受 71-D5 差异 |
 | 当前工程候选 | Windows x64 preview.31，文件/故障修复来源 `2aee519`；[CI 38099859270](https://github.com/Sceneryyyy/Trace/actions/runs/38099859270) 全部成功，私有附件 `11688230696`，未签名 |
 | 历史同事内测包 | Windows x64 preview.30 / InternalTest-r3，来源 `9c1ee21`，包名/校验见 [69](69-INTERNAL-TEST-R3.md) |
@@ -202,7 +202,7 @@ Node Undici 内部断言，未上传新候选。下载改为保持代理/TLS 的
 
 ## 下一会话接力
 
-当前源码 preview.35，前端精简本地实现完成，完整 CI 收尾见顶部与 89；以下列表 preview.34 代码 `bf42e6c` / PR #2 已合入 `recorder/dev`（`ba461e5`），完整 CI 已成功，最新交接为文档增量；实现/本轮验证以顶部及 87 为准。上一轮复核代码为 `1c00c07`（preview.33），[CI 38671033132](https://github.com/Sceneryyyy/Trace/actions/runs/38671033132) 已全成功，实际测试提交/内容树及最终证据见顶部与 85。preview.31 私有工程候选继续绑定 `2aee519` / run `38099859270`；后续文档提交不算新的音频、Windows 或候选运行。
+当前源码 preview.35，UI88-00～09 云端实现及完整 CI 已完成，PR #3 尚未合入，见顶部与 89；以下列表 preview.34 代码 `bf42e6c` / PR #2 已合入 `recorder/dev`（`ba461e5`），完整 CI 已成功，最新交接为文档增量；实现/本轮验证以顶部及 87 为准。上一轮复核代码为 `1c00c07`（preview.33），[CI 38671033132](https://github.com/Sceneryyyy/Trace/actions/runs/38671033132) 已全成功，实际测试提交/内容树及最终证据见顶部与 85。preview.31 私有工程候选继续绑定 `2aee519` / run `38099859270`；后续文档提交不算新的音频、Windows 或候选运行。
 
 | 接力材料 | 位置与用途 |
 | --- | --- |
@@ -212,13 +212,13 @@ Node Undici 内部断言，未上传新候选。下载改为保持代理/TLS 的
 | 本云端原始材料 | 忽略目录 artifacts/library/、artifacts/review-20261015/、artifacts/file-faults/、artifacts/codec-build/、artifacts/release-security/ 与 artifacts/independence/；原始日志、公开来源归档、同步收据不会随 clone 下载 |
 | 私有 EBU | 执行 `python3 references/ebu-loudness-test-set-v5/prepare.py` 还原/核验；公开源码归档排除原始素材，强制门禁缺素材必须失败 |
 
-先检查目录、分支、远程提交与未提交修改。PR #1、preview.34 的 PR #2 均已合入 `recorder/dev`；从默认分支继续开发，并核对顶部合并与 CI 身份。保留本地后续提交；默认分支干净且无本地分叉时才执行 `git switch recorder/dev`
+先检查目录、分支、远程提交与未提交修改。PR #1、preview.34 的 PR #2 已合入 `recorder/dev`；preview.35 的 PR #3 尚未合入。先核对并保留本轮评审分支/本地后续提交，默认远程仍是 preview.34；不要拉取后把新源码覆盖。保留本地后续提交；默认分支干净且无本地分叉时才执行 `git switch recorder/dev`
 和 `git pull --ff-only origin recorder/dev`。有分叉保留两边历史，不 reset 覆盖。
 仅更新文档检查链接/diff；依赖、音频或构建变化时重新取得相应实际门禁。
 
 下一工作顺序（按用户最新方向更新）：
 
-1. UI88-00～08 的 A/B/C 批已完成本地实现和检查，按 89 收尾 UI88-09：固定 clean 提交、新 Windows/Linux CI、证据/文档及待验清单。不要重新执行已完成的基线/规划，不把 preview.34 CI 计入新版本。继续收集 Windows 视觉与回听反馈；不扩展连播、歌单、拖动排序或批量任务。R83-09/10、组件安全/微软及 GPL 系统库分发条款仍单列。
+1. UI88-00～09 云端实现、完整双平台 CI、证据与文档已完成，见 89；先核对 PR #3 和实际来源身份，继续收集 Windows 视觉/回听反馈，不重复已完成的基线或门禁。不要自动扩展连播、歌单、批量或 P2；R83-09/10、组件安全/微软及 GPL 系统库分发条款仍单列。
 2. Windows 实机到位，按 76 的 WIN/FLOW/DEV/METER 跑三分钟视频、真实采集、录音/回听/缓存/选区/导出、96 kHz、长测与 GPU/DPI。
 3. 发布门禁关闭后处理签名、下载首次启动、独立用户和邀请测试。当前附件保持私有工程候选身份。
 

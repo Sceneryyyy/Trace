@@ -1,6 +1,6 @@
 # Trace 项目文档索引
 
-更新：2026-10-17。当前源码 **preview.35**，默认开发分支 `recorder/dev`；代码/文档复核见 [85](85-CODE-DOCUMENT-REVIEW.md)，P0/P1 实现及上一轮验证见 [84](84-P0-P1-CLOUD-ITERATION.md)。PR #1/#2 均已合入 `recorder/dev`；录音列表调研见 [86](86-RECORDING-LIST-RESEARCH.md)，preview.34 实现与验证见 [87](87-RECORDING-LIBRARY-ITERATION.md)。前端精简规划见 [88](88-FRONTEND-SIMPLIFICATION-PLAN.md)，preview.35 实施与最终验证收尾见 [89](89-FRONTEND-SIMPLIFICATION-ITERATION.md)。preview.31 私有工程候选（2aee519）、preview.30 / InternalTest-r3（9c1ee21）与旧 f33d74d 候选保持各自历史身份；本轮未建立新安装包。最新提交、验证与待验边界见 [13](13-HANDOFF.md)。PDF 插图仍为云端模拟界面。
+更新：2026-10-17。当前源码 **preview.35**，默认开发分支 `recorder/dev`；代码/文档复核见 [85](85-CODE-DOCUMENT-REVIEW.md)，P0/P1 实现及上一轮验证见 [84](84-P0-P1-CLOUD-ITERATION.md)。PR #1/#2 均已合入 `recorder/dev`；录音列表调研见 [86](86-RECORDING-LIST-RESEARCH.md)，preview.34 实现与验证见 [87](87-RECORDING-LIBRARY-ITERATION.md)。前端精简规划见 [88](88-FRONTEND-SIMPLIFICATION-PLAN.md)，preview.35 实施与完整验证见 [89](89-FRONTEND-SIMPLIFICATION-ITERATION.md)。preview.31 私有工程候选（2aee519）、preview.30 / InternalTest-r3（9c1ee21）与旧 f33d74d 候选保持各自历史身份；本轮未建立新安装包。最新提交、验证与待验边界见 [13](13-HANDOFF.md)。PDF 插图仍为云端模拟界面。
 
 先读 [项目首页](../README.md)、[用户指南](28-USER-GUIDE.md) 或 [开发入门](../CODEX-START.md)。当前状态、未验证项和下一任务统一写在 [13-HANDOFF](13-HANDOFF.md)。带日期的阶段记录只证明当时版本的结果；旧“当前/下一步”不能覆盖 13。
 
@@ -15,7 +15,7 @@
 | [项目约定](../AGENTS.md) | 开发、验证、来源与交接规则 |
 | [Windows 环境](09-WINDOWS-SETUP.md) | 实际构建、测试和分发命令；Linux 可运行范围 |
 | [任务索引](07-BACKLOG.md) | 当前待办与早期任务 ID |
-| [前端精简实施](89-FRONTEND-SIMPLIFICATION-ITERATION.md) | preview.35 工作台、文件/报告、设置/A-B/3D/任务提示；批次检查与完整 CI 收尾 |
+| [前端精简实施](89-FRONTEND-SIMPLIFICATION-ITERATION.md) | preview.35 工作台、文件/报告、设置/A-B/3D/任务提示；批次检查、完整 CI 与实机待验 |
 | [下一版本前端精简方案](88-FRONTEND-SIMPLIFICATION-PLAN.md) | preview.35 建议范围；5 项目官方资料、当前冗余、UI88-00～09、动作迁移和云端/实机验收；实施见 89 |
 | [当前交接](13-HANDOFF.md) | 源码/分发身份、最新验证、实机缺口 |
 | [云端发布收尾](75-CLOUD-RELEASE-PREPARATION.md) | CI、打包、退出、依赖与新 PDF 的交付/阻塞 |
