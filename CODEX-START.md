@@ -1,5 +1,7 @@
 # Trace 声迹 · 开发入门
 
+2026-10-17：下一版本前端精简方案见 [88](docs/88-FRONTEND-SIMPLIFICATION-PLAN.md)，UI88-00～09 全部待实施，建议目标 preview.35。当前产品仍为 preview.34；本轮仅形成调研与任务文档，未更新源码版本或测试证据。后续实现从基线和动作映射开始，按 88 的批次推进；完整接力以 13 为准。
+
 2026-10-15 更新。本目录已经是完整源码仓库；默认开发分支为 `recorder/dev`。当前源码 preview.34（[录音列表迭代](docs/87-RECORDING-LIBRARY-ITERATION.md)）；来源 `2aee519` 的 preview.31 私有工程候选已由完整 CI 生成，preview.30 / InternalTest-r3 保留为历史同事内测交付包。版本、产物身份与验证边界见 [当前交接](docs/13-HANDOFF.md)，独立工程边界见 [79](docs/79-TRACE-INDEPENDENT-PROJECT.md)，自建组件原始证明见 [81](docs/81-SELF-BUILT-FFMPEG.md)，上一轮文件/故障与工具更新复验见 [82](docs/82-FILE-FAULT-TESTING.md)。
 
 ## 开始工作

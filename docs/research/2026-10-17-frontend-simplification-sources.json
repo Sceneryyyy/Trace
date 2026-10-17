@@ -1,0 +1,275 @@
+{
+  "schemaVersion": 1,
+  "researchDate": "2026-10-17",
+  "compiledAt": "2026-10-17T12:06:00.523096+00:00",
+  "traceBaseline": {
+    "branch": "recorder/dev",
+    "commit": "2277625cbcdd2b30372cf7ca9acf9dbbb6264a33",
+    "packageVersion": "0.1.0-preview.34",
+    "aboutConstantVersion": "0.1.0-preview.33",
+    "proposedVersion": "0.1.0-preview.35",
+    "implementationStarted": false
+  },
+  "scope": "Official documentation and manual inspection of official illustrations only; no competitor execution, source-code audit, performance benchmark, usability study or Windows acceptance in this research.",
+  "counts": {
+    "projects": 5,
+    "officialDocumentsRead": 9,
+    "officialImagesViewed": 4,
+    "imageRequestsBlocked": 2
+  },
+  "products": {
+    "audacity": {
+      "name": "Audacity",
+      "versionScope": "Official Development Manual; illustrated toolbar 3.6.0 and export dialog 3.5.0; not a latest-release claim",
+      "sourceIds": [
+        "audacity-setup",
+        "audacity-export",
+        "audacity-toolbars"
+      ],
+      "observations": [
+        "Audio Setup groups device configuration; Device Toolbar is not shown by default.",
+        "Export Audio groups range, format and format-dependent options."
+      ],
+      "traceTasks": [
+        "UI88-01",
+        "UI88-03"
+      ]
+    },
+    "sonic-visualiser": {
+      "name": "Sonic Visualiser",
+      "versionScope": "Reference path 5.2.1; body describes 5.2",
+      "sourceIds": [
+        "sonic-visualiser"
+      ],
+      "observations": [
+        "Display properties are associated with the active layer.",
+        "Panes can share scrolling and zoom; selection describes a time extent."
+      ],
+      "traceTasks": [
+        "UI88-01",
+        "UI88-02",
+        "UI88-07"
+      ]
+    },
+    "rew": {
+      "name": "Room EQ Wizard",
+      "versionScope": "Online help; application build not identified on inspected pages",
+      "sourceIds": [
+        "rew-graph",
+        "rew-preferences"
+      ],
+      "observations": [
+        "Graph Controls and Graph Actions depend on current graph type.",
+        "Graph image capture uses an output dialog; Preferences has topic tabs."
+      ],
+      "traceTasks": [
+        "UI88-04",
+        "UI88-05",
+        "UI88-07"
+      ]
+    },
+    "insight": {
+      "name": "iZotope Insight 2",
+      "versionScope": "Official insight200 documentation; footer 2.3.0 (2022)",
+      "sourceIds": [
+        "insight-layouts",
+        "insight-introduction"
+      ],
+      "observations": [
+        "Layout preset name opens a dedicated layout manager.",
+        "Official all-meters illustration shows modular meters with local settings and enlargement controls."
+      ],
+      "traceTasks": [
+        "UI88-01",
+        "UI88-02"
+      ]
+    },
+    "ocenaudio": {
+      "name": "ocenaudio",
+      "versionScope": "Official Features page; screenshot application build unspecified",
+      "sourceIds": [
+        "ocenaudio-features"
+      ],
+      "observations": [
+        "Official spectrogram illustration shows waveform/spectrogram with a separate parameter dialog.",
+        "Documentation describes updating the spectrogram when display settings change; no timing independently verified."
+      ],
+      "traceTasks": [
+        "UI88-05",
+        "UI88-07"
+      ]
+    }
+  },
+  "sources": [
+    {
+      "id": "audacity-setup",
+      "url": "https://manual.audacityteam.org/man/audio_setup_toolbar.html",
+      "resolvedUrl": "https://manual.audacityteam.org/man/audio_setup_toolbar.html",
+      "status": 200,
+      "retrievedAt": "2026-10-17T12:01:42.694474+00:00",
+      "bytes": 26013,
+      "sha256": "747c72f082702adab987e9f93ffd74fcad5c7e65b90081b1751cecf0cab8ce6f",
+      "kind": "official-documentation",
+      "read": true
+    },
+    {
+      "id": "audacity-export",
+      "url": "https://manual.audacityteam.org/man/file_export_dialog.html",
+      "resolvedUrl": "https://manual.audacityteam.org/man/file_export_dialog.html",
+      "status": 200,
+      "retrievedAt": "2026-10-17T12:01:42.660578+00:00",
+      "bytes": 40455,
+      "sha256": "9dbabc452eef15b05ccbbe4dc90a8e9e2545afb2d4e916c764c8e4978e1d3762",
+      "kind": "official-documentation",
+      "read": true
+    },
+    {
+      "id": "audacity-toolbars",
+      "url": "https://manual.audacityteam.org/man/view_menu_toolbars.html",
+      "resolvedUrl": "https://manual.audacityteam.org/man/view_menu_toolbars.html",
+      "status": 200,
+      "retrievedAt": "2026-10-17T12:01:42.708226+00:00",
+      "bytes": 13600,
+      "sha256": "d6fb0aeab73bcf35d9c5f4a112d6ea0e42e6d93b7a42f4bb5e96809907ee4109",
+      "kind": "official-documentation",
+      "read": true
+    },
+    {
+      "id": "sonic-visualiser",
+      "url": "https://www.sonicvisualiser.org/doc/reference/5.2.1/en/",
+      "resolvedUrl": "https://www.sonicvisualiser.org/doc/reference/5.2.1/en/",
+      "status": 200,
+      "retrievedAt": "2026-10-17T12:01:43.958258+00:00",
+      "bytes": 102998,
+      "sha256": "af172be2f38454cedfed7b4144ac4b775622cbf3c2911f1aa8e301ae18c304ae",
+      "kind": "official-documentation",
+      "read": true
+    },
+    {
+      "id": "rew-graph",
+      "url": "https://www.roomeqwizard.com/help/help_en-GB/html/graphpanel.html",
+      "resolvedUrl": "https://www.roomeqwizard.com/help/help_en-GB/html/graphpanel.html",
+      "status": 200,
+      "retrievedAt": "2026-10-17T12:01:43.295337+00:00",
+      "bytes": 14744,
+      "sha256": "d4453ae7ed83fc6fc50eb72bc0a6e73a871325cd459ca5eb1d0f1d72f7276dbd",
+      "kind": "official-documentation",
+      "read": true
+    },
+    {
+      "id": "rew-preferences",
+      "url": "https://www.roomeqwizard.com/help/help_en-GB/html/settings.html",
+      "resolvedUrl": "https://www.roomeqwizard.com/help/help_en-GB/html/settings.html",
+      "status": 200,
+      "retrievedAt": "2026-10-17T12:01:43.668357+00:00",
+      "bytes": 2242,
+      "sha256": "9824308a9e8660e24fcefc1d544afef89294786985dd291154a904463a1ed92c",
+      "kind": "official-documentation",
+      "read": true
+    },
+    {
+      "id": "insight-layouts",
+      "url": "https://s3.amazonaws.com/izotopedownloads/docs/insight200/en/layouts/index.html",
+      "resolvedUrl": "https://s3.amazonaws.com/izotopedownloads/docs/insight200/en/layouts/index.html",
+      "status": 200,
+      "retrievedAt": "2026-10-17T12:01:43.245492+00:00",
+      "bytes": 16595,
+      "sha256": "b09bba8e8cdb30c1eb6ad4c93e3a526fda0a5c7a007d8a0eb035589610f5882d",
+      "kind": "official-documentation",
+      "read": true
+    },
+    {
+      "id": "insight-introduction",
+      "url": "https://s3.amazonaws.com/izotopedownloads/docs/insight200/en/index.html",
+      "resolvedUrl": "https://s3.amazonaws.com/izotopedownloads/docs/insight200/en/index.html",
+      "status": 200,
+      "retrievedAt": "2026-10-17T12:01:43.840118+00:00",
+      "bytes": 16164,
+      "sha256": "97a0b72caf49cb942010abc69820f4e140574b69bd7202de92c4f7f25acbe2a3",
+      "kind": "official-documentation",
+      "read": true
+    },
+    {
+      "id": "ocenaudio-features",
+      "url": "https://www.ocenaudio.com/en/features",
+      "resolvedUrl": "https://www.ocenaudio.com/en/features",
+      "status": 200,
+      "retrievedAt": "2026-10-17T12:01:44.051420+00:00",
+      "bytes": 8250,
+      "sha256": "a87c27244c1c5db1bff775ff2c33400902c01a4295bea60d6e218b26503ada75",
+      "kind": "official-documentation",
+      "read": true
+    }
+  ],
+  "imageRequests": [
+    {
+      "sourceId": "audacity-setup",
+      "url": "https://manual.audacityteam.org/m/images/8/8a/audio_setup_toolbar_3_6_0_with_menu.png",
+      "error": "HTTP Error 403: Forbidden",
+      "visuallyInspected": false
+    },
+    {
+      "sourceId": "audacity-export",
+      "url": "https://manual.audacityteam.org/m/images/9/93/export_audio_dialog_3_5_0.png",
+      "error": "HTTP Error 403: Forbidden",
+      "visuallyInspected": false
+    },
+    {
+      "sourceId": "sonic-visualiser",
+      "file": "sonic-properties.png",
+      "url": "https://www.sonicvisualiser.org/doc/reference/5.2.1/en/images/params-spectrogram.png",
+      "status": 200,
+      "bytes": 35327,
+      "sha256": "6b07fd6b7d800113f778ff26416f9dc195946628aeb958e2ea7021049c587daf",
+      "retrievedAt": "2026-10-17T12:02:01.521304+00:00",
+      "visuallyInspected": true
+    },
+    {
+      "sourceId": "rew-graph",
+      "file": "rew-capture.jpg",
+      "url": "https://www.roomeqwizard.com/help/images/savejpegdialog.jpg",
+      "status": 200,
+      "bytes": 97818,
+      "sha256": "b28e3a412e978b36b089fd28bc654565e8613e814907aeab67281c72f7eca434",
+      "retrievedAt": "2026-10-17T12:02:00.840399+00:00",
+      "visuallyInspected": true
+    },
+    {
+      "sourceId": "insight-introduction",
+      "file": "insight-meters.png",
+      "url": "https://s3.amazonaws.com/izotopedownloads/docs/insight200/en/images/intro-all-meters.png",
+      "status": 200,
+      "bytes": 723491,
+      "sha256": "58c6b99c92e47c02af722cc226b76b16fb926bee9870a8fb9c394d41f07faafa",
+      "retrievedAt": "2026-10-17T12:02:01.330918+00:00",
+      "visuallyInspected": true
+    },
+    {
+      "sourceId": "ocenaudio-features",
+      "file": "ocenaudio-spectrogram.png",
+      "url": "https://www.ocenaudio.com/imgs/screenshot_spectrograma.png",
+      "status": 200,
+      "bytes": 148321,
+      "sha256": "f23deff4fc887ab5fbb65366b1c0decf413b2433e9f22b0bd978eb135618f69f",
+      "retrievedAt": "2026-10-17T12:02:01.605667+00:00",
+      "visuallyInspected": true
+    }
+  ],
+  "unsuccessfulDiscoveryUrls": [
+    {
+      "url": "https://manual.audacityteam.org/man/export_audio.html",
+      "result": "Unavailable through web tool; correct official Export Audio page file_export_dialog.html used instead."
+    },
+    {
+      "url": "https://s3.amazonaws.com/izotopedownloads/docs/insight200/en/meter-panel-management/index.html",
+      "result": "Unavailable through web tool; excluded as evidence."
+    }
+  ],
+  "evidenceNotes": [
+    "HTML and image bytes remain in ignored artifacts/frontend-research-20261017; the repository documentation contains only metadata and original observations.",
+    "Hashes identify retrieved bytes at the stated time, not immutable application releases.",
+    "Two Audacity images returned HTTP 403; no pixel-level observation claimed.",
+    "No third-party code, artwork or branding was copied into the Trace application.",
+    "Prior player research stays independently bound to docs/86 and its source manifest."
+  ]
+}
