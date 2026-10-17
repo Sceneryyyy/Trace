@@ -1,3 +1,4 @@
+import {AnalysisFeedback} from './WorkbenchFeedback'
 import './frontend.css'
 import {SpectrogramSettingsForm} from './SpectrogramPanel'
 import {defaultSpectrogramSettings} from '../spectrogramProtocol'
@@ -195,7 +196,7 @@ export default function App(): React.JSX.Element {
     const key=(event:KeyboardEvent)=>{
       const target=event.target as HTMLElement
       if(event.defaultPrevented||document.querySelector('[role="dialog"]:not(.library-panel)'))return
-      if(event.code!=='Escape'&&(target?.isContentEditable||['INPUT','TEXTAREA','SELECT'].includes(target?.tagName)||Boolean(target?.closest('.library-panel')&&['BUTTON','SUMMARY'].includes(target.tagName))))return
+      if(event.code!=='Escape'&&(target?.isContentEditable||['INPUT','TEXTAREA','SELECT'].includes(target?.tagName)||Boolean(target?.closest('.library-panel,.instrument-content')&&['BUTTON','SUMMARY'].includes(target.tagName))))return
       const file=current.current.playback
       if(busyRef.current&&event.code!=='Escape')return
       if(event.ctrlKey&&!event.altKey&&!event.metaKey&&event.code==='KeyD'){
@@ -226,6 +227,10 @@ export default function App(): React.JSX.Element {
   const finalizing=chrome.finalizing
   const format=chrome.format
   const sourceError=chrome.error||null
+  const captureError=state.error||(!file?sourceError:null)
+  const fileError=file?.error||(file&&!state.error?sourceError:null)
+  const operationError=message&&!(libraryOpen&&libraryError)&&!(fileError&&message.includes(fileError))&&!(captureError&&message.includes(captureError))?userError(message):''
+  const feedbackFile=file&&fileError!==file.error?{...file,error:fileError}:file
   const snapshotFailure=state.error?.startsWith('RECORD_SNAPSHOT_FAILED:')
   const multiRegion=(state.currentRecord?.regionCount||0)>1
   const history=Boolean(file?.temporary)
@@ -270,18 +275,22 @@ export default function App(): React.JSX.Element {
     <div className="trace-main" inert={libraryOpen&&libraryNarrow&&!modal?true:undefined}>
     <header className="topbar">
       <BrandLockup/>
-      <div className="top-status"><span className={'live-badge '+(isRecording?'is-rec':state.active?'is-live':'')}><i />{isRecording?'REC':state.active?'采集中':'待机'}</span><span className="preview-badge">开发预览</span><button className="header-settings" aria-label="测量目标" aria-pressed={targets.enabled} onClick={openTargets}>目标</button><button className="header-settings" aria-label="显示与帮助" onClick={openDisplay}>显示与帮助</button></div>
+      <div className="top-status"><span className={'live-badge '+(isRecording?'is-rec':state.active?'is-live':'')}><i />{isRecording?'REC':state.active?'采集中':'待机'}</span><span className="preview-badge">开发预览</span><button className="header-settings" aria-label="测量目标" aria-pressed={targets.enabled} onClick={openTargets}>目标</button><button className="header-settings" aria-label="显示与帮助" onClick={openDisplay}>设置与帮助</button></div>
     </header>
     {state.support?.previousInterrupted&&!dismissedRecovery&&<div className="error-banner" role="status"><strong>上次未正常退出</strong><span>请检查录音与恢复状态；可在帮助中导出诊断。</span><button onClick={()=>{showLibrary(true);setDismissedRecovery(true)}}>查看音频文件</button><button onClick={()=>setDismissedRecovery(true)}>关闭提示</button></div>}
     <div className="workbench-heading"><WorkbenchSourceBar inputs={viewInputs} file={file} busy={busy} run={run} inspectAt={inspectAt} changeWindow={changeWindow} changeDisplay={changeDisplay} setRecordWindow={setRecordWindow} isRecording={isRecording}/><div className="context-settings"><button className="device-summary" aria-label="采集设备设置" title={(selected?.label||'未选择设备')+(format?` · ${format.sampleRate/1000} kHz · ${format.channelCount===1?'单声道':'双声道'}`:'')} onClick={()=>setModal('device')}><span>{state.active?'采集中':state.monitoringRequested?'监测待恢复':'监测已停止'}</span><small>{format?format.sampleRate/1000+' kHz':'选择设备'}</small></button><button className="save-settings" aria-label="录音保存设置" disabled={busy||isRecording} onClick={()=>{setDraft(state.recordSettings||draft);setModal('settings')}}>{recordingLabel(state.recordSettings)}</button></div><WorkspaceToolbar value={workspace.value} change={workspace.change} error={workspace.error} retry={workspace.retry}/></div>
     {!workspace.value.locked&&<div className="layout-edit-hint" role="status"><span>拖动标题移动仪器 · 拖动分隔线调整大小</span><span>也可在仪器设置中选择“移动仪器”</span></div>}
     <TargetStripContainer inputs={viewInputs} settings={targets} wholeSummary={wholeSummary} file={file} isRecording={isRecording} multiRegion={multiRegion} configure={openTargets}/>
+    {feedbackFile&&!feedbackFile.temporary&&(feedbackFile.analysisPhase!=='ready'||feedbackFile.error?.startsWith('FILE_SNAPSHOT_FAILED:'))&&<section className="current-file-feedback" aria-label="当前文件分析任务" data-feedback-source={feedbackFile.id}><span title={feedbackFile.label}>{feedbackFile.label}</span><AnalysisFeedback file={feedbackFile} job={timelineJob} busy={busy||isRecording} retry={()=>run('playback.retryAnalysis',{playbackId:feedbackFile.id})}/></section>}
     <WorkspaceFrame inputs={viewInputs} file={file}>
       <TimelinePreviewProvider><InstrumentWorkspace value={workspace.value} change={workspace.change} settingsContent={settingsContent} contents={contents}/></TimelinePreviewProvider>
     </WorkspaceFrame>
     <SelectionStatsRow inputs={viewInputs} file={file} hidden={workspace.value.layout.hidden.includes('comparison')}/>
     {state.preferencesError&&<div className="error-banner" role="status"><strong>设置未保存</strong><span>设置文件暂时被占用或无法写入；已保留上次保存的配置。</span><button onClick={()=>void command('preferences.retry').catch(()=>{})}>重试保存</button></div>}
-    {(sourceError || file?.error || message) && <div className="error-banner" role="alert"><strong>需要处理</strong><span>{file?.error?(file.error.startsWith('FILE_SNAPSHOT_FAILED:')?userError(file.error):'回听输出不可用；历史数据仍可查看。'):snapshotFailure ? '录音数据更新失败，已停止本次录音并保留已写入的文件。请重新连接后重试。' : sourceError ? '声音来源暂不可用，请重试或选择其他设备。' : userError(message)}</span>{file&&!file.temporary&&(file.error?.startsWith('FILE_SNAPSHOT_FAILED:')||['failed','cancelled'].includes(file.analysisPhase))&&<button disabled={busy||isRecording} onClick={()=>run('playback.retryAnalysis',{playbackId:file.id})}>重新分析</button>}<button disabled={busy} onClick={()=>{showLibrary(true)}}>查看文件</button><button disabled={busy} onClick={()=>command('app.copyDiagnostics').then(()=>setCopied(true)).catch(()=>{})}>{copied?'已复制诊断':'复制诊断'}</button>{file?.error&&!file.error.startsWith('FILE_SNAPSHOT_FAILED:')&&<button disabled={busy||isRecording} onClick={()=>run('playback.play',{playbackId:file.id})}>重试回听</button>}{sourceError && state.deviceId && !isRecording && !file?.outputReady && <button onClick={() => run('live.start', { deviceId: state.deviceId })} disabled={busy}>重新连接</button>}</div>}
+    {captureError&&<div className="error-banner" role="alert" data-feedback-kind="capture"><strong>采集来源需要处理</strong><span>{snapshotFailure?'录音数据更新失败，已停止本次录音并保留已写入的文件。请重新连接后重试。':'声音来源暂不可用，请重试或选择其他设备。'}</span><button onClick={()=>setModal('device')}>采集设备</button>{snapshotFailure&&<button onClick={()=>showLibrary(true)}>查看录音</button>}{state.deviceId&&!isRecording&&!file?.outputReady&&<button disabled={busy} onClick={()=>run('live.start',{deviceId:state.deviceId})}>重新连接</button>}</div>}
+    {fileError&&!fileError.startsWith('FILE_SNAPSHOT_FAILED:')&&<div className="error-banner" role="alert" data-feedback-kind="file" data-feedback-source={file?.id}><strong>当前文件需要处理</strong><span>{userError(fileError)}；历史数据仍可查看。</span><button onClick={()=>showLibrary()}>查看文件</button><button disabled={busy||isRecording} onClick={()=>file&&run('playback.play',{playbackId:file.id})}>重试回听</button></div>}
+    {operationError&&<div className="error-banner" role="alert" data-feedback-kind="operation"><strong>操作未完成</strong><span>{operationError}</span><button disabled={busy} onClick={()=>command('app.copyDiagnostics').then(()=>setCopied(true)).catch(()=>{})}>{copied?'已复制诊断':'复制诊断'}</button><button onClick={()=>setMessage('')}>关闭提示</button></div>}
+
     <footer className="transport">
       <div className="transport-buttons" role="group" aria-label="走带控制">
         <button className="transport-icon file-home" aria-label="起点" title="起点（Home）：定位到当前文件或缓存开头" disabled={busy||!file} onClick={()=>file&&run('playback.seek',{playbackId:file.id,positionFrame:'0',resume:false})}><TransportIcon kind="start"/></button>
@@ -303,7 +312,7 @@ export default function App(): React.JSX.Element {
 
     <ContinuityBar inputs={viewInputs}/>
 
-    {notice&&!modal&&<OperationNotice notice={notice} busy={busy||isRecording} close={dismissNotice} open={()=>{
+    {notice&&!modal&&(notice.failed||notice.recovery||notice.setup||!captureError&&!fileError&&!operationError)&&<OperationNotice notice={notice} busy={busy||isRecording} close={dismissNotice} open={()=>{
       if(notice.setup){setDraft(state.recordSettings||draft);setModal('settings');dismissNotice();return}
       if(!notice.ready){showLibrary(Boolean(notice.recovery||notice.failed));dismissNotice();return}
       const take=state.recordings?.find(t=>t.id===notice.takeId),source=notice.exportId?{takeId:notice.takeId!,role:'export' as const,exportId:notice.exportId}:take?preferredSource(take):undefined
@@ -315,7 +324,7 @@ export default function App(): React.JSX.Element {
       if(e.defaultPrevented)return
       if(e.ctrlKey&&!e.altKey&&!e.metaKey&&e.key.toLowerCase()==='f'){e.preventDefault();e.stopPropagation();e.currentTarget.querySelector<HTMLInputElement>('input[aria-label="搜索音频文件"]')?.focus();return}
       if(e.key==='Escape'){e.preventDefault();e.stopPropagation();setLibraryOpen(false);return}
-      if(e.key==='Tab'&&libraryNarrow){const nodes=Array.from(e.currentTarget.querySelectorAll<HTMLElement>('button:not(:disabled),input:not(:disabled),select:not(:disabled),summary,[tabindex="0"]')).filter(node=>node.tabIndex>=0&&node.getClientRects().length>0);const first=nodes[0],last=nodes[nodes.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus()}}
+      if(e.key==='Tab'&&libraryNarrow){const nodes=Array.from(e.currentTarget.querySelectorAll<HTMLElement>('button:not(:disabled),input:not(:disabled),select:not(:disabled),summary,[tabindex="0"]')).filter(node=>node.tabIndex>=0&&node.checkVisibility());const first=nodes[0],last=nodes[nodes.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus()}}
     }}>
       <header><h2>音频文件</h2><small>选中后查看 · 双击回听</small><button aria-label="关闭音频文件" onClick={()=>setLibraryOpen(false)}>×</button></header>
       <RecordingLibrary state={state} busy={busy||isRecording} visible={libraryOpen&&!modal} attentionRequest={libraryAttention} pending={libraryPending} playbackError={libraryError} dismissError={()=>setLibraryError('')} run={run} request={command} onOpen={openLibrarySource} onExport={openExport}/>
@@ -323,7 +332,7 @@ export default function App(): React.JSX.Element {
     {modal && <div className="modal-backdrop" onMouseDown={e => { if(e.target===e.currentTarget&&!busy)setModal(null) }}>
       <section className={'trace-modal '+(modal==='reports'?'report-modal':'')} role="dialog" aria-modal="true" aria-labelledby="modal-title" onKeyDown={e => {
         if(e.key==='Escape'&&!busy)setModal(null)
-        if(e.key==='Tab'){const nodes=Array.from(e.currentTarget.querySelectorAll<HTMLElement>('button:not(:disabled),input:not(:disabled),select:not(:disabled),summary,[tabindex="0"]')).filter(node=>node.tabIndex>=0&&node.getClientRects().length>0);const first=nodes[0],last=nodes[nodes.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus()}}
+        if(e.key==='Tab'){const nodes=Array.from(e.currentTarget.querySelectorAll<HTMLElement>('button:not(:disabled),input:not(:disabled),select:not(:disabled),summary,[tabindex="0"]')).filter(node=>node.tabIndex>=0&&node.checkVisibility());const first=nodes[0],last=nodes[nodes.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus()}}
       }}>
         <header><h2 id="modal-title">{modal==='device'?'采集设备':modal==='settings'?'录音保存设置':modal==='export'?'导出音频':modal==='display'?'显示与帮助':modal==='targets'?'测量目标':modal==='reports'?'测量报告':'音频文件'}</h2><button aria-label="关闭对话框" onClick={()=>setModal(null)}>×</button></header>
         {modal==='device'?    <div className="settings-content device-settings">

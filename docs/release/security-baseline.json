@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-10-15T13:24:57.293516+00:00",
-  "packageLockSha256": "9afb18c09a8f3f9a8ba9b0f40d88ce6b3ed523087c923561fa824b4c3b86c751",
+  "checkedAt": "2026-10-17T12:55:23.889256+00:00",
+  "packageLockSha256": "417fc077d38e65779e73f63a36ecc397d254a28046c62693a69bfbffaaf69a62",
   "releaseReady": false,
   "npmDependencyGateReady": true,
   "allDependencies": {
@@ -21,7 +21,7 @@
     "total": 0
   },
   "scope": "Full npm advisory gate plus pinned Trace-source-codec provenance. Codec/Microsoft component security, licensing and physical release acceptance remain separate.",
-  "inventorySource": "preview.34 recording-library iteration; root version only, locked dependency versions unchanged from preview.33. Historical CI and codec provenance retained separately.",
+  "inventorySource": "preview.35 frontend simplification; only root package version changes from preview.34, locked dependencies unchanged. Historical codec/runtime provenance remains separately scoped.",
   "directToolchain": {
     "@electron/asar": "3.4.1",
     "@types/node": "24.12.0",

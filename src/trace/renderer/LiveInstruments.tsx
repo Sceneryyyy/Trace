@@ -127,7 +127,7 @@ export const TimelineInstrument=memo(function TimelineInstrument(props:TimelineI
   onWindow:(startFrame:string,endFrame:string)=>{if(file)changeWindow({playbackId:file.id,startFrame,endFrame,pixelWidth:900});else if(isRecording)setTimeSpan(Math.max(5,Math.min(60,Number(BigInt(endFrame)-BigInt(startFrame))/1e9)))},
   onGain:(value:number)=>changeDisplay('gain',value),
   onSeconds:setTimeSpan,
-  feedback:file?<AnalysisFeedback file={file} job={job} busy={busy||isRecording} retry={()=>run('playback.retryAnalysis',{playbackId:file.id})}/>:undefined,
+  feedback:file?<AnalysisFeedback compact file={file} job={job} busy={busy||isRecording} retry={()=>run('playback.retryAnalysis',{playbackId:file.id})}/>:undefined,
  }
  return <TimelineMenu hasSelection={Boolean(file?.selection)} clear={()=>file&&run('playback.clearSelection',{playbackId:file.id})}>
   {kind==='spectrogram'?<SpectrogramPanel settings={settings} change={change} isVisible={isVisible} {...timelineProps} kind="spectrogram"/>:<Timeline {...timelineProps}/>}
