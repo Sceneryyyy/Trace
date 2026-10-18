@@ -1,10 +1,12 @@
 # 08 · 验收计划与完成门槛
 
+2026-10-18 验收入口补齐：录音列表 L86 的具体行为/实机补验见 [87](archive/iterations/87-RECORDING-LIBRARY-ITERATION.md)；前端精简 UI88-00～09 的门槛见 [88](archive/iterations/88-FRONTEND-SIMPLIFICATION-PLAN.md) §6–8，云端完成证据见 [89](89-FRONTEND-SIMPLIFICATION-ITERATION.md) 与 [验证 JSON](release/frontend-verification.json)。完整发布继续逐项使用 [76](76-RELEASE-CHECKLIST.md)，不把界面模拟通过视作 A01–A14 或实机门禁全部关闭。
+
 ## 新仪器迭代验收入口
 
-2026-09-16：M7–M12 的扩展验收 A15–A27 见 [38-DEVELOPMENT-PLAN](38-DEVELOPMENT-PLAN.md) 第 11 节，覆盖布局生命周期、时频/声场数值与历史重复性、2D/3D 一致、目标/报告、外部文件/参考及资源/视觉。该日期这些项目尚待实施；后续 M7–M12 已完成工程交付，阶段验收与剩余人工/环境项目见 [56](56-M12-COMPLETION-AUDIT.md)、[57](57-M12-FINAL-REVIEW.md)。本文 A01–A14 仍作为基础回归与发布范围。
+2026-09-16：M7–M12 的扩展验收 A15–A27 见 [38-DEVELOPMENT-PLAN](archive/iterations/38-DEVELOPMENT-PLAN.md) 第 11 节，覆盖布局生命周期、时频/声场数值与历史重复性、2D/3D 一致、目标/报告、外部文件/参考及资源/视觉。该日期这些项目尚待实施；后续 M7–M12 已完成工程交付，阶段验收与剩余人工/环境项目见 [56](archive/iterations/56-M12-COMPLETION-AUDIT.md)、[57](archive/iterations/57-M12-FINAL-REVIEW.md)。本文 A01–A14 仍作为基础回归与发布范围。
 
-preview.9 的历史已测/未测项目见 36；最新源码/包状态见 [13](13-HANDOFF.md)，M13 扩展验收见 [71](71-INSTRUMENT-THEMES-PLAN.md)、[72](72-INSTRUMENT-THEMES-REVIEW.md)；下方里程碑文字保留历史状态，不覆盖最新交付。新功能进度不自动关闭 EBU、96 kHz、设备切换、真实混合 DPI、干净 Windows/VM 和用户人工验收项。
+preview.9 的历史已测/未测项目见 36；最新源码/包状态见 [13](13-HANDOFF.md)，M13 扩展验收见 [71](archive/iterations/71-INSTRUMENT-THEMES-PLAN.md)、[72](archive/iterations/72-INSTRUMENT-THEMES-REVIEW.md)；下方里程碑文字保留历史状态，不覆盖最新交付。新功能进度不自动关闭 EBU、96 kHz、设备切换、真实混合 DPI、干净 Windows/VM 和用户人工验收项。
 
 ## 既有验收定义与记录
 
@@ -75,10 +77,10 @@ LIVE 算法/显示缓存在稳定后不随运行时长线性增长；完整文�
 
 ## R83 P0 / P1 云端门禁
 
-按 [84](84-P0-P1-CLOUD-ITERATION.md) 的实际证据验证：真实进程树取消/强杀/主进程退出及重试，原生写盘慢检查点背压，FFT 数值不变，概览峰值/混合质量/原始悬停与跨素材配额，有界长文件视图，显示配置迁移，保守回听匹配，标记持久化/来源改变拒绝跳转，SVG/PNG 轴与元数据，以及分布/动态比值质量排除。
+按 [84](archive/iterations/84-P0-P1-CLOUD-ITERATION.md) 的实际证据验证：真实进程树取消/强杀/主进程退出及重试，原生写盘慢检查点背压，FFT 数值不变，概览峰值/混合质量/原始悬停与跨素材配额，有界长文件视图，显示配置迁移，保守回听匹配，标记持久化/来源改变拒绝跳转，SVG/PNG 轴与元数据，以及分布/动态比值质量排除。
 
 云端 Windows 原生编译/故障与模拟浏览器操作不能替代真实 WASAPI、声卡 96 kHz、长录、慢盘/满盘、断电、驱动/GPU及听感；这些门禁继续单列。
 
 ## preview.33 复核回归
 
-[85](85-CODE-DOCUMENT-REVIEW.md) 增加旧源码反例对照、外部链接/临时文件保护、已登记缓存内容替换与未知隔离文件、IPC 资源上限、录音准备与复核交叠、独立选区报告、匹配音量恢复、解码前 PNG 尺寸和 CSV 文本中和检查。原生 Recorder 冻结质量由 Windows CTest 核对。此类云端夹具继续与实体采集、操作系统链接权限及电子表格应用验收区分。
+[85](archive/iterations/85-CODE-DOCUMENT-REVIEW.md) 增加旧源码反例对照、外部链接/临时文件保护、已登记缓存内容替换与未知隔离文件、IPC 资源上限、录音准备与复核交叠、独立选区报告、匹配音量恢复、解码前 PNG 尺寸和 CSV 文本中和检查。原生 Recorder 冻结质量由 Windows CTest 核对。此类云端夹具继续与实体采集、操作系统链接权限及电子表格应用验收区分。

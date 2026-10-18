@@ -1,6 +1,6 @@
 # 79 · Trace 独立工程
 
-2026-10-03。按用户确认的顺序完成工程入口隔离、测试与 CI 迁移、FFT 本地维护、上游工程清理。源码仍为 **preview.31**，Meter v5 的算法、参考值、容差与产品范围保持。独立化阶段的通过记录保留原提交身份；后续依赖与编码回归见 [80](80-RELEASE-DEPENDENCY-HARDENING.md)，当前状态见 [13](13-HANDOFF.md)。
+2026-10-03。按用户确认的顺序完成工程入口隔离、测试与 CI 迁移、FFT 本地维护、上游工程清理。源码仍为 **preview.31**，Meter v5 的算法、参考值、容差与产品范围保持。独立化阶段的通过记录保留原提交身份；后续依赖与编码回归见 [80](archive/iterations/80-RELEASE-DEPENDENCY-HARDENING.md)，当前状态见 [13](13-HANDOFF.md)。
 
 ## 独立化的边界
 

@@ -45,6 +45,6 @@ node tools/release/dependency-sources.cjs --fetch --require-complete
 2026-10-09 的 MSYS 运行库身份更新及源码重建已核验，原 EXE/config/recipe 保持。
 2026-10-11 完整 CI 复用同 pin 的构建缓存，再次严格核验报告、实际 EXE、配置与
 系统输入清单；不声称本次重新编译或核验当前主机的工具文件。
-最新文件/故障矩阵、实际 CI 摘要及候选身份见 [82](../../docs/82-FILE-FAULT-TESTING.md)
+最新文件/故障矩阵、实际 CI 摘要及候选身份见 [82](../../docs/archive/iterations/82-FILE-FAULT-TESTING.md)
 与 [当前交接](../../docs/13-HANDOFF.md)。旧附件只有通过当前完整身份核验才可复用；
 旧报告与当前 lock 不匹配时应重新构建，不能混用证明。

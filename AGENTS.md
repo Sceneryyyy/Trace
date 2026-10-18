@@ -2,19 +2,19 @@
 
 产品名称已确认：英文 **Trace**，中文 **声迹**；界面品牌展示 **TRACE**，英文副标题 **Audio Recorder & Analyzer**，中文完整展示 **Trace 声迹 · 音频分析录音机**。正文使用 Trace；保留上游 Prism 名称、许可和来源记录。
 
-2026-09-17 品牌层级补充：**LeoMoon 为系列品牌，TRACE 为个体产品名**。顶部保留 LeoMoon 字标和狮子月牙标识，Trace 使用绿色至青色配色；不得把狮子月牙改为声波新图形。品牌素材与接入见 docs/61-LEOMOON-TRACE-BRANDING.md。2026-09-28 用户确认：仪表主题（docs/71）只让 TRACE 小字随主题变色，狮子月牙、应用图标和 LeoMoon 字标保持不变。
+2026-09-17 品牌层级补充：**LeoMoon 为系列品牌，TRACE 为个体产品名**。顶部保留 LeoMoon 字标和狮子月牙标识，Trace 使用绿色至青色配色；不得把狮子月牙改为声波新图形。品牌素材与接入按需见 docs/archive/iterations/61-LEOMOON-TRACE-BRANDING.md。2026-09-28 用户确认：仪表主题（历史方案 docs/archive/iterations/71-INSTRUMENT-THEMES-PLAN.md）只让 TRACE 小字随主题变色，狮子月牙、应用图标和 LeoMoon 字标保持不变。
 
 本文件供后续 Codex 开发会话使用。用户当前指令优先；本文件不要求更改个人全局设置、批准策略或其他项目的规则。
 
 ## 开始与结束
 
 - 2026-09-30 用户确认：`feature/instrument-themes` 已合入 `recorder/dev`；后续开发默认继续在 `recorder/dev`，除非用户另行指定分支。
-- 首次读 `docs/01-PRODUCT.md`、`docs/02-ARCHITECTURE.md`、`docs/07-BACKLOG.md` 和 `docs/13-HANDOFF.md`；音频修改加读 03，存储加读 04，界面加读 05，接口加读 06。
-- 全部文档导航见 `docs/README.md`。当前状态以 `docs/13-HANDOFF.md` 为准；`docs/archive/13-HANDOFF-HISTORY.md` 与带日期的阶段记录仅是历史证据。源码版本与已验证分发包分别记录。
+- 默认只读 `docs/13-HANDOFF.md` 与 `docs/07-BACKLOG.md`；再按任务读取：需求 01、跨模块架构 02、音频 03、存储 04、界面 05/28、接口 06，其他用 `docs/README.md` 的任务阅读表。不要按编号通读。
+- 当前状态以 `docs/13-HANDOFF.md` 为准，待办只看 07。`docs/archive/`、`docs/release/` 的大型验证 JSON 与历史调研默认不读取；仅在定位具体回归/来源/旧包时搜索对应文件或字段，不递归 cat。常规文档搜索先排除 `docs/archive/**`，需要历史证据时再显式检索；归档索引为 `docs/archive/README.md`。源码版本与已验证包分别记录。
 - 先检查实际目录、Git 状态、适用的项目指令和构建脚本。文档中的拟新增命令不能当成已经存在。
 - 以小而完整的任务推进；完成所选任务的实现、必要验证、文档和接力记录。不要只返回计划，也不要因上下文将满而丢失状态。
 - 结束时写明变更、已跑检查、未跑检查、实际阻塞和下一任务；同步 `docs/13-HANDOFF.md`。提交和远程操作遵循用户已有授权及仓库规则。
-- vstdev 只作参考，未提供/未找到时标为未对齐，不猜测其技术栈、不改动它。参见 10。
+- vstdev 只作参考，未提供/未找到时标为未对齐，不猜测其技术栈、不改动它；旧核查按需见归档 10。
 
 ## 产品不可偏离项
 

@@ -7,4 +7,6 @@
 
 WAV 录音允许 `sampleRate:'source'`，导出预设需解析成数值采样率；MP3/AAC 只允许 44.1/48 kHz。当前没有 VBR/抖动选项。录音参数含 namePrefix/keepOriginal，导出参数不含这两项；字段定义见 [recordSettings.ts](../src/trace/recordSettings.ts)、[mediaTypes.ts](../src/trace/mediaTypes.ts) 和 [06](../docs/06-CONTRACTS.md)。
 
+2026-10-18 对照 preview.35 复核：6 个录音设置、5 个导出预设通过实际校验器；Session v2 的帧数、纳秒时长和 unknown 质量保持。旧示例结构仍兼容，不为前端改版升级 schema；检查见 [90](../docs/archive/iterations/90-WORK-DOCUMENTATION-REVIEW.md)。
+
 早期 example schema v1 已被这些现行示例替代，可从 Git 历史追溯。

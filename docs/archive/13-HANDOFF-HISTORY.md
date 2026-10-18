@@ -4,7 +4,7 @@
 
 ## 历史：云端修复五项问题及两项旧缺口，回归通过（2026-10-02）
 
-按用户授权，已修正 [73](../73-CLOUD-CODE-REVIEW.md) 的 R1–R5：selector 相等输出复用、导出来源质量继承/持久化、原生内存缓存按帧质量及保存/重载、报告事件跳转释放输出并恢复监听、录音和缓存准备失败统一恢复后台另存。还补上 68 的估计静音/未知质量提示，以及 72-R3 首帧缺失 paint 不能 PASS 的断言。ReplayFreeze 元数据升至 v3，quality v1；Session/ExportResult 兼容可选质量字段，旧内存数据缺失质量标为 unknown。03/04/05/06 已同步。版本仍 preview.31；用户随后授权将本轮修复、测试和审核记录提交到本地 Git，本轮交付为 `recorder/dev` 上的本地提交，未推送或打包。提交前空白检查通过，沿用下述已通过验证。
+按用户授权，已修正 [73](iterations/73-CLOUD-CODE-REVIEW.md) 的 R1–R5：selector 相等输出复用、导出来源质量继承/持久化、原生内存缓存按帧质量及保存/重载、报告事件跳转释放输出并恢复监听、录音和缓存准备失败统一恢复后台另存。还补上 68 的估计静音/未知质量提示，以及 72-R3 首帧缺失 paint 不能 PASS 的断言。ReplayFreeze 元数据升至 v3，quality v1；Session/ExportResult 兼容可选质量字段，旧内存数据缺失质量标为 unknown。03/04/05/06 已同步。版本仍 preview.31；用户随后授权将本轮修复、测试和审核记录提交到本地 Git，本轮交付为 `recorder/dev` 上的本地提交，未推送或打包。提交前空白检查通过，沿用下述已通过验证。
 
 已跑：最终 typecheck、portable **233/233（47 文件、0 fail/skip）**、Trace 构建；新增 13 项跨模块回归中，真实 DeliveryService 完成失败后另存，真实保存服务经重载/回听/报告保留质量。真实 React + Chromium 订阅回归通过，相同 30 个快照下顶栏额外 render 从旧代码 30 次降到 0；props/数值变化仍更新。新增可移植 C++ quality 测试 10 cases 通过，覆盖四采样率单双声道、精确选区、环绕、固定/重置、发布前缀及旧数据。日志 `artifacts/cloud-regression/logs/`；详见 73 顶部修复节。
 
@@ -12,7 +12,7 @@
 
 ## 历史：云环境代码审核完成，五项 P2 待修（2026-10-02）
 
-用户因当前只有云环境，将“三分钟 YouTube + Trace 自由操作/截图”验收改为代码完整审核。本轮基线 `recorder/dev@d2981fd`（preview.31），详细发现、复现与边界见 [73-CLOUD-CODE-REVIEW](../73-CLOUD-CODE-REVIEW.md)。确认五项 P2：selector 在新快照上不复用相等输出；导出回听丢失原采集 continuity；保存内存缓存不保留估计静音质量；报告事件跳转保留暂停输出导致按钮/监听状态不一致；设备启动失败后遗漏后台另存恢复。另复核 68 的估计静音无界面提示与 72-R3 首帧测试允许 paint=null，均仍未关闭。
+用户因当前只有云环境，将“三分钟 YouTube + Trace 自由操作/截图”验收改为代码完整审核。本轮基线 `recorder/dev@d2981fd`（preview.31），详细发现、复现与边界见 [73-CLOUD-CODE-REVIEW](iterations/73-CLOUD-CODE-REVIEW.md)。确认五项 P2：selector 在新快照上不复用相等输出；导出回听丢失原采集 continuity；保存内存缓存不保留估计静音质量；报告事件跳转保留暂停输出导致按钮/监听状态不一致；设备启动失败后遗漏后台另存恢复。另复核 68 的估计静音无界面提示与 72-R3 首帧测试允许 paint=null，均仍未关闭。
 
 已跑：typecheck、portable 219/219、Trace 构建、采集支持元数据 3/3；Linux 直接编译未改动的可移植 C++ 测试，core 16/16、生成 EBU 参考 18/18、TP 时间 233/233、并行 meter 初始化、instrument 3736 checks、spectrogram tile 20 cases 均通过。真实业务模块配明确 mock 完成四项专项复现；真实 React hook 在 headless Chromium 中证明相同选择值仍额外 render 30 次。测试日志及生成夹具在忽略目录 `artifacts/cloud-audit/`。没有改产品代码、已有测试或版本，未提交、推送或打包。
 
@@ -26,7 +26,7 @@
 
 ## 历史：M13 审计 R1/R2 已修复并通过工程复验（2026-09-30）
 
-用户要求修复 [72](../72-INSTRUMENT-THEMES-REVIEW.md) 中的第 1、2 项 P2。R1 增加独立的 renderer 读数可用状态，保留既有故障数值清空，统一 I/M/S、电平和摘要的“无数据／分析中／重新连接／测量中”；健康文件不受后台 LIVE 错误影响，静音仍为 `−∞`。R2 让显示设置入口聚焦已选中的主题卡，并让焦点入口/Tab 边界尊重 `tabIndex`。新增 portable 五项状态检查及实际 Electron 入口/故障接线检查，原主题 flow 不再先手动聚焦选中卡。
+用户要求修复 [72](iterations/72-INSTRUMENT-THEMES-REVIEW.md) 中的第 1、2 项 P2。R1 增加独立的 renderer 读数可用状态，保留既有故障数值清空，统一 I/M/S、电平和摘要的“无数据／分析中／重新连接／测量中”；健康文件不受后台 LIVE 错误影响，静音仍为 `−∞`。R2 让显示设置入口聚焦已选中的主题卡，并让焦点入口/Tab 边界尊重 `tabIndex`。新增 portable 五项状态检查及实际 Electron 入口/故障接线检查，原主题 flow 不再先手动聚焦选中卡。
 
 已跑：`node tools/trace.cjs check`（typecheck、portable 219/219、native 49/49、采集支持 3/3、响度原生 6/6 全过）；当前源码 appbuild；`node tools/themes/theme-readout-focus.cjs` 四组全过（五套主题入口、空格/正反向 Tab/方向键/Esc，故障读数、恢复、逐项静音/缺口/未就绪）。截图已检查；测试使用生成夹具和 renderer 快照注入，未重跑真实录音、拔设备、96 kHz 或打包验收。证据和实现边界见 72 末节。
 
@@ -34,7 +34,7 @@
 
 ## 历史：M13 独立审计完成，三项 P2 待修（2026-09-30）
 
-审计实现提交 `2938c8e` 与文档提交 `07d44e1`，比较基线 `7d38357`；开始时工作区干净。完整发现、复现与证据见 [72-INSTRUMENT-THEMES-REVIEW](../72-INSTRUMENT-THEMES-REVIEW.md)。确认：① 来源故障导致 `numberMetrics=null` 时，新增 I/M/S 标签错误显示“测量中”，未接入“无数据”；② 非默认主题打开显示设置，初始焦点落到未选中的绿色卡，空格会意外预览；③ flow 首帧断言将 `paint=null` 计为 PASS，不能证明无闪帧。本轮没有改产品或已提交的测试代码，只新增审计文档并更新本接力；未提交、推送、合并或打包。此前用户开发构建验收保留，新增缺陷单独跟踪。
+审计实现提交 `2938c8e` 与文档提交 `07d44e1`，比较基线 `7d38357`；开始时工作区干净。完整发现、复现与证据见 [72-INSTRUMENT-THEMES-REVIEW](iterations/72-INSTRUMENT-THEMES-REVIEW.md)。确认：① 来源故障导致 `numberMetrics=null` 时，新增 I/M/S 标签错误显示“测量中”，未接入“无数据”；② 非默认主题打开显示设置，初始焦点落到未选中的绿色卡，空格会意外预览；③ flow 首帧断言将 `paint=null` 计为 PASS，不能证明无闪帧。本轮没有改产品或已提交的测试代码，只新增审计文档并更新本接力；未提交、推送、合并或打包。此前用户开发构建验收保留，新增缺陷单独跟踪。
 
 本轮已跑：`node tools/trace.cjs check`（typecheck、portable 214/214、native 49/49、采集支持 3/3、响度原生 6/6 全通过）；当前源码 appbuild；Electron 主题正常 flow（显式跳过 WASAPI 录音）及 renderer 边界复现。正常应用/取消、顶层偏好保存、preview.30 降级读取、五主题固定游标读数与声谱请求不变均通过；200 次切换渲染堆增长约 0.60 MiB。首帧子项虽被脚本标为 PASS，本轮实际 `paint=null`，审计结论为未验证。恢复界面会先应用创建窗口时的旧 query 主题再恢复当前主题；本次两次应用均早于 first-paint，尚未复现可见闪帧。
 
@@ -44,7 +44,7 @@
 
 2026-09-30：用户在本机开发构建上验收确认无误，并接受默认主题三处新增差异（71 D5）。改动已在 `feature/instrument-themes` 本地提交，**未推送**、未合并回 `recorder/dev`、未打包。下一任务：用户授权后推送/合并；按需补 3D 声谱游标三角并打包 preview.31 内测包。以下为 2026-09-28 实施记录。
 
-2026-09-28：在 `feature/instrument-themes`（基于 `recorder/dev@7d38357`）完成 TH-T0–T5 工程部分，详见 [71](../71-INSTRUMENT-THEMES-PLAN.md) 第 10 节。颜色唯一来源 `src/trace/instrumentThemes.ts`，运行时 `renderer/themeRuntime.ts`；五套主题 `trace-green/graphite/ember/ocean/duo`；顶层偏好 `instrumentTheme` 加白名单命令 `view.theme`；电平 −6/−1 dBFS 分区、OVER、读数三态、游标三角、⚠ 注意；“显示与帮助”中新增色卡组。
+2026-09-28：在 `feature/instrument-themes`（基于 `recorder/dev@7d38357`）完成 TH-T0–T5 工程部分，详见 [71](iterations/71-INSTRUMENT-THEMES-PLAN.md) 第 10 节。颜色唯一来源 `src/trace/instrumentThemes.ts`，运行时 `renderer/themeRuntime.ts`；五套主题 `trace-green/graphite/ember/ocean/duo`；顶层偏好 `instrumentTheme` 加白名单命令 `view.theme`；电平 −6/−1 dBFS 分区、OVER、读数三态、游标三角、⚠ 注意；“显示与帮助”中新增色卡组。
 
 已跑：`node tools/trace.cjs check` 全过（portable 214/214，含新增 `test/instrument-themes.test.mjs` 6 项；native 49/49；采集支持 3/3；响度原生 6/6）；T1 与 preview.30 基线 9 个场景逐像素一致；`tools/themes/theme-ui.cjs` 截图矩阵（9 个场景 × 5 个主题 1×，默认主题另跑 1.5×/2×）；`tools/themes/theme-flow.cjs` 9/9（键盘、持久化、五个主题读数一致、声谱不重算、200 次切换堆增长约 0.8 MiB、WASAPI 录音在切换中不断、重启首帧前应用、preview.30 降级读取）；M7 工作台检查（开发构建）默认主题 3 种缩放与四个新主题 1× 均为 11/11。
 
@@ -52,7 +52,7 @@
 
 ## 历史：仪表主题色 M13 方案
 
-2026-09-28：用户要求在绿色之外增加可选仪表主题（石墨灰、黄橙渐变、海蓝），并基于 `recorder/dev` 开发。已从 `recorder/dev@7d38357` 创建本地分支 `feature/instrument-themes`，方案见 [71](../71-INSTRUMENT-THEMES-PLAN.md)。同日按 UI/UX 评审修订为 v1.1：五套主题（新增色弱友好 `duo`）、电平按 dB 分区加 OVER 标记、以线型为第一保障、主题存为顶层偏好并使用新命令 `view.theme`（保证降级兼容）、色值经对比度/ΔE2000/色弱模拟实测。本次只写文档，没有修改代码，也没有运行项目测试；尚未提交或推送。下一任务是 TH-T0（记录基线检查结果和截图），然后做 TH-T1（颜色 token 化，不产生视觉变化）。第 6 节四项决定已由用户确认（方案 v1.2）：TRACE 小字跟随主题；电平阈值 −6/−1 dBFS；默认主题接受 6 处预期差异；ember 下“注意”保持琥珀色加图标。61 和 `AGENTS.md` 的品牌说明已同步。已无待确认项，可以开始 TH-T0。
+2026-09-28：用户要求在绿色之外增加可选仪表主题（石墨灰、黄橙渐变、海蓝），并基于 `recorder/dev` 开发。已从 `recorder/dev@7d38357` 创建本地分支 `feature/instrument-themes`，方案见 [71](iterations/71-INSTRUMENT-THEMES-PLAN.md)。同日按 UI/UX 评审修订为 v1.1：五套主题（新增色弱友好 `duo`）、电平按 dB 分区加 OVER 标记、以线型为第一保障、主题存为顶层偏好并使用新命令 `view.theme`（保证降级兼容）、色值经对比度/ΔE2000/色弱模拟实测。本次只写文档，没有修改代码，也没有运行项目测试；尚未提交或推送。下一任务是 TH-T0（记录基线检查结果和截图），然后做 TH-T1（颜色 token 化，不产生视觉变化）。第 6 节四项决定已由用户确认（方案 v1.2）：TRACE 小字跟随主题；电平阈值 −6/−1 dBFS；默认主题接受 6 处预期差异；ember 下“注意”保持琥珀色加图标。61 和 `AGENTS.md` 的品牌说明已同步。已无待确认项，可以开始 TH-T0。
 
 ## 仓库首页：已改为 Trace 产品说明
 
@@ -64,19 +64,19 @@
 
 ## 历史：preview.30 / InternalTest-r3 已打包，可交同事内测
 
-2026-09-24：以干净本地提交 `9c1ee21` 为来源重新构建 preview.30，生成新的 R3 内测 ZIP，未覆盖 preview.29 R2。大小、SHA256、解压验证和 M7 新包 10 阶段结果见 [69](../69-INTERNAL-TEST-R3.md)。独立程序与同事内测包均在 `dist-trace/`；建议分发带 PDF、说明和校验文件的 R3 内测包。远程 CI 按用户决定暂缓，独立干净 Windows 与声卡矩阵仍需同事实测。
+2026-09-24：以干净本地提交 `9c1ee21` 为来源重新构建 preview.30，生成新的 R3 内测 ZIP，未覆盖 preview.29 R2。大小、SHA256、解压验证和 M7 新包 10 阶段结果见 [69](iterations/69-INTERNAL-TEST-R3.md)。独立程序与同事内测包均在 `dist-trace/`；建议分发带 PDF、说明和校验文件的 R3 内测包。远程 CI 按用户决定暂缓，独立干净 Windows 与声卡矩阵仍需同事实测。
 
 ## 历史：三项 P1、M7 与分批提交已完成；远程 CI 暂缓
 
 2026-09-24：用户确认暂不远程提交，实际 Windows CI 验证本阶段暂缓。除远程 CI 外，本轮目标已完成；继续开发时不要把本机验证写成远程 CI 通过，也不要为触发 CI 擅自推送上游。恢复远程验证时，先确定可写的 Trace 仓库和目标分支。
 
-2026-09-24：针对 [68](../68-INDEPENDENT-CHANGE-REVIEW.md) 的三个 P1 完成修正：保留策略在中断/保存失败后恢复幸存源文件可见性；Windows CI 显式准备 Electron SDK 和上游 DSP；文件 worker 使用事件循环心跳避免健康长任务被 180 秒空闲计时误杀。反例已纳入测试。`tools/trace.cjs check` 全过（portable 208、native 49，另有采集支持 3、响度原生 6）；原生 DSP 重建成功，Trace 引擎 15/15 CTest 通过；M7 完整界面检查在 1×、1.5×、2× 缩放各 11/11 通过。仍须在可写 GitHub 仓库上实际触发 Windows CI，不能把本机结果写成远程 CI 结果。68 中另列的估计静音界面提示与 60 秒退出看门狗专项验证尚未包含在本次三个 P1 修复内；原生同步量化/恢复不能发送事件循环心跳，保留显式取消与退出界限。
+2026-09-24：针对 [68](iterations/68-INDEPENDENT-CHANGE-REVIEW.md) 的三个 P1 完成修正：保留策略在中断/保存失败后恢复幸存源文件可见性；Windows CI 显式准备 Electron SDK 和上游 DSP；文件 worker 使用事件循环心跳避免健康长任务被 180 秒空闲计时误杀。反例已纳入测试。`tools/trace.cjs check` 全过（portable 208、native 49，另有采集支持 3、响度原生 6）；原生 DSP 重建成功，Trace 引擎 15/15 CTest 通过；M7 完整界面检查在 1×、1.5×、2× 缩放各 11/11 通过。仍须在可写 GitHub 仓库上实际触发 Windows CI，不能把本机结果写成远程 CI 结果。68 中另列的估计静音界面提示与 60 秒退出看门狗专项验证尚未包含在本次三个 P1 修复内；原生同步量化/恢复不能发送事件循环心跳，保留显式取消与退出界限。
 
-原先位于仓库外 `TraceDev/docs/` 的两份审计报告已纳入 [66](../66-FRONTEND-AUDIT.md) 和 [67](../67-CODE-AUDIT-PREVIEW29.md)。三批已分别提交：R2 `25aa347`、前端/M7 `e797f39`、测试与 P1 `e97f96d`。当前唯一远程 `Boof2015/prism` 为上游只读（连接账号 `push: false`），尚无可写仓库可推送并触发 CI；需要可写 GitHub 目标。以下旧段落仅留作历史。
+原先位于仓库外 `TraceDev/docs/` 的两份审计报告已纳入 [66](iterations/66-FRONTEND-AUDIT.md) 和 [67](iterations/67-CODE-AUDIT-PREVIEW29.md)。三批已分别提交：R2 `25aa347`、前端/M7 `e797f39`、测试与 P1 `e97f96d`。当前唯一远程 `Boof2015/prism` 为上游只读（连接账号 `push: false`），尚无可写仓库可推送并触发 CI；需要可写 GitHub 目标。以下旧段落仅留作历史。
 
 ## 历史：65 号交接已做独立复核，暂不合并当前工作树
 
-2026-09-23：复核结论见 [68](../68-INDEPENDENT-CHANGE-REVIEW.md)。portable 202 项、native 49 项、当前源码 TypeScript/Trace 构建和短 UI/WASAPI 流程通过；M7 陈旧失败在旧 preview.28 与当前源码同位置出现。隔离复现了 retention 的两个残留反例：幸存文件仍可被 `removing` 隐藏。另发现新 Windows CI 缺 SDK/DSP 构建前置条件、180 s worker 超时对无进度长任务会误杀、估计静音虽传到文件快照但界面未提示；60 s 退出看门狗的触发与日志落盘也未验证。当前工作树混合三批未提交改动；本次仅新增复核文档并更新接力入口，未修业务代码、提交或重打包。建议先处理三个 P1，再补端到端验证与 CI 实跑。
+2026-09-23：复核结论见 [68](iterations/68-INDEPENDENT-CHANGE-REVIEW.md)。portable 202 项、native 49 项、当前源码 TypeScript/Trace 构建和短 UI/WASAPI 流程通过；M7 陈旧失败在旧 preview.28 与当前源码同位置出现。隔离复现了 retention 的两个残留反例：幸存文件仍可被 `removing` 隐藏。另发现新 Windows CI 缺 SDK/DSP 构建前置条件、180 s worker 超时对无进度长任务会误杀、估计静音虽传到文件快照但界面未提示；60 s 退出看门狗的触发与日志落盘也未验证。当前工作树混合三批未提交改动；本次仅新增复核文档并更新接力入口，未修业务代码、提交或重打包。建议先处理三个 P1，再补端到端验证与 CI 实跑。
 
 ## 历史：测试接入 CI 与 P0 修复已完成（全部改动未提交）
 
@@ -94,7 +94,7 @@
 
 ## 历史：preview.29 同事内测 R2 包已交付（代码仍未提交）
 
-2026-09-20：前端迭代（见下条）经用户目视验收通过后，打包为 InternalTest-r2。交付 `dist-trace/internal-test/LeoMoon-Trace-preview.29-InternalTest-r2-Windows-x64.zip`，210,506,908 bytes，SHA256 `421e1cdd3c17e0d7af59daba85f5c0c27e42663c57d0bc3f96728eb2d7fc88f1`，105 文件。版本升至 0.1.0-preview.29（`src/trace/product.ts`、`electron-builder.trace.cjs`，输出 `dist-trace/preview.29`）。package-audit / 解压逐文件哈希 / package-smoke / single-instance 全过；详见 [64](../64-INTERNAL-TEST-R2.md)。内测 TXT 文档已更新为 r2 口径；PDF 手册沿用 preview.28。
+2026-09-20：前端迭代（见下条）经用户目视验收通过后，打包为 InternalTest-r2。交付 `dist-trace/internal-test/LeoMoon-Trace-preview.29-InternalTest-r2-Windows-x64.zip`，210,506,908 bytes，SHA256 `421e1cdd3c17e0d7af59daba85f5c0c27e42663c57d0bc3f96728eb2d7fc88f1`，105 文件。版本升至 0.1.0-preview.29（`src/trace/product.ts`、`electron-builder.trace.cjs`，输出 `dist-trace/preview.29`）。package-audit / 解压逐文件哈希 / package-smoke / single-instance 全过；详见 [64](iterations/64-INTERNAL-TEST-R2.md)。内测 TXT 文档已更新为 r2 口径；PDF 手册沿用 preview.28。
 
 注意：全部改动（前端迭代 + 版本号 + r2 文档/脚本）**仍未提交**；用户授权后一并提交。新增文件：`src/trace/renderer/snapshotStore.ts`、`viewModel.ts`、`LiveInstruments.tsx`、`tools/package-internal-test-r2.cjs`、`docs/64-INTERNAL-TEST-R2.md`。本轮 M7 workspace-ui 基线失败（见下条）仍未修。
 
@@ -124,7 +124,7 @@
 
 ## 历史：preview.28 同事内测分发修订 r1 已就绪
 
-2026-09-17：按用户要求准备同事内测 ZIP，程序沿用 preview.28，补入 PDF 快速上手、最新 README、首次使用说明、试用清单、已知限制、反馈模板、许可/来源和校验信息。详情见 [63](../63-INTERNAL-TEST-DISTRIBUTION.md)。未更改业务代码、重编译或覆盖旧包，未代发/上传。
+2026-09-17：按用户要求准备同事内测 ZIP，程序沿用 preview.28，补入 PDF 快速上手、最新 README、首次使用说明、试用清单、已知限制、反馈模板、许可/来源和校验信息。详情见 [63](iterations/63-INTERNAL-TEST-DISTRIBUTION.md)。未更改业务代码、重编译或覆盖旧包，未代发/上传。
 
 交付：dist-trace/internal-test/LeoMoon-Trace-preview.28-InternalTest-r1-Windows-x64.zip，210,504,189 bytes；SHA256 8b1d206f938cafe91eeb1bc5b9697655b30d2a77d1d03be5ecd4fedefdeabf72。同目录有 .zip.sha256。完整解压后先读 00-开始使用.txt，运行目录内 Trace.exe。
 
@@ -134,7 +134,7 @@
 
 ## 历史：preview.28 快速上手 PDF 已交付
 
-2026-09-17：核对发现已有 docs/28-USER-GUIDE.md 文字说明，但没有成册 PDF，且有报告/参考比较仍写后续等旧条目。本次修正文字说明，并生成 8 页 A4 中文快速上手手册：output/pdf/LeoMoon-Trace-Quick-Start-preview.28-zh-CN.pdf，内容与维护方式见 [62](../62-USER-MANUAL.md)。
+2026-09-17：核对发现已有 docs/28-USER-GUIDE.md 文字说明，但没有成册 PDF，且有报告/参考比较仍写后续等旧条目。本次修正文字说明，并生成 8 页 A4 中文快速上手手册：output/pdf/LeoMoon-Trace-Quick-Start-preview.28-zh-CN.pdf，内容与维护方式见 [62](iterations/62-USER-MANUAL.md)。
 
 手册采用 LeoMoon / TRACE 品牌及实际 preview.28 演示截图，覆盖首次录音、历史/选区/循环、布局与仪器、报告、A/B、文件管理和反馈。中文字体嵌入、八页文本、八个书签、四个跳转、边界检查通过，全部页面已渲染查看。报告 artifacts/manual-qa.json。没有运行中的采集或验证任务。
 
@@ -142,7 +142,7 @@
 
 ## 历史：LeoMoon 系列品牌接入，preview.28
 
-2026-09-17 用户纠正品牌方向：复用狮子月牙形状，仅换色；LeoMoon 保留为系列，Trace 为个体产品。现已接入绿—青标识、LeoMoon / TRACE 两级字标、帮助说明和 Windows 六尺寸图标。最终素材在 resources/trace/branding，另一项目仅作读取参考；原波形 SVG 与旧包保留，详见 [61](../61-LEOMOON-TRACE-BRANDING.md)。
+2026-09-17 用户纠正品牌方向：复用狮子月牙形状，仅换色；LeoMoon 保留为系列，Trace 为个体产品。现已接入绿—青标识、LeoMoon / TRACE 两级字标、帮助说明和 Windows 六尺寸图标。最终素材在 resources/trace/branding，另一项目仅作读取参考；原波形 SVG 与旧包保留，详见 [61](iterations/61-LEOMOON-TRACE-BRANDING.md)。
 
 类型检查/构建、实际包六组窗口/缩放、图标及包审计通过。八个 main/worker/preload JS 除版本外与 preview.27 相同，native 相同，未重跑音频全量门禁。报告 artifacts/branding/ui-1789625259550/report.json。入口 dist-trace/preview.28/win-unpacked/Trace.exe，ZIP SHA256 550153407e6865484713be7188a0ee6c0cb952fa7d5624b14446a85add160637。
 
@@ -150,7 +150,7 @@
 
 ## 历史：PB1/PB2 已交付，preview.27
 
-2026-09-17：已按用户要求完成单实例保护及故障诊断/反馈，详情与机制见 [60](../60-PB1-PB2-SUPPORT.md)。重复启动激活已有窗口；帮助中可导出/复制诊断、打开 472841772@qq.com 邮件草稿。日志有界且只存固定字段，异常界面可恢复，主进程致命异常退出后能识别未正常结束并查看录音恢复。旧版 preview.26 及更早不遵守锁，首次升级先退出它们。
+2026-09-17：已按用户要求完成单实例保护及故障诊断/反馈，详情与机制见 [60](iterations/60-PB1-PB2-SUPPORT.md)。重复启动激活已有窗口；帮助中可导出/复制诊断、打开 472841772@qq.com 邮件草稿。日志有界且只存固定字段，异常界面可恢复，主进程致命异常退出后能识别未正常结束并查看录音恢复。旧版 preview.26 及更早不遵守锁，首次升级先退出它们。
 
 最终包十阶段通过，`artifacts/public-beta/final-1789624386050/report.json`：19 项单元/协议、包与 ZIP 97 文件、不同目录单实例、真实 WASAPI 录音/renderer 故障/主进程致命异常及恢复、诊断脱敏、React 边界、布局/导航、中文路径录音编码重开和启动失败。原失败记录保留，所有测试已结束。原生模块未变化，未重复长测/物理设备/EBU/干净 Windows 项，邮件客户端实际发送及原生故障弹窗人工验收未做。
 
@@ -158,11 +158,11 @@
 
 ## 历史：PB1 已开发验证，继续 PB2
 
-用户授权先推进单实例与故障诊断/反馈，收件邮箱已提供。PB1 在引擎/存储初始化前取得同配置目录单实例锁；重复启动、唤回、真实录音不中断与重启保存均通过，见 [60](../60-PB1-PB2-SUPPORT.md)。当前仅开发构建改变，preview.26 旧包保留。下一步 PB2，有界诊断/非正常退出与界面恢复/手动导出/邮件草稿，完成后打新包并复验。
+用户授权先推进单实例与故障诊断/反馈，收件邮箱已提供。PB1 在引擎/存储初始化前取得同配置目录单实例锁；重复启动、唤回、真实录音不中断与重启保存均通过，见 [60](iterations/60-PB1-PB2-SUPPORT.md)。当前仅开发构建改变，preview.26 旧包保留。下一步 PB2，有界诊断/非正常退出与界面恢复/手动导出/邮件草稿，完成后打新包并复验。
 
 ## 历史：公开测试准备度评估，暂不直接开放下载
 
-2026-09-17：基于 preview.26 / 66dbbdd 完成 [59 公开测试准备度评估](../59-PUBLIC-BETA-READINESS.md)。功能足够进入试用，但公测放行独立于 57 的专家评分。新复现 B01：两个隔离测试进程共享配置，A 保存退出确认=false 后，未改设置的 B 正常关闭将磁盘写回 true。报告 `artifacts/public-beta/instances-1789622598615/report.json`，测试已结束，未操作用户音频/配置。
+2026-09-17：基于 preview.26 / 66dbbdd 完成 [59 公开测试准备度评估](iterations/59-PUBLIC-BETA-READINESS.md)。功能足够进入试用，但公测放行独立于 57 的专家评分。新复现 B01：两个隔离测试进程共享配置，A 保存退出确认=false 后，未改设置的 B 正常关闭将磁盘写回 true。报告 `artifacts/public-beta/instances-1789622598615/report.json`，测试已结束，未操作用户音频/配置。
 
 公测前建议 PB1 单实例/共享数据保护 → PB2 故障提示与脱敏诊断/反馈 → PB3 干净 Windows/真实设备/测量范围/普通硬件 → PB4 用户任务与分发/源码材料 → PB5 邀请制试用。EXE 实测未签名；未发现 Trace 自有公开分发和对应修改源码入口。没有宣称当前存在具体安全漏洞，相关依赖审计仍待做。
 
@@ -170,7 +170,7 @@
 
 ## 历史：preview.26 布局编辑入口反馈已交付
 
-2026-09-17：用户无法发现布局编辑入口，本次将按钮改为“编辑布局 / 完成布局”，编辑时显示简短提示、标题拖动把手和分隔线手柄。“自定义 · 未保存”改为“自定义布局”，管理弹层区分自动保存与命名预设。布局存储和音频路径未变。详情、包哈希与验证见 [58](../58-LAYOUT-EDIT-FEEDBACK.md)。
+2026-09-17：用户无法发现布局编辑入口，本次将按钮改为“编辑布局 / 完成布局”，编辑时显示简短提示、标题拖动把手和分隔线手柄。“自定义 · 未保存”改为“自定义布局”，管理弹层区分自动保存与命名预设。布局存储和音频路径未变。详情、包哈希与验证见 [58](iterations/58-LAYOUT-EDIT-FEEDBACK.md)。
 
 类型检查、构建、打包界面四组实际流程（含六组尺寸/缩放、源/游标/选区保持、重启恢复）及包审计通过。八个 main/worker/preload JS 除版本号外与 preview.25 相同，native 字节相同。未重复长录音和硬件专项。前两份 UI 失败来自检查错层级的分隔线比例，保留原记录；修正检查对象后通过。
 
@@ -178,7 +178,7 @@
 
 ## 历史：M7–M12 工程交付与原八维复评目标完成
 
-2026-09-17：本轮目标已完成，最终交付 **Trace 0.1.0-preview.25**。计划内布局、频谱/声场、共轴 2D/3D、目标/事件/报告、外部导入及 A/B 参考均已实现并完成工程验证。原八维/原权重、0.5 主要粒度复评：**加权 8.6500，算术 8.6875**，均严格超过 8.5；证据、扣分原因和评分边界见 [57](../57-M12-FINAL-REVIEW.md)，逐项审计见 [56](../56-M12-COMPLETION-AUDIT.md)。分数是专家评估，不是算法精度百分比或用户验收。
+2026-09-17：本轮目标已完成，最终交付 **Trace 0.1.0-preview.25**。计划内布局、频谱/声场、共轴 2D/3D、目标/事件/报告、外部导入及 A/B 参考均已实现并完成工程验证。原八维/原权重、0.5 主要粒度复评：**加权 8.6500，算术 8.6875**，均严格超过 8.5；证据、扣分原因和评分边界见 [57](iterations/57-M12-FINAL-REVIEW.md)，逐项审计见 [56](iterations/56-M12-COMPLETION-AUDIT.md)。分数是专家评估，不是算法精度百分比或用户验收。
 
 **没有运行中的验证任务。** 原 exec 12679、runner 63964/app 66296 已结束，1800.128 秒 pass。120 次采样、29 次显隐、33 次 A/B、25 次报告生成、9 份导出、至少 10608 组参考频谱，无丢帧/仪器错误/hash 重试。实际 WAV 14,402,880 帧 / 300.060 秒 / 48k 双声道 PCM24 与清单/哈希一致，报告四文件/行数/末帧完整。报告 artifacts/m12/resources-1789606251763/report.json 与 recording-integrity.json。不要再等待或重启这项任务。
 
@@ -192,7 +192,7 @@ preview.25 相比 24 的全部 8 个 main/worker/preload JS 除版本字面量�
 
 ## 历史：M12 A/B 已接入，preview.24 长资源门禁运行中
 
-2026-09-17：ReferenceService、独立范围/时间映射、A/B 串行试听、监听增益恢复、双频谱、workspace v4 与统一原生两槽队列已接入。参考/播放关闭中的原文件持有纳入自动整理，释放后才允许清理；已修复选区释放会取消其他消费者的问题。参考数据独立转移，不进入 TraceState。实现与证据见 [55](../55-M12-REFERENCE-INTEGRATION.md)。
+2026-09-17：ReferenceService、独立范围/时间映射、A/B 串行试听、监听增益恢复、双频谱、workspace v4 与统一原生两槽队列已接入。参考/播放关闭中的原文件持有纳入自动整理，释放后才允许清理；已修复选区释放会取消其他消费者的问题。参考数据独立转移，不进入 TraceState。实现与证据见 [55](iterations/55-M12-REFERENCE-INTEGRATION.md)。
 
 **同一 preview.24 包，40 阶段 / 204 JS 合并短门禁通过。** 原报告 artifacts/m12/final-1789605251771/report.json 在 35 阶段后因显隐脚本仍断言 7 个仪器失败；只改为实际 8 个，保留原报告。补全报告 artifacts/m12/final-tail-1789605705613/report.json 核对相同版本/ASAR/native，继承已通过部分，并完成显隐、旧导航、完整包、ZIP 97 文件和中文路径。不要把原报告状态改为 pass。
 
@@ -208,7 +208,7 @@ A/B 实际流程三组缩放通过，最大 FFT/平均窗 20 个新位置成对�
 
 ## 历史：M12 外部导入已接通；下一任务 ReferenceService
 
-2026-09-17：ImportService、AssetRepository、文件库/原生对话框/拖放已接通，外部 WAV/MP3/M4A/ADTS 使用既有文件历史、仪器、报告与导出。来源读取与清理有等待/代次，准备完成状态在持久化收尾后发布；REC 暂停/恢复、旧刷新淘汰、变化/缺失/重定位和引用归档已覆盖。详情见 [53](../53-M12-IMPORT-INTEGRATION.md)。
+2026-09-17：ImportService、AssetRepository、文件库/原生对话框/拖放已接通，外部 WAV/MP3/M4A/ADTS 使用既有文件历史、仪器、报告与导出。来源读取与清理有等待/代次，准备完成状态在持久化收尾后发布；REC 暂停/恢复、旧刷新淘汰、变化/缺失/重定位和引用归档已覆盖。详情见 [53](iterations/53-M12-IMPORT-INTEGRATION.md)。
 
 **开发构建 preview.23** 的导入 GUI **9 项通过**，报告 artifacts/m12/ui-1789601119342/report.json，packaged=false，main 构建 SHA256 941a02c51c071ab3a5648b24db9cff6d582c92ae58575e2e4249bb3abcb8d035。314 字符中文只读路径、四格式各自历史、报告 imported 标识、磁盘 File 拖放/假 File 拒绝、REC 排队、打开来源移走时失效、重启/同内容重新定位、缓存重建、引用移除与原文件/成品保留、最小窗口均通过。已查看实际文件库截图，修正空提示和目录说明。
 
@@ -216,7 +216,7 @@ A/B 实际流程三组缩放通过，最大 FFT/平均窗 20 个新位置成对�
 
 **当前没有运行中的验证任务。** 完整可回退包仍为 preview.22；源码和打包配置已设为 preview.23，但尚未制作独立包。M12 尚未进行完整 DPI/压力/资源关口，也没有最终评分。M11 的已通过包、长测及原失败均保留。
 
-**下一任务固定为参考服务与界面：**读 [54](../54-M12-REFERENCE-DESIGN.md)。referenceMath.ts 已验证范围、正负纳秒偏移、44.1/48k 映射、超过 JS 安全整数的帧与 A−B 差值；但目前没有 ReferenceService、参考 UI 或参考频谱数据流。必须实现独立 A/B 来源/范围/引用、晚到解析淘汰、源失效/清理等待、串行试听与音量恢复、共轴定位、频谱/统计对照。复用活动来源的仪器结果，仅补另一来源；原生全局任务槽只有两个，需显式协调/coalesce，不可吞 QUEUE_FULL。
+**下一任务固定为参考服务与界面：**读 [54](iterations/54-M12-REFERENCE-DESIGN.md)。referenceMath.ts 已验证范围、正负纳秒偏移、44.1/48k 映射、超过 JS 安全整数的帧与 A−B 差值；但目前没有 ReferenceService、参考 UI 或参考频谱数据流。必须实现独立 A/B 来源/范围/引用、晚到解析淘汰、源失效/清理等待、串行试听与音量恢复、共轴定位、频谱/统计对照。复用活动来源的仪器结果，仅补另一来源；原生全局任务槽只有两个，需显式协调/coalesce，不可吞 QUEUE_FULL。
 
 ReferencePanel 规划为可显隐/停靠仪器，workspace 需迁移保留旧布局；大数组走独立转移流，不能回到 TraceState/回复缓存。M12 完整交付后再按 37 原八维和权重、算术均分复评到目标。整体目标 active；原人工/硬件/标准素材专项继续单独跟踪，没有当前外部阻塞。文件与旧包保留，按阶段本地提交，不远程推送。
 
@@ -224,11 +224,11 @@ ReferencePanel 规划为可显隐/停靠仪器，workspace 需迁移保留旧布
 
 2026-09-17：preview.22 的 **31 阶段 / 165 JS 短门禁及 1800.325 秒资源流程均通过**。资源流程 120 次采样、29 次显隐、34 次报告生成、12 份复制导出，无丢帧或仪器错误，本次 hash 重试计数为 0。总工作集峰值 804.05 MiB、主进程 416.47 MiB、报告 worker 103.08 MiB，尾段平均增长 9.81 MiB。原阈值未放宽。
 
-事后确认真实录音 14,436,480 帧 / 300.760 秒 / 48 kHz 双声道 PCM24，格式、边界、SHA256 与清单一致；12 份报告各四文件齐全，历史 CSV 各 1600 条声道读数、末帧 384000，报告夹具源 hash 保持。证据 artifacts/m11/resources-1789595402067/report.json 与 recording-integrity.json。M11 工程关口关闭、待人工复验，见 [51](../51-M11-INTEGRATION.md)。原 exec **58609 已 exit 0**，runner 49212/app 55292 已结束；没有仍运行的长测，不再轮询或重复启动。
+事后确认真实录音 14,436,480 帧 / 300.760 秒 / 48 kHz 双声道 PCM24，格式、边界、SHA256 与清单一致；12 份报告各四文件齐全，历史 CSV 各 1600 条声道读数、末帧 384000，报告夹具源 hash 保持。证据 artifacts/m11/resources-1789595402067/report.json 与 recording-integrity.json。M11 工程关口关闭、待人工复验，见 [51](iterations/51-M11-INTEGRATION.md)。原 exec **58609 已 exit 0**，runner 49212/app 55292 已结束；没有仍运行的长测，不再轮询或重复启动。
 
 M11 实现提交 **1205754**，只读 hash 的有界重试提交 **268606e**；preview.21 偶发退出的原失败与根因未复现说明保留在 51。preview.22 的包/ASAR/hash 与前条记录一致，运行包未被后续源码覆盖。
 
-M12 解码底座已提交 **069ac23**。资产持久化与导出宿主提交 **1ca70b3**，包括 ImportStore / ImportedDocument v1、窄 ExportRepository/ExportOwner 和解码缓存读取校验，存储 6 项、格式 2 项及受影响导出/另存 7 项共 15 项通过，类型检查通过。真实外部解码/清理/错序与坏缓存 7 项、导出宿主 4 项通过：artifacts/m12/import-1789597141912/report.json、artifacts/m12/export-1789597162259/report.json。WAV 样本/帧数与原率/声道保持，源文件只读且 hash 不变；导入模型不伪造 CaptureRegion。设计与限制见 [52](../52-M12-ASSET-REFERENCE-DESIGN.md)。这些代码尚未接入应用，不能称为已交付外部导入。
+M12 解码底座已提交 **069ac23**。资产持久化与导出宿主提交 **1ca70b3**，包括 ImportStore / ImportedDocument v1、窄 ExportRepository/ExportOwner 和解码缓存读取校验，存储 6 项、格式 2 项及受影响导出/另存 7 项共 15 项通过，类型检查通过。真实外部解码/清理/错序与坏缓存 7 项、导出宿主 4 项通过：artifacts/m12/import-1789597141912/report.json、artifacts/m12/export-1789597162259/report.json。WAV 样本/帧数与原率/声道保持，源文件只读且 hash 不变；导入模型不伪造 CaptureRegion。设计与限制见 [52](iterations/52-M12-ASSET-REFERENCE-DESIGN.md)。这些代码尚未接入应用，不能称为已交付外部导入。
 
 **下一任务 ImportService：**独立资产准备队列、取消/REC 暂停、源文件变化/缺失、重建/删除等待、原始 hash 与已准备 PCM 解析。随后组合录音/导入仓库，接入文件对话框/拖放/文件库与现有仪器、报告和导出，再做单份参考范围/偏移/频谱与统计/串行 A-B。M12 完成后按 37 原八维/原权重及算术均分复评到目标。
 
@@ -236,7 +236,7 @@ M12 解码底座已提交 **069ac23**。资产持久化与导出宿主提交 **1
 
 ## 历史：M11 短门禁通过，preview.22 资源流程运行中
 
-2026-09-17：M10 工程关口已关闭；M11 已接通目标设置/范围带/超限标记、后台报告任务、整段/独立选区、事件定位、CSV/HTML 和复制导出。独立引用计数、取消后等待 worker 退出、录音优先和私有目录清理已接入。完整设计/失败/验证见 [51](../51-M11-INTEGRATION.md)。
+2026-09-17：M10 工程关口已关闭；M11 已接通目标设置/范围带/超限标记、后台报告任务、整段/独立选区、事件定位、CSV/HTML 和复制导出。独立引用计数、取消后等待 worker 退出、录音优先和私有目录清理已接入。完整设计/失败/验证见 [51](iterations/51-M11-INTEGRATION.md)。
 
 preview.22 **31 阶段 / 165 JS 完整短门禁通过**：artifacts/m11/final-1789595075808/report.json。报告三组缩放各 10 项，四种封装整段/选区、两小时 72 万点报告、HTML 渲染、原 M8–M10 与包/ZIP/中文路径均通过。真实窗口目标/报告截图已查看。60.536 秒 GPU/录音转 LIVE/后台报告复制复验通过，报告 artifacts/m11/resources-1789595322682/report.json；exec 66330 已结束。
 
@@ -246,15 +246,15 @@ preview.21 原完整门禁失败于一次纯 hash worker 的 0xC0000005 退出�
 
 当前包入口 dist-trace/preview.22/win-unpacked/Trace.exe；ASAR 8f510eb26d325bf4f061bd53dfe03b4d93582568498827a36719781996558f8e；Native 7f1606b31bdf1664b7563b418ba0d43e3c025198e874c387851338eb9c0a7dbe。ZIP 207,190,546 bytes，SHA256 aa8758146a155c7f1322ab8822ecb00dc6b9b25688d494902f252c46a2b42384。不得用后续源码覆盖正在测的包。
 
-下一步：收取该长测并核对录音文件/报告输出，满足后关闭 M11 工程关口；M12 前置设计见 [52](../52-M12-ASSET-REFERENCE-DESIGN.md)，外部只读解码底座已独立验证（格式规则 2 项、实际 FFmpeg/精确清理 6 项），见 52；持久化/任务队列、导入 UI 和参考比较仍未接入。当前源码变化不在 preview.22 包内。然后完成 M12 和原八维复评。M11 未关闭、整体目标 active；原人工/EBU/真实 96k/物理驱动/混合 DPI/干净 VM 项继续独立开放，无当前外部阻塞。按阶段本地提交，不远程推送。
+下一步：收取该长测并核对录音文件/报告输出，满足后关闭 M11 工程关口；M12 前置设计见 [52](iterations/52-M12-ASSET-REFERENCE-DESIGN.md)，外部只读解码底座已独立验证（格式规则 2 项、实际 FFmpeg/精确清理 6 项），见 52；持久化/任务队列、导入 UI 和参考比较仍未接入。当前源码变化不在 preview.22 包内。然后完成 M12 和原八维复评。M11 未关闭、整体目标 active；原人工/EBU/真实 96k/物理驱动/混合 DPI/干净 VM 项继续独立开放，无当前外部阻塞。按阶段本地提交，不远程推送。
 
 ## 历史：M10 工程关闭，M11 任务服务与界面接入中
 
-2026-09-17：preview.20 的 25 阶段短门禁及 **1800.335 秒 GPU 长测通过**，29 次显隐/强制 GPU 丢失恢复/录音转 LIVE 无错误或丢帧。总工作集峰值 802.94 MiB、主进程 418.95 MiB、平均增长 20.54 MiB，原阈值不变。事后 14,434,560 帧 / 300.720 秒 / 48 kHz 双声道 PCM24 的格式和 SHA256 与清单一致。M10 工程关口关闭，人工与原环境专项继续开放；详见 [49](../49-M10-3D-INTEGRATION.md)。
+2026-09-17：preview.20 的 25 阶段短门禁及 **1800.335 秒 GPU 长测通过**，29 次显隐/强制 GPU 丢失恢复/录音转 LIVE 无错误或丢帧。总工作集峰值 802.94 MiB、主进程 418.95 MiB、平均增长 20.54 MiB，原阈值不变。事后 14,434,560 帧 / 300.720 秒 / 48 kHz 双声道 PCM24 的格式和 SHA256 与清单一致。M10 工程关口关闭，人工与原环境专项继续开放；详见 [49](iterations/49-M10-3D-INTEGRATION.md)。
 
 原 exec 10121 已 exit 0；报告 artifacts/m10/resources-1789591713041/report.json 与 recording-integrity.json。无需再等待或重启。preview.20 包保持不变；M11 的未提交源代码不在该包内。旧录音/包/失败证据保留。
 
-[38](../38-DEVELOPMENT-PLAN.md) 更新为 v1.3，修正过期的 M8/M9 下一任务，明确 M11 → M12 → 原八维复评的开发目标、工作票、退出条件及证据要求。M11 核心已提交 7a2eab9；后台队列、独立租约、取消/重试、复制导出与目标/报告 UI 正在集成，尚未通过产品运行门禁，不能称 M11 完成。
+[38](iterations/38-DEVELOPMENT-PLAN.md) 更新为 v1.3，修正过期的 M8/M9 下一任务，明确 M11 → M12 → 原八维复评的开发目标、工作票、退出条件及证据要求。M11 核心已提交 7a2eab9；后台队列、独立租约、取消/重试、复制导出与目标/报告 UI 正在集成，尚未通过产品运行门禁，不能称 M11 完成。
 
 下一步：完成 M11 实际窗口/原生 worker/整段与选区/取消和源清理/长文件检查，交付新候选；再推进 M12 与最终评分。整体目标 active，无当前外部阻塞；按阶段本地提交，不推送远程。
 
@@ -264,7 +264,7 @@ preview.21 原完整门禁失败于一次纯 hash worker 的 0xC0000005 退出�
 
 preview.20 增加 SpectrogramContextChanged 类型，仅由应用解析器在来源/epoch/可见性确实不匹配时抛出。协议增加 cancelled 状态，前端按当前来源重试；真实原生/文件故障仍为 error，不按错误字符串一概忽略。确定性旧引用、60.402 秒 GPU 切换复测和 **25 阶段 / 151 JS 完整短门禁通过**，报告 artifacts/m10/final-1789591500935/report.json。
 
-M11 独立核心已提交 **7a2eab9**：TargetSettings、按页原缓存遍历、连续事件合并和 HTML/摘要/历史/事件 CSV。目标规则 5 项及真实原生缓存报告 6 项通过，范围/单位/原始值/选区独立累计/完整性/转义/取消/源 hash/坏页均有证据，见 [50-M11-TARGET-REPORT-DESIGN](../50-M11-TARGET-REPORT-DESIGN.md)。产品报告界面、任务服务和目标线接入仍未做，不据此宣称 M11 完成。
+M11 独立核心已提交 **7a2eab9**：TargetSettings、按页原缓存遍历、连续事件合并和 HTML/摘要/历史/事件 CSV。目标规则 5 项及真实原生缓存报告 6 项通过，范围/单位/原始值/选区独立累计/完整性/转义/取消/源 hash/坏页均有证据，见 [50-M11-TARGET-REPORT-DESIGN](iterations/50-M11-TARGET-REPORT-DESIGN.md)。产品报告界面、任务服务和目标线接入仍未做，不据此宣称 M11 完成。
 
 **唯一当前长测：** exec **10121**，runner **42400**，app **79284**；**artifacts/m10/resources-1789591713041/report.json**。不可变 preview.20，1800 秒真实 GPU、最高 FFT/高细节、强制丢失恢复及录音转 LIVE；已经启动并有真实采样。先 poll 同一 handle 并核对 PID，不重复启动。短复测 31726 已结束通过；旧长测 16703 已结束失败。
 
@@ -274,7 +274,7 @@ M11 独立核心已提交 **7a2eab9**：TargetSettings、按页原缓存遍历�
 
 ## 历史：M10 3D 与降级已接入，preview.19 GPU 长测运行中
 
-2026-09-17：M9 工程关闭记录已提交 **8499f92**。M10 已接入 2D/3D、相机预设/旋转/复位、显示高度/细节、共用时间刻度和原始点查；GPU 丢失/恢复、无 WebGL 的 2D 降级、REC 中图形故障均已实际验证。spectrogramSettings v2 向后迁移，显示选择不改变分析键。已修正零高度刻度命中、矮宽窗口投影/标签，以及 Windows 短暂文件锁造成设置保存打断业务的问题。设计见 48，当前验收与包身份见 [49-M10-3D-INTEGRATION](../49-M10-3D-INTEGRATION.md)。
+2026-09-17：M9 工程关闭记录已提交 **8499f92**。M10 已接入 2D/3D、相机预设/旋转/复位、显示高度/细节、共用时间刻度和原始点查；GPU 丢失/恢复、无 WebGL 的 2D 降级、REC 中图形故障均已实际验证。spectrogramSettings v2 向后迁移，显示选择不改变分析键。已修正零高度刻度命中、矮宽窗口投影/标签，以及 Windows 短暂文件锁造成设置保存打断业务的问题。设计见 48，当前验收与包身份见 [49-M10-3D-INTEGRATION](iterations/49-M10-3D-INTEGRATION.md)。
 
 **24 阶段短门禁 / 150 JS pass：** artifacts/m10/final-1789589279738/report.json。3D 三组进程缩放各 6 项、无 WebGL、真实独占文件锁、M9 旧流程、包/ZIP/中文路径全部通过；设置锁期间命令约 4 ms 返回，5 次后台重试后最新配置保存，录音继续。原失败报告保留，没有放宽数值或资源阈值。
 
@@ -286,9 +286,9 @@ ASAR 2aaf12362cac920dc2e039024b4104c74fc993c6e83bed89ec77d5d7d0cabb04；Native 7
 
 ## 历史：M9 工程交付完成，M10 3D 原型已验证
 
-2026-09-17：preview.17 的 19 阶段短门禁和 **1800.209 秒资源门禁均通过**，M9 工程关口关闭，人工与既有环境专项单独跟踪。29 次显隐，无声谱错误/丢帧，工作集增长约 0.87 MiB；录音 14,424,000 帧 / 300.50 秒，头/格式/hash 与清单一致，见 [47](../47-M9-PRESENTATION-PERFORMANCE.md)。原 exec 67230、runner 55868、app 65924 已结束，不再轮询或重启。
+2026-09-17：preview.17 的 19 阶段短门禁和 **1800.209 秒资源门禁均通过**，M9 工程关口关闭，人工与既有环境专项单独跟踪。29 次显隐，无声谱错误/丢帧，工作集增长约 0.87 MiB；录音 14,424,000 帧 / 300.50 秒，头/格式/hash 与清单一致，见 [47](iterations/47-M9-PRESENTATION-PERFORMANCE.md)。原 exec 67230、runner 55868、app 65924 已结束，不再轮询或重启。
 
-M10 已独立验证时频最大值网格、相机/投影反解、三角形拾取、GPU buffer 复用与上下文丢失/恢复。当前本机 WebGL 2 / RTX 4080 SUPER / ANGLE D3D11 可用；纯几何 4 项、实际图形 4 项通过，设计与预算见 [48-M10-3D-DESIGN](../48-M10-3D-DESIGN.md)。已有 SurfaceCanvas 尚未接入产品，不能当成完成 M10。
+M10 已独立验证时频最大值网格、相机/投影反解、三角形拾取、GPU buffer 复用与上下文丢失/恢复。当前本机 WebGL 2 / RTX 4080 SUPER / ANGLE D3D11 可用；纯几何 4 项、实际图形 4 项通过，设计与预算见 [48-M10-3D-DESIGN](iterations/48-M10-3D-DESIGN.md)。已有 SurfaceCanvas 尚未接入产品，不能当成完成 M10。
 
 下一步固定为 M10 产品接入：扩展声谱图显示设置并迁移旧值，增加 2D/3D、相机预设/复位、高度/细节、共用刻度与原始点查；把 GPU 故障降级接入实际录音场景，再完成数值对照、交互、资源与独立包门禁。preview.17 保留不变。M10–M12 和最终复评仍未完成，目标 active；无当前外部阻塞，按阶段提交，保留文件/旧包/失败记录。
 
@@ -298,7 +298,7 @@ M10 已独立验证时频最大值网格、相机/投影反解、三角形拾取
 
 preview.17 完成绘制前来源/epoch/analysisId/配置校验、错误重试、单声道说明，以及隐藏恢复后的查询续接。Canvas 在 layout effect 绘制，同源缩放保留正确坐标的已有图像。旧 500 ms 请求改为随时间轴快照触发并以 33 ms 补充检查。新增列只计算一次；原始块之外加入精确区间最大值结构，颜色使用复用表，均不改变原始 bin/dB。
 
-**19 阶段短门禁 / 140 JS pass：** artifacts/m9/final-1789585180170/report.json。新 2D 多 DPI、WAV96/MP3/M4A/ADTS、单声道、快速换源/FFT、错误重试、固定缓存 GUI 和两小时文件优先查询通过。真实端到端查询至绘制 p95 **12.7 ms**；两小时文件取消宽视图后聚焦两秒 **27 ms**、缓存命中绘制 **6.7 ms**。完整范围、对照算法、缓存预算及候选 hash 见 [47-M9-PRESENTATION-PERFORMANCE](../47-M9-PRESENTATION-PERFORMANCE.md)。已查看 200% 进程缩放截图，原文件保持 hash。
+**19 阶段短门禁 / 140 JS pass：** artifacts/m9/final-1789585180170/report.json。新 2D 多 DPI、WAV96/MP3/M4A/ADTS、单声道、快速换源/FFT、错误重试、固定缓存 GUI 和两小时文件优先查询通过。真实端到端查询至绘制 p95 **12.7 ms**；两小时文件取消宽视图后聚焦两秒 **27 ms**、缓存命中绘制 **6.7 ms**。完整范围、对照算法、缓存预算及候选 hash 见 [47-M9-PRESENTATION-PERFORMANCE](iterations/47-M9-PRESENTATION-PERFORMANCE.md)。已查看 200% 进程缩放截图，原文件保持 hash。
 
 **唯一当前长测：** exec **67230**，runner **55868**，app **65924**；**artifacts/m9/resources-1789585398846/report.json**，1800 秒、不可变 preview.17。已确认进程存活；约 330 秒已结束录音进入 LIVE，无错误/丢帧，继续检查原工作集/堆门槛和新增原始+派生缓存总量。先 poll 同一 handle 并核对 PID，不能因一次超时重启。
 
@@ -322,7 +322,7 @@ preview.16 已通过 **60.055 秒切换复测**（resources-1789581266835）和 
 
 ## 历史：preview.15 共轴 2D 短门禁通过，M9 长测运行中
 
-2026-09-17：M9 的主进程来源解析、独立声谱数据流、点查询/取消、来源关闭等待，以及共轴 2D 面板已接通。workspace v3 保留旧布局并添加隐藏的声谱图；新增“时频检查”预设和独立 spectrogramSettings。实现、包身份、已验/待验范围见 [46-M9-2D-INTEGRATION](../46-M9-2D-INTEGRATION.md)。
+2026-09-17：M9 的主进程来源解析、独立声谱数据流、点查询/取消、来源关闭等待，以及共轴 2D 面板已接通。workspace v3 保留旧布局并添加隐藏的声谱图；新增“时频检查”预设和独立 spectrogramSettings。实现、包身份、已验/待验范围见 [46-M9-2D-INTEGRATION](iterations/46-M9-2D-INTEGRATION.md)。
 
 **短门禁 14 阶段 pass：** artifacts/m9/final-1789580383517/report.json，132 JS、M9 原生 5 项、新 2D GUI 9 项、原 M8 三组缩放各 12 项、隐藏/最小化生命周期、旧导航、包/ZIP/中文路径重定位通过。已查看真实文件和录音截图。早期测试序列化/旧六仪器计数等失败报告保留；只改正确预期，未放宽数值或资源预算。新 2D 的完整 DPI/多格式/长文件矩阵尚未完成。
 
@@ -334,9 +334,9 @@ preview.16 已通过 **60.055 秒切换复测**（resources-1789581266835）和 
 
 ## 历史：M8 工程关口通过，继续 M9 完整服务与 2D
 
-2026-09-17：唯一资源任务 artifacts/m8/resources-1789576099071/report.json 已结束，**1800.366 秒 pass**；runner 78012/app 61252 已退出，不再轮询或重复启动。120 次采样、29 次显隐，无丢帧或仪器错误，工作集增长 94.47 MiB < 原 128 MiB；事后 WAV 帧数/格式/hash 与清单一致（300.05 秒 PCM24）。完整工程交付及包身份见 [42](../42-M8-ACCEPTANCE.md)/[45](../45-VISIBILITY-AND-RESOURCE-GATE.md)。M8 工程关口关闭，人工与既有环境专项继续开放。
+2026-09-17：唯一资源任务 artifacts/m8/resources-1789576099071/report.json 已结束，**1800.366 秒 pass**；runner 78012/app 61252 已退出，不再轮询或重复启动。120 次采样、29 次显隐，无丢帧或仪器错误，工作集增长 94.47 MiB < 原 128 MiB；事后 WAV 帧数/格式/hash 与清单一致（300.05 秒 PCM24）。完整工程交付及包身份见 [42](iterations/42-M8-ACCEPTANCE.md)/[45](iterations/45-VISIBILITY-AND-RESOURCE-GATE.md)。M8 工程关口关闭，人工与既有环境专项继续开放。
 
-M8 关闭记录已提交 **59bd634**。M9 新实现 spectrogramSource/Service/View、过期块淘汰和独立测试入口：类型检查、编解码/存储/服务 **17 项**、实际原生链路 **5 项通过**；见 [43](../43-M9-SPECTROGRAM.md)、artifacts/m9/service-tests.log、artifacts/m9/native-service-1789578390972/report.json。真实 750 Hz 标定、解码局部坐标、实时/固定缓存同窗一致、REC 查询不阻断写盘均有证据。
+M8 关闭记录已提交 **59bd634**。M9 新实现 spectrogramSource/Service/View、过期块淘汰和独立测试入口：类型检查、编解码/存储/服务 **17 项**、实际原生链路 **5 项通过**；见 [43](iterations/43-M9-SPECTROGRAM.md)、artifacts/m9/service-tests.log、artifacts/m9/native-service-1789578390972/report.json。真实 750 Hz 标定、解码局部坐标、实时/固定缓存同窗一致、REC 查询不阻断写盘均有证据。
 
 **下一步固定为 M9 应用接入：**在 PlaybackService/main 解析当前来源和已验证内容键，增加白名单视口/原始点/取消接口，绑定关闭/清缓存/删除库记录的等待释放；REC 纳秒轴映射到当前原生段。然后接入 2D 面板、统一时间轴/选区/设置和 workspace 迁移，运行 GUI/长文件/资源/包门禁。当前服务尚未接入主进程命令或 2D 界面，不把 17+5 检查当成 M9 全阶段完成。
 
@@ -344,13 +344,13 @@ preview.14 包保持不可变；当前开发原生 hash 为 7f1606b31bdf1664b756
 
 ## 历史计划入口：38 v1.2（2026-09-17）
 
-用户要求将 Insight 2 建议落地为接下来的开发目标。本轮整理 [38-DEVELOPMENT-PLAN](../38-DEVELOPMENT-PLAN.md) 为统一执行入口：保留 M7–M12 的任务/依赖/退出条件，补齐原八维权重与复评依据、U1–U6 整体验收场景和最近一批 M8-R/M9 工作票。校正旧候选 preview.11、M9“待开始”和 M7 初始工作票的过期提示；01/02/05/07/37 已同步入口与当前边界。
+用户要求将 Insight 2 建议落地为接下来的开发目标。本轮整理 [38-DEVELOPMENT-PLAN](iterations/38-DEVELOPMENT-PLAN.md) 为统一执行入口：保留 M7–M12 的任务/依赖/退出条件，补齐原八维权重与复评依据、U1–U6 整体验收场景和最近一批 M8-R/M9 工作票。校正旧候选 preview.11、M9“待开始”和 M7 初始工作票的过期提示；01/02/05/07/37 已同步入口与当前边界。
 
 本次为文档整理，无产品代码/依赖/算法/阈值变更，不重建运行包、不新启音频测试。已通过 7 份文档的 45 个相对链接、6 个阶段、13 个扩展验收编号、6 个用户场景、八维原分数与权重合计 100% 的一致性检查，以及 Git 差异/范围检查；原有长测继续使用下方同一任务，结果未出前 M8 保持工程验证中。M10–M12 与最终复评仍未完成；后续优先收取 M8 最终报告、继续 M9 来源与可视区实现。按已有阶段提交授权保存本轮文档，不远程推送。
 
 ## 历史：preview.14 可见窗口长测运行中，M9 原生接口与缓存已推进
 
-2026-09-17：上一轮两项复测均已结束：preview.12 / 1800 秒仍因工作集增长失败；preview.13 / 600 秒诊断通过但不足以关闭 M8。新调查与改动见 [45-VISIBILITY-AND-RESOURCE-GATE](../45-VISIBILITY-AND-RESOURCE-GATE.md)。
+2026-09-17：上一轮两项复测均已结束：preview.12 / 1800 秒仍因工作集增长失败；preview.13 / 600 秒诊断通过但不足以关闭 M8。新调查与改动见 [45-VISIBILITY-AND-RESOURCE-GATE](iterations/45-VISIBILITY-AND-RESOURCE-GATE.md)。
 
 找到测试启动器 windowsHide:true 与 --trace-test-visible 的冲突，旧长测实际长期隐藏。独立 40 次布局切换对照中，隐藏窗口诊断 GC 后约 3304 DOM 节点，可见窗口恢复到约 616。现在 UI 测试默认真实可见；产品也明确冻结隐藏/最小化的 React 呈现，同时持续采集/录音，恢复时应用最新状态。新增 DOM 文案、原生可见性和隐藏期间 DOM 不更新的检查。仅诊断实验触发过 GC，门禁中没有主动 GC 或放宽阈值。
 
@@ -364,7 +364,7 @@ M9 新进展：native spectrogramTile 接口与 M8 共享最多两个任务名�
 
 ## 历史：M8 长资源门禁未过，收取两个复测并继续定位
 
-2026-09-16：M8 功能提交 **3a8bda1**、M9 独立数据底座提交 **06693b5**。preview.11 的 1800 秒检查已实际失败于工作集增长门槛，录音完整、droppedFrames/instrumentErrors 均为 0；不能以短门禁通过关闭 M8。完整排查和候选说明见 [44-M8-RESOURCE-INVESTIGATION](../44-M8-RESOURCE-INVESTIGATION.md)。
+2026-09-16：M8 功能提交 **3a8bda1**、M9 独立数据底座提交 **06693b5**。preview.11 的 1800 秒检查已实际失败于工作集增长门槛，录音完整、droppedFrames/instrumentErrors 均为 0；不能以短门禁通过关闭 M8。完整排查和候选说明见 [44-M8-RESOURCE-INVESTIGATION](iterations/44-M8-RESOURCE-INVESTIGATION.md)。
 
 **两项仍运行的复测，先等待/检查，禁止重复启动：**
 - preview.12 快照传递候选，1800 秒：exec **23741**，runner **7148**，app **48148**，artifacts/m8/resources-1789573295492/report.json。
@@ -379,7 +379,7 @@ M9 的 Native SpectrogramTile 与 log32 二进制编解码已独立验证（15/1
 
 ## 历史：M8 功能与短门禁通过，30 分钟资源门禁运行中
 
-2026-09-16：preview.11 已完成频谱/声场四来源接入、独立设置及 workspace v1→v2 迁移。实现、检查、包哈希见 [42-M8-ACCEPTANCE](../42-M8-ACCEPTANCE.md)；数值规范继续见 41。短门禁 11 阶段通过（105 JS、14/14 原生、7 个原生桥接、三组缩放各 12 个工作台流程、旧导航/三格式/中文路径），不能据此跳过长测。
+2026-09-16：preview.11 已完成频谱/声场四来源接入、独立设置及 workspace v1→v2 迁移。实现、检查、包哈希见 [42-M8-ACCEPTANCE](iterations/42-M8-ACCEPTANCE.md)；数值规范继续见 41。短门禁 11 阶段通过（105 JS、14/14 原生、7 个原生桥接、三组缩放各 12 个工作台流程、旧导航/三格式/中文路径），不能据此跳过长测。
 
 **正在运行的具体任务：** tools/m8/resources.cjs，exec session **52421**，实际 application PID **73264**；runner PID/当前状态以 artifacts/m8/resources-latest.json 与进程核对为准。默认 1800 秒，前 300 秒 REC，随后 LIVE，每分钟显隐恢复；使用不可变的 preview.11 包。已观察到 645 秒时 droppedFrames=0、instrumentErrors=0、回放缓存守住容量。先 wait/poll 同一 handle；句柄缺失时核对 runner/application PID，不能仅凭一次超时重新启动。
 
@@ -391,7 +391,7 @@ M9 的 Native SpectrogramTile 与 log32 二进制编解码已独立验证（15/1
 
 2026-09-16：M7 已按阶段提交 **5189f6c**，基线保全提交为 **5c09c73**。用户持续开发目标保持 active，直到完成 M12 并按原八维/原权重复评、继续改进至均分严格超过 8.5；M7/M8 子任务不代表总目标完成。
 
-M8 已建立 [41-M8-METERING](../41-M8-METERING.md) 与 native InstrumentAnalysis.h/.cpp：真实 PCM 上的周期 Hann、DC/Nyquist 正确缩放、线性功率平均、固定时间峰值保持、L/R/Mid/Side/Stereo 能量；相关度、功率平衡、确定性示波点。原生 CTest 14/14 通过，新增内核为 3370 个检查点（含逐点几何检查，不是 3370 个独立场景）；最大配置单次冷计算约 39.5 ms，不是 p95/整条链路指标。证据 artifacts/m8/core-build.log、instrument-results.log。上游 dsp_utils.cpp 的已有隐式数值转换警告保留，未放宽编译规则或数值容差。
+M8 已建立 [41-M8-METERING](iterations/41-M8-METERING.md) 与 native InstrumentAnalysis.h/.cpp：真实 PCM 上的周期 Hann、DC/Nyquist 正确缩放、线性功率平均、固定时间峰值保持、L/R/Mid/Side/Stereo 能量；相关度、功率平衡、确定性示波点。原生 CTest 14/14 通过，新增内核为 3370 个检查点（含逐点几何检查，不是 3370 个独立场景）；最大配置单次冷计算约 39.5 ms，不是 p95/整条链路指标。证据 artifacts/m8/core-build.log、instrument-results.log。上游 dsp_utils.cpp 的已有隐式数值转换警告保留，未放宽编译规则或数值容差。
 
 **下一任务 M8.1/M8.2：**读取 41 的来源/队列方案，建立有界 PCM 窗口提供器及原生异步接口、JS 服务与严格 IPC，扩展 workspace 仪器注册（迁移已有四仪器布局及预设），实现频谱和声场面板。文件复用 WaveSequence/WavReader；固定缓存用 ReplayClip；实时/REC 需要有界 ROI 复制，不能每次拷整个 60 秒。REC 当前统一图轴可能用纳秒，必须转换到正确原生段的 PCM frame，并核验 nativeId/epoch；不能直接拿图轴数值索引音频。主进程录音观察持续，FFT 只能延后显示，不能阻塞录音。
 
@@ -403,7 +403,7 @@ M7 人工主观及既有 EBU/96k/物理驱动/真实混合 DPI/干净 Windows �
 
 2026-09-16：用户已授权持续按 38 的阶段推进到 M12，之后按 37 原八维/原权重复评；同时报告算术均分，目标严格超过 8.5。未达到则基于实际短板继续迭代。保护录音和原始素材，不做全量删库，按阶段提交。目标保持 active。
 
-M7 / preview.10 已完成仪器显隐、停靠/尺寸、最大化、设置、自定义预设与视觉统一，见 [39](../39-M7-WORKSPACE.md)/[40](../40-M7-ACCEPTANCE.md)。类型检查、相关 JS 97 项通过；最终独立包 10 阶段门禁通过，含三组进程缩放各 11 项工作台流程、旧导航 9 项、三格式/离线流程、97 文件 ZIP 比对与中文路径重定位。原生引擎 hash 与 preview.9 一致；不是新 DSP 或完整硬件验收。
+M7 / preview.10 已完成仪器显隐、停靠/尺寸、最大化、设置、自定义预设与视觉统一，见 [39](iterations/39-M7-WORKSPACE.md)/[40](iterations/40-M7-ACCEPTANCE.md)。类型检查、相关 JS 97 项通过；最终独立包 10 阶段门禁通过，含三组进程缩放各 11 项工作台流程、旧导航 9 项、三格式/离线流程、97 文件 ZIP 比对与中文路径重定位。原生引擎 hash 与 preview.9 一致；不是新 DSP 或完整硬件验收。
 
 当前包：dist-trace/preview.10/win-unpacked/Trace.exe；ZIP 同目录 Trace-0.1.0-preview.10-Windows-x64.zip。精确证据 artifacts/m7/final-latest.json，最终目录 final-1789565860097。旧包保留。基线已提交 5c09c73；M7 交付另作阶段提交，实际提交号以 Git log 为准。
 
@@ -413,7 +413,7 @@ M7 工程通过，用户主观待复验；既有 EBU/96 kHz/物理驱动/真实�
 
 ## 历史：按 M7–M12 推进综合分析工作台
 
-2026-09-16：用户要求将 Insight 调研建议落地为后续开发计划，现已建立 [38-DEVELOPMENT-PLAN](../38-DEVELOPMENT-PLAN.md) v1.0，作为下一轮产品目标和阶段状态入口。阶段为 M7 可配置仪器工作台与视觉、M8 频谱/立体声声场、M9 共轴 2D 声谱图、M10 3D 声谱图、M11 目标/事件/报告、M12 外部文件/参考对比；新增 A15–A27 验收矩阵。所有阶段尚未开始实施，不能视为当前功能。
+2026-09-16：用户要求将 Insight 调研建议落地为后续开发计划，现已建立 [38-DEVELOPMENT-PLAN](iterations/38-DEVELOPMENT-PLAN.md) v1.0，作为下一轮产品目标和阶段状态入口。阶段为 M7 可配置仪器工作台与视觉、M8 频谱/立体声声场、M9 共轴 2D 声谱图、M10 3D 声谱图、M11 目标/事件/报告、M12 外部文件/参考对比；新增 A15–A27 验收矩阵。所有阶段尚未开始实施，不能视为当前功能。
 
 **下一任务：M7.0 仪器工作台架构与基线核对。** 先明确注册/布局/呈现状态/持久化边界，审计上游 DSP 复用，固定资源预算和隐藏/恢复语义，再进入 M7.1。任务清单见 38 第 13 节。沿用同窗口共轴、单/双声道、60 秒被动 PCM、三格式录音及历史重复性；换布局不改变 REC/监测/来源/游标。
 
@@ -421,7 +421,7 @@ M7 工程通过，用户主观待复验；既有 EBU/96 kHz/物理驱动/真实�
 
 ## 历史：Insight 2 与 Trace 同维度评估
 
-2026-09-16：用户提出后续扩展 2D/3D 声谱图、声场、仪器显示/隐藏、自定义布局，并希望视觉向 Insight 2 靠近；本轮请求为先调研和评分。已阅读本地 11 个功能章节，核对本机 Insight 2.6.0.350、本地手册页脚 2.5.0、官方发行说明及现有 Trace 实现/截图。报告见 [37-INSIGHT2-COMPARISON](../37-INSIGHT2-COMPARISON.md)。
+2026-09-16：用户提出后续扩展 2D/3D 声谱图、声场、仪器显示/隐藏、自定义布局，并希望视觉向 Insight 2 靠近；本轮请求为先调研和评分。已阅读本地 11 个功能章节，核对本机 Insight 2.6.0.350、本地手册页脚 2.5.0、官方发行说明及现有 Trace 实现/截图。报告见 [37-INSIGHT2-COMPARISON](iterations/37-INSIGHT2-COMPARISON.md)。
 
 按“可定制综合音频测量工作台”同一目标评估：Insight 2 为 8.5/10，Trace preview.9 为 6.0/10；主观加权分，主要差距在仪器覆盖、布局和辅助判读，不代表录音完成度或算法精度。Trace 的统一时间轴、系统录音/缓存保存与文件可重复历史是保留优势。报告区分已确认功能、设计判断与未做实机验证的项目；未给性能/准确度编造分数。
 
@@ -431,7 +431,7 @@ M7 工程通过，用户主观待复验；既有 EBU/96 kHz/物理驱动/真实�
 
 ## 历史：preview.9 三批迭代完成，待人工验收
 
-2026-09-16：三批功能已实现，工程验证与 ZIP 重定位通过。运行 dist-trace/preview.9/win-unpacked/Trace.exe，或完整解压 dist-trace/preview.9/Trace-0.1.0-preview.9-Windows-x64.zip。人工验收清单及交付哈希见 [36-PREVIEW9-ACCEPTANCE](../36-PREVIEW9-ACCEPTANCE.md)，范围与过程见 [35-ITERATION-ACCEPTANCE](../35-ITERATION-ACCEPTANCE.md)。
+2026-09-16：三批功能已实现，工程验证与 ZIP 重定位通过。运行 dist-trace/preview.9/win-unpacked/Trace.exe，或完整解压 dist-trace/preview.9/Trace-0.1.0-preview.9-Windows-x64.zip。人工验收清单及交付哈希见 [36-PREVIEW9-ACCEPTANCE](iterations/36-PREVIEW9-ACCEPTANCE.md)，范围与过程见 [35-ITERATION-ACCEPTANCE](iterations/35-ITERATION-ACCEPTANCE.md)。
 
 验证：JS 92 项、原生 CTest 13 组、编码矩阵 54 项、最终运行门禁 19 阶段、中文路径重定位离线流程 8 项通过。精确缓存保存、独立分析、整份/选区保存、三格式和重启已实测。汇总 artifacts/iteration/delivery.json。此前门禁失败是旧脚本没有展开新的文件详情，已同步实际操作并续跑；仅在 native/main/ASAR 哈希相同的情况下复用了此前通过阶段，原失败记录保留。
 
@@ -441,11 +441,11 @@ M7 工程通过，用户主观待复验；既有 EBU/96 kHz/物理驱动/真实�
 
 ## 历史：按三批顺序迭代，交付人工验收版本
 
-2026-09-16：用户已授权连续完成三批迭代。完整范围与进度见 [35-ITERATION-ACCEPTANCE](../35-ITERATION-ACCEPTANCE.md)。前两批实现与针对性验证已完成：当前相关 JS 57 项、长路径 Native I/O 1 项、原生 CTest 12/12，UI 9+7+5 项、真实三格式另存/缓存重建 4 项通过。完整清单和失败修复记录见 35，证据位于 artifacts/iteration。第三批缓存保存已实现并通过原生/服务/实际三格式保存和重启检查；当前在完成 preview.9 最终运行门禁与 ZIP 重定位验证。源代码功能已接通，交付尚未完成；截图已检查。第三批选择显式保存最近缓存/选区，所有批次完成并验证后交付运行包；不能将单批进展视为整体完成。基线标签保留；preview.9 运行目录已生成，最终打包验证进行中。
+2026-09-16：用户已授权连续完成三批迭代。完整范围与进度见 [35-ITERATION-ACCEPTANCE](iterations/35-ITERATION-ACCEPTANCE.md)。前两批实现与针对性验证已完成：当前相关 JS 57 项、长路径 Native I/O 1 项、原生 CTest 12/12，UI 9+7+5 项、真实三格式另存/缓存重建 4 项通过。完整清单和失败修复记录见 35，证据位于 artifacts/iteration。第三批缓存保存已实现并通过原生/服务/实际三格式保存和重启检查；当前在完成 preview.9 最终运行门禁与 ZIP 重定位验证。源代码功能已接通，交付尚未完成；截图已检查。第三批选择显式保存最近缓存/选区，所有批次完成并验证后交付运行包；不能将单批进展视为整体完成。基线标签保留；preview.9 运行目录已生成，最终打包验证进行中。
 
 ## 产品复核历史：preview.8
 
-2026-09-16：用户要求完整复核产品。本轮检查基线 6e4053e 的实际实现和独立包交互，形成 [34-PRODUCT-REVIEW](../34-PRODUCT-REVIEW.md)。已复现分析取消后仍显示进行中、重新分析不更新当前视图、PCM16 文件顶部误显示 Float 32、选区缺少清除入口、实时页 Space 与播放按钮不一致、导出参数重开恢复默认值。另提出横向导航、缓存有效范围、文件管理与录音交付改进，均区分缺陷、交互缺口和新功能建议。
+2026-09-16：用户要求完整复核产品。本轮检查基线 6e4053e 的实际实现和独立包交互，形成 [34-PRODUCT-REVIEW](iterations/34-PRODUCT-REVIEW.md)。已复现分析取消后仍显示进行中、重新分析不更新当前视图、PCM16 文件顶部误显示 Float 32、选区缺少清除入口、实时页 Space 与播放按钮不一致、导出参数重开恢复默认值。另提出横向导航、缓存有效范围、文件管理与录音交付改进，均区分缺陷、交互缺口和新功能建议。
 
 本轮只写复核文档，未改产品代码、未重建/替换运行包、未重新提交或推送。验证使用隔离配置、人工 8/120 秒及 PCM16 音频；截图通道两次超时，随后以实际 renderer DOM/状态完成交互检查，不宣称新像素级视觉验收。详见 34 中的 artifacts 路径。既有 EBU/96 kHz/物理设备/DPI/干净 VM 门禁继续开放。
 
@@ -453,7 +453,7 @@ M7 工程通过，用户主观待复验；既有 EBU/96 kHz/物理驱动/真实�
 
 ## 历史：preview.8 已获用户确认，建立 Git 基线
 
-2026-09-16：用户试用后反馈当前暂无主观问题，要求提交 Git 作为版本基线。本次提交收纳此前完整 Trace 开发成果，本地基线标识为 trace-preview.8-baseline；版本保持 0.1.0-preview.8。范围与验收边界见 [33-BASELINE](../33-BASELINE.md)。
+2026-09-16：用户试用后反馈当前暂无主观问题，要求提交 Git 作为版本基线。本次提交收纳此前完整 Trace 开发成果，本地基线标识为 trace-preview.8-baseline；版本保持 0.1.0-preview.8。范围与验收边界见 [33-BASELINE](iterations/33-BASELINE.md)。
 
 - 运行入口：dist-trace/preview.8/win-unpacked/Trace.exe；录音、缓存与编译/打包输出不纳入源码。
 - 已有工程证据沿用下方 preview.8 完成记录；本轮执行提交内容、构建身份与 Git 检查，无业务代码改动，不重复音频长测。
@@ -464,7 +464,7 @@ M7 工程通过，用户主观待复验；既有 EBU/96 kHz/物理驱动/真实�
 
 2026-09-16：根据用户录屏，修正每次 seek 待新代次数据时清空读数/电平柱的问题。HistoryPresentation 保留上一完整呈现，接纳匹配来源、代次、窗口和序号的新快照后，数字/表头/时间位置/游标共同更新。动画帧合并指针请求，等待呈现不占住主命令队列；主进程在定位后及时发布只读快照。录音观察继续独立运行。真实故障、未就绪、缺口和静音不被掩盖，LUFS/TP 不插值或平滑。
 
-入口：dist-trace/preview.8/win-unpacked/Trace.exe。详见 [32-PREVIEW8-SCRUB](../32-PREVIEW8-SCRUB.md)，逐帧证据与交付 hash 见 artifacts/scrub/delivery.json。原生引擎未修改；主进程快照发布与 renderer 已修改，不能复用 preview.7 的 main hash。
+入口：dist-trace/preview.8/win-unpacked/Trace.exe。详见 [32-PREVIEW8-SCRUB](iterations/32-PREVIEW8-SCRUB.md)，逐帧证据与交付 hash 见 artifacts/scrub/delivery.json。原生引擎未修改；主进程快照发布与 renderer 已修改，不能复用 preview.7 的 main hash。
 
 本轮通过：类型检查、构建、呈现/播放服务 17 项；文件正反向、45 ms 慢读取、真实内存缓存拖动均为 0 空白/空柱/忙状态闪烁，过程中的读数与独立缓存查询一致；工作台 9 项、走带/EOF 21 项、交互 9+1 项、续录/恢复/录音精度回归、包审核 4 项和独立包 8 项。旧录音 UI 用例仍检查按钮文字，已改为检查图标、可访问名称和按下状态后通过；失败原报告保留。
 
@@ -512,7 +512,7 @@ M7 工程通过，用户主观待复验；既有 EBU/96 kHz/物理驱动/真实�
 
 ## 历史：preview.4 统一工作台
 
-2026-09-16：统一窗口迭代已完成实现、最终组合门禁及 ZIP 重定位检查。入口 dist-trace/preview.4/win-unpacked/Trace.exe；详细交互、数据边界与验证见 [31-PREVIEW4-WORKBENCH](../31-PREVIEW4-WORKBENCH.md)。
+2026-09-16：统一窗口迭代已完成实现、最终组合门禁及 ZIP 重定位检查。入口 dist-trace/preview.4/win-unpacked/Trace.exe；详细交互、数据边界与验证见 [31-PREVIEW4-WORKBENCH](iterations/31-PREVIEW4-WORKBENCH.md)。
 
 ## preview.4 最终交付证据
 
@@ -533,7 +533,7 @@ M7 工程通过，用户主观待复验；既有 EBU/96 kHz/物理驱动/真实�
 
 ## 历史：preview.3（反馈 4–6）
 
-2026-09-16：连续缩放、文字精简和监测关闭直接录音已实现并通过门禁，详见 [30-PREVIEW3-INTERACTION](../30-PREVIEW3-INTERACTION.md)。
+2026-09-16：连续缩放、文字精简和监测关闭直接录音已实现并通过门禁，详见 [30-PREVIEW3-INTERACTION](iterations/30-PREVIEW3-INTERACTION.md)。
 
 - 当前入口：dist-trace/preview.3/win-unpacked/Trace.exe。
 - ZIP：dist-trace/preview.3/Trace-0.1.0-preview.3-Windows-x64.zip；SHA-256 3d9cfbea1fa7894ec9cb00c10e2cd12a33aafd765fb12a98e9fd7448fd48e38b。
@@ -545,7 +545,7 @@ M7 工程通过，用户主观待复验；既有 EBU/96 kHz/物理驱动/真实�
 
 ## 历史：preview.2
 
-2026-09-16：用户提出 60 秒 LIVE 回听、选区难发现及文件列表管理三项反馈。实现、针对性测试、最终组合门禁及 ZIP 中文路径重定位检查均已通过。详见 [29-PREVIEW2-FEEDBACK](../29-PREVIEW2-FEEDBACK.md)。当前新代码不再以 preview.1 的 hash 为准；下面的 M6 完成记录是前一版历史。
+2026-09-16：用户提出 60 秒 LIVE 回听、选区难发现及文件列表管理三项反馈。实现、针对性测试、最终组合门禁及 ZIP 中文路径重定位检查均已通过。详见 [29-PREVIEW2-FEEDBACK](iterations/29-PREVIEW2-FEEDBACK.md)。当前新代码不再以 preview.1 的 hash 为准；下面的 M6 完成记录是前一版历史。
 
 - 内存回听：ReplayBuffer / WaveSequence memory source / PlaybackService temporary；不写临时音频。
 - 选区：刻度轴直接拖选、显式模式、原 Shift / 数值输入均保留。
@@ -564,7 +564,7 @@ M7 工程通过，用户主观待复验；既有 EBU/96 kHz/物理驱动/真实�
 
 - 可直接运行：dist-trace/win-unpacked/Trace.exe，保留整个目录。
 - 便携包：dist-trace/Trace-0.1.0-preview.1-Windows-x64.zip（207058037 bytes，约 197.5 MiB）。
-- 操作与人工清单：[28-USER-GUIDE](../28-USER-GUIDE.md)；本次实现、验证边界、hash：[27-M6-DESKTOP](../27-M6-DESKTOP.md)。
+- 操作与人工清单：[28-USER-GUIDE](../28-USER-GUIDE.md)；本次实现、验证边界、hash：[27-M6-DESKTOP](iterations/27-M6-DESKTOP.md)。
 - 下一任务是用户实际设备/工作流人工验收及开放门禁；根据实测缺陷做小步修复，不重复初始化项目。
 - 当前不是“全部验收通过”的正式发布版。不要让缺失 EBU 素材阻止用户已授权的开发预览交付。
 

@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "recordedOn": "2026-10-03",
+  "recordedOn": "2026-10-18",
   "scope": "Pinned Trace engineering inputs; not an observed hardware/toolchain acceptance record",
   "product": "Trace",
-  "sourceVersion": "0.1.0-preview.31",
+  "sourceVersion": "0.1.0-preview.35",
   "supportedBackend": "win32-x64 WASAPI",
   "ciNode": "24.19.0",
   "dependencies": {
@@ -48,12 +48,12 @@
   "codecLock": "ffmpeg.lock.json",
   "meterConfiguration": "trace-meter-v5-ebur128-1.2.6-lra10hz-msi100hz-tpaligned",
   "historicalMachineSnapshot": "toolchain.m0.json",
-  "validation": "docs/80-RELEASE-DEPENDENCY-HARDENING.md",
+  "validation": "docs/89-FRONTEND-SIMPLIFICATION-ITERATION.md",
   "overrides": {
     "@electron/get": "5.1.0"
   },
-  "verification": "docs/release/codec-verification.json",
-  "lastValidatedOn": "2026-10-04",
+  "verification": "docs/release/frontend-verification.json",
+  "lastValidatedOn": "2026-10-17",
   "codecBuildLock": "references/trace-ffmpeg/build-lock.json",
   "codecBuildReport": "references/trace-ffmpeg/build-report.json",
   "codecValidation": "docs/81-SELF-BUILT-FFMPEG.md"
