@@ -584,5 +584,16 @@
     "notCommittedOrPushed": true,
     "gitWhitespaceCheck": "pass",
     "rawEvidence": "artifacts/document-archive-20261018/"
+  },
+  "delivery": {
+    "recordedOn": "2026-10-18",
+    "documentationCommit": "1ec95853230cd917b8cac18a7b26f2202b9bcc20",
+    "pullRequest": 3,
+    "url": "https://github.com/Sceneryyyy/Trace/pull/3",
+    "merged": true,
+    "mergedAt": "2026-10-18T08:13:45Z",
+    "mergeCommit": "4d1fc0b89b4b1522f019490d86c42106a8a4acf3",
+    "baseBranch": "recorder/dev",
+    "scope": "Verified GitHub merge and local fast-forward; historical validation/read-volume snapshots above retain their collection-time counts and state. No new product/audio/Windows test claimed."
   }
 }

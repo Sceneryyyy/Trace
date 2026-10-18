@@ -8,7 +8,7 @@
 
 现行主目录由 89 份 Markdown 减至 18 份；默认开工从 AGENTS＋01/02/07/13 改为 AGENTS＋13/07，由 709 行 / 85221 UTF-8 字节降至 119 行 / 12512 字节，字节量减少 85.3%。这是文本体积测量，不是 tokenizer 实测 token 数。
 
-迁移/链接/内容保全、机器 JSON/包依赖路径与 Git 空白检查结果记录在 manifest 的 `validation`；本轮未改产品代码、未重跑产品/音频/Windows/完整 CI，修改尚未提交/推送。上轮文档复核 90 与其 JSON 是归档前的 dated snapshot，里面的旧路径/计数按本 manifest 对照，不重写历史机器证据。
+迁移/链接/内容保全、机器 JSON/包依赖路径与 Git 空白检查结果记录在 manifest 的 `validation`；归档时未改产品代码、未重跑产品/音频/Windows/完整 CI；其后文档提交 `1ec9585` 已由 PR #3 合入 `recorder/dev`（`4d1fc0b`），当前交付状态见 [13](../13-HANDOFF.md)。上轮文档复核 90 与其 JSON 是归档前的 dated snapshot，里面的旧路径/计数按本 manifest 对照，不重写历史机器证据。
 
 `docs/release/`、`docs/research/`、`docs/assets/`、`docs/distribution/` 与旧 PDF/第三方来源保持原位。它们是按需证据；保持路径可避免改动打包输入、哈希记录或来源身份。
 

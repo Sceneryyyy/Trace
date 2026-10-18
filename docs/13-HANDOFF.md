@@ -7,12 +7,12 @@
 | 项目 | 当前记录 |
 | --- | --- |
 | 源码 | `0.1.0-preview.35`，产品来源 `3e665d92f0fc95b245956347fad56e0b43707107`；实现与验收范围见 [89](89-FRONTEND-SIMPLIFICATION-ITERATION.md) |
-| 分支/PR | 本地 `recorder/dev` 保留后续提交；评审分支 `codex/frontend-simplification-20261017` / [PR #3](https://github.com/Sceneryyyy/Trace/pull/3)。10 月 18 日上一轮 GitHub 核对时仍开放，head=`abdc70e`、base=`2277625`（远程默认 preview.34）；PR #1/#2 已合入 |
-| 工作区 | 本轮文档复核、71 份阶段记录归档与入口精简尚未提交/推送；产品代码未改。先检查实际 git status/log，不覆盖前轮或用户变更 |
+| 分支/PR | [PR #3](https://github.com/Sceneryyyy/Trace/pull/3) 已于 2026-10-18T08:13:45Z 合入 `recorder/dev`，合并提交 `4d1fc0b89b4b1522f019490d86c42106a8a4acf3`；PR head=`1ec9585`。PR #1/#2 亦已合入，本地已快进同步 |
+| 工作区 | 文档复核、71 份阶段归档与入口精简提交 `1ec9585` 已推送并合入；本次合并状态补记为文档增量，最终提交以 Git log 为准。产品代码未改，先查 git status/log 再同步 |
 | 工程候选 | Windows x64 preview.31 / `2aee519` / CI `38099859270`，私有附件 `11688230696`，未签名；不是 preview.35 包 |
 | 历史交付 | preview.30 / InternalTest-r3 来源 `9c1ee21`；PDF/截图各保留原版本，本轮未生成新包或 PDF |
 
-默认开发分支仍为 `recorder/dev`，远程默认尚不含 preview.35；有本地后续提交/分叉时不能 reset 覆盖或盲目 pull。先核对 PR/远程实际状态，再接续包含 preview.35 的来源。
+默认开发分支 `recorder/dev` 已包含 preview.35 与文档归档。同步前检查本地修改/分叉，干净且无分叉时使用 `git pull --ff-only origin recorder/dev`；不能 reset 覆盖用户工作。
 
 ## 最近交付与验证
 
@@ -22,6 +22,8 @@ UI88-00～09 云端内容完成：上下文摘要/设备模态、仪器更多菜
 
 前端实际 React/模拟 IPC：frontend 11、library 13、renderer 9、P0/P1 9、selector，以及本地 60 组合布局检查通过。完整来源/分片哈希在 [frontend-verification.json](release/frontend-verification.json)，只在追查证据时读取所需字段。依赖 pin 不变，完整/生产 npm 审计在原记录日期为零；不把文档修改当作新扫描或新产品测试。
 
+正式合并另触发 [CI 39110640618](https://github.com/Sceneryyyy/Trace/actions/runs/39110640618)（来源 `4d1fc0b`），本次补记时仍在运行，不能写为新一轮已通过；后续以 Actions 最终状态为准。
+
 ## 未关闭边界
 
 真实 Windows 设备/听感、96 kHz 采集、两小时录音/物理故障、GPU/系统 DPI/首帧、原生对话框、独立用户及正式发布按 [76](76-RELEASE-CHECKLIST.md) 待验。macOS 仅有方案（70），R83-09/10 为 P2，未纳入本轮。源码实现/云端模拟/无声卡候选加载不能替代实机验收。
@@ -30,7 +32,7 @@ Meter v5、Session v2、Request/Reply protocol v1、文件分析 key v3 保持�
 
 ## 下一会话接力
 
-1. 检查目录、Git 状态/分支与 PR #3 实际来源，保留本地文档工作；按用户安排继续评审或开发。
+1. 检查目录及 Git 状态/分支，接续已合入 PR #3 的 `recorder/dev`；按用户新方向开发，不重复已完成的合并/归档。
 2. 云端 UI88 已完成，不重复基线和完整 CI；有 Windows 后按 76 收集真实设备/视觉/回听反馈，下一版本范围写入 07。
 3. 后续候选需绑定目标源码并补匹配的包/手册与发布证据。签名、组件分发复核和用户测试分别关闭。
 

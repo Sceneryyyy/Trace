@@ -4,13 +4,13 @@
 
 ## 当前源码与下一候选的证据边界
 
-preview.35 的源码 `3e665d9` / [CI 39035516698](https://github.com/Sceneryyyy/Trace/actions/runs/39035516698) 已完成完整双平台门禁，见 [89](89-FRONTEND-SIMPLIFICATION-ITERATION.md) 与 [frontend-verification.json](release/frontend-verification.json)。截至 2026-10-18，PR #3 尚未合入；下述 preview.31 包审计/加载与附件不能作为 preview.35 分发证明。
+preview.35 的源码 `3e665d9` / [CI 39035516698](https://github.com/Sceneryyyy/Trace/actions/runs/39035516698) 已完成完整双平台门禁，见 [89](89-FRONTEND-SIMPLIFICATION-ITERATION.md) 与 [frontend-verification.json](release/frontend-verification.json)。2026-10-18，PR #3 已合入 `recorder/dev`（`4d1fc0b`）；下述 preview.31 包审计/加载与附件不能作为 preview.35 分发证明。
 
 下一候选需在选定的实际来源/ref 上重新生成，绑定同次 CI/run/attempt，重跑包审计与加载/重启，并配套该版本的说明、截图/PDF、manifest 和校验值。现有 PDF 仍为 preview.31，不能仅改名作为 preview.35 手册。以下表中“已通过”的云端项目只覆盖各处注明的来源，实机项目保持待验。
 
 ## 工程候选生成
 
-核对选定来源已包含目标代码后（当前默认 `recorder/dev` 仍为 preview.34），在该 ref 上手动执行 **Trace Candidate**，或在 Trace CI 手动勾选 `package_candidate`。它调用 Trace CI：Linux 与 Windows 并行检查；Windows 独立准备 Trace SDK/诊断、构建引擎并执行 CTest/native。生成候选前，脚本核对本次 run、提交及 attempt 的 Linux job 完整成功，然后打包、审计与验证包内运行库加载/主题重启。
+核对选定来源已包含目标代码后（当前默认 `recorder/dev` 已含 preview.35），在该 ref 上手动执行 **Trace Candidate**，或在 Trace CI 手动勾选 `package_candidate`。它调用 Trace CI：Linux 与 Windows 并行检查；Windows 独立准备 Trace SDK/诊断、构建引擎并执行 CTest/native。生成候选前，脚本核对本次 run、提交及 attempt 的 Linux job 完整成功，然后打包、审计与验证包内运行库加载/主题重启。
 
 本地 Windows 等价入口（锁定 VS2022/SDK/MSYS2 Bash、CMake/Python 已准备，见 81，干净 checkout）：
 

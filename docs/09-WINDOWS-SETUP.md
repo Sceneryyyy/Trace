@@ -1,6 +1,6 @@
 # 09 · Windows 开发与交付环境
 
-2026-10-18 更新。所有命令在本仓库根执行。默认安装、构建、测试和分发入口均属于 Trace；当前工程无需构建 Prism addon。独立工程边界见 [79](79-TRACE-INDEPENDENT-PROJECT.md)，首次接入过程见 [16](archive/iterations/16-M0-VALIDATION.md)，当前验证状态见 [13](13-HANDOFF.md)。源码版本为 preview.35（评审分支见 13），计量配置仍为 Meter v5；旧 preview.31 候选不包含后续源码改动。
+2026-10-18 更新。所有命令在本仓库根执行。默认安装、构建、测试和分发入口均属于 Trace；当前工程无需构建 Prism addon。独立工程边界见 [79](79-TRACE-INDEPENDENT-PROJECT.md)，首次接入过程见 [16](archive/iterations/16-M0-VALIDATION.md)，当前验证状态见 [13](13-HANDOFF.md)。源码版本为 preview.35（PR #3 已合入 recorder/dev，来源见 13），计量配置仍为 Meter v5；旧 preview.31 候选不包含后续源码改动。
 
 ## 工具与锁定记录
 

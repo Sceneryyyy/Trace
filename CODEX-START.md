@@ -2,7 +2,7 @@
 
 1. 在本仓库根检查 `git status --short --branch` / `git log`，遵守 [AGENTS.md](AGENTS.md)。
 2. **先读 [当前交接](docs/13-HANDOFF.md) 和 [任务单](docs/07-BACKLOG.md)**；它们记录版本、实际评审分支、已完成范围与剩余工作。其余按 [任务阅读表](docs/README.md) 选择，不按编号通读文档。
-3. preview.35 位于 PR #3 评审来源，远程默认可能仍为 preview.34；实际同步前核对交接与 GitHub，不覆盖本地后续提交。
+3. preview.35 与文档归档已由 PR #3 合入默认 `recorder/dev`（`4d1fc0b`）；同步前仍先检查本地状态，干净且无分叉时使用 `git pull --ff-only origin recorder/dev`。
 4. 历史实现/调研/审计已归档，只有定位回归、设计来源或旧包身份时才按文件读取；结束同步 07/13。
 
 ## 构建与检查

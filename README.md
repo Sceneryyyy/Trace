@@ -16,7 +16,7 @@ Audio Recorder & Analyzer
 
 Trace 是 LeoMoon 系列的桌面音频录音与分析工作台。它把系统声音采集、录音、历史回听和多种测量仪器放在同一个窗口，让你既能观察正在发生的声音，也能沿时间轴回到刚才的细节。
 
-当前源码为 **0.1.0-preview.35**（工作台与前端精简，见 [89](docs/89-FRONTEND-SIMPLIFICATION-ITERATION.md)；完整 CI 与实机待验边界以交接为准），默认开发分支为 `recorder/dev`。preview.35 位于 `codex/frontend-simplification-20261017` / [PR #3](https://github.com/Sceneryyyy/Trace/pull/3)，截至 2026-10-18 尚未合入远程默认分支（preview.34）。已验证的 preview.31 独立工程通过完整 Windows/Linux CI，并生成 **Windows x64 私有工程候选**（来源提交 `2aee519`）；产物身份见 [当前交接](docs/13-HANDOFF.md)。历史同事内测交付包为 **0.1.0-preview.30 / InternalTest-r3**（来源提交 `9c1ee21`）。[新版 PDF 快速上手](output/pdf/LeoMoon-Trace-Quick-Start-preview.31-zh-CN.pdf) 已更新，界面插图明确使用云端模拟数据。macOS 移植方案已记录，当前分支的 Trace 音频后端仍为 Windows/WASAPI，Mac 采集实现与实机验收尚未完成。
+当前源码为 **0.1.0-preview.35**（工作台与前端精简，见 [89](docs/89-FRONTEND-SIMPLIFICATION-ITERATION.md)；完整 CI 与实机待验边界以交接为准），默认开发分支为 `recorder/dev`。preview.35 及文档复核/归档已于 2026-10-18 通过 [PR #3](https://github.com/Sceneryyyy/Trace/pull/3) 合入 `recorder/dev`，合并提交 `4d1fc0b`。已验证的 preview.31 独立工程通过完整 Windows/Linux CI，并生成 **Windows x64 私有工程候选**（来源提交 `2aee519`）；产物身份见 [当前交接](docs/13-HANDOFF.md)。历史同事内测交付包为 **0.1.0-preview.30 / InternalTest-r3**（来源提交 `9c1ee21`）。[新版 PDF 快速上手](output/pdf/LeoMoon-Trace-Quick-Start-preview.31-zh-CN.pdf) 已更新，界面插图明确使用云端模拟数据。macOS 移植方案已记录，当前分支的 Trace 音频后端仍为 Windows/WASAPI，Mac 采集实现与实机验收尚未完成。
 
 ![Trace preview.35 工作台：模拟信号界面示例](docs/assets/frontend-preview35/workbench.png)
 

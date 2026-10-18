@@ -51,6 +51,6 @@ Windows 声卡、听感、96 kHz、长录音、物理 GPU/系统 DPI 与原生�
 
 已读取并 SHA-256 校验 CI 注解分片；未下载 CI 附件 payload。FFmpeg 与依赖 pin 沿用，组件/安装身份见摘要，不宣称新编码器版本或新安装包。实现中的旧 CI 被最终提交替代，不作为当前通过证据。
 
-本轮 [PR #3](https://github.com/Sceneryyyy/Trace/pull/3) 推送到 `codex/frontend-simplification-20261017`，尚未合入远程默认 `recorder/dev`（仍为 `2277625` / preview.34）；本地 recorder/dev 保留本轮后续提交。当前界面示例见 [preview.35 插图说明](assets/frontend-preview35/README.md)，来自实际 React 与模拟读数，旧 PDF/插图和 preview.31 候选未覆盖。
+本轮 [PR #3](https://github.com/Sceneryyyy/Trace/pull/3) 由 `codex/frontend-simplification-20261017` 推送，2026-10-18 已正式合入默认 `recorder/dev`，合并提交 `4d1fc0b89b4b1522f019490d86c42106a8a4acf3`，PR head=`1ec95853230cd917b8cac18a7b26f2202b9bcc20`（含文档复核/归档）；本地已快进同步。产品代码仍与通过完整 CI 的 `3e665d9` 一致，文档提交/正式合并不冒充新产品测试。当前界面示例见 [preview.35 插图说明](assets/frontend-preview35/README.md)，来自实际 React 与模拟读数，旧 PDF/插图和 preview.31 候选未覆盖。
 
 云端可完成内容到此结束；后续按 76 执行真实设备/快速回听/A-B/监测恢复、96 kHz、长录音、GPU/系统 DPI、原生对话框及用户视觉/听感验收。自动连播、歌单、批量、P2 和 Mac 不在本轮范围。
