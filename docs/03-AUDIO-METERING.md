@@ -1,10 +1,10 @@
 # 03 · 音频、计量与时间规范
 
-2026-10-03 编码回归修复：WAV 输入根据有界文件头选择解复用器，格式/声道/采样率仍由实际流校验；AAC 成品保留物理解码帧与有效音频范围。M4A 尾块只有在容器时长精确匹配且填充少于一个 AAC-LC 编码块时接受；ADTS 的前导延迟从实际首包取得。现有 recipe 排除填充，不增加测量时长；Meter v5 算法和 EBU 容差保持，见 [80](80-RELEASE-DEPENDENCY-HARDENING.md)。
+2026-10-03 编码回归修复：WAV 输入根据有界文件头选择解复用器，格式/声道/采样率仍由实际流校验；AAC 成品保留物理解码帧与有效音频范围。M4A 尾块只有在容器时长精确匹配且填充少于一个 AAC-LC 编码块时接受；ADTS 的前导延迟从实际首包取得。现有 recipe 排除填充，不增加测量时长；Meter v5 算法和 EBU 容差保持，见 [80](archive/iterations/80-RELEASE-DEPENDENCY-HARDENING.md)。
 
-2026-10-02 云端修复：内存 PCM 同步保留每帧 EstimatedSilence/Gap/Missing 质量标记，冻结后按所选范围精确计数，保存和重新分析不清除原采集质量。静音样本仍按原算法计量，质量独立于数值；未知质量不声明完整。新增质量环每帧 1 字节，容量为实际采样率 × 60 秒，96 kHz 时每个 live/frozen 对象最多增加 5,760,000 字节（约 5.49 MiB），分析线程预分配，无逐块分配或 I/O。云端验证及 Windows 边界见 [73](73-CLOUD-CODE-REVIEW.md) 修复节。
+2026-10-02 云端修复：内存 PCM 同步保留每帧 EstimatedSilence/Gap/Missing 质量标记，冻结后按所选范围精确计数，保存和重新分析不清除原采集质量。静音样本仍按原算法计量，质量独立于数值；未知质量不声明完整。新增质量环每帧 1 字节，容量为实际采样率 × 60 秒，96 kHz 时每个 live/frozen 对象最多增加 5,760,000 字节（约 5.49 MiB），分析线程预分配，无逐块分配或 I/O。云端验证及 Windows 边界见 [73](archive/iterations/73-CLOUD-CODE-REVIEW.md) 修复节。
 
-M8 频谱/声场的数学与时间窗定义见 [41-M8-METERING](41-M8-METERING.md)，四来源与界面已接通并完成工程交付，见 42。M9 时频列与原始点复用该内核；显示格可汇总多个原始值，精确查询单独返回实际窗与 bin，详见 [43](43-M9-SPECTROGRAM.md)。既有 LUFS/TP/LRA 算法与计量配置不因新增仪器改变；频谱使用明确的 dBFS 幅度标定。
+M8 频谱/声场的数学与时间窗定义见 [41-M8-METERING](archive/iterations/41-M8-METERING.md)，四来源与界面已接通并完成工程交付，见 42。M9 时频列与原始点复用该内核；显示格可汇总多个原始值，精确查询单独返回实际窗与 bin，详见 [43](archive/iterations/43-M9-SPECTROGRAM.md)。既有 LUFS/TP/LRA 算法与计量配置不因新增仪器改变；频谱使用明确的 dBFS 幅度标定。
 
 preview.4：当前连续录音段的有界历史使用该段自己的 Meter。活动 freeze 仅包含已发布计量前缀；true-peak 前视尾部不进入可查看范围。计量算法和容差不变，见 31。
 
@@ -80,7 +80,7 @@ FILE 的测量对象是用户选中的音频资产。位深转换、重采样或
 
 选区 `[a,b)` 作为独立节目，从空分析状态测其 I/LRA/TP，循环播放不重复累计。记录边界和首尾处理策略；不能对历史 LUFS 求算术平均来当选区 I。历史表头仍按文件坐标显示，选区统计另置。
 
-标准与 API 来源索引见 [14-SOURCES](14-SOURCES.md)；可判定测试见 [08-ACCEPTANCE](08-ACCEPTANCE.md)。
+标准与 API 来源索引见 [14-SOURCES](archive/iterations/14-SOURCES.md)；可判定测试见 [08-ACCEPTANCE](08-ACCEPTANCE.md)。
 
 ## M2 原生映射记录（v2，现由 v3 替代）
 
@@ -108,7 +108,7 @@ finish 使用 1.5 秒零分析上下文完成 LRA/TP；真实帧数和 EOF 的 M
 
 2026-10-03。当前配置为 `trace-meter-v5-ebur128-1.2.6-lra10hz-msi100hz-tpaligned`，C++/TypeScript 身份一致。M/S/I/LRA 每 10 ms 在真实源帧位置查询，与电平/TP 同索引发布；原始 EBU case 13/14 不再漏掉偏移的 Max M。I 的标准门限/400 ms gating block 与 LRA 内部 10 Hz 分布不变；M/S 的窗长度仍为 400 ms/3 s。
 
-FILE 保存每个 10 ms 响度记录，Max M/Max S 报告使用完整索引；同一位置重复查询恢复同一值。旧 v4 缓存按配置 ID/引擎 hash 失效重建。内存响度环固定 6000 条、最多 60 s，初始化时一次堆分配；LIVE/Replay 曲线呈现最多 600 点，保留真实桶末值并 OR 合并质量 flags。EOF 单独保存部分 hop，TP/LRA 零分析上下文仍不增加音频帧。原始素材适用 68/68 通过及 Windows 未验证范围见 [78](78-EBU-METER-RECALIBRATION.md)。
+FILE 保存每个 10 ms 响度记录，Max M/Max S 报告使用完整索引；同一位置重复查询恢复同一值。旧 v4 缓存按配置 ID/引擎 hash 失效重建。内存响度环固定 6000 条、最多 60 s，初始化时一次堆分配；LIVE/Replay 曲线呈现最多 600 点，保留真实桶末值并 OR 合并质量 flags。EOF 单独保存部分 hop，TP/LRA 零分析上下文仍不增加音频帧。原始素材适用 68/68 通过及 Windows 未验证范围见 [78](archive/iterations/78-EBU-METER-RECALIBRATION.md)。
 
 ## 录音快照一致性
 
@@ -140,6 +140,6 @@ monitoringRequested 记录用户是否需要常驻 LIVE，active 仍表示实际
 
 ## preview.32 分布与回听语义
 
-Meter v5 与原始计量容差保持不变。新增 M/S 分布按缓存原始帧时长加权；PLR/PSR 的窗口、质量排除与 10 ms TP 精度范围见 [84](84-P0-P1-CLOUD-ITERATION.md)。显示平滑/倾斜只处理线性功率显示，等响度系数与 5 ms 增益过渡只进入播放输出，不应用于录音、计量或成品导出。独立 I 对照固定 pyloudnorm 提交，不等于 LRA/TP 认证。
+Meter v5 与原始计量容差保持不变。新增 M/S 分布按缓存原始帧时长加权；PLR/PSR 的窗口、质量排除与 10 ms TP 精度范围见 [84](archive/iterations/84-P0-P1-CLOUD-ITERATION.md)。显示平滑/倾斜只处理线性功率显示，等响度系数与 5 ms 增益过渡只进入播放输出，不应用于录音、计量或成品导出。独立 I 对照固定 pyloudnorm 提交，不等于 LRA/TP 认证。
 
-2026-10-15 质量边界修复：Recorder 的 take 回放缓存在复制 PCM 时保留 EstimatedSilence 标志，整段/选区冻结与显式保存据此报告估计帧数；不改变 Meter v5 数值或既有质量协议。Windows 原生回归及本轮证据见 [85](85-CODE-DOCUMENT-REVIEW.md)。
+2026-10-15 质量边界修复：Recorder 的 take 回放缓存在复制 PCM 时保留 EstimatedSilence 标志，整段/选区冻结与显式保存据此报告估计帧数；不改变 Meter v5 数值或既有质量协议。Windows 原生回归及本轮证据见 [85](archive/iterations/85-CODE-DOCUMENT-REVIEW.md)。

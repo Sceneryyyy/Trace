@@ -10,17 +10,17 @@ Audio Recorder & Analyzer
 
 让声音被看见，让灵感有迹可循。
 
-[快速上手](docs/28-USER-GUIDE.md) · [内测版本说明](docs/69-INTERNAL-TEST-R3.md) · [开发进度](docs/13-HANDOFF.md) · [文档索引](docs/README.md) · [许可与来源](#许可与来源)
+[快速上手](docs/28-USER-GUIDE.md) · [内测版本说明](docs/archive/iterations/69-INTERNAL-TEST-R3.md) · [开发进度](docs/13-HANDOFF.md) · [文档索引](docs/README.md) · [许可与来源](#许可与来源)
 
 </div>
 
 Trace 是 LeoMoon 系列的桌面音频录音与分析工作台。它把系统声音采集、录音、历史回听和多种测量仪器放在同一个窗口，让你既能观察正在发生的声音，也能沿时间轴回到刚才的细节。
 
-当前源码为 **0.1.0-preview.34**（录音列表迭代，见 [87](docs/87-RECORDING-LIBRARY-ITERATION.md)），开发分支为 `recorder/dev`。已验证的 preview.31 独立工程通过完整 Windows/Linux CI，并生成 **Windows x64 私有工程候选**（来源提交 `2aee519`）；产物身份见 [当前交接](docs/13-HANDOFF.md)。历史同事内测交付包为 **0.1.0-preview.30 / InternalTest-r3**（来源提交 `9c1ee21`）。[新版 PDF 快速上手](output/pdf/LeoMoon-Trace-Quick-Start-preview.31-zh-CN.pdf) 已更新，界面插图明确使用云端模拟数据。macOS 移植方案已记录，当前分支的 Trace 音频后端仍为 Windows/WASAPI，Mac 采集实现与实机验收尚未完成。
+当前源码为 **0.1.0-preview.35**（工作台与前端精简，见 [89](docs/89-FRONTEND-SIMPLIFICATION-ITERATION.md)；完整 CI 与实机待验边界以交接为准），默认开发分支为 `recorder/dev`。preview.35 位于 `codex/frontend-simplification-20261017` / [PR #3](https://github.com/Sceneryyyy/Trace/pull/3)，截至 2026-10-18 尚未合入远程默认分支（preview.34）。已验证的 preview.31 独立工程通过完整 Windows/Linux CI，并生成 **Windows x64 私有工程候选**（来源提交 `2aee519`）；产物身份见 [当前交接](docs/13-HANDOFF.md)。历史同事内测交付包为 **0.1.0-preview.30 / InternalTest-r3**（来源提交 `9c1ee21`）。[新版 PDF 快速上手](output/pdf/LeoMoon-Trace-Quick-Start-preview.31-zh-CN.pdf) 已更新，界面插图明确使用云端模拟数据。macOS 移植方案已记录，当前分支的 Trace 音频后端仍为 Windows/WASAPI，Mac 采集实现与实机验收尚未完成。
 
-![Trace 工作台：波形、电平与响度共享时间轴](docs/assets/quick-start-preview28/workbench.png)
+![Trace preview.35 工作台：模拟信号界面示例](docs/assets/frontend-preview35/workbench.png)
 
-*界面截图来自 preview.28 的演示信号；历史同事内测交付包为 preview.30 / R3。*
+上图为实际 React 界面与模拟信号，截图来源及验证边界见 [preview.35 插图说明](docs/assets/frontend-preview35/README.md)。
 
 ## 功能特点
 
@@ -41,23 +41,23 @@ Trace 是 LeoMoon 系列的桌面音频录音与分析工作台。它把系统�
 
 ## 快速开始
 
-1. 获取 **Windows x64 内测分发包**，完整解压后运行 `Trace.exe`。历史同事包见 [InternalTest-r3 分发说明](docs/69-INTERNAL-TEST-R3.md)；新的 preview.31 私有工程候选身份与可用状态见 [当前交接](docs/13-HANDOFF.md)，分发包由维护者另行提供。
+1. 获取 **Windows x64 内测分发包**，完整解压后运行 `Trace.exe`。历史同事包见 [InternalTest-r3 分发说明](docs/archive/iterations/69-INTERNAL-TEST-R3.md)；新的 preview.31 私有工程候选身份与可用状态见 [当前交接](docs/13-HANDOFF.md)，分发包由维护者另行提供。
 2. 选择系统播放设备，点击「开始监测」并播放声音，观察仪器；也可以直接点击录音按钮启动采集和录音。
 3. 点击停止录音后，在波形上定位回听；切换「选区」后拖出范围，启用循环试听。
 4. 点击「实时」回到最新声音。需要保留尚未录制的片段时，使用「保存缓存」。
 5. 通过「仪器」选择显示内容，再进入「编辑布局」调整工作台并保存预设。
 
-详细操作见 [用户指南](docs/28-USER-GUIDE.md)。内测分发包包含中文 PDF 快速上手手册，手册的适用版本与维护说明见 [用户手册记录](docs/62-USER-MANUAL.md)。
+详细操作见 [用户指南](docs/28-USER-GUIDE.md)。内测分发包包含中文 PDF 快速上手手册，手册的适用版本与维护说明见 [用户手册记录](docs/archive/iterations/62-USER-MANUAL.md)。
 
 ### 当前验证边界
 
-preview.34 录音列表迭代见 [87](docs/87-RECORDING-LIBRARY-ITERATION.md)；preview.33 的历史代码/文档复核见 [85](docs/85-CODE-DOCUMENT-REVIEW.md) 和 [当前交接](docs/13-HANDOFF.md)。下段是 preview.31 私有工程候选的历史验证身份；当前源码尚未生成新安装包。
+preview.35 最新源码验证见 [89](docs/89-FRONTEND-SIMPLIFICATION-ITERATION.md)：完整双平台 CI、两端 portable 各 321/321、Windows CTest 19/19 与原生/媒体 68/68 通过；前端使用实际 React 与模拟 IPC，实机项目仍待验。preview.34 录音列表迭代见 [87](docs/archive/iterations/87-RECORDING-LIBRARY-ITERATION.md)；preview.33 的历史代码/文档复核见 [85](docs/archive/iterations/85-CODE-DOCUMENT-REVIEW.md) 和 [当前交接](docs/13-HANDOFF.md)。下段是 preview.31 私有工程候选的历史验证身份；当前源码尚未生成新安装包。
 
-本项目仍处于开发预览阶段。preview.31 独立工程的 [完整 CI](https://github.com/Sceneryyyy/Trace/actions/runs/38099859270)（`2aee519`）已成功：Windows CTest **19/19**、Trace 原生/FFmpeg 测试 **64/64**、两端可移植 JS **272/272**，Linux ASan/UBSan 的 8 项核心测试与 1 项原始 EBU 门禁、浏览器回归、类型与应用构建均通过；Windows 私有工程候选已生成，包审计及加载/重启通过。自建来源证明见 [81](docs/81-SELF-BUILT-FFMPEG.md)，本轮文件/故障复验见 [82](docs/82-FILE-FAULT-TESTING.md) 和 [当前交接](docs/13-HANDOFF.md)。
+本项目仍处于开发预览阶段。preview.31 独立工程的 [完整 CI](https://github.com/Sceneryyyy/Trace/actions/runs/38099859270)（`2aee519`）已成功：Windows CTest **19/19**、Trace 原生/FFmpeg 测试 **64/64**、两端可移植 JS **272/272**，Linux ASan/UBSan 的 8 项核心测试与 1 项原始 EBU 门禁、浏览器回归、类型与应用构建均通过；Windows 私有工程候选已生成，包审计及加载/重启通过。自建来源证明见 [81](docs/81-SELF-BUILT-FFMPEG.md)，本轮文件/故障复验见 [82](docs/archive/iterations/82-FILE-FAULT-TESTING.md) 和 [当前交接](docs/13-HANDOFF.md)。
 
-完整与生产 npm 审计均已归零；固定 SDK/历史编码修复见 [80](docs/80-RELEASE-DEPENDENCY-HARDENING.md)，新自建候选复验见 [81](docs/81-SELF-BUILT-FFMPEG.md)。自建 FFmpeg/LAME 的固定源码、构建脚本和实际报告已通过完整来源门禁，见 [81](docs/81-SELF-BUILT-FFMPEG.md)；组件安全与微软/GPL 系统库分发条款复核继续单列。独立干净 Windows、不同声卡/驱动、真实 96 kHz 等实机验收仍需补充，Windows 分发包尚未签名；macOS 采集、权限、打包与签名/公证尚未完成实机验证。正式发布门禁见 [76](docs/76-RELEASE-CHECKLIST.md)。
+完整与生产 npm 审计均已归零；固定 SDK/历史编码修复见 [80](docs/archive/iterations/80-RELEASE-DEPENDENCY-HARDENING.md)，新自建候选复验见 [81](docs/81-SELF-BUILT-FFMPEG.md)。自建 FFmpeg/LAME 的固定源码、构建脚本和实际报告已通过完整来源门禁，见 [81](docs/81-SELF-BUILT-FFMPEG.md)；组件安全与微软/GPL 系统库分发条款复核继续单列。独立干净 Windows、不同声卡/驱动、真实 96 kHz 等实机验收仍需补充，Windows 分发包尚未签名；macOS 采集、权限、打包与签名/公证尚未完成实机验证。正式发布门禁见 [76](docs/76-RELEASE-CHECKLIST.md)。
 
-Meter v5 的适用 EBU 原始 WAV 已在 Linux 与 Windows 工程检查中通过 68/68；Windows 实际文件读取与原生分析已验证。响度索引和报告峰值修复见 [78](docs/78-EBU-METER-RECALIBRATION.md)；真实设备、实时/选区/导出完整流程仍需实机验收。
+Meter v5 的适用 EBU 原始 WAV 已在 Linux 与 Windows 工程检查中通过 68/68；Windows 实际文件读取与原生分析已验证。响度索引和报告峰值修复见 [78](docs/archive/iterations/78-EBU-METER-RECALIBRATION.md)；真实设备、实时/选区/导出完整流程仍需实机验收。
 
 ## 开发入口
 
@@ -96,7 +96,7 @@ npm run build
 | `src/trace/` | Trace 界面、主进程与业务逻辑 |
 | `native/src/recorder/` | 原生录音、缓存、计量与回放核心 |
 | [产品需求](docs/01-PRODUCT.md) / [架构](docs/02-ARCHITECTURE.md) | 产品范围与技术约定 |
-| [任务单](docs/07-BACKLOG.md) / [迭代计划历史](docs/38-DEVELOPMENT-PLAN.md) | 当前待办与 M7–M12 原始范围 |
+| [任务单](docs/07-BACKLOG.md) / [迭代计划历史](docs/archive/iterations/38-DEVELOPMENT-PLAN.md) | 当前待办与 M7–M12 原始范围 |
 | [验收标准](docs/08-ACCEPTANCE.md) / [当前交接](docs/13-HANDOFF.md) | 验证证据、限制和下一任务 |
 
 Trace 文档集中维护在 `docs/`，阅读顺序见 [文档索引](docs/README.md) 与 [开发入门](CODEX-START.md)。`recorder/dev` 为默认开发分支；macOS 路线见 [移植方案](docs/70-MACOS-PORT-PLAN.md)。上游复用起点以提交和来源记录追溯，不依赖本地是否存在 `main` 分支。
@@ -109,4 +109,4 @@ Trace 文档集中维护在 `docs/`，阅读顺序见 [文档索引](docs/README
 
 Trace 基于 [Boof2015/Prism](https://github.com/Boof2015/prism) 开发，复用起点为提交 `df0755b8caaaab85157ac51aefffca0526974fc1`。感谢 Prism 作者及相关开源项目。
 
-项目保留 [GNU GPL v3 许可](LICENSE)、[第三方声明](THIRD_PARTY_NOTICES.md) 与 [上游原始 README](README-Prism.md)。详细来源与复用记录见 [来源清单](docs/14-SOURCES.md)。上游 README 描述的是 Prism 的历史功能与构建流程，Trace 的功能及开发入口以本页和 `docs/` 为准。
+项目保留 [GNU GPL v3 许可](LICENSE)、[第三方声明](THIRD_PARTY_NOTICES.md) 与 [上游原始 README](README-Prism.md)。详细来源与复用记录见 [来源清单](docs/archive/iterations/14-SOURCES.md)。上游 README 描述的是 Prism 的历史功能与构建流程，Trace 的功能及开发入口以本页和 `docs/` 为准。

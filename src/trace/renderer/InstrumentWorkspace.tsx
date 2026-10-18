@@ -1,3 +1,4 @@
+import {ActionMenu} from './ActionMenu'
 import {memo,useCallback,useEffect,useRef,useState,type ReactNode} from 'react'
 import {createPortal} from 'react-dom'
 import {defaultWorkspace,instruments,factoryLayouts,visibleTree,toggleInstrument,loadWorkspacePreset,saveWorkspacePreset,renameWorkspacePreset,deleteWorkspacePreset,dockInstrument,resizeSplit,type WorkspaceState,type InstrumentId,type LayoutNode,type PanelOptions} from '../workspace'
@@ -96,9 +97,12 @@ export const InstrumentWorkspace=memo(function InstrumentWorkspace({value,change
     <h2>{!value.locked&&!maximized&&<span className="instrument-drag-grip"><InstrumentIcon kind="grip"/></span>}{info.title}<small>{info.unit}</small></h2>
     {id==='history'&&<div className="legend">{value.layout.options.historyTraces.map(k=><span key={k} className={'legend-'+k}>{k.toUpperCase()}</span>)}</div>}
     <div>
-     <button aria-label={info.title+'设置'} title={info.title+(value.locked?'设置与说明':'设置与移动')} onClick={()=>{focusOrigin.current=document.activeElement as HTMLElement;setSettings(id);setTarget(instruments.find(i=>i.id!==id)!.id)}}><InstrumentIcon kind="settings"/></button>
      <button aria-label={maximized===id?'恢复'+info.title:'最大化'+info.title} title={maximized===id?'恢复布局':'最大化仪器'} onClick={()=>setMaximized(maximized===id?null:id)}><InstrumentIcon kind={maximized===id?'restore':'maximize'}/></button>
-     <button aria-label={'隐藏'+info.title} title={'隐藏'+info.title} onClick={()=>change(toggleInstrument(value,id))}><InstrumentIcon kind="hide"/></button>
+     <ActionMenu label={info.title+'更多操作'} items={[
+      {label:info.title+'设置',onSelect:()=>{focusOrigin.current=document.activeElement as HTMLElement;setSettings(id);setTarget(instruments.find(i=>i.id!==id)!.id)}},
+      {label:'隐藏'+info.title,onSelect:()=>{change(toggleInstrument(value,id));document.querySelector<HTMLButtonElement>('.instrument-chooser')?.focus()}}
+     ]}/>
+
     </div>
    </header>
    <div className="instrument-content" data-loudness-mode={value.layout.options.loudness} data-level-readout={value.layout.options.levelReadout}>{contents[id]}</div>
@@ -118,7 +122,7 @@ export const InstrumentWorkspace=memo(function InstrumentWorkspace({value,change
   <div className={'instrument-workspace '+(!value.locked?'editing':'')} data-workspace-layout={value.activePreset||'custom'}>
    {maximized?panel(maximized):visibleTree(value.layout.tree,value.layout.hidden)?tree(value.layout.tree):<div className="empty-workspace"><InstrumentIcon kind="layout"/><p>选择需要显示的仪器</p><button onClick={()=>change({...value,layout:{...value.layout,hidden:[]}})}>显示全部仪器</button></div>}
   </div>
-  {selected&&createPortal(<div className="modal-backdrop instrument-modal-backdrop" onMouseDown={e=>{if(e.currentTarget===e.target)setSettings(null)}} onKeyDown={e=>{e.stopPropagation();if(e.key==='Escape')setSettings(null);if(e.key==='Tab'){const items=[...e.currentTarget.querySelectorAll<HTMLElement>('button:not(:disabled),input:not(:disabled),select:not(:disabled)')],first=items[0],last=items.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus()}}}}>
+  {selected&&createPortal(<div className="modal-backdrop instrument-modal-backdrop" onMouseDown={e=>{if(e.currentTarget===e.target)setSettings(null)}} onKeyDown={e=>{e.stopPropagation();if(e.key==='Escape')setSettings(null);if(e.key==='Tab'){const items=[...e.currentTarget.querySelectorAll<HTMLElement>('button:not(:disabled),input:not(:disabled),select:not(:disabled)')].filter(node=>node.checkVisibility()),first=items[0],last=items.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus()}}}}>
    <section className="trace-modal instrument-settings" role="dialog" aria-modal="true" aria-label={selected.title+'设置'}>
     <header><h2>{selected.title}设置</h2><button autoFocus aria-label="关闭仪器设置" onClick={()=>setSettings(null)}>×</button></header>
     <div className="settings-content"><p>{selected.help}</p>{settingsContent?.[selected.id]}

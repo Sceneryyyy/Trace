@@ -50,7 +50,7 @@ async function main(){
   await c.evaluate("window.__publish('complete')")
   const values=await c.evaluate("document.querySelector('[data-instrument=loudness]').innerText")
   for(const theme of ['trace-green','ocean','ember','graphite','duo']){
-   await c.evaluate("document.querySelector('[aria-label=\"显示与帮助\"]').click()");await c.wait("!!document.querySelector('[role=radiogroup]')")
+   await c.evaluate("document.querySelector('[aria-label=\"设置与帮助\"]').click()");await c.wait("!!document.querySelector('[role=radiogroup]')")
    await c.evaluate("document.querySelector('[data-theme-choice="+theme+"]').click()");await c.wait("document.documentElement.dataset.traceTheme==="+JSON.stringify(theme))
    const tabStops=await c.evaluate("[...document.querySelectorAll('[role=radio]')].filter(e=>e.tabIndex===0).length");assert.equal(tabStops,1)
    for(const [key,expected]of [['Home','trace-green'],['End','duo']]){
@@ -65,7 +65,7 @@ async function main(){
    assert.equal(await c.evaluate("document.querySelector('[data-instrument=loudness]').innerText"),values)
    report.checks.push('Theme entry/preview/apply: '+theme)
   }
-  await c.evaluate("document.querySelector('[aria-label=\"显示与帮助\"]').click()");await c.wait("!!document.querySelector('[role=radiogroup]')")
+  await c.evaluate("document.querySelector('[aria-label=\"设置与帮助\"]').click()");await c.wait("!!document.querySelector('[role=radiogroup]')")
   await c.evaluate("document.querySelector('[data-theme-choice=ocean]').click()")
   await c.send('Input.dispatchKeyEvent',{type:'keyDown',key:'Escape',code:'Escape',windowsVirtualKeyCode:27});await c.send('Input.dispatchKeyEvent',{type:'keyUp',key:'Escape',code:'Escape',windowsVirtualKeyCode:27});await c.wait("!document.querySelector('[role=dialog]')")
   assert.equal(await c.evaluate('document.documentElement.dataset.traceTheme'),'duo');report.checks.push('Escape restores saved theme')

@@ -1,8 +1,8 @@
 # 04 · 会话、音频、缓存与恢复
 
-2026-10-03：ExportResult/DecodeRecipe 仍为 v1。AAC-LC M4A 的容器已处理前导延迟，但物理解码可能留下少于 1024 帧的尾块；只有流的 time_base/duration_ts 精确匹配有效帧数时记录实际 endPaddingFrames，现有 decodeRange 排除它。ADTS 从原 M4A 实际首包的负 PTS/Skip Samples 取得前导延迟，不能用 initial_padding=0 或固定常数猜测。文件/物理帧/有效范围/hash 的严格等式保持，见 [80](80-RELEASE-DEPENDENCY-HARDENING.md)。
+2026-10-03：ExportResult/DecodeRecipe 仍为 v1。AAC-LC M4A 的容器已处理前导延迟，但物理解码可能留下少于 1024 帧的尾块；只有流的 time_base/duration_ts 精确匹配有效帧数时记录实际 endPaddingFrames，现有 decodeRange 排除它。ADTS 从原 M4A 实际首包的负 PTS/Skip Samples 取得前导延迟，不能用 initial_padding=0 或固定常数猜测。文件/物理帧/有效范围/hash 的严格等式保持，见 [80](archive/iterations/80-RELEASE-DEPENDENCY-HARDENING.md)。
 
-2026-10-02 云端修复：CaptureRegion 可选 captureQuality v1 保存估计帧、缺口帧和未知质量，estimatedFrames 保持现有字段并校验一致；计数不能超过区域帧数。内存来源缺少旧质量信息时显示 unknown，不能由新文件重新分析推定原采集完整。ExportResult 可选 continuity 持久化编码来源质量，导出再导出继承；旧导出沿来源/region 元数据追溯，循环或缺失链条返回 unknown，不依赖保留原件 PCM。Session schema 仍为 v2、ExportRecord/Result 仍为 v1（兼容可选字段）；参见 [73](73-CLOUD-CODE-REVIEW.md) 修复节。
+2026-10-02 云端修复：CaptureRegion 可选 captureQuality v1 保存估计帧、缺口帧和未知质量，estimatedFrames 保持现有字段并校验一致；计数不能超过区域帧数。内存来源缺少旧质量信息时显示 unknown，不能由新文件重新分析推定原采集完整。ExportResult 可选 continuity 持久化编码来源质量，导出再导出继承；旧导出沿来源/region 元数据追溯，循环或缺失链条返回 unknown，不依赖保留原件 PCM。Session schema 仍为 v2、ExportRecord/Result 仍为 v1（兼容可选字段）；参见 [73](archive/iterations/73-CLOUD-CODE-REVIEW.md) 修复节。
 
 PB2：配置目录下 support/events.json 为 schemaVersion=1，最多 128 条固定字段事件与 clean 标记；support/fatal.json 仅保存致命异常类别/时间。异步原子写入、短时重复合并；致命退出前只写极小同步标记。导出诊断为独立新目录中的 diagnostics.json + feedback.txt，不附带音频/文件名/路径/设备身份。音频会话和计量缓存格式不变，见 60。
 
@@ -10,7 +10,7 @@ M12 参考比较：workspace v4 增加 comparison 仪器及预设，v1/v2/v3 迁
 
 M12：外部素材使用 ImportedDocument v1 与独立 owner.json，不创建虚假的 CaptureRegion。sourcePath/源指纹只指向只读外部文件；decoded/cache/exports 的应用归属分开。archived 为可选字段，移除引用后隐藏记录、保留元数据和成品；清缓存先失效 ready 状态并等待消费者释放。解码缓存有独立 owner/来源身份/顺序/帧数/实际 hash 校验。报告 source.origin 与摘要 CSV origin 列区分录音/导入；原有列顺序不变。设计及边界见 52/53。
 
-2026-10-09：MP3 首帧包含 Xing/Info 或 VBRI 声明时，导入核对声明字节及实际 packet 数，拒绝已知截断/缺帧；无声明时按实际解码长度处理，不从估计时长推算原始帧数。owner 标记写盘失败按独占创建句柄清理，未知内容仍保留。验证边界见 [82](82-FILE-FAULT-TESTING.md)。
+2026-10-09：MP3 首帧包含 Xing/Info 或 VBRI 声明时，导入核对声明字节及实际 packet 数，拒绝已知截断/缺帧；无声明时按实际解码长度处理，不从估计时长推算原始帧数。owner 标记写盘失败按独占创建句柄清理，未知内容仍保留。验证边界见 [82](archive/iterations/82-FILE-FAULT-TESTING.md)。
 
 2026-10-11：读取导入缓存先解析根目录真实路径，支持 Windows 祖先目录的 8.3 别名；UUID 子目录、PCM 目录及分段仍核验实际路径、非链接类型与 owner，不能用 junction 重定向缓存读取或清理。
 
@@ -24,7 +24,7 @@ M7：trace-settings.json 新增独立 workspace 字段，version 1 包含 layout
 
 preview.4：内存历史元数据 v2 增加原子来源/epoch/起点映射；磁盘 schema 不变。未录音不写临时音频；历史查看采用独立有界快照，后台继续缓存，见 31。
 
-状态：当前会话 schema v2，支持加载 v1。多区域写入、会话视图和恢复见 23；二进制分析缓存仍为独立的 schema v1。三格式成品和导出已在 M5 接通，见 [26](26-M5-EXPORT.md)。[示例](../examples/README.md) 已对齐当前字段；它们没有真实音频，不是可以直接回放/恢复的录音。
+状态：当前会话 schema v2，支持加载 v1。多区域写入、会话视图和恢复见 23；二进制分析缓存仍为独立的 schema v1。三格式成品和导出已在 M5 接通，见 [26](archive/iterations/26-M5-EXPORT.md)。[示例](../examples/README.md) 已对齐当前字段；它们没有真实音频，不是可以直接回放/恢复的录音。
 
 ## 持久化结构
 
@@ -88,7 +88,7 @@ FFmpeg 参数使用固定程序路径和参数数组，避免 shell 字符串拼
 
 JSON 禁止 NaN 和 Infinity；数值为空时附 ready/silence/insufficient/gap/error 状态。不同资产的历史不能只凭“文件名相同”共享。导入/转码后 decoder delay、padding 和实际解码帧原点进入索引映射。
 
-Meter v5 保留 page schema=1、128/96 字节电平/响度记录及缓存 key version=3，响度 stride 改为 1。measurementConfigId 与引擎 hash 使旧配置缓存重建；验证器拒绝旧 v4 或稀疏 stride=10 改标的缓存。显示最多 600 点，不用显示降采样数据计算报告最大值。见 [78](78-EBU-METER-RECALIBRATION.md)。
+Meter v5 保留 page schema=1、128/96 字节电平/响度记录及缓存 key version=3，响度 stride 改为 1。measurementConfigId 与引擎 hash 使旧配置缓存重建；验证器拒绝旧 v4 或稀疏 stride=10 改标的缓存。显示最多 600 点，不用显示降采样数据计算报告最大值。见 [78](archive/iterations/78-EBU-METER-RECALIBRATION.md)。
 
 ## 恢复与一致性
 
@@ -100,7 +100,7 @@ Meter v5 保留 page schema=1、128/96 字节电平/响度记录及缓存 key ve
 
 ## M3 实际缓存布局
 
-schema v1 的二进制布局、CRC、按页查询和内容绑定最初记录在 20-M3-FILE-ANALYSIS.md。正式实现为 native/src/recorder/FileAnalysis.cpp 与 src/trace/analysisCache.ts。当前计量配置为 v5，响度 stride=1，旧 v2/v3/v4 历史不能复用。适用 EBU 素材已通过云端 Meter 数值门禁，Windows 实际文件全链路尚未验收，见 78；跨率会话使用独立的固定率 session 视图，见 23。
+schema v1 的二进制布局、CRC、按页查询和内容绑定最初记录在 20-M3-FILE-ANALYSIS.md。正式实现为 native/src/recorder/FileAnalysis.cpp 与 src/trace/analysisCache.ts。当前计量配置为 v5，响度 stride=1，旧 v2/v3/v4 历史不能复用。适用 EBU 素材的 Linux/Windows 文件读取及原生文件分析已通过工程门禁，最新证据见 [89](89-FRONTEND-SIMPLIFICATION-ITERATION.md)；真实设备/实时/选区/导出完整链路仍按 [76](76-RELEASE-CHECKLIST.md) 待验；跨率会话使用独立的固定率 session 视图，见 23。
 
 ## 区域时间基础
 
@@ -140,7 +140,7 @@ ReplayInfo version 1 仅在内存保存，包含连续缓存帧数、实际采�
 
 ## preview.32 可重建缓存与独立复核元数据
 
-原始声谱 tile v1 保持，新概览单独使用 overview v1 并带质量比例；每素材 96 MiB、持久化登记素材合计 256 MiB，优先保留高层概览。未知文件、原始/恢复音频、链接和正在读写的数据不参与删除；配额与索引恢复边界见 [84](84-P0-P1-CLOUD-ITERATION.md)。
+原始声谱 tile v1 保持，新概览单独使用 overview v1 并带质量比例；每素材 96 MiB、持久化登记素材合计 256 MiB，优先保留高层概览。未知文件、原始/恢复音频、链接和正在读写的数据不参与删除；配额与索引恢复边界见 [84](archive/iterations/84-P0-P1-CLOUD-ITERATION.md)。
 
 人工标记 marker v1 位于应用独立 review-markers 目录，以内容哈希及解码范围/帧/采样率/声道绑定，最多 512 条，不随分析缓存清理。Report v1 增量 marker/distribution 字段各自标 v1；InstrumentSettings v1 严格迁移至 v2。协议详情见 [06](06-CONTRACTS.md)。
 
@@ -148,4 +148,4 @@ ReplayInfo version 1 仅在内存保存，包含连续缓存帧数、实际采�
 
 会话与重建导出清单独占创建唯一临时文件后原子替换，不复用 session.json.tmp/export.json.tmp；仅清理本次成功创建的临时文件。会话事件拒绝链接和非普通文件，诊断 support 根及 fatal 写入同样保护外部目标。会话清单读写上限 16 MiB、export 清单读写及分析 manifest 读取 4 MiB、偏好 512 KiB、marker 存储 1 MiB；读取同时核对已打开对象的身份/长度。过大或非法元数据拒绝读取，不影响原音频。恢复 journal 流式限制单行 1000000 字符，超限整行计入 ignoredJournalLines，后续 checkpoint 继续核验。
 
-磁盘声谱淘汰在删除前重新核对根/key 目录和已登记文件的内容摘要；未知内容、无法校验的隔离文件与链接保留。96/256 MiB 是已验证可重建数据的预算，knownBytes 不是磁盘总占用；详情见 [85](85-CODE-DOCUMENT-REVIEW.md)。
+磁盘声谱淘汰在删除前重新核对根/key 目录和已登记文件的内容摘要；未知内容、无法校验的隔离文件与链接保留。96/256 MiB 是已验证可重建数据的预算，knownBytes 不是磁盘总占用；详情见 [85](archive/iterations/85-CODE-DOCUMENT-REVIEW.md)。

@@ -1,0 +1,588 @@
+{
+  "schemaVersion": 1,
+  "archivedOn": "2026-10-18",
+  "baselineHead": "abdc70e9dad27fee37c74cce0c8d027120de0333",
+  "scope": "Historical documentation relocation and current-entry condensation; previous uncommitted documentation fixes preserved. SHA values refer to working-tree documents before/after relative-link rebasing, not original Git HEAD bytes. No new product validation.",
+  "readingVolume": {
+    "mandatoryReadBefore": [
+      "AGENTS.md",
+      "docs/01-PRODUCT.md",
+      "docs/02-ARCHITECTURE.md",
+      "docs/07-BACKLOG.md",
+      "docs/13-HANDOFF.md"
+    ],
+    "mandatoryReadAfter": [
+      "AGENTS.md",
+      "docs/13-HANDOFF.md",
+      "docs/07-BACKLOG.md"
+    ],
+    "beforeLines": 709,
+    "afterLines": 119,
+    "beforeUtf8Bytes": 85221,
+    "afterUtf8Bytes": 12512,
+    "utf8ByteReductionPercent": 85.3,
+    "lineReductionPercent": 83.2,
+    "rootMarkdownBefore": 89,
+    "rootMarkdownAfter": 18,
+    "scope": "Only required startup reading including AGENTS; lines/UTF-8 bytes, not tokenizer-measured tokens."
+  },
+  "moved": [
+    {
+      "originalPath": "docs/10-VSTDEV-ALIGNMENT.md",
+      "archivedPath": "docs/archive/iterations/10-VSTDEV-ALIGNMENT.md",
+      "sha256Before": "447bb0c6cfce8b38e8ce7a5e0f143e51b0724bd74f09e242a5b923cd7c8c8da4",
+      "sha256AfterLinkRebase": "447bb0c6cfce8b38e8ce7a5e0f143e51b0724bd74f09e242a5b923cd7c8c8da4",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/12-CODEX-PROMPTS.md",
+      "archivedPath": "docs/archive/iterations/12-CODEX-PROMPTS.md",
+      "sha256Before": "5a1c7d4143b7c137509f9b5eda889d9c196230bc5ebf40b4762c0045e25a16e8",
+      "sha256AfterLinkRebase": "e67b774fbe3c263a0b269c851f12ede381bdd9692eb0434c3104e04e1fe9f74d",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/14-SOURCES.md",
+      "archivedPath": "docs/archive/iterations/14-SOURCES.md",
+      "sha256Before": "1c0da967ec01734e00350da957c27ada4aa8c4c50d1f8be1dfcb21b75fc0b3fb",
+      "sha256AfterLinkRebase": "ebf5e8a71d7deb2dd34a591902eeb6f80e2c91e7b1c5d7e9ae4d9dfe4bd99e1a",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/16-M0-VALIDATION.md",
+      "archivedPath": "docs/archive/iterations/16-M0-VALIDATION.md",
+      "sha256Before": "62019b09b64e39c4f072800eb6eaec1b16c27352e985b9b1b24607b367f391e6",
+      "sha256AfterLinkRebase": "b6f537be6babe9d2eaad9b3f281764795443834795495b703e20d5b8628a2a7c",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/17-M1-VALIDATION.md",
+      "archivedPath": "docs/archive/iterations/17-M1-VALIDATION.md",
+      "sha256Before": "40cee8b42bf4980f42fd29a076e434f161b9acf738e5cb75890d3667de0e91de",
+      "sha256AfterLinkRebase": "40cee8b42bf4980f42fd29a076e434f161b9acf738e5cb75890d3667de0e91de",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/18-MILESTONE-GATES.md",
+      "archivedPath": "docs/archive/iterations/18-MILESTONE-GATES.md",
+      "sha256Before": "0b6258f0551611a067a702370bb7c8509a1ae38acfc9b94bb62ab3a991f49629",
+      "sha256AfterLinkRebase": "cfa90d93e93ce72f9dfae584a7a7a224f27399e41be60b754cc1355245cd9239",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/19-M2-RECORDING.md",
+      "archivedPath": "docs/archive/iterations/19-M2-RECORDING.md",
+      "sha256Before": "7fb27ae53b7c79205ebab45ce13b5ff15730716710728bea01616a88c856e592",
+      "sha256AfterLinkRebase": "7fb27ae53b7c79205ebab45ce13b5ff15730716710728bea01616a88c856e592",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/20-M3-FILE-ANALYSIS.md",
+      "archivedPath": "docs/archive/iterations/20-M3-FILE-ANALYSIS.md",
+      "sha256Before": "8f6451b9139d6ce122797a105a13025695276260b3ab4314adb331b304510567",
+      "sha256AfterLinkRebase": "8f6451b9139d6ce122797a105a13025695276260b3ab4314adb331b304510567",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/21-M3-TP-TIMING.md",
+      "archivedPath": "docs/archive/iterations/21-M3-TP-TIMING.md",
+      "sha256Before": "c9da4c2d6faa31bcf6a17c4d76779ae79d8c53f9fca8d5e36230ea8e929f43a5",
+      "sha256AfterLinkRebase": "c9da4c2d6faa31bcf6a17c4d76779ae79d8c53f9fca8d5e36230ea8e929f43a5",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/22-M2-REGION-TIMELINE.md",
+      "archivedPath": "docs/archive/iterations/22-M2-REGION-TIMELINE.md",
+      "sha256Before": "bda05e3ff74fc46fa09189a99da9cbed9b304484c441ce6ebec839278186cca5",
+      "sha256AfterLinkRebase": "bda05e3ff74fc46fa09189a99da9cbed9b304484c441ce6ebec839278186cca5",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/23-M2-CONTINUATION.md",
+      "archivedPath": "docs/archive/iterations/23-M2-CONTINUATION.md",
+      "sha256Before": "98dab7eeef87b801b94c2ec5b82ed7aea1c4631c2cf9cdfe4aea5496d10abca0",
+      "sha256AfterLinkRebase": "98dab7eeef87b801b94c2ec5b82ed7aea1c4631c2cf9cdfe4aea5496d10abca0",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/24-M2-WAV-PRECISION.md",
+      "archivedPath": "docs/archive/iterations/24-M2-WAV-PRECISION.md",
+      "sha256Before": "b8465fc585a64e3e36a711dcb4b25e9c098606a7b6cea332f72abcc7e9f7fd39",
+      "sha256AfterLinkRebase": "b8465fc585a64e3e36a711dcb4b25e9c098606a7b6cea332f72abcc7e9f7fd39",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/25-M4-PLAYBACK.md",
+      "archivedPath": "docs/archive/iterations/25-M4-PLAYBACK.md",
+      "sha256Before": "b6e96f7f7c7941b6f56b0adc0a55f583756a4bf1c07862ff54c4f2703e13e656",
+      "sha256AfterLinkRebase": "b6e96f7f7c7941b6f56b0adc0a55f583756a4bf1c07862ff54c4f2703e13e656",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/26-M5-EXPORT.md",
+      "archivedPath": "docs/archive/iterations/26-M5-EXPORT.md",
+      "sha256Before": "0c964c0d595484266b1252534fc8fccc0fdc9887c4bc047da20040d54a9d4cef",
+      "sha256AfterLinkRebase": "0c964c0d595484266b1252534fc8fccc0fdc9887c4bc047da20040d54a9d4cef",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/27-M6-DESKTOP.md",
+      "archivedPath": "docs/archive/iterations/27-M6-DESKTOP.md",
+      "sha256Before": "645dc4e22e374626246e7625589d31c80ad9b4e214d18064b946af3b9311391e",
+      "sha256AfterLinkRebase": "9ceb96a3ae658a2f895827290992ab7953727e38d3f046c97baeca5fc3fcc224",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/29-PREVIEW2-FEEDBACK.md",
+      "archivedPath": "docs/archive/iterations/29-PREVIEW2-FEEDBACK.md",
+      "sha256Before": "8a0b4621a8c50de100e56070379a3e5cb44d3d56c1e8b995a0eef113c21495cf",
+      "sha256AfterLinkRebase": "8a0b4621a8c50de100e56070379a3e5cb44d3d56c1e8b995a0eef113c21495cf",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/30-PREVIEW3-INTERACTION.md",
+      "archivedPath": "docs/archive/iterations/30-PREVIEW3-INTERACTION.md",
+      "sha256Before": "fc514b048cbdd90742e6826455ab2aba2702944ff36b2d04eff4dc5db407b4f4",
+      "sha256AfterLinkRebase": "fc514b048cbdd90742e6826455ab2aba2702944ff36b2d04eff4dc5db407b4f4",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/31-PREVIEW4-WORKBENCH.md",
+      "archivedPath": "docs/archive/iterations/31-PREVIEW4-WORKBENCH.md",
+      "sha256Before": "f77314c017e95fb02e1ed272b2771d5739ce05217ca5ee1dc554894bebb5debd",
+      "sha256AfterLinkRebase": "f77314c017e95fb02e1ed272b2771d5739ce05217ca5ee1dc554894bebb5debd",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/32-PREVIEW8-SCRUB.md",
+      "archivedPath": "docs/archive/iterations/32-PREVIEW8-SCRUB.md",
+      "sha256Before": "8be3643593e57b9de377b5e5a4060ead38af3d56f5bffd89b41b2e33ec8f676c",
+      "sha256AfterLinkRebase": "8be3643593e57b9de377b5e5a4060ead38af3d56f5bffd89b41b2e33ec8f676c",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/33-BASELINE.md",
+      "archivedPath": "docs/archive/iterations/33-BASELINE.md",
+      "sha256Before": "b32b56783a0f07baf5750729e04a769ca0bfc8e72375036f0a4b4bf8c12c1aa6",
+      "sha256AfterLinkRebase": "49335d3696c08a09a48868a1b00e52f7a861d3fca78f71be930d7cf0503affd1",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/34-PRODUCT-REVIEW.md",
+      "archivedPath": "docs/archive/iterations/34-PRODUCT-REVIEW.md",
+      "sha256Before": "e0929364f302627ce9ed93209baa23293656eb6be35321b7b7bf171aa068b134",
+      "sha256AfterLinkRebase": "e0929364f302627ce9ed93209baa23293656eb6be35321b7b7bf171aa068b134",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/35-ITERATION-ACCEPTANCE.md",
+      "archivedPath": "docs/archive/iterations/35-ITERATION-ACCEPTANCE.md",
+      "sha256Before": "2bd10bded24cbe08b2a9aabdbac4270c204a21ccfd87acdcc52116bf718e5e74",
+      "sha256AfterLinkRebase": "2bd10bded24cbe08b2a9aabdbac4270c204a21ccfd87acdcc52116bf718e5e74",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/36-PREVIEW9-ACCEPTANCE.md",
+      "archivedPath": "docs/archive/iterations/36-PREVIEW9-ACCEPTANCE.md",
+      "sha256Before": "cac3399575f7d5b175dbe9c54853090af4ee200a17520120497cdf59952f3edc",
+      "sha256AfterLinkRebase": "cac3399575f7d5b175dbe9c54853090af4ee200a17520120497cdf59952f3edc",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/37-INSIGHT2-COMPARISON.md",
+      "archivedPath": "docs/archive/iterations/37-INSIGHT2-COMPARISON.md",
+      "sha256Before": "d39a1cef7eb36d82245228dd5f8783a4675fb49511366aa83c9e6f91f4973e24",
+      "sha256AfterLinkRebase": "ea1d6fe362708f8f8e88beb3794e8d8a9279ce9b3737baf75a3f443bd8563bbe",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/38-DEVELOPMENT-PLAN.md",
+      "archivedPath": "docs/archive/iterations/38-DEVELOPMENT-PLAN.md",
+      "sha256Before": "27aada20e9d1d8b47ee266254e272115695ff02f41841d053cf7dd3492b982a8",
+      "sha256AfterLinkRebase": "15a18e99043ba2c25781671ca06adb5d32604cc0afd8676fac6acd95a2201708",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/39-M7-WORKSPACE.md",
+      "archivedPath": "docs/archive/iterations/39-M7-WORKSPACE.md",
+      "sha256Before": "f2a5928a9ecbd58e625ada8d3655de1513478f301f10aff7e23c459269bbdd8d",
+      "sha256AfterLinkRebase": "f2a5928a9ecbd58e625ada8d3655de1513478f301f10aff7e23c459269bbdd8d",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/40-M7-ACCEPTANCE.md",
+      "archivedPath": "docs/archive/iterations/40-M7-ACCEPTANCE.md",
+      "sha256Before": "47752474018ad58c88a73e023bec95316eb511bf9b8e0f47d70a710af6a6821c",
+      "sha256AfterLinkRebase": "47752474018ad58c88a73e023bec95316eb511bf9b8e0f47d70a710af6a6821c",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/41-M8-METERING.md",
+      "archivedPath": "docs/archive/iterations/41-M8-METERING.md",
+      "sha256Before": "1d375000a6242deb2d5eecdd693ed297f2756fc08b5d1802e06c6101b74dd796",
+      "sha256AfterLinkRebase": "1d375000a6242deb2d5eecdd693ed297f2756fc08b5d1802e06c6101b74dd796",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/42-M8-ACCEPTANCE.md",
+      "archivedPath": "docs/archive/iterations/42-M8-ACCEPTANCE.md",
+      "sha256Before": "e60ac3244cc8496282369f8954df1053f5ed11f17de55ef6b96d51a549f1ba88",
+      "sha256AfterLinkRebase": "e60ac3244cc8496282369f8954df1053f5ed11f17de55ef6b96d51a549f1ba88",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/43-M9-SPECTROGRAM.md",
+      "archivedPath": "docs/archive/iterations/43-M9-SPECTROGRAM.md",
+      "sha256Before": "d89424af3d2e196160289aef996bdb3690a85b8b1bacf13bda177ba77988ed26",
+      "sha256AfterLinkRebase": "d89424af3d2e196160289aef996bdb3690a85b8b1bacf13bda177ba77988ed26",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/44-M8-RESOURCE-INVESTIGATION.md",
+      "archivedPath": "docs/archive/iterations/44-M8-RESOURCE-INVESTIGATION.md",
+      "sha256Before": "b764b47f02046976bd983ae35b672acbf5813fc6dfa91fd3d00753ba6717fd2c",
+      "sha256AfterLinkRebase": "b764b47f02046976bd983ae35b672acbf5813fc6dfa91fd3d00753ba6717fd2c",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/45-VISIBILITY-AND-RESOURCE-GATE.md",
+      "archivedPath": "docs/archive/iterations/45-VISIBILITY-AND-RESOURCE-GATE.md",
+      "sha256Before": "0a7781a0ee6c088cf7d15f68c6fd83f1885bf55c2e56acc16ab1439d5f54bded",
+      "sha256AfterLinkRebase": "0a7781a0ee6c088cf7d15f68c6fd83f1885bf55c2e56acc16ab1439d5f54bded",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/46-M9-2D-INTEGRATION.md",
+      "archivedPath": "docs/archive/iterations/46-M9-2D-INTEGRATION.md",
+      "sha256Before": "6adbcbbb5bc7bc345202fdd3517741a0d9b034eb2f7aaba67862c58d178e061b",
+      "sha256AfterLinkRebase": "6adbcbbb5bc7bc345202fdd3517741a0d9b034eb2f7aaba67862c58d178e061b",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/47-M9-PRESENTATION-PERFORMANCE.md",
+      "archivedPath": "docs/archive/iterations/47-M9-PRESENTATION-PERFORMANCE.md",
+      "sha256Before": "17d8c381bfdfe3c60548653149447f6d41a3b841d38f952ca775605f150328b5",
+      "sha256AfterLinkRebase": "17d8c381bfdfe3c60548653149447f6d41a3b841d38f952ca775605f150328b5",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/48-M10-3D-DESIGN.md",
+      "archivedPath": "docs/archive/iterations/48-M10-3D-DESIGN.md",
+      "sha256Before": "0854d4c196817a4b25f64137d10fec6312c939b0c574c7d24616f96fe699f43f",
+      "sha256AfterLinkRebase": "0854d4c196817a4b25f64137d10fec6312c939b0c574c7d24616f96fe699f43f",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/49-M10-3D-INTEGRATION.md",
+      "archivedPath": "docs/archive/iterations/49-M10-3D-INTEGRATION.md",
+      "sha256Before": "72d221a1e69b0b80a6e0814a961dd6b76f5740568e8011852a19a2f39c0709aa",
+      "sha256AfterLinkRebase": "72d221a1e69b0b80a6e0814a961dd6b76f5740568e8011852a19a2f39c0709aa",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/50-M11-TARGET-REPORT-DESIGN.md",
+      "archivedPath": "docs/archive/iterations/50-M11-TARGET-REPORT-DESIGN.md",
+      "sha256Before": "25929e0e270d73b69f42ddc8757e29c1f1d04c178ac46c587ee879f97f762c63",
+      "sha256AfterLinkRebase": "25929e0e270d73b69f42ddc8757e29c1f1d04c178ac46c587ee879f97f762c63",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/51-M11-INTEGRATION.md",
+      "archivedPath": "docs/archive/iterations/51-M11-INTEGRATION.md",
+      "sha256Before": "14ead28fead8b8e2fbe061fd847a18c9bbd422f6d18639ea5f100f31ec62cb73",
+      "sha256AfterLinkRebase": "14ead28fead8b8e2fbe061fd847a18c9bbd422f6d18639ea5f100f31ec62cb73",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/52-M12-ASSET-REFERENCE-DESIGN.md",
+      "archivedPath": "docs/archive/iterations/52-M12-ASSET-REFERENCE-DESIGN.md",
+      "sha256Before": "1280938372fc817ef5659713008b8446cb22c63c5b8913b0e52d9f98ec2c6a33",
+      "sha256AfterLinkRebase": "1280938372fc817ef5659713008b8446cb22c63c5b8913b0e52d9f98ec2c6a33",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/53-M12-IMPORT-INTEGRATION.md",
+      "archivedPath": "docs/archive/iterations/53-M12-IMPORT-INTEGRATION.md",
+      "sha256Before": "5c35cab7e045ec67c76d0bb325c995b8fcd221f20e05b0c1bd24885dcc4824ef",
+      "sha256AfterLinkRebase": "5c35cab7e045ec67c76d0bb325c995b8fcd221f20e05b0c1bd24885dcc4824ef",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/54-M12-REFERENCE-DESIGN.md",
+      "archivedPath": "docs/archive/iterations/54-M12-REFERENCE-DESIGN.md",
+      "sha256Before": "cbce3d7db98cdd65a3216878fda09f901907c1643f4ad4f1360563dcc8123528",
+      "sha256AfterLinkRebase": "cbce3d7db98cdd65a3216878fda09f901907c1643f4ad4f1360563dcc8123528",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/55-M12-REFERENCE-INTEGRATION.md",
+      "archivedPath": "docs/archive/iterations/55-M12-REFERENCE-INTEGRATION.md",
+      "sha256Before": "264cdf8441ec9834d4489ed08dcecb5df7ca1dcd227dd14a06cb67bf892e93dd",
+      "sha256AfterLinkRebase": "264cdf8441ec9834d4489ed08dcecb5df7ca1dcd227dd14a06cb67bf892e93dd",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/56-M12-COMPLETION-AUDIT.md",
+      "archivedPath": "docs/archive/iterations/56-M12-COMPLETION-AUDIT.md",
+      "sha256Before": "411ddbf73313eb3cb5e6aac99bf46cfb609149ad99ca353b582e3b8029d6e89a",
+      "sha256AfterLinkRebase": "411ddbf73313eb3cb5e6aac99bf46cfb609149ad99ca353b582e3b8029d6e89a",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/57-M12-FINAL-REVIEW.md",
+      "archivedPath": "docs/archive/iterations/57-M12-FINAL-REVIEW.md",
+      "sha256Before": "26a1ec27fed87ee55fae4c03a045c892d3ad38604445e399da578c6865cade15",
+      "sha256AfterLinkRebase": "26a1ec27fed87ee55fae4c03a045c892d3ad38604445e399da578c6865cade15",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/58-LAYOUT-EDIT-FEEDBACK.md",
+      "archivedPath": "docs/archive/iterations/58-LAYOUT-EDIT-FEEDBACK.md",
+      "sha256Before": "4d1cdf134dd6c0330598c849be286e05c7921840983e7c9f060c2ab078ccce51",
+      "sha256AfterLinkRebase": "4d1cdf134dd6c0330598c849be286e05c7921840983e7c9f060c2ab078ccce51",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/59-PUBLIC-BETA-READINESS.md",
+      "archivedPath": "docs/archive/iterations/59-PUBLIC-BETA-READINESS.md",
+      "sha256Before": "90f7b8447b60b49b2e95bcbbe46eeeb4a51e55c4156c119da276947296f653ec",
+      "sha256AfterLinkRebase": "1dc6abb7d574400953506294b10a43b1ff6f46b25055adc30dd6ed9301606afc",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/60-PB1-PB2-SUPPORT.md",
+      "archivedPath": "docs/archive/iterations/60-PB1-PB2-SUPPORT.md",
+      "sha256Before": "39aa38ea8fc3aaa9405dfcfc1484d1b65acd63727bbdb4259181e7a26bce9341",
+      "sha256AfterLinkRebase": "39aa38ea8fc3aaa9405dfcfc1484d1b65acd63727bbdb4259181e7a26bce9341",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/61-LEOMOON-TRACE-BRANDING.md",
+      "archivedPath": "docs/archive/iterations/61-LEOMOON-TRACE-BRANDING.md",
+      "sha256Before": "f4d4966a61ed086c93f91d0e775e5533fa6a265c77384c8f9c15b3ea8b5dff62",
+      "sha256AfterLinkRebase": "f4d4966a61ed086c93f91d0e775e5533fa6a265c77384c8f9c15b3ea8b5dff62",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/62-USER-MANUAL.md",
+      "archivedPath": "docs/archive/iterations/62-USER-MANUAL.md",
+      "sha256Before": "83fc46830733ead22aecc1d94e838ce6eda62adb67f9c3493751fe3ca41b26d0",
+      "sha256AfterLinkRebase": "19da8649893a066d18d1f7b8eb3b40489404df4fba2c538518f952ebc2d0c826",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/63-INTERNAL-TEST-DISTRIBUTION.md",
+      "archivedPath": "docs/archive/iterations/63-INTERNAL-TEST-DISTRIBUTION.md",
+      "sha256Before": "896b5cf4de8b4a3aaaf9e1bdc58bbb0230e82cffe6035e901b887c3ca77ef358",
+      "sha256AfterLinkRebase": "896b5cf4de8b4a3aaaf9e1bdc58bbb0230e82cffe6035e901b887c3ca77ef358",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/64-INTERNAL-TEST-R2.md",
+      "archivedPath": "docs/archive/iterations/64-INTERNAL-TEST-R2.md",
+      "sha256Before": "4716a299d41f308806e1af9cee2037b6376d750fd28890d3e8ab99fc36c07b9b",
+      "sha256AfterLinkRebase": "4716a299d41f308806e1af9cee2037b6376d750fd28890d3e8ab99fc36c07b9b",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/66-FRONTEND-AUDIT.md",
+      "archivedPath": "docs/archive/iterations/66-FRONTEND-AUDIT.md",
+      "sha256Before": "02e2a55b5c77fb91c88c2ddf81837e8af459a6c719b24ccf9daa2a26de0e1e15",
+      "sha256AfterLinkRebase": "444eeeeea37859f643d59fa72a28ec6195a767b7d0ad3fd21bc99020606a3d0c",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/67-CODE-AUDIT-PREVIEW29.md",
+      "archivedPath": "docs/archive/iterations/67-CODE-AUDIT-PREVIEW29.md",
+      "sha256Before": "64a614a3706b930543bee4f175d30cae8b23185acc9bcbe5f2aa018778683db2",
+      "sha256AfterLinkRebase": "afec0db97bce7b560de76c3976805be71aeaeab2c447cda0a9993da3efe17c83",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/68-INDEPENDENT-CHANGE-REVIEW.md",
+      "archivedPath": "docs/archive/iterations/68-INDEPENDENT-CHANGE-REVIEW.md",
+      "sha256Before": "7ed5558b073ed7f0bb59d95801f956058abf85f32a44149bee6899a024ff818f",
+      "sha256AfterLinkRebase": "e9e18ce8a76a1cd2f53e9a0e9ce28c4eee333cec0d079c10d68d9a972d52bfe4",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/69-INTERNAL-TEST-R3.md",
+      "archivedPath": "docs/archive/iterations/69-INTERNAL-TEST-R3.md",
+      "sha256Before": "f6dc38371c73e2d1cbba653e1346adf54fa7a1af0c446363ffc497cb5761eaac",
+      "sha256AfterLinkRebase": "0b66a702546b85f224121caf35321ce3bd786e0da87bc80b2b2cf435cb5142c5",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/71-INSTRUMENT-THEMES-PLAN.md",
+      "archivedPath": "docs/archive/iterations/71-INSTRUMENT-THEMES-PLAN.md",
+      "sha256Before": "9f450c53421fee10218b50b16ee995dbecbd4c36f644a5819afc2bb276da0934",
+      "sha256AfterLinkRebase": "617d1bcb23c5b8ccd2715aa6162cdf55897a6bbb7f6da6df179c3a9c65453e5d",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/72-INSTRUMENT-THEMES-REVIEW.md",
+      "archivedPath": "docs/archive/iterations/72-INSTRUMENT-THEMES-REVIEW.md",
+      "sha256Before": "8a050321d5bde5f63c854b3d14aa2a34d6c493d524dc6991efda2a0623b3a1c6",
+      "sha256AfterLinkRebase": "62fa38c3f0e68a544a99e6022586b6682576f0eabd82884fea862a9e52249e29",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/73-CLOUD-CODE-REVIEW.md",
+      "archivedPath": "docs/archive/iterations/73-CLOUD-CODE-REVIEW.md",
+      "sha256Before": "f1008df432588b0c8d7fd1679ef2003421f9176ed53871e3f69b3be1e2f5dfee",
+      "sha256AfterLinkRebase": "8c1608c98d37d15939333724f9c218d2878224597f7052abeefc8fb22fa9043b",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/74-DOCUMENTATION-CLEANUP.md",
+      "archivedPath": "docs/archive/iterations/74-DOCUMENTATION-CLEANUP.md",
+      "sha256Before": "44ab9a65e35f0f17a8df5b5be80f0b59b8628de56c130c8a9e8360c4a7a9e7fc",
+      "sha256AfterLinkRebase": "ac94da1f0b1c9672776e75b4b8dfa782f23d10283a446042a1e2dcf49f51415f",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/75-CLOUD-RELEASE-PREPARATION.md",
+      "archivedPath": "docs/archive/iterations/75-CLOUD-RELEASE-PREPARATION.md",
+      "sha256Before": "5185482c368d4b2b56885ec22cf5a5678344f030bbe97a30db2a23cc7b0361b2",
+      "sha256AfterLinkRebase": "e465710ca4552919baae1a196c7107b30cbf0fdb71d18431acceb3c14efa4adb",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/77-EBU-MIRROR-VALIDATION.md",
+      "archivedPath": "docs/archive/iterations/77-EBU-MIRROR-VALIDATION.md",
+      "sha256Before": "decb3084baf752a5b50b59816865a0001122ed197b90d61bdc18bb4b4ab662bd",
+      "sha256AfterLinkRebase": "a79314d098f22318a47e3e61d598e87609d040e73aaf69ab4014239b6d1db945",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/78-EBU-METER-RECALIBRATION.md",
+      "archivedPath": "docs/archive/iterations/78-EBU-METER-RECALIBRATION.md",
+      "sha256Before": "29f88b0512102493f0f8dc66d906a7e2f8cc8fae0e9ae6851618a6eacdf5244f",
+      "sha256AfterLinkRebase": "885c54a3689b4db4d69c1810266991d1bfc7de7b053dca9c56a61a22991a774c",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/80-RELEASE-DEPENDENCY-HARDENING.md",
+      "archivedPath": "docs/archive/iterations/80-RELEASE-DEPENDENCY-HARDENING.md",
+      "sha256Before": "340f4e4b1cfba9b2cb075912cbf2adefbd624ec979ba8ad74a21fa6bcd623f48",
+      "sha256AfterLinkRebase": "11e62f28cae187f0fa9b9f5553bbeaa35297b005b8826d446c6101a75a29315a",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/82-FILE-FAULT-TESTING.md",
+      "archivedPath": "docs/archive/iterations/82-FILE-FAULT-TESTING.md",
+      "sha256Before": "a3d210a8282add1cc6d861e36cd4d4de85b363c6bd99de0130590d264e15570c",
+      "sha256AfterLinkRebase": "00854d5117345edbac823cecf246551dd3d4d0ad942b37e23836f5fc5e836b1e",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/83-GITHUB-AUDIO-PROJECT-RESEARCH.md",
+      "archivedPath": "docs/archive/iterations/83-GITHUB-AUDIO-PROJECT-RESEARCH.md",
+      "sha256Before": "886e22b6936adef89a7f7e5c4d5d7065e5ba26339126cc74db7709ce94d2353f",
+      "sha256AfterLinkRebase": "a92b55ff4decf3f2a4f422fe77c958fcbe13e489e1d658ddf86aa7a1003cdda9",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/84-P0-P1-CLOUD-ITERATION.md",
+      "archivedPath": "docs/archive/iterations/84-P0-P1-CLOUD-ITERATION.md",
+      "sha256Before": "fd2e867561ea973d2c0fdcfa99c4e5caefd1cf2952fb88abda182536239143a1",
+      "sha256AfterLinkRebase": "ff6bb14d4344de35ea48384191f42deb8eb1a6e5687e0d9605bf0143b34bed06",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/85-CODE-DOCUMENT-REVIEW.md",
+      "archivedPath": "docs/archive/iterations/85-CODE-DOCUMENT-REVIEW.md",
+      "sha256Before": "4a417459dfda7f3af06a542512b66b85defd6ddd7ac4efb260150e656a32b694",
+      "sha256AfterLinkRebase": "7f14fbf8f5a7a37ca1f5a3bf06153adfb5b64b63fdfa42fffdead1c69ade9f2b",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/86-RECORDING-LIST-RESEARCH.md",
+      "archivedPath": "docs/archive/iterations/86-RECORDING-LIST-RESEARCH.md",
+      "sha256Before": "0c5d37b453f9ca3248e9e405bc10fa0b96baf9bb0910477774f33763d7176c96",
+      "sha256AfterLinkRebase": "7de5aabf711d1ddecf3137d5a6ac8411b17492b0aba6e5dcc85e155988c35753",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/87-RECORDING-LIBRARY-ITERATION.md",
+      "archivedPath": "docs/archive/iterations/87-RECORDING-LIBRARY-ITERATION.md",
+      "sha256Before": "8cb77cb136b21a20437fd7252b7319389d1abc144872a32318c1ee5ea6d4a000",
+      "sha256AfterLinkRebase": "05cc9f42a42c5fd19477e3fcb6d027da3e269bead4d6b14eb9c97016a0545759",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/88-FRONTEND-SIMPLIFICATION-PLAN.md",
+      "archivedPath": "docs/archive/iterations/88-FRONTEND-SIMPLIFICATION-PLAN.md",
+      "sha256Before": "a05f054739d28527c23a13032cff2d0fbc02dfdbddd7e9914a8232641ad20e50",
+      "sha256AfterLinkRebase": "23b032e7f9774df263000cc777e9dcaeca2eab3a627012e9c2706c52d0695302",
+      "bodyPreservedWithRelativeLinkRebase": true
+    },
+    {
+      "originalPath": "docs/90-WORK-DOCUMENTATION-REVIEW.md",
+      "archivedPath": "docs/archive/iterations/90-WORK-DOCUMENTATION-REVIEW.md",
+      "sha256Before": "328b6e1d476dedf743c496f5b1ba3a42677ff764c6287630f3ffcfd1e44b0c33",
+      "sha256AfterLinkRebase": "98ed5ddcc79d831efc2f4d065bc30f151d9423152460b6d2bc3121fd48a5909b",
+      "bodyPreservedWithRelativeLinkRebase": true
+    }
+  ],
+  "snapshots": [
+    {
+      "originalPath": "docs/01-PRODUCT.md",
+      "snapshotPath": "docs/archive/snapshots/01-PRODUCT-before-archive-20261018.md",
+      "sha256Before": "1db951cf5c3bbea81f2dfd58b56e13d5797c6157f1bbd1c364f8d7bb2a5e355c",
+      "sha256AfterLinkRebase": "947ea1b1528872601987e6b59de117f63a7630ae2c9e47421f3a9068788de136"
+    },
+    {
+      "originalPath": "docs/02-ARCHITECTURE.md",
+      "snapshotPath": "docs/archive/snapshots/02-ARCHITECTURE-before-archive-20261018.md",
+      "sha256Before": "3458d51c828b6aa0623bd0186ae5ea103368f96da1cf9ce0181e56d6e5cd646d",
+      "sha256AfterLinkRebase": "8846b07f3a1332291c7565e96c7eb0cf44547fe74dac000ceac605bcc6099744"
+    },
+    {
+      "originalPath": "docs/05-UI-UX.md",
+      "snapshotPath": "docs/archive/snapshots/05-UI-UX-before-archive-20261018.md",
+      "sha256Before": "dab546d93dba2df87e87fdc18ffb8dde6ae261461bb8e51bdd3f6005a86bc8d1",
+      "sha256AfterLinkRebase": "f948e0feb973820705ba6b423c4b85f137b6b4b4d07f81d99b82380021d7cbc9"
+    },
+    {
+      "originalPath": "docs/07-BACKLOG.md",
+      "snapshotPath": "docs/archive/snapshots/07-BACKLOG-before-archive-20261018.md",
+      "sha256Before": "4a646619b246a88568cdf3a888794aa683b2bb642f22c839a9eb8612c6ad10ea",
+      "sha256AfterLinkRebase": "2ecf08423938d35f009cebc3e26c9595c2d8beec761651a9e56571aa79d603b0"
+    },
+    {
+      "originalPath": "docs/13-HANDOFF.md",
+      "snapshotPath": "docs/archive/snapshots/13-HANDOFF-before-archive-20261018.md",
+      "sha256Before": "452a4fe91711b5200046cc88f36cad41eb646a37b3d81919fd9b796af50d0ddf",
+      "sha256AfterLinkRebase": "0f22d40af44cc370ac628f7e49f7a8e765ffdaf95ed7e3c15d0d7bb238ffecc7"
+    }
+  ],
+  "retainedEvidenceDirectories": [
+    "docs/release",
+    "docs/research",
+    "docs/assets",
+    "docs/distribution",
+    "output/pdf",
+    "references"
+  ],
+  "historicalMachineRecords": "Existing verification JSON keeps collection-time paths, counts, hashes and results unchanged; resolve moved prose with this mapping.",
+  "validation": {
+    "status": "pass",
+    "checkedAt": "2026-10-18T07:58:00.010522+00:00",
+    "documents": 121,
+    "json": 38,
+    "localTargetsIncludingAnchors": 763,
+    "localMarkdownAnchors": 4,
+    "externalReferencesNotRequested": 182,
+    "movedBodiesPreserved": 71,
+    "fullSnapshotsPreserved": 5,
+    "nonMarkdownFilesUnchanged": 569,
+    "packageAndBuildInputPathsRetained": 9,
+    "currentNpmScriptReferences": 21,
+    "missingOrInvalid": [],
+    "scope": "Local documentation and source preservation checks only; no new product/audio/Windows/CI or network verification",
+    "notCommittedOrPushed": true,
+    "gitWhitespaceCheck": "pass",
+    "rawEvidence": "artifacts/document-archive-20261018/"
+  }
+}

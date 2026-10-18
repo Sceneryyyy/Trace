@@ -80,6 +80,10 @@ jobs:
         run: node tools/audit/library.cjs
         env:
           TRACE_AUDIT_CHROMIUM: google-chrome
+      - name: Workbench simplification and contextual frontend interactions
+        run: node tools/audit/frontend.cjs
+        env:
+          TRACE_AUDIT_CHROMIUM: google-chrome
       - name: P0 and P1 controls and chart conversion in Chromium
         run: node tools/audit/p0-p1.cjs
         env:
@@ -101,6 +105,8 @@ jobs:
             artifacts/independent-meter/results.json
             artifacts/p0-p1-ui/report.json
             artifacts/library/browser-report.json
+            artifacts/frontend/browser-report.json
+            artifacts/frontend/browser-*/*.png
           if-no-files-found: warn
 
   windows:

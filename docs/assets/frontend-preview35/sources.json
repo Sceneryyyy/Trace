@@ -1,0 +1,22 @@
+{
+  "sourceCommit": "3e665d92f0fc95b245956347fad56e0b43707107",
+  "productVersion": "0.1.0-preview.35",
+  "command": "node tools/audit/renderer.cjs",
+  "scope": "Actual React/CSS/Canvas in headless Chromium; simulated IPC and generated waveforms/metrics, no physical Windows/audio/device acceptance. Source images from an unchanged clean checkout before documentation additions.",
+  "sourceFiles": {
+    "workbench.png": "captures/workbench.png",
+    "settings.png": "captures/themes.png"
+  },
+  "images": [
+    {
+      "file": "workbench.png",
+      "sha256": "4ed849c4f3db62dcfdeb8b85d476bdc6a19589dbdc11cc8a4e725e3cbf3c2d17",
+      "bytes": 131958
+    },
+    {
+      "file": "settings.png",
+      "sha256": "256cb1904c95fd466e01c751123c73e7b28b4acde13cdf137aa60f221227a8f4",
+      "bytes": 124037
+    }
+  ]
+}

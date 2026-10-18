@@ -1,0 +1,2956 @@
+{
+  "schemaVersion": 1,
+  "collectedAt": "2026-10-17T13:25:28.162592+00:00",
+  "productVersion": "0.1.0-preview.35",
+  "sourceCommit": "3e665d92f0fc95b245956347fad56e0b43707107",
+  "sourceTree": "b0d76559b16f355776f68003c5ffa9d1f63c9f7e",
+  "pullRequest": {
+    "number": 3,
+    "url": "https://github.com/Sceneryyyy/Trace/pull/3",
+    "base": "recorder/dev",
+    "head": "codex/frontend-simplification-20261017",
+    "merged": false
+  },
+  "run": {
+    "id": 39035516698,
+    "attempt": 1,
+    "url": "https://github.com/Sceneryyyy/Trace/actions/runs/39035516698",
+    "headSha": "3e665d92f0fc95b245956347fad56e0b43707107",
+    "status": "completed",
+    "conclusion": "success"
+  },
+  "jobs": [
+    {
+      "name": "portable",
+      "jobId": 117404607104,
+      "checkRunId": 117404607104,
+      "conclusion": "success",
+      "url": "https://github.com/Sceneryyyy/Trace/actions/runs/39035516698/job/117404607104",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v6",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/setup-node@v6",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Install locked dependencies",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run npm run check:independence",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run npm run check:security",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run npm run typecheck",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run npm run test:trace",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run npm run build:trace",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Portable C++ with ASan and UBSan",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/setup-python@v6",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Independent pinned integrated loudness comparison",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Actual React subscription regression in Chromium",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Renderer interactions with simulated IPC",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Recording library interactions and bounded lists in Chromium",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Workbench simplification and contextual frontend interactions",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "P0 and P1 controls and chart conversion in Chromium",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Publish selected verification evidence in readable annotations",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/upload-artifact@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/setup-python@v6",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/setup-node@v6",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/checkout@v6",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ],
+      "testedCommit": "11831764ebad1fb0be9aa6cfb2fb36e88b08b507",
+      "tree": "b0d76559b16f355776f68003c5ffa9d1f63c9f7e",
+      "annotationParts": 3,
+      "annotationPayloadSha256": "dba0cd0f9aee6994f61c9870b0aec6feb92b838703713211456a89e17e160bc6",
+      "summary": {
+        "schemaVersion": 1,
+        "commit": "11831764ebad1fb0be9aa6cfb2fb36e88b08b507",
+        "sourceDirty": false,
+        "platform": "linux",
+        "arch": "x64",
+        "codecBuildReused": false,
+        "tests": [
+          {
+            "sha256": "53e00a3075a0346686d21cd1cdfd7b22f4e09234500bf060e7d910d14fbbf21e",
+            "commit": "11831764ebad1fb0be9aa6cfb2fb36e88b08b507",
+            "tier": "portable",
+            "files": 57,
+            "exitCode": 0,
+            "status": "pass",
+            "counts": {
+              "tests": 321,
+              "suites": 0,
+              "pass": 321,
+              "fail": 0,
+              "cancelled": 0,
+              "skipped": 0,
+              "todo": 0,
+              "duration_ms": 23444.628111
+            },
+            "failureDetails": null,
+            "observations": {},
+            "outputSha256": "12db4d47cfb261cbea727aa4d0e8d75a348aaf0f064d28446131685992bf3d3b"
+          }
+        ],
+        "ctest": {
+          "core": {
+            "sha256": "1ff9e4cfe06b1f640889c36001c7e5f5bf4480afcfba006790ef0e0e331ed5df",
+            "tests": 8,
+            "failures": 0,
+            "disabled": 0,
+            "seconds": 180
+          },
+          "ebu": {
+            "sha256": "9e9beb329fdfeeab86533dc265a8384af7ae15e0b6c61a9f74c857090ea417a5",
+            "tests": 1,
+            "failures": 0,
+            "disabled": 0,
+            "seconds": 410
+          }
+        },
+        "ebu": {
+          "sha256": "4c9f6bae86343f0554bfce36f4d6ce0021c13531ae48d626ab12f11637a9d6ae",
+          "commit": "11831764ebad1fb0be9aa6cfb2fb36e88b08b507",
+          "sourceDirty": false,
+          "status": "pass",
+          "measurementConfigId": "trace-meter-v5-ebur128-1.2.6-lra10hz-msi100hz-tpaligned",
+          "summary": {
+            "passed": 68,
+            "failed": 0,
+            "excluded": 2,
+            "supported": 68,
+            "checks": {
+              "total": 112,
+              "passed": 112,
+              "failed": 0
+            },
+            "invariants": {
+              "total": 204,
+              "passed": 204,
+              "failed": 0
+            },
+            "supportedPassRate": 1
+          },
+          "sourceSha256": {
+            "native/src/recorder/Meter.cpp": "d77d0d2f948d576977935ba0990a98fddc0738f3fc5219f6895a38a2597e2e42",
+            "native/src/recorder/Meter.h": "532a775edae2000a6f132db39b1684c7f7138484706dc6268999a2d4c1835cad",
+            "native/src/recorder/MeasurementConfig.h": "0a3619610a959edc91172767203f7695649c79573edd406e4185a6cdd49e8078",
+            "native/src/recorder/FileAnalysis.cpp": "5151b30051df30202880bb10b6a28417ce78e6284d9fa9da50f75d1d2de9ce5d",
+            "native/vendor/libebur128/ebur128.c": "9d3d75d880e7f514b0669341501ce55b159d86c25012b6d8c9340ad7ed8e7d5f",
+            "test/native/ebu_wav_probe.cpp": "15b983a60ee21cc86277d17707fad87f04b03f87e9d302d439c623befac23aa0",
+            "tools/metering/run-ebu-wav-tests.py": "872930365b8ff8e16f468fe85b0abbc436ff37ed5c41d6cb6d399ccc84f5cba6"
+          }
+        },
+        "frontend": {
+          "sha256": "155372c9af04d6a5738ddcfbd82f0c9c9fb175707415f4644113ad67d6952da2",
+          "commit": "11831764ebad1fb0be9aa6cfb2fb36e88b08b507",
+          "sourceDirty": false,
+          "scope": "Actual React/CSS/production CSP; simulated IPC, metadata and device state only; no Windows/audio/user acceptance",
+          "status": "passed",
+          "checks": [
+            "Default four instruments use 8 management buttons; context/transport bounded at 1024/1280/1399/1400/1600 CSS px",
+            "Instrument menus: arrows/Home/End/Enter, focus restore, hide and recover instrument",
+            "Device configuration moved into dialog; live remains actionable and REC disables changing the source",
+            "One chosen source/region/output detail; selection never opens or plays; explicit inspect/export binds the selected version; output actions and focus preserved",
+            "Missing external asset has exactly one relocate action, with other management commands still reachable",
+            "Report sections preserve draft, chosen report and event page; four graph/format outputs work under product CSP; stale prepared graph cannot save after a source switch",
+            "Settings categories preserve theme/behavior drafts, close restores saved theme, apply persists explicit choices, no duplicate wave-gain editor, About matches package version",
+            "Reference empty state guides selection; offsets/ranges are advanced, folding them preserves the configured value",
+            "3D camera selection, advanced view settings, one visible shared time-window editor, standalone/maximized access, parameter Space never starts playback",
+            "One main analysis progress plus compact local states; capture/file faults remain independently visible with source identity; custom targets expand on demand",
+            "An all-disabled menu remains keyboard dismissible; Escape closes it without stopping REC"
+          ]
+        },
+        "library": {
+          "sha256": "fa36497f7d0813d82784991abc2a04c827bfd158362285d5e2b9848b35133ff0",
+          "commit": "11831764ebad1fb0be9aa6cfb2fb36e88b08b507",
+          "sourceDirty": false,
+          "scope": "Actual React renderer, production CSP, simulated IPC/devices/metadata only; no native/Windows/disk/audio acceptance",
+          "status": "passed",
+          "checks": [
+            "Single click selects only; wide sidebar coexists with workbench; 50 mounted rows",
+            "Inspect stays paused; play/pause uses real returned context and preserves selection/cursor",
+            "Rapid A→B supersedes pending autoplay; only newest source is started",
+            "Export dialog isolates sidebar focus and returns focus to invoking row",
+            "Closing/reopening retains query, selected row, page and scroll",
+            "Locate current crosses pages and explicitly clears hiding filters",
+            "Import category uses existing source path; unreadable/estimated/unknown quality remain visible",
+            "Row audition preserves an explicitly loaded alternate export instead of reopening preferred source",
+            "Rename input suppresses global R/Space; Escape cancels form; row End and keyboard context menu keep local focus",
+            "Failed opening stays visible inside the drawer, sends no play and can be dismissed",
+            "REC leaves list browsable and disables audition",
+            "50/500/5000 metadata items keep mounted rows bounded at 50",
+            "Narrow drawer isolates background, traps focus, Escape closes and restores trigger (simulated 150% raster scale)"
+          ],
+          "sizes": [
+            {
+              "items": 50,
+              "settleMs": 25.900000000023283,
+              "rows": 50,
+              "panelNodes": 596
+            },
+            {
+              "items": 500,
+              "settleMs": 29.100000000093132,
+              "rows": 50,
+              "panelNodes": 596
+            },
+            {
+              "items": 5000,
+              "settleMs": 58.5,
+              "rows": 50,
+              "panelNodes": 595
+            }
+          ]
+        },
+        "security": {
+          "sha256": "48b45d7a17f2242b6f31c1cd8bde2d45a8feb2153fa01a901a88f52834fe77bd",
+          "commit": "11831764ebad1fb0be9aa6cfb2fb36e88b08b507",
+          "sourceDirty": false,
+          "packageLockSha256": "417fc077d38e65779e73f63a36ecc397d254a28046c62693a69bfbffaaf69a62",
+          "status": "pass",
+          "checks": [
+            {
+              "command": "npm audit --json",
+              "exitCode": 0,
+              "counts": {
+                "info": 0,
+                "low": 0,
+                "moderate": 0,
+                "high": 0,
+                "critical": 0,
+                "total": 0
+              },
+              "reportSha256": "c32ca030b773f94f2850f3e61a8a942058b82cd928537441fbaf310ea318997a"
+            },
+            {
+              "command": "npm audit --omit=dev --json",
+              "exitCode": 0,
+              "counts": {
+                "info": 0,
+                "low": 0,
+                "moderate": 0,
+                "high": 0,
+                "critical": 0,
+                "total": 0
+              },
+              "reportSha256": "c32ca030b773f94f2850f3e61a8a942058b82cd928537441fbaf310ea318997a"
+            }
+          ]
+        },
+        "verification": null,
+        "portableGate": null,
+        "packageLoad": null,
+        "packageAudit": null,
+        "runtime": null,
+        "codec": null,
+        "candidate": null,
+        "scope": "Selected actual CI-produced test/numerical/build/package records; generated/offline and no-card checks, not physical-device or release acceptance"
+      }
+    },
+    {
+      "name": "windows",
+      "jobId": 117404607162,
+      "checkRunId": 117404607162,
+      "conclusion": "success",
+      "url": "https://github.com/Sceneryyyy/Trace/actions/runs/39035516698/job/117404607162",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v6",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/setup-node@v6",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Install locked dependencies",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run npm run check:independence",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Fetch pinned Electron SDK without building another application",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Compile independent Trace diagnostic fixtures",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/cache/restore@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Prepare pinned codec with readable failure diagnostics",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/cache/save@v4",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Verify Trace and retain command outcomes",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Require this run's complete portable success before packing a candidate",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Build and inspect candidate package",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Publish selected verification evidence in readable annotations",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/upload-artifact@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/upload-artifact@v4",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Post Run actions/setup-node@v6",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/checkout@v6",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ],
+      "testedCommit": "11831764ebad1fb0be9aa6cfb2fb36e88b08b507",
+      "tree": "b0d76559b16f355776f68003c5ffa9d1f63c9f7e",
+      "annotationParts": 4,
+      "annotationPayloadSha256": "a1f2495674fe2684d2f1d57a4dc450a7e40c196814c36b32faa2258d8b7df14b",
+      "summary": {
+        "schemaVersion": 1,
+        "commit": "11831764ebad1fb0be9aa6cfb2fb36e88b08b507",
+        "sourceDirty": false,
+        "platform": "win32",
+        "arch": "x64",
+        "codecBuildReused": true,
+        "tests": [
+          {
+            "sha256": "9c808dde3cd0203a9e9a773b71f1fc8d04f562419ff49060c4380c60b4d6011f",
+            "commit": "11831764ebad1fb0be9aa6cfb2fb36e88b08b507",
+            "tier": "portable",
+            "files": 57,
+            "exitCode": 0,
+            "status": "pass",
+            "counts": {
+              "tests": 321,
+              "suites": 0,
+              "pass": 321,
+              "fail": 0,
+              "cancelled": 0,
+              "skipped": 0,
+              "todo": 0,
+              "duration_ms": 28423.6664
+            },
+            "failureDetails": null,
+            "observations": {},
+            "outputSha256": "0ad64a38ff1441d7ca40be1d4face37016bf12bc0b02f8d768d17b3c387be4d8"
+          },
+          {
+            "sha256": "9c3336484bd4ccba1377fbf2578238e2e2d1bda131134570da78b53c7ba8dd12",
+            "commit": "11831764ebad1fb0be9aa6cfb2fb36e88b08b507",
+            "tier": "native",
+            "files": 12,
+            "exitCode": 0,
+            "status": "pass",
+            "counts": {
+              "tests": 68,
+              "suites": 0,
+              "pass": 68,
+              "fail": 0,
+              "cancelled": 0,
+              "skipped": 0,
+              "todo": 0,
+              "duration_ms": 127083.8808
+            },
+            "failureDetails": null,
+            "observations": {
+              "TRACE_MP3_IMPORT_MATRIX": {
+                "ffmpegSha256": "c647e20c508af6421efb3c78b59e2a693f7b905c6a27384282ad76b5ad37d5ee",
+                "matrix": [
+                  {
+                    "rate": 8000,
+                    "channels": 1,
+                    "mode": "cbr",
+                    "inputFrames": 1737,
+                    "declaredDecodedFrames": "1775",
+                    "importedFrames": "1775"
+                  },
+                  {
+                    "rate": 8000,
+                    "channels": 1,
+                    "mode": "vbr",
+                    "inputFrames": 1737,
+                    "declaredDecodedFrames": "1775",
+                    "importedFrames": "1775"
+                  },
+                  {
+                    "rate": 8000,
+                    "channels": 2,
+                    "mode": "cbr",
+                    "inputFrames": 1737,
+                    "declaredDecodedFrames": "1775",
+                    "importedFrames": "1775"
+                  },
+                  {
+                    "rate": 8000,
+                    "channels": 2,
+                    "mode": "vbr",
+                    "inputFrames": 1737,
+                    "declaredDecodedFrames": "1775",
+                    "importedFrames": "1775"
+                  },
+                  {
+                    "rate": 16000,
+                    "channels": 1,
+                    "mode": "cbr",
+                    "inputFrames": 3337,
+                    "declaredDecodedFrames": "3337",
+                    "importedFrames": "3337"
+                  },
+                  {
+                    "rate": 16000,
+                    "channels": 1,
+                    "mode": "vbr",
+                    "inputFrames": 3337,
+                    "declaredDecodedFrames": "3337",
+                    "importedFrames": "3337"
+                  },
+                  {
+                    "rate": 16000,
+                    "channels": 2,
+                    "mode": "cbr",
+                    "inputFrames": 3337,
+                    "declaredDecodedFrames": "3337",
+                    "importedFrames": "3337"
+                  },
+                  {
+                    "rate": 16000,
+                    "channels": 2,
+                    "mode": "vbr",
+                    "inputFrames": 3337,
+                    "declaredDecodedFrames": "3337",
+                    "importedFrames": "3337"
+                  },
+                  {
+                    "rate": 44100,
+                    "channels": 1,
+                    "mode": "cbr",
+                    "inputFrames": 8957,
+                    "declaredDecodedFrames": "8957",
+                    "importedFrames": "8957"
+                  },
+                  {
+                    "rate": 44100,
+                    "channels": 1,
+                    "mode": "vbr",
+                    "inputFrames": 8957,
+                    "declaredDecodedFrames": "8957",
+                    "importedFrames": "8957"
+                  },
+                  {
+                    "rate": 44100,
+                    "channels": 2,
+                    "mode": "cbr",
+                    "inputFrames": 8957,
+                    "declaredDecodedFrames": "8957",
+                    "importedFrames": "8957"
+                  },
+                  {
+                    "rate": 44100,
+                    "channels": 2,
+                    "mode": "vbr",
+                    "inputFrames": 8957,
+                    "declaredDecodedFrames": "8957",
+                    "importedFrames": "8957"
+                  },
+                  {
+                    "rate": 48000,
+                    "channels": 1,
+                    "mode": "cbr",
+                    "inputFrames": 9737,
+                    "declaredDecodedFrames": "9737",
+                    "importedFrames": "9737"
+                  },
+                  {
+                    "rate": 48000,
+                    "channels": 1,
+                    "mode": "vbr",
+                    "inputFrames": 9737,
+                    "declaredDecodedFrames": "9737",
+                    "importedFrames": "9737"
+                  },
+                  {
+                    "rate": 48000,
+                    "channels": 2,
+                    "mode": "cbr",
+                    "inputFrames": 9737,
+                    "declaredDecodedFrames": "9737",
+                    "importedFrames": "9737"
+                  },
+                  {
+                    "rate": 48000,
+                    "channels": 2,
+                    "mode": "vbr",
+                    "inputFrames": 9737,
+                    "declaredDecodedFrames": "9737",
+                    "importedFrames": "9737"
+                  }
+                ],
+                "scope": "Generated external files; decoder metadata governs frames, not a claim of bit-exact encoder roundtrip"
+              },
+              "TRACE_CODEC_MINUTE": {
+                "ffmpegSha256": "c647e20c508af6421efb3c78b59e2a693f7b905c6a27384282ad76b5ad37d5ee",
+                "sourceRate": 96000,
+                "sourceFrames": 5760000,
+                "channels": 2,
+                "timings": [
+                  {
+                    "rate": 44100,
+                    "extension": "mp3",
+                    "elapsedMs": 1250,
+                    "physicalFrames": "2646000",
+                    "audibleFrames": "2646000"
+                  },
+                  {
+                    "rate": 44100,
+                    "extension": "m4a",
+                    "elapsedMs": 1801,
+                    "physicalFrames": "2646000",
+                    "audibleFrames": "2646000"
+                  },
+                  {
+                    "rate": 48000,
+                    "extension": "mp3",
+                    "elapsedMs": 1308,
+                    "physicalFrames": "2880000",
+                    "audibleFrames": "2880000"
+                  },
+                  {
+                    "rate": 48000,
+                    "extension": "m4a",
+                    "elapsedMs": 1786,
+                    "physicalFrames": "2880000",
+                    "audibleFrames": "2880000"
+                  }
+                ],
+                "scope": "Offline generated signal; not WASAPI or physical-device real-time acceptance"
+              }
+            },
+            "outputSha256": "70dff397ba83691c332c79b149c2e9b00733b8b7398b72dfa5e48433438b093b"
+          }
+        ],
+        "ctest": {
+          "sha256": "e1e2cb48954c3e3c1cd1159d8f56391a6a662576719c1781ef54ea370080766e",
+          "tests": 19,
+          "passed": 19,
+          "failed": 0
+        },
+        "ebu": {
+          "sha256": "c061190259b79b8d61947686eb73ea3b208a8c2784fc91cd6eea84cdabb4d22e",
+          "commit": "11831764ebad1fb0be9aa6cfb2fb36e88b08b507",
+          "sourceDirty": false,
+          "status": "pass",
+          "measurementConfigId": "trace-meter-v5-ebur128-1.2.6-lra10hz-msi100hz-tpaligned",
+          "summary": {
+            "passed": 68,
+            "failed": 0,
+            "excluded": 2,
+            "supported": 68,
+            "checks": {
+              "total": 112,
+              "passed": 112,
+              "failed": 0
+            },
+            "invariants": {
+              "total": 204,
+              "passed": 204,
+              "failed": 0
+            },
+            "supportedPassRate": 1
+          },
+          "sourceSha256": {
+            "native/src/recorder/Meter.cpp": "a01a7b96641bf8113faba731aa8338e642753febf725f2fdc599c6bedd4a5e91",
+            "native/src/recorder/Meter.h": "e4066aac8d89fdec565f177c7a08e076448e384536202d175d4d1ede3b066409",
+            "native/src/recorder/MeasurementConfig.h": "de90bfa7762c80b2ba3155a5f1a5ea4a255292c4b307e79c5a60f1c1d160f1a6",
+            "native/src/recorder/FileAnalysis.cpp": "e9702a0dea47e2da2ca56611564d6a03f5c57743b64b8b650b3aacded843d82d",
+            "native/vendor/libebur128/ebur128.c": "36726095b74a13fde0cb74992a06400d3f7cb1a228fa95df2a4cc5bf38231783",
+            "test/native/ebu_wav_probe.cpp": "51763a9073bce6d2f39226299b3c5e3175d985d07f8721929a4eb65108368722",
+            "tools/metering/run-ebu-wav-tests.py": "b8710789684f94d2e15e306993b7d8ca1a44d2d8f3bef2cf304e563edc9413a9"
+          }
+        },
+        "frontend": null,
+        "library": null,
+        "security": {
+          "sha256": "48b45d7a17f2242b6f31c1cd8bde2d45a8feb2153fa01a901a88f52834fe77bd",
+          "commit": "11831764ebad1fb0be9aa6cfb2fb36e88b08b507",
+          "sourceDirty": false,
+          "packageLockSha256": "417fc077d38e65779e73f63a36ecc397d254a28046c62693a69bfbffaaf69a62",
+          "status": "pass",
+          "checks": [
+            {
+              "command": "npm audit --json",
+              "exitCode": 0,
+              "counts": {
+                "info": 0,
+                "low": 0,
+                "moderate": 0,
+                "high": 0,
+                "critical": 0,
+                "total": 0
+              },
+              "reportSha256": "c32ca030b773f94f2850f3e61a8a942058b82cd928537441fbaf310ea318997a"
+            },
+            {
+              "command": "npm audit --omit=dev --json",
+              "exitCode": 0,
+              "counts": {
+                "info": 0,
+                "low": 0,
+                "moderate": 0,
+                "high": 0,
+                "critical": 0,
+                "total": 0
+              },
+              "reportSha256": "c32ca030b773f94f2850f3e61a8a942058b82cd928537441fbaf310ea318997a"
+            }
+          ]
+        },
+        "verification": {
+          "sha256": "2388cd543d2527c56864c59c7590c0a5102bc8133d486e145ece510f4425c77f",
+          "commit": "11831764ebad1fb0be9aa6cfb2fb36e88b08b507",
+          "sourceDirty": false,
+          "platform": "win32",
+          "arch": "x64",
+          "status": "pass",
+          "checks": [
+            {
+              "command": "npm run build:trace-engine",
+              "exitCode": 0,
+              "status": "pass"
+            },
+            {
+              "command": "npm run check:security",
+              "exitCode": 0,
+              "status": "pass"
+            },
+            {
+              "command": "npm run typecheck",
+              "exitCode": 0,
+              "status": "pass"
+            },
+            {
+              "command": "npm run test:trace",
+              "exitCode": 0,
+              "status": "pass"
+            },
+            {
+              "command": "npm run build:trace",
+              "exitCode": 0,
+              "status": "pass"
+            },
+            {
+              "command": "npm run test:trace-native",
+              "exitCode": 0,
+              "status": "pass"
+            }
+          ]
+        },
+        "portableGate": null,
+        "packageLoad": null,
+        "packageAudit": null,
+        "runtime": null,
+        "codec": {
+          "sha256": "e305461d392c76fec8c7355194c2fbd6b1fd4b579c862f4f5cd7bdb01fa0d047",
+          "buildLockSha256": "ed3e90d50ae39a4c3364197a5145490d36526f955e744f3585cb5c4cd37e84d1",
+          "systemInventorySha256": "b895920269ac9faa7827c4467f407268e4bd1dbf0ca2d539ff5a53f42b1ce48f",
+          "configHeaderSha256": "2f386f2de7862231e29b33eb202e152b605367d48e8ffa7b8ce7a004143bbbfb",
+          "configMakSha256": "b8ea4983a6603fbe52cef68c155a6f2d2c0031e639b70f8715f0532d1be96669",
+          "recipes": {
+            "tools/codec/build.cjs": "7b1d08dfefdb06c70292c5886540570c158a8037a530f72f4e00d9722470917a",
+            "tools/codec/identity.cjs": "0f69a737f54676409a12ca26f169a8392c1dd9040bb9a3fd36ad2244210bcffc",
+            "tools/release/dependency-sources.cjs": "c53a60e479767c12b7036b36278de5b37035f035fa428c475ba9082c284a12ae"
+          },
+          "matchesPinnedReport": true,
+          "ffmpegSha256": "c647e20c508af6421efb3c78b59e2a693f7b905c6a27384282ad76b5ad37d5ee",
+          "ffprobeSha256": "73337f082639e4f3f867a50fc69ec681ed81cdc8faf5df5d8fed4f677530bef5"
+        },
+        "candidate": null,
+        "scope": "Selected actual CI-produced test/numerical/build/package records; generated/offline and no-card checks, not physical-device or release acceptance"
+      }
+    }
+  ],
+  "local": {
+    "extendedLayout": {
+      "path": "artifacts/frontend/extended-report.json",
+      "sha256": "3e4d6237c04a1d896a1eb5711326c5a4e8bf00e1babbd76b2493ba80ef535c17",
+      "record": {
+        "commit": "3e665d92f0fc95b245956347fad56e0b43707107",
+        "sourceDirty": false,
+        "status": "passed",
+        "scope": "Actual compiled renderer from clean frontend audit; 60 long-name/theme/window/library combinations; simulated IPC; no Windows/physical DPI acceptance",
+        "cases": [
+          {
+            "language": "Chinese",
+            "theme": "trace-green",
+            "width": 1024,
+            "height": 700,
+            "libraryOpen": false,
+            "titleWidth": 431.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "Chinese",
+            "theme": "trace-green",
+            "width": 1024,
+            "height": 700,
+            "libraryOpen": true,
+            "titleWidth": 431.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "Chinese",
+            "theme": "trace-green",
+            "width": 1280,
+            "height": 800,
+            "libraryOpen": false,
+            "titleWidth": 652.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "Chinese",
+            "theme": "trace-green",
+            "width": 1280,
+            "height": 800,
+            "libraryOpen": true,
+            "titleWidth": 652.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "Chinese",
+            "theme": "trace-green",
+            "width": 1600,
+            "height": 900,
+            "libraryOpen": false,
+            "titleWidth": 972.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "Chinese",
+            "theme": "trace-green",
+            "width": 1600,
+            "height": 900,
+            "libraryOpen": true,
+            "titleWidth": 552.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "Chinese",
+            "theme": "graphite",
+            "width": 1024,
+            "height": 700,
+            "libraryOpen": false,
+            "titleWidth": 431.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "Chinese",
+            "theme": "graphite",
+            "width": 1024,
+            "height": 700,
+            "libraryOpen": true,
+            "titleWidth": 431.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "Chinese",
+            "theme": "graphite",
+            "width": 1280,
+            "height": 800,
+            "libraryOpen": false,
+            "titleWidth": 652.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "Chinese",
+            "theme": "graphite",
+            "width": 1280,
+            "height": 800,
+            "libraryOpen": true,
+            "titleWidth": 652.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "Chinese",
+            "theme": "graphite",
+            "width": 1600,
+            "height": 900,
+            "libraryOpen": false,
+            "titleWidth": 972.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "Chinese",
+            "theme": "graphite",
+            "width": 1600,
+            "height": 900,
+            "libraryOpen": true,
+            "titleWidth": 552.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "Chinese",
+            "theme": "ember",
+            "width": 1024,
+            "height": 700,
+            "libraryOpen": false,
+            "titleWidth": 431.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "Chinese",
+            "theme": "ember",
+            "width": 1024,
+            "height": 700,
+            "libraryOpen": true,
+            "titleWidth": 431.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "Chinese",
+            "theme": "ember",
+            "width": 1280,
+            "height": 800,
+            "libraryOpen": false,
+            "titleWidth": 652.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "Chinese",
+            "theme": "ember",
+            "width": 1280,
+            "height": 800,
+            "libraryOpen": true,
+            "titleWidth": 652.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "Chinese",
+            "theme": "ember",
+            "width": 1600,
+            "height": 900,
+            "libraryOpen": false,
+            "titleWidth": 972.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "Chinese",
+            "theme": "ember",
+            "width": 1600,
+            "height": 900,
+            "libraryOpen": true,
+            "titleWidth": 552.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "Chinese",
+            "theme": "ocean",
+            "width": 1024,
+            "height": 700,
+            "libraryOpen": false,
+            "titleWidth": 431.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "Chinese",
+            "theme": "ocean",
+            "width": 1024,
+            "height": 700,
+            "libraryOpen": true,
+            "titleWidth": 431.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "Chinese",
+            "theme": "ocean",
+            "width": 1280,
+            "height": 800,
+            "libraryOpen": false,
+            "titleWidth": 652.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "Chinese",
+            "theme": "ocean",
+            "width": 1280,
+            "height": 800,
+            "libraryOpen": true,
+            "titleWidth": 652.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "Chinese",
+            "theme": "ocean",
+            "width": 1600,
+            "height": 900,
+            "libraryOpen": false,
+            "titleWidth": 972.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "Chinese",
+            "theme": "ocean",
+            "width": 1600,
+            "height": 900,
+            "libraryOpen": true,
+            "titleWidth": 552.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "Chinese",
+            "theme": "duo",
+            "width": 1024,
+            "height": 700,
+            "libraryOpen": false,
+            "titleWidth": 431.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "Chinese",
+            "theme": "duo",
+            "width": 1024,
+            "height": 700,
+            "libraryOpen": true,
+            "titleWidth": 431.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "Chinese",
+            "theme": "duo",
+            "width": 1280,
+            "height": 800,
+            "libraryOpen": false,
+            "titleWidth": 652.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "Chinese",
+            "theme": "duo",
+            "width": 1280,
+            "height": 800,
+            "libraryOpen": true,
+            "titleWidth": 652.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "Chinese",
+            "theme": "duo",
+            "width": 1600,
+            "height": 900,
+            "libraryOpen": false,
+            "titleWidth": 972.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "Chinese",
+            "theme": "duo",
+            "width": 1600,
+            "height": 900,
+            "libraryOpen": true,
+            "titleWidth": 552.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "English",
+            "theme": "trace-green",
+            "width": 1024,
+            "height": 700,
+            "libraryOpen": false,
+            "titleWidth": 431.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "English",
+            "theme": "trace-green",
+            "width": 1024,
+            "height": 700,
+            "libraryOpen": true,
+            "titleWidth": 431.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "English",
+            "theme": "trace-green",
+            "width": 1280,
+            "height": 800,
+            "libraryOpen": false,
+            "titleWidth": 652.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "English",
+            "theme": "trace-green",
+            "width": 1280,
+            "height": 800,
+            "libraryOpen": true,
+            "titleWidth": 652.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "English",
+            "theme": "trace-green",
+            "width": 1600,
+            "height": 900,
+            "libraryOpen": false,
+            "titleWidth": 972.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "English",
+            "theme": "trace-green",
+            "width": 1600,
+            "height": 900,
+            "libraryOpen": true,
+            "titleWidth": 552.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "English",
+            "theme": "graphite",
+            "width": 1024,
+            "height": 700,
+            "libraryOpen": false,
+            "titleWidth": 431.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "English",
+            "theme": "graphite",
+            "width": 1024,
+            "height": 700,
+            "libraryOpen": true,
+            "titleWidth": 431.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "English",
+            "theme": "graphite",
+            "width": 1280,
+            "height": 800,
+            "libraryOpen": false,
+            "titleWidth": 652.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "English",
+            "theme": "graphite",
+            "width": 1280,
+            "height": 800,
+            "libraryOpen": true,
+            "titleWidth": 652.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "English",
+            "theme": "graphite",
+            "width": 1600,
+            "height": 900,
+            "libraryOpen": false,
+            "titleWidth": 972.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "English",
+            "theme": "graphite",
+            "width": 1600,
+            "height": 900,
+            "libraryOpen": true,
+            "titleWidth": 552.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "English",
+            "theme": "ember",
+            "width": 1024,
+            "height": 700,
+            "libraryOpen": false,
+            "titleWidth": 431.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "English",
+            "theme": "ember",
+            "width": 1024,
+            "height": 700,
+            "libraryOpen": true,
+            "titleWidth": 431.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "English",
+            "theme": "ember",
+            "width": 1280,
+            "height": 800,
+            "libraryOpen": false,
+            "titleWidth": 652.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "English",
+            "theme": "ember",
+            "width": 1280,
+            "height": 800,
+            "libraryOpen": true,
+            "titleWidth": 652.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "English",
+            "theme": "ember",
+            "width": 1600,
+            "height": 900,
+            "libraryOpen": false,
+            "titleWidth": 972.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "English",
+            "theme": "ember",
+            "width": 1600,
+            "height": 900,
+            "libraryOpen": true,
+            "titleWidth": 552.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "English",
+            "theme": "ocean",
+            "width": 1024,
+            "height": 700,
+            "libraryOpen": false,
+            "titleWidth": 431.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "English",
+            "theme": "ocean",
+            "width": 1024,
+            "height": 700,
+            "libraryOpen": true,
+            "titleWidth": 431.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "English",
+            "theme": "ocean",
+            "width": 1280,
+            "height": 800,
+            "libraryOpen": false,
+            "titleWidth": 652.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "English",
+            "theme": "ocean",
+            "width": 1280,
+            "height": 800,
+            "libraryOpen": true,
+            "titleWidth": 652.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "English",
+            "theme": "ocean",
+            "width": 1600,
+            "height": 900,
+            "libraryOpen": false,
+            "titleWidth": 972.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "English",
+            "theme": "ocean",
+            "width": 1600,
+            "height": 900,
+            "libraryOpen": true,
+            "titleWidth": 552.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "English",
+            "theme": "duo",
+            "width": 1024,
+            "height": 700,
+            "libraryOpen": false,
+            "titleWidth": 431.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "English",
+            "theme": "duo",
+            "width": 1024,
+            "height": 700,
+            "libraryOpen": true,
+            "titleWidth": 431.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "English",
+            "theme": "duo",
+            "width": 1280,
+            "height": 800,
+            "libraryOpen": false,
+            "titleWidth": 652.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "English",
+            "theme": "duo",
+            "width": 1280,
+            "height": 800,
+            "libraryOpen": true,
+            "titleWidth": 652.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "English",
+            "theme": "duo",
+            "width": 1600,
+            "height": 900,
+            "libraryOpen": false,
+            "titleWidth": 972.875,
+            "ellipsisRequired": true
+          },
+          {
+            "language": "English",
+            "theme": "duo",
+            "width": 1600,
+            "height": 900,
+            "libraryOpen": true,
+            "titleWidth": 552.875,
+            "ellipsisRequired": true
+          }
+        ]
+      }
+    },
+    "frontendBrowser": {
+      "path": "artifacts/frontend/browser-report.json",
+      "sha256": "644c9f4fdf27624ef406f9c0dc64c9198890bd93729ff873e8b5699f2e9c3662",
+      "record": {
+        "status": "passed",
+        "commit": "3e665d92f0fc95b245956347fad56e0b43707107",
+        "sourceDirty": false,
+        "scope": "Actual React/CSS/production CSP; simulated IPC, metadata and device state only; no Windows/audio/user acceptance",
+        "checks": [
+          "Default four instruments use 8 management buttons; context/transport bounded at 1024/1280/1399/1400/1600 CSS px",
+          "Instrument menus: arrows/Home/End/Enter, focus restore, hide and recover instrument",
+          "Device configuration moved into dialog; live remains actionable and REC disables changing the source",
+          "One chosen source/region/output detail; selection never opens or plays; explicit inspect/export binds the selected version; output actions and focus preserved",
+          "Missing external asset has exactly one relocate action, with other management commands still reachable",
+          "Report sections preserve draft, chosen report and event page; four graph/format outputs work under product CSP; stale prepared graph cannot save after a source switch",
+          "Settings categories preserve theme/behavior drafts, close restores saved theme, apply persists explicit choices, no duplicate wave-gain editor, About matches package version",
+          "Reference empty state guides selection; offsets/ranges are advanced, folding them preserves the configured value",
+          "3D camera selection, advanced view settings, one visible shared time-window editor, standalone/maximized access, parameter Space never starts playback",
+          "One main analysis progress plus compact local states; capture/file faults remain independently visible with source identity; custom targets expand on demand",
+          "An all-disabled menu remains keyboard dismissible; Escape closes it without stopping REC"
+        ],
+        "geometry": [
+          {
+            "width": 1024,
+            "context": {
+              "x": 0,
+              "y": 42,
+              "width": 1024,
+              "height": 52,
+              "top": 42,
+              "right": 1024,
+              "bottom": 94,
+              "left": 0
+            },
+            "buttons": [
+              {
+                "label": "采集设备设置",
+                "rect": {
+                  "x": 573.875,
+                  "y": 52.5,
+                  "width": 66,
+                  "height": 30,
+                  "top": 52.5,
+                  "right": 639.875,
+                  "bottom": 82.5,
+                  "left": 573.875
+                }
+              },
+              {
+                "label": "录音保存设置",
+                "rect": {
+                  "x": 644.875,
+                  "y": 52.5,
+                  "width": 79.125,
+                  "height": 30,
+                  "top": 52.5,
+                  "right": 724,
+                  "bottom": 82.5,
+                  "left": 644.875
+                }
+              },
+              {
+                "label": "仪器",
+                "rect": {
+                  "x": 730,
+                  "y": 52.5,
+                  "width": 60,
+                  "height": 30,
+                  "top": 52.5,
+                  "right": 790,
+                  "bottom": 82.5,
+                  "left": 730
+                }
+              },
+              {
+                "label": "工作台布局",
+                "rect": {
+                  "x": 794,
+                  "y": 52.5,
+                  "width": 104,
+                  "height": 30,
+                  "top": 52.5,
+                  "right": 898,
+                  "bottom": 82.5,
+                  "left": 794
+                }
+              },
+              {
+                "label": "管理布局",
+                "rect": {
+                  "x": 902,
+                  "y": 52.5,
+                  "width": 28,
+                  "height": 30,
+                  "top": 52.5,
+                  "right": 930,
+                  "bottom": 82.5,
+                  "left": 902
+                }
+              },
+              {
+                "label": "编辑布局",
+                "rect": {
+                  "x": 934,
+                  "y": 52.5,
+                  "width": 82,
+                  "height": 30,
+                  "top": 52.5,
+                  "right": 1016,
+                  "bottom": 82.5,
+                  "left": 934
+                }
+              },
+              {
+                "label": "起点",
+                "rect": {
+                  "x": 15,
+                  "y": 650,
+                  "width": 44,
+                  "height": 37,
+                  "top": 650,
+                  "right": 59,
+                  "bottom": 687,
+                  "left": 15
+                }
+              },
+              {
+                "label": "终点",
+                "rect": {
+                  "x": 59,
+                  "y": 650,
+                  "width": 44,
+                  "height": 37,
+                  "top": 650,
+                  "right": 103,
+                  "bottom": 687,
+                  "left": 59
+                }
+              },
+              {
+                "label": "播放",
+                "rect": {
+                  "x": 103,
+                  "y": 650,
+                  "width": 44,
+                  "height": 37,
+                  "top": 650,
+                  "right": 147,
+                  "bottom": 687,
+                  "left": 103
+                }
+              },
+              {
+                "label": "录音",
+                "rect": {
+                  "x": 147,
+                  "y": 650,
+                  "width": 44,
+                  "height": 37,
+                  "top": 650,
+                  "right": 191,
+                  "bottom": 687,
+                  "left": 147
+                }
+              },
+              {
+                "label": "实时",
+                "rect": {
+                  "x": 199,
+                  "y": 649,
+                  "width": 60,
+                  "height": 39,
+                  "top": 649,
+                  "right": 259,
+                  "bottom": 688,
+                  "left": 199
+                }
+              },
+              {
+                "label": "停止监测",
+                "rect": {
+                  "x": 266,
+                  "y": 649,
+                  "width": 80,
+                  "height": 39,
+                  "top": 649,
+                  "right": 346,
+                  "bottom": 688,
+                  "left": 266
+                }
+              },
+              {
+                "label": "保存缓存",
+                "rect": {
+                  "x": 729.421875,
+                  "y": 649,
+                  "width": 72.015625,
+                  "height": 39,
+                  "top": 649,
+                  "right": 801.4375,
+                  "bottom": 688,
+                  "left": 729.421875
+                }
+              },
+              {
+                "label": "报告",
+                "rect": {
+                  "x": 808.4375,
+                  "y": 649,
+                  "width": 46.015625,
+                  "height": 39,
+                  "top": 649,
+                  "right": 854.453125,
+                  "bottom": 688,
+                  "left": 808.4375
+                }
+              },
+              {
+                "label": "音频文件 5001",
+                "rect": {
+                  "x": 861.453125,
+                  "y": 649,
+                  "width": 104.546875,
+                  "height": 39,
+                  "top": 649,
+                  "right": 966,
+                  "bottom": 688,
+                  "left": 861.453125
+                }
+              },
+              {
+                "label": "",
+                "rect": {
+                  "x": 973,
+                  "y": 649,
+                  "width": 37,
+                  "height": 39,
+                  "top": 649,
+                  "right": 1010,
+                  "bottom": 688,
+                  "left": 973
+                }
+              }
+            ],
+            "canvas": [
+              {
+                "instrument": "levels",
+                "rect": {
+                  "x": 9,
+                  "y": 136,
+                  "width": 148.140625,
+                  "height": 491,
+                  "top": 136,
+                  "right": 157.140625,
+                  "bottom": 627,
+                  "left": 9
+                }
+              },
+              {
+                "instrument": "waveform",
+                "rect": {
+                  "x": 166.140625,
+                  "y": 136,
+                  "width": 622.453125,
+                  "height": 286.765625,
+                  "top": 136,
+                  "right": 788.59375,
+                  "bottom": 422.765625,
+                  "left": 166.140625
+                }
+              },
+              {
+                "instrument": "history",
+                "rect": {
+                  "x": 166.140625,
+                  "y": 464.765625,
+                  "width": 622.453125,
+                  "height": 162.234375,
+                  "top": 464.765625,
+                  "right": 788.59375,
+                  "bottom": 627,
+                  "left": 166.140625
+                }
+              },
+              {
+                "instrument": "loudness",
+                "rect": {
+                  "x": 797.59375,
+                  "y": 136,
+                  "width": 217.40625,
+                  "height": 491,
+                  "top": 136,
+                  "right": 1015,
+                  "bottom": 627,
+                  "left": 797.59375
+                }
+              }
+            ]
+          },
+          {
+            "width": 1280,
+            "context": {
+              "x": 0,
+              "y": 42,
+              "width": 1280,
+              "height": 52,
+              "top": 42,
+              "right": 1280,
+              "bottom": 94,
+              "left": 0
+            },
+            "buttons": [
+              {
+                "label": "采集设备设置",
+                "rect": {
+                  "x": 796.875,
+                  "y": 52.5,
+                  "width": 75,
+                  "height": 30,
+                  "top": 52.5,
+                  "right": 871.875,
+                  "bottom": 82.5,
+                  "left": 796.875
+                }
+              },
+              {
+                "label": "录音保存设置",
+                "rect": {
+                  "x": 876.875,
+                  "y": 52.5,
+                  "width": 79.125,
+                  "height": 30,
+                  "top": 52.5,
+                  "right": 956,
+                  "bottom": 82.5,
+                  "left": 876.875
+                }
+              },
+              {
+                "label": "仪器",
+                "rect": {
+                  "x": 964,
+                  "y": 52.5,
+                  "width": 64,
+                  "height": 30,
+                  "top": 52.5,
+                  "right": 1028,
+                  "bottom": 82.5,
+                  "left": 964
+                }
+              },
+              {
+                "label": "工作台布局",
+                "rect": {
+                  "x": 1032,
+                  "y": 52.5,
+                  "width": 118,
+                  "height": 30,
+                  "top": 52.5,
+                  "right": 1150,
+                  "bottom": 82.5,
+                  "left": 1032
+                }
+              },
+              {
+                "label": "管理布局",
+                "rect": {
+                  "x": 1154,
+                  "y": 52.5,
+                  "width": 28,
+                  "height": 30,
+                  "top": 52.5,
+                  "right": 1182,
+                  "bottom": 82.5,
+                  "left": 1154
+                }
+              },
+              {
+                "label": "编辑布局",
+                "rect": {
+                  "x": 1186,
+                  "y": 52.5,
+                  "width": 86,
+                  "height": 30,
+                  "top": 52.5,
+                  "right": 1272,
+                  "bottom": 82.5,
+                  "left": 1186
+                }
+              },
+              {
+                "label": "起点",
+                "rect": {
+                  "x": 15,
+                  "y": 750,
+                  "width": 44,
+                  "height": 37,
+                  "top": 750,
+                  "right": 59,
+                  "bottom": 787,
+                  "left": 15
+                }
+              },
+              {
+                "label": "终点",
+                "rect": {
+                  "x": 59,
+                  "y": 750,
+                  "width": 44,
+                  "height": 37,
+                  "top": 750,
+                  "right": 103,
+                  "bottom": 787,
+                  "left": 59
+                }
+              },
+              {
+                "label": "播放",
+                "rect": {
+                  "x": 103,
+                  "y": 750,
+                  "width": 44,
+                  "height": 37,
+                  "top": 750,
+                  "right": 147,
+                  "bottom": 787,
+                  "left": 103
+                }
+              },
+              {
+                "label": "录音",
+                "rect": {
+                  "x": 147,
+                  "y": 750,
+                  "width": 44,
+                  "height": 37,
+                  "top": 750,
+                  "right": 191,
+                  "bottom": 787,
+                  "left": 147
+                }
+              },
+              {
+                "label": "实时",
+                "rect": {
+                  "x": 204,
+                  "y": 749,
+                  "width": 60,
+                  "height": 39,
+                  "top": 749,
+                  "right": 264,
+                  "bottom": 788,
+                  "left": 204
+                }
+              },
+              {
+                "label": "停止监测",
+                "rect": {
+                  "x": 276,
+                  "y": 749,
+                  "width": 120,
+                  "height": 39,
+                  "top": 749,
+                  "right": 396,
+                  "bottom": 788,
+                  "left": 276
+                }
+              },
+              {
+                "label": "保存缓存",
+                "rect": {
+                  "x": 938.421875,
+                  "y": 749,
+                  "width": 80.015625,
+                  "height": 39,
+                  "top": 749,
+                  "right": 1018.4375,
+                  "bottom": 788,
+                  "left": 938.421875
+                }
+              },
+              {
+                "label": "报告",
+                "rect": {
+                  "x": 1030.4375,
+                  "y": 749,
+                  "width": 54.015625,
+                  "height": 39,
+                  "top": 749,
+                  "right": 1084.453125,
+                  "bottom": 788,
+                  "left": 1030.4375
+                }
+              },
+              {
+                "label": "音频文件 5001",
+                "rect": {
+                  "x": 1096.453125,
+                  "y": 749,
+                  "width": 112.546875,
+                  "height": 39,
+                  "top": 749,
+                  "right": 1209,
+                  "bottom": 788,
+                  "left": 1096.453125
+                }
+              },
+              {
+                "label": "",
+                "rect": {
+                  "x": 1221,
+                  "y": 749,
+                  "width": 45,
+                  "height": 39,
+                  "top": 749,
+                  "right": 1266,
+                  "bottom": 788,
+                  "left": 1221
+                }
+              }
+            ],
+            "canvas": [
+              {
+                "instrument": "levels",
+                "rect": {
+                  "x": 13,
+                  "y": 138,
+                  "width": 185.34375,
+                  "height": 587,
+                  "top": 138,
+                  "right": 198.34375,
+                  "bottom": 725,
+                  "left": 13
+                }
+              },
+              {
+                "instrument": "waveform",
+                "rect": {
+                  "x": 207.34375,
+                  "y": 138,
+                  "width": 778.4375,
+                  "height": 346.296875,
+                  "top": 138,
+                  "right": 985.78125,
+                  "bottom": 484.296875,
+                  "left": 207.34375
+                }
+              },
+              {
+                "instrument": "history",
+                "rect": {
+                  "x": 207.34375,
+                  "y": 526.296875,
+                  "width": 778.4375,
+                  "height": 198.703125,
+                  "top": 526.296875,
+                  "right": 985.78125,
+                  "bottom": 725,
+                  "left": 207.34375
+                }
+              },
+              {
+                "instrument": "loudness",
+                "rect": {
+                  "x": 994.78125,
+                  "y": 138,
+                  "width": 272.21875,
+                  "height": 587,
+                  "top": 138,
+                  "right": 1267,
+                  "bottom": 725,
+                  "left": 994.78125
+                }
+              }
+            ]
+          },
+          {
+            "width": 1399,
+            "context": {
+              "x": 0,
+              "y": 42,
+              "width": 1399,
+              "height": 52,
+              "top": 42,
+              "right": 1399,
+              "bottom": 94,
+              "left": 0
+            },
+            "buttons": [
+              {
+                "label": "采集设备设置",
+                "rect": {
+                  "x": 915.875,
+                  "y": 52.5,
+                  "width": 75,
+                  "height": 30,
+                  "top": 52.5,
+                  "right": 990.875,
+                  "bottom": 82.5,
+                  "left": 915.875
+                }
+              },
+              {
+                "label": "录音保存设置",
+                "rect": {
+                  "x": 995.875,
+                  "y": 52.5,
+                  "width": 79.125,
+                  "height": 30,
+                  "top": 52.5,
+                  "right": 1075,
+                  "bottom": 82.5,
+                  "left": 995.875
+                }
+              },
+              {
+                "label": "仪器",
+                "rect": {
+                  "x": 1083,
+                  "y": 52.5,
+                  "width": 64,
+                  "height": 30,
+                  "top": 52.5,
+                  "right": 1147,
+                  "bottom": 82.5,
+                  "left": 1083
+                }
+              },
+              {
+                "label": "工作台布局",
+                "rect": {
+                  "x": 1151,
+                  "y": 52.5,
+                  "width": 118,
+                  "height": 30,
+                  "top": 52.5,
+                  "right": 1269,
+                  "bottom": 82.5,
+                  "left": 1151
+                }
+              },
+              {
+                "label": "管理布局",
+                "rect": {
+                  "x": 1273,
+                  "y": 52.5,
+                  "width": 28,
+                  "height": 30,
+                  "top": 52.5,
+                  "right": 1301,
+                  "bottom": 82.5,
+                  "left": 1273
+                }
+              },
+              {
+                "label": "编辑布局",
+                "rect": {
+                  "x": 1305,
+                  "y": 52.5,
+                  "width": 86,
+                  "height": 30,
+                  "top": 52.5,
+                  "right": 1391,
+                  "bottom": 82.5,
+                  "left": 1305
+                }
+              },
+              {
+                "label": "起点",
+                "rect": {
+                  "x": 15,
+                  "y": 750,
+                  "width": 44,
+                  "height": 37,
+                  "top": 750,
+                  "right": 59,
+                  "bottom": 787,
+                  "left": 15
+                }
+              },
+              {
+                "label": "终点",
+                "rect": {
+                  "x": 59,
+                  "y": 750,
+                  "width": 44,
+                  "height": 37,
+                  "top": 750,
+                  "right": 103,
+                  "bottom": 787,
+                  "left": 59
+                }
+              },
+              {
+                "label": "播放",
+                "rect": {
+                  "x": 103,
+                  "y": 750,
+                  "width": 44,
+                  "height": 37,
+                  "top": 750,
+                  "right": 147,
+                  "bottom": 787,
+                  "left": 103
+                }
+              },
+              {
+                "label": "录音",
+                "rect": {
+                  "x": 147,
+                  "y": 750,
+                  "width": 44,
+                  "height": 37,
+                  "top": 750,
+                  "right": 191,
+                  "bottom": 787,
+                  "left": 147
+                }
+              },
+              {
+                "label": "实时",
+                "rect": {
+                  "x": 204,
+                  "y": 749,
+                  "width": 60,
+                  "height": 39,
+                  "top": 749,
+                  "right": 264,
+                  "bottom": 788,
+                  "left": 204
+                }
+              },
+              {
+                "label": "停止监测",
+                "rect": {
+                  "x": 276,
+                  "y": 749,
+                  "width": 120,
+                  "height": 39,
+                  "top": 749,
+                  "right": 396,
+                  "bottom": 788,
+                  "left": 276
+                }
+              },
+              {
+                "label": "保存缓存",
+                "rect": {
+                  "x": 1057.421875,
+                  "y": 749,
+                  "width": 80.015625,
+                  "height": 39,
+                  "top": 749,
+                  "right": 1137.4375,
+                  "bottom": 788,
+                  "left": 1057.421875
+                }
+              },
+              {
+                "label": "报告",
+                "rect": {
+                  "x": 1149.4375,
+                  "y": 749,
+                  "width": 54.015625,
+                  "height": 39,
+                  "top": 749,
+                  "right": 1203.453125,
+                  "bottom": 788,
+                  "left": 1149.4375
+                }
+              },
+              {
+                "label": "音频文件 5001",
+                "rect": {
+                  "x": 1215.453125,
+                  "y": 749,
+                  "width": 112.546875,
+                  "height": 39,
+                  "top": 749,
+                  "right": 1328,
+                  "bottom": 788,
+                  "left": 1215.453125
+                }
+              },
+              {
+                "label": "",
+                "rect": {
+                  "x": 1340,
+                  "y": 749,
+                  "width": 45,
+                  "height": 39,
+                  "top": 749,
+                  "right": 1385,
+                  "bottom": 788,
+                  "left": 1340
+                }
+              }
+            ],
+            "canvas": [
+              {
+                "instrument": "levels",
+                "rect": {
+                  "x": 13,
+                  "y": 138,
+                  "width": 203.1875,
+                  "height": 587,
+                  "top": 138,
+                  "right": 216.1875,
+                  "bottom": 725,
+                  "left": 13
+                }
+              },
+              {
+                "instrument": "waveform",
+                "rect": {
+                  "x": 225.1875,
+                  "y": 138,
+                  "width": 853.296875,
+                  "height": 346.296875,
+                  "top": 138,
+                  "right": 1078.484375,
+                  "bottom": 484.296875,
+                  "left": 225.1875
+                }
+              },
+              {
+                "instrument": "history",
+                "rect": {
+                  "x": 225.1875,
+                  "y": 526.296875,
+                  "width": 853.296875,
+                  "height": 198.703125,
+                  "top": 526.296875,
+                  "right": 1078.484375,
+                  "bottom": 725,
+                  "left": 225.1875
+                }
+              },
+              {
+                "instrument": "loudness",
+                "rect": {
+                  "x": 1087.484375,
+                  "y": 138,
+                  "width": 298.5,
+                  "height": 587,
+                  "top": 138,
+                  "right": 1385.984375,
+                  "bottom": 725,
+                  "left": 1087.484375
+                }
+              }
+            ]
+          },
+          {
+            "width": 1400,
+            "context": {
+              "x": 0,
+              "y": 42,
+              "width": 1400,
+              "height": 52,
+              "top": 42,
+              "right": 1400,
+              "bottom": 94,
+              "left": 0
+            },
+            "buttons": [
+              {
+                "label": "采集设备设置",
+                "rect": {
+                  "x": 916.875,
+                  "y": 52.5,
+                  "width": 75,
+                  "height": 30,
+                  "top": 52.5,
+                  "right": 991.875,
+                  "bottom": 82.5,
+                  "left": 916.875
+                }
+              },
+              {
+                "label": "录音保存设置",
+                "rect": {
+                  "x": 996.875,
+                  "y": 52.5,
+                  "width": 79.125,
+                  "height": 30,
+                  "top": 52.5,
+                  "right": 1076,
+                  "bottom": 82.5,
+                  "left": 996.875
+                }
+              },
+              {
+                "label": "仪器",
+                "rect": {
+                  "x": 1084,
+                  "y": 52.5,
+                  "width": 64,
+                  "height": 30,
+                  "top": 52.5,
+                  "right": 1148,
+                  "bottom": 82.5,
+                  "left": 1084
+                }
+              },
+              {
+                "label": "工作台布局",
+                "rect": {
+                  "x": 1152,
+                  "y": 52.5,
+                  "width": 118,
+                  "height": 30,
+                  "top": 52.5,
+                  "right": 1270,
+                  "bottom": 82.5,
+                  "left": 1152
+                }
+              },
+              {
+                "label": "管理布局",
+                "rect": {
+                  "x": 1274,
+                  "y": 52.5,
+                  "width": 28,
+                  "height": 30,
+                  "top": 52.5,
+                  "right": 1302,
+                  "bottom": 82.5,
+                  "left": 1274
+                }
+              },
+              {
+                "label": "编辑布局",
+                "rect": {
+                  "x": 1306,
+                  "y": 52.5,
+                  "width": 86,
+                  "height": 30,
+                  "top": 52.5,
+                  "right": 1392,
+                  "bottom": 82.5,
+                  "left": 1306
+                }
+              },
+              {
+                "label": "起点",
+                "rect": {
+                  "x": 15,
+                  "y": 750,
+                  "width": 44,
+                  "height": 37,
+                  "top": 750,
+                  "right": 59,
+                  "bottom": 787,
+                  "left": 15
+                }
+              },
+              {
+                "label": "终点",
+                "rect": {
+                  "x": 59,
+                  "y": 750,
+                  "width": 44,
+                  "height": 37,
+                  "top": 750,
+                  "right": 103,
+                  "bottom": 787,
+                  "left": 59
+                }
+              },
+              {
+                "label": "播放",
+                "rect": {
+                  "x": 103,
+                  "y": 750,
+                  "width": 44,
+                  "height": 37,
+                  "top": 750,
+                  "right": 147,
+                  "bottom": 787,
+                  "left": 103
+                }
+              },
+              {
+                "label": "录音",
+                "rect": {
+                  "x": 147,
+                  "y": 750,
+                  "width": 44,
+                  "height": 37,
+                  "top": 750,
+                  "right": 191,
+                  "bottom": 787,
+                  "left": 147
+                }
+              },
+              {
+                "label": "实时",
+                "rect": {
+                  "x": 204,
+                  "y": 749,
+                  "width": 60,
+                  "height": 39,
+                  "top": 749,
+                  "right": 264,
+                  "bottom": 788,
+                  "left": 204
+                }
+              },
+              {
+                "label": "停止监测",
+                "rect": {
+                  "x": 276,
+                  "y": 749,
+                  "width": 120,
+                  "height": 39,
+                  "top": 749,
+                  "right": 396,
+                  "bottom": 788,
+                  "left": 276
+                }
+              },
+              {
+                "label": "保存缓存",
+                "rect": {
+                  "x": 1058.421875,
+                  "y": 749,
+                  "width": 80.015625,
+                  "height": 39,
+                  "top": 749,
+                  "right": 1138.4375,
+                  "bottom": 788,
+                  "left": 1058.421875
+                }
+              },
+              {
+                "label": "报告",
+                "rect": {
+                  "x": 1150.4375,
+                  "y": 749,
+                  "width": 54.015625,
+                  "height": 39,
+                  "top": 749,
+                  "right": 1204.453125,
+                  "bottom": 788,
+                  "left": 1150.4375
+                }
+              },
+              {
+                "label": "音频文件 5001",
+                "rect": {
+                  "x": 1216.453125,
+                  "y": 749,
+                  "width": 112.546875,
+                  "height": 39,
+                  "top": 749,
+                  "right": 1329,
+                  "bottom": 788,
+                  "left": 1216.453125
+                }
+              },
+              {
+                "label": "",
+                "rect": {
+                  "x": 1341,
+                  "y": 749,
+                  "width": 45,
+                  "height": 39,
+                  "top": 749,
+                  "right": 1386,
+                  "bottom": 788,
+                  "left": 1341
+                }
+              }
+            ],
+            "canvas": [
+              {
+                "instrument": "levels",
+                "rect": {
+                  "x": 13,
+                  "y": 138,
+                  "width": 203.34375,
+                  "height": 587,
+                  "top": 138,
+                  "right": 216.34375,
+                  "bottom": 725,
+                  "left": 13
+                }
+              },
+              {
+                "instrument": "waveform",
+                "rect": {
+                  "x": 225.34375,
+                  "y": 138,
+                  "width": 853.921875,
+                  "height": 346.296875,
+                  "top": 138,
+                  "right": 1079.265625,
+                  "bottom": 484.296875,
+                  "left": 225.34375
+                }
+              },
+              {
+                "instrument": "history",
+                "rect": {
+                  "x": 225.34375,
+                  "y": 526.296875,
+                  "width": 853.921875,
+                  "height": 198.703125,
+                  "top": 526.296875,
+                  "right": 1079.265625,
+                  "bottom": 725,
+                  "left": 225.34375
+                }
+              },
+              {
+                "instrument": "loudness",
+                "rect": {
+                  "x": 1088.265625,
+                  "y": 138,
+                  "width": 298.734375,
+                  "height": 587,
+                  "top": 138,
+                  "right": 1387,
+                  "bottom": 725,
+                  "left": 1088.265625
+                }
+              }
+            ]
+          },
+          {
+            "width": 1600,
+            "context": {
+              "x": 0,
+              "y": 42,
+              "width": 1600,
+              "height": 52,
+              "top": 42,
+              "right": 1600,
+              "bottom": 94,
+              "left": 0
+            },
+            "buttons": [
+              {
+                "label": "采集设备设置",
+                "rect": {
+                  "x": 1116.875,
+                  "y": 52.5,
+                  "width": 75,
+                  "height": 30,
+                  "top": 52.5,
+                  "right": 1191.875,
+                  "bottom": 82.5,
+                  "left": 1116.875
+                }
+              },
+              {
+                "label": "录音保存设置",
+                "rect": {
+                  "x": 1196.875,
+                  "y": 52.5,
+                  "width": 79.125,
+                  "height": 30,
+                  "top": 52.5,
+                  "right": 1276,
+                  "bottom": 82.5,
+                  "left": 1196.875
+                }
+              },
+              {
+                "label": "仪器",
+                "rect": {
+                  "x": 1284,
+                  "y": 52.5,
+                  "width": 64,
+                  "height": 30,
+                  "top": 52.5,
+                  "right": 1348,
+                  "bottom": 82.5,
+                  "left": 1284
+                }
+              },
+              {
+                "label": "工作台布局",
+                "rect": {
+                  "x": 1352,
+                  "y": 52.5,
+                  "width": 118,
+                  "height": 30,
+                  "top": 52.5,
+                  "right": 1470,
+                  "bottom": 82.5,
+                  "left": 1352
+                }
+              },
+              {
+                "label": "管理布局",
+                "rect": {
+                  "x": 1474,
+                  "y": 52.5,
+                  "width": 28,
+                  "height": 30,
+                  "top": 52.5,
+                  "right": 1502,
+                  "bottom": 82.5,
+                  "left": 1474
+                }
+              },
+              {
+                "label": "编辑布局",
+                "rect": {
+                  "x": 1506,
+                  "y": 52.5,
+                  "width": 86,
+                  "height": 30,
+                  "top": 52.5,
+                  "right": 1592,
+                  "bottom": 82.5,
+                  "left": 1506
+                }
+              },
+              {
+                "label": "起点",
+                "rect": {
+                  "x": 15,
+                  "y": 850,
+                  "width": 44,
+                  "height": 37,
+                  "top": 850,
+                  "right": 59,
+                  "bottom": 887,
+                  "left": 15
+                }
+              },
+              {
+                "label": "终点",
+                "rect": {
+                  "x": 59,
+                  "y": 850,
+                  "width": 44,
+                  "height": 37,
+                  "top": 850,
+                  "right": 103,
+                  "bottom": 887,
+                  "left": 59
+                }
+              },
+              {
+                "label": "播放",
+                "rect": {
+                  "x": 103,
+                  "y": 850,
+                  "width": 44,
+                  "height": 37,
+                  "top": 850,
+                  "right": 147,
+                  "bottom": 887,
+                  "left": 103
+                }
+              },
+              {
+                "label": "录音",
+                "rect": {
+                  "x": 147,
+                  "y": 850,
+                  "width": 44,
+                  "height": 37,
+                  "top": 850,
+                  "right": 191,
+                  "bottom": 887,
+                  "left": 147
+                }
+              },
+              {
+                "label": "实时",
+                "rect": {
+                  "x": 204,
+                  "y": 849,
+                  "width": 60,
+                  "height": 39,
+                  "top": 849,
+                  "right": 264,
+                  "bottom": 888,
+                  "left": 204
+                }
+              },
+              {
+                "label": "停止监测",
+                "rect": {
+                  "x": 276,
+                  "y": 849,
+                  "width": 120,
+                  "height": 39,
+                  "top": 849,
+                  "right": 396,
+                  "bottom": 888,
+                  "left": 276
+                }
+              },
+              {
+                "label": "保存缓存",
+                "rect": {
+                  "x": 1258.421875,
+                  "y": 849,
+                  "width": 80.015625,
+                  "height": 39,
+                  "top": 849,
+                  "right": 1338.4375,
+                  "bottom": 888,
+                  "left": 1258.421875
+                }
+              },
+              {
+                "label": "报告",
+                "rect": {
+                  "x": 1350.4375,
+                  "y": 849,
+                  "width": 54.015625,
+                  "height": 39,
+                  "top": 849,
+                  "right": 1404.453125,
+                  "bottom": 888,
+                  "left": 1350.4375
+                }
+              },
+              {
+                "label": "音频文件 5001",
+                "rect": {
+                  "x": 1416.453125,
+                  "y": 849,
+                  "width": 112.546875,
+                  "height": 39,
+                  "top": 849,
+                  "right": 1529,
+                  "bottom": 888,
+                  "left": 1416.453125
+                }
+              },
+              {
+                "label": "",
+                "rect": {
+                  "x": 1541,
+                  "y": 849,
+                  "width": 45,
+                  "height": 39,
+                  "top": 849,
+                  "right": 1586,
+                  "bottom": 888,
+                  "left": 1541
+                }
+              }
+            ],
+            "canvas": [
+              {
+                "instrument": "levels",
+                "rect": {
+                  "x": 13,
+                  "y": 138,
+                  "width": 233.34375,
+                  "height": 687,
+                  "top": 138,
+                  "right": 246.34375,
+                  "bottom": 825,
+                  "left": 13
+                }
+              },
+              {
+                "instrument": "waveform",
+                "rect": {
+                  "x": 255.34375,
+                  "y": 138,
+                  "width": 979.71875,
+                  "height": 408.296875,
+                  "top": 138,
+                  "right": 1235.0625,
+                  "bottom": 546.296875,
+                  "left": 255.34375
+                }
+              },
+              {
+                "instrument": "history",
+                "rect": {
+                  "x": 255.34375,
+                  "y": 588.296875,
+                  "width": 979.71875,
+                  "height": 236.703125,
+                  "top": 588.296875,
+                  "right": 1235.0625,
+                  "bottom": 825,
+                  "left": 255.34375
+                }
+              },
+              {
+                "instrument": "loudness",
+                "rect": {
+                  "x": 1244.0625,
+                  "y": 138,
+                  "width": 342.9375,
+                  "height": 687,
+                  "top": 138,
+                  "right": 1587,
+                  "bottom": 825,
+                  "left": 1244.0625
+                }
+              }
+            ]
+          }
+        ],
+        "screenshots": [
+          "artifacts/frontend/browser-2xgqK8/workbench-1024.png",
+          "artifacts/frontend/browser-2xgqK8/workbench-1600.png",
+          "artifacts/frontend/browser-2xgqK8/selected-version-details.png",
+          "artifacts/frontend/browser-2xgqK8/review-chart.png",
+          "artifacts/frontend/browser-2xgqK8/settings-help.png",
+          "artifacts/frontend/browser-2xgqK8/reference-comparison.png",
+          "artifacts/frontend/browser-2xgqK8/spectrogram-maximized.png",
+          "artifacts/frontend/browser-2xgqK8/compact-scale-1.5.png",
+          "artifacts/frontend/browser-2xgqK8/compact-scale-2.png"
+        ]
+      }
+    },
+    "libraryBrowser": {
+      "path": "artifacts/library/browser-report.json",
+      "sha256": "c40ce6931ece3079ea8eada96e68dd439c281b61c8697351d027261d2c3d4be7",
+      "record": {
+        "commit": "3e665d92f0fc95b245956347fad56e0b43707107",
+        "sourceDirty": false,
+        "scope": "Actual React renderer, production CSP, simulated IPC/devices/metadata only; no native/Windows/disk/audio acceptance",
+        "checks": [
+          "Single click selects only; wide sidebar coexists with workbench; 50 mounted rows",
+          "Inspect stays paused; play/pause uses real returned context and preserves selection/cursor",
+          "Rapid A→B supersedes pending autoplay; only newest source is started",
+          "Export dialog isolates sidebar focus and returns focus to invoking row",
+          "Closing/reopening retains query, selected row, page and scroll",
+          "Locate current crosses pages and explicitly clears hiding filters",
+          "Import category uses existing source path; unreadable/estimated/unknown quality remain visible",
+          "Row audition preserves an explicitly loaded alternate export instead of reopening preferred source",
+          "Rename input suppresses global R/Space; Escape cancels form; row End and keyboard context menu keep local focus",
+          "Failed opening stays visible inside the drawer, sends no play and can be dismissed",
+          "REC leaves list browsable and disables audition",
+          "50/500/5000 metadata items keep mounted rows bounded at 50",
+          "Narrow drawer isolates background, traps focus, Escape closes and restores trigger (simulated 150% raster scale)"
+        ],
+        "sizes": [
+          {
+            "items": 50,
+            "settleMs": 32.39999999944121,
+            "rows": 50,
+            "panelNodes": 596
+          },
+          {
+            "items": 500,
+            "settleMs": 46.799999999813735,
+            "rows": 50,
+            "panelNodes": 596
+          },
+          {
+            "items": 5000,
+            "settleMs": 30.699999999254942,
+            "rows": 50,
+            "panelNodes": 595
+          }
+        ],
+        "screenshots": [
+          "artifacts/library/library-wide.png",
+          "artifacts/library/library-drawer-150.png",
+          "artifacts/library/library-drawer-200.png"
+        ],
+        "status": "passed"
+      }
+    },
+    "security": {
+      "path": "artifacts/release/security-audit.json",
+      "sha256": "ff6f161d17821066a9f302c0edb9166d3186f95922b81028e0f7779a269fbd45",
+      "record": {
+        "schemaVersion": 1,
+        "commit": "3e665d92f0fc95b245956347fad56e0b43707107",
+        "sourceDirty": false,
+        "packageLockSha256": "417fc077d38e65779e73f63a36ecc397d254a28046c62693a69bfbffaaf69a62",
+        "status": "pass",
+        "scope": "Current npm advisory gate for full locked dependencies; not physical-device, FFmpeg static-dependency or release approval",
+        "checks": [
+          {
+            "command": "npm audit --json",
+            "exitCode": 0,
+            "counts": {
+              "info": 0,
+              "low": 0,
+              "moderate": 0,
+              "high": 0,
+              "critical": 0,
+              "total": 0
+            },
+            "reportSha256": "c32ca030b773f94f2850f3e61a8a942058b82cd928537441fbaf310ea318997a"
+          },
+          {
+            "command": "npm audit --omit=dev --json",
+            "exitCode": 0,
+            "counts": {
+              "info": 0,
+              "low": 0,
+              "moderate": 0,
+              "high": 0,
+              "critical": 0,
+              "total": 0
+            },
+            "reportSha256": "c32ca030b773f94f2850f3e61a8a942058b82cd928537441fbaf310ea318997a"
+          }
+        ]
+      }
+    },
+    "portable": {
+      "sourceCommit": "3e665d92f0fc95b245956347fad56e0b43707107",
+      "logSha256": "2bbb0d24557f62201b7484ca94adcf211b3ad5c5b65966dec4838a65d9c1c42e",
+      "counts": {
+        "tests": 321,
+        "pass": 321,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "duration_ms": 29863.404438
+      },
+      "scope": "Parsed actual local Node output; not a CI-generated report"
+    }
+  },
+  "localLogs": [
+    {
+      "name": "trace-ui88-clean-build.log",
+      "sha256": "d14509404ddeccb831cc2dfff8aa374c97dc74bf2dff3d1626c79ceebcf88a07",
+      "bytes": 6417
+    },
+    {
+      "name": "trace-ui88-clean-extended.log",
+      "sha256": "1fe765829947eb6e7a9f8b67668294784840d0abe9b23bdf5c95098b08ab2fbf",
+      "bytes": 34
+    },
+    {
+      "name": "trace-ui88-clean-frontend.log",
+      "sha256": "febd6a9b1747d876dcd05f1ef6f339f2336a7e21f6719df0b10746a384f55d85",
+      "bytes": 35
+    },
+    {
+      "name": "trace-ui88-clean-independence.log",
+      "sha256": "7f1685a4c844bfc484a4ecd3ca1d15bb94c1ffd1bfc34612464449f58ed8648c",
+      "bytes": 334
+    },
+    {
+      "name": "trace-ui88-clean-library.log",
+      "sha256": "c40ce6931ece3079ea8eada96e68dd439c281b61c8697351d027261d2c3d4be7",
+      "bytes": 1912
+    },
+    {
+      "name": "trace-ui88-clean-p0p1.log",
+      "sha256": "81c3e68a12d3d36a0e54023d6bc9fa6e7e1157c77ba932f2e8c900ee9f484dbb",
+      "bytes": 16
+    },
+    {
+      "name": "trace-ui88-clean-renderer.log",
+      "sha256": "0446f2214c7a01fa4b62154f788acfa301ed85923861b1a6c5ec9b4609defc70",
+      "bytes": 79
+    },
+    {
+      "name": "trace-ui88-clean-security.log",
+      "sha256": "225ef7d0090c21497d1103185879037393211e6eb2a86e966e8b37044ae08d05",
+      "bytes": 171
+    },
+    {
+      "name": "trace-ui88-clean-selector.log",
+      "sha256": "da1b95a6561b9c2f0ca7a90f3288422d7fc70cfc329c6803d543fc6df8b9cabd",
+      "bytes": 195
+    },
+    {
+      "name": "trace-ui88-clean-tests.log",
+      "sha256": "2bbb0d24557f62201b7484ca94adcf211b3ad5c5b65966dec4838a65d9c1c42e",
+      "bytes": 32131
+    },
+    {
+      "name": "trace-ui88-clean-typecheck.log",
+      "sha256": "3aa4e3f28be6a76742340edba14d8c4ca307393ef1c055ecaa170c8713df502e",
+      "bytes": 121
+    }
+  ],
+  "scope": "Generated fixtures and actual clean cloud CI; browser IPC/devices simulated. No physical WASAPI/audio/DPI/native dialog/new installation package acceptance. CI annotation payloads decoded and SHA-256 verified; artifact payloads not downloaded.",
+  "supersededRuns": [
+    {
+      "id": 39034922878,
+      "scope": "Superseded during implementation; not final-version passing evidence"
+    },
+    {
+      "id": 39035038665,
+      "scope": "Superseded during implementation; not final-version passing evidence"
+    },
+    {
+      "id": 39035129472,
+      "scope": "Superseded during implementation; not final-version passing evidence"
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 # 81 · 自建 Windows FFmpeg
 
 2026-10-04。工作目标是用来源可追溯的自建编码组件替换 Gyan essentials，
-保持 Trace 的现有音频功能。旧依赖候选及失败记录见 [80](80-RELEASE-DEPENDENCY-HARDENING.md)，
+保持 Trace 的现有音频功能。旧依赖候选及失败记录见 [80](archive/iterations/80-RELEASE-DEPENDENCY-HARDENING.md)，
 当前源码/候选身份以 [13](13-HANDOFF.md) 为准。
 
 ## 构建边界
@@ -114,5 +114,5 @@ GitHub Windows 镜像只改变 `msys-2.0.dll`，其哈希从
 EBU 原生源码的 Windows 实际文件 hash 对应 Git 的 LF→CRLF 文本 checkout，
 验证 JSON 同时保留 blob hash、实际 hash 与限定转换，Linux 则逐字节相同。
 Azure 日志/附件 payload 未读取。
-新候选、工具变化、实际 MP3 帧数与旧代码反例见 [82](82-FILE-FAULT-TESTING.md)
+新候选、工具变化、实际 MP3 帧数与旧代码反例见 [82](archive/iterations/82-FILE-FAULT-TESTING.md)
 及 [验证 JSON](release/file-fault-verification.json)。上节附件及数值仍是旧运行身份。

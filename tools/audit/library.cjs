@@ -78,14 +78,14 @@ async function main(){
   await wait('document.querySelector(".library-scroll").textContent.includes("包含估计静音")');assert.match(await ev('document.querySelector(".library-scroll").textContent'),/采集完整性未知/)
   await click('[data-library-row="broken"]');await click('.library-selected button[aria-expanded]');assert.match(await ev('document.querySelector(".library-detail-content").textContent'),/音频文件仍保留/)
   report.checks.push('Import category uses existing source path; unreadable/estimated/unknown quality remain visible')
-  await click('[data-library-row="rec-00000"]');await click('.library-selected button:last-child');await wait('window.__state().playback.takeId==="rec-00000"')
+  await click('[data-library-row="rec-00000"]');await click(await ev('!!document.querySelector("[data-file-open=source]")')?'[data-file-open=source]':'[data-take-open]');await wait('window.__state().playback.takeId==="rec-00000"')
   await ev('window.__publish({playback:{...window.__state().playback,role:"export",exportId:"alternate-output",outputReady:true,phase:"playing",positionFrame:"12000"}})')
   const versionOpen=await count('file.open');await click('[data-library-play="rec-00000"]');await wait('!window.__state().playback.outputReady');assert.equal(await count('file.open'),versionOpen);assert.equal(await ev('window.__state().playback.exportId'),'alternate-output')
   report.checks.push('Row audition preserves an explicitly loaded alternate export instead of reopening preferred source')
   await click('[data-library-row="rec-00000"]');await click('.library-selected button[aria-expanded]');
   // It may already be expanded; make sure it is visible before testing a form.
   if(!await ev('!!document.querySelector(".library-detail-content")'))await click('.library-selected button[aria-expanded]')
-  await ev('[...document.querySelectorAll(".library-detail-content button")].find(b=>b.textContent==="重命名").click()');await wait('!!document.querySelector("[aria-label=录音名称]")')
+  await click('[aria-label="管理录音"]');await ev('[...document.querySelectorAll(".action-menu button")].find(b=>b.textContent==="重命名").click()');await wait('!!document.querySelector("[aria-label=录音名称]")')
   const playBeforeTyping=await count('playback.play'),recordBeforeTyping=await count('record.start');await click('[aria-label="录音名称"]');await key('r','KeyR');await key(' ','Space');assert.equal(await count('playback.play'),playBeforeTyping);assert.equal(await count('record.start'),recordBeforeTyping)
   await key('Escape');assert.equal(await ev('!!document.querySelector("[aria-label=录音名称]")'),false);assert.equal(await ev('document.querySelector(".library-panel").hidden'),false)
   await ev('document.querySelector("[data-library-row=rec-00000]").focus()');await key('End');assert.equal(await ev('document.activeElement.dataset.libraryRow'),'broken')

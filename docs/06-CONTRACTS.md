@@ -1,8 +1,10 @@
 # 06 · 模块接口与消息契约
 
+2026-10-18 对照 preview.35 复核：UI88 只调整 renderer 的组织和动作入口，没有增加 IPC 命令或变更下表协议/数据版本。选中详情版本不发请求，显式查看/导出才绑定该 role/regionId/exportId；设置分类共用草稿并在应用时提交。操作说明与验证见 [28](28-USER-GUIDE.md)、[89](89-FRONTEND-SIMPLIFICATION-ITERATION.md)。下方 preview.34 增量保留。
+
 2026-10-15 对照 preview.34 源码更新。唯一类型定义为 [shared.ts](../src/trace/shared.ts)，命令与参数校验为 [contracts.ts](../src/trace/contracts.ts)，状态控制器为 [main.ts](../src/trace/main.ts)。本文列出实际接线；完整类型以源码为准，早期拟定的 `selection.analyze`、`view.returnLive` 等不是现有命令。
 
-preview.34：`TakeSummary.continuity` 新增可选值 `complete/gaps/estimated-silence/unknown`，复用既有来源质量判定以呈现列表警告。录音列表通过前端有界意图调度复用 `file.open` 与 `playback.play/pause`，以回复中的播放 ID、role/regionId/exportId 及请求代次核对来源；协议版本、命令白名单、会话与缓存格式不变。见 [87](87-RECORDING-LIBRARY-ITERATION.md)。
+preview.34：`TakeSummary.continuity` 新增可选值 `complete/gaps/estimated-silence/unknown`，复用既有来源质量判定以呈现列表警告。录音列表通过前端有界意图调度复用 `file.open` 与 `playback.play/pause`，以回复中的播放 ID、role/regionId/exportId 及请求代次核对来源；协议版本、命令白名单、会话与缓存格式不变。见 [87](archive/iterations/87-RECORDING-LIBRARY-ITERATION.md)。
 
 ## 版本与基本类型
 
@@ -13,7 +15,7 @@ preview.34：`TakeSummary.continuity` 新增可选值 `complete/gaps/estimated-s
 | 会话 | Session v2，兼容读取 v1，见 [04](04-DATA-FORMATS.md) |
 | 磁盘分析缓存 | 二进制 schema v1；分析缓存 key v3 |
 | 冻结内存历史 | ReplayFreeze 元数据 v3；quality v1，见 [ReplayBuffer.h](../native/src/recorder/ReplayBuffer.h) 与 [replaySaveTypes.ts](../src/trace/replaySaveTypes.ts) |
-| 布局 / 声谱设置 | workspace v4 / spectrogramSettings v2，分别见 [39](39-M7-WORKSPACE.md)、[49](49-M10-3D-INTEGRATION.md)、[55](55-M12-REFERENCE-INTEGRATION.md) |
+| 布局 / 声谱设置 | workspace v4 / spectrogramSettings v2，分别见 [39](archive/iterations/39-M7-WORKSPACE.md)、[49](archive/iterations/49-M10-3D-INTEGRATION.md)、[55](archive/iterations/55-M12-REFERENCE-INTEGRATION.md) |
 
 帧数/位置用十进制非负整数字符串表示，原生为 uint64，TS 校验后转 BigInt。JSON 不使用 NaN/Infinity；Metric 的单位为 dBFS/dBTP/LUFS/LU，状态为 ready/silence/insufficient/gap/error。ready 的 value 必须有限，其他状态按指标语义使用 null。
 
@@ -68,7 +70,7 @@ type Reply = {
 | `devices.select` / `live.start` | `{deviceId}` | 选择设备/启动监测；监测不写音频 |
 | `live.stop` / `live.reset` | 无 | 停止/重置监测；活动录音期间拒绝 |
 | `view.window` / `view.gain` | `{seconds}` / `{gain}` | 时间窗 5–60 秒，波形倍率 1–4，只改变显示 |
-| `view.settings` / `view.theme` | DisplaySettings / `{theme}` | 显示设置/五套主题，不改变计算数据；主题见 [71](71-INSTRUMENT-THEMES-PLAN.md) |
+| `view.settings` / `view.theme` | DisplaySettings / `{theme}` | 显示设置/五套主题，不改变计算数据；主题见 [71](archive/iterations/71-INSTRUMENT-THEMES-PLAN.md) |
 | `view.live` / `live.replay` | 无 | 跟随最新/固定实时缓存；健康采集不会因只读历史而重启 |
 | `view.inspect` | 来源、epoch、measurementEpoch、位置/范围，可带 selectionEndFrame | 固定并定位已发布的 live/take 内存范围；完整字段见 contracts.ts |
 | `record.configure` | RecordSettings | 配置录音格式/保留意图；录音进行时拒绝修改 |
@@ -96,14 +98,14 @@ type Reply = {
 
 | 范围 | 当前契约与详细记录 |
 | --- | --- |
-| 仪器/布局 | `instrument.configure {settings}`、`workspace.configure {workspace}`；树深≤8、叶子唯一、比例 0.15–0.85、数量/序列化上限由校验器限制；[39](39-M7-WORKSPACE.md)、[41](41-M8-METERING.md) |
-| 声谱 | `spectrogram.configure/query/point/cancel`：配置、来源/范围、queryId+位置/频率、queryId；大数组走独立流，不进命令结果缓存；[43](43-M9-SPECTROGRAM.md)、[46](46-M9-2D-INTEGRATION.md)、[47](47-M9-PRESENTATION-PERFORMANCE.md) |
-| 偏好 | `preferences.retry {}` 仅重试当前设置持久化，不触发采集恢复；退出等待写入；[49](49-M10-3D-INTEGRATION.md) |
-| 目标/报告 | `targets.configure {settings}`；`report.prepare {playbackId,scope}`（whole/selection）；get/cancel/retry/export/open 只带 reportId，jump 加 index（0–999）；[51](51-M11-INTEGRATION.md) |
-| 导入 | `imports.choose/refresh/openRoot {}`；cancel/relocate/clearCache/remove/openSource/openFolder 带 assetId，prepare 加 acceptChanged，rename 加 name，removeExport 加 exportId；[53](53-M12-IMPORT-INTEGRATION.md) |
-| 参考 | `reference.set` 使用来源字段，clear/retry 无参数，activate 带 slot（a/b）及可选 atStart，range 带 slot/startFrame/endFrame，configure 带 linked/offsetNs（有界纳秒）；[54](54-M12-REFERENCE-DESIGN.md)、[55](55-M12-REFERENCE-INTEGRATION.md) |
+| 仪器/布局 | `instrument.configure {settings}`、`workspace.configure {workspace}`；树深≤8、叶子唯一、比例 0.15–0.85、数量/序列化上限由校验器限制；[39](archive/iterations/39-M7-WORKSPACE.md)、[41](archive/iterations/41-M8-METERING.md) |
+| 声谱 | `spectrogram.configure/query/point/cancel`：配置、来源/范围、queryId+位置/频率、queryId；大数组走独立流，不进命令结果缓存；[43](archive/iterations/43-M9-SPECTROGRAM.md)、[46](archive/iterations/46-M9-2D-INTEGRATION.md)、[47](archive/iterations/47-M9-PRESENTATION-PERFORMANCE.md) |
+| 偏好 | `preferences.retry {}` 仅重试当前设置持久化，不触发采集恢复；退出等待写入；[49](archive/iterations/49-M10-3D-INTEGRATION.md) |
+| 目标/报告 | `targets.configure {settings}`；`report.prepare {playbackId,scope}`（whole/selection）；get/cancel/retry/export/open 只带 reportId，jump 加 index（0–999）；[51](archive/iterations/51-M11-INTEGRATION.md) |
+| 导入 | `imports.choose/refresh/openRoot {}`；cancel/relocate/clearCache/remove/openSource/openFolder 带 assetId，prepare 加 acceptChanged，rename 加 name，removeExport 加 exportId；[53](archive/iterations/53-M12-IMPORT-INTEGRATION.md) |
+| 参考 | `reference.set` 使用来源字段，clear/retry 无参数，activate 带 slot（a/b）及可选 atStart，range 带 slot/startFrame/endFrame，configure 带 linked/offsetNs（有界纳秒）；[54](archive/iterations/54-M12-REFERENCE-DESIGN.md)、[55](archive/iterations/55-M12-REFERENCE-INTEGRATION.md) |
 | 文件库 | `library.refresh/pruneMissing/storage {}`、rename 的 takeId/name、clearCache 的 takeId、remove 的 takeId/可选 exportId；清理先释放消费者并由主进程确认 |
-| 应用/诊断 | `app.info/quit/diagnostics/copyDiagnostics/exportDiagnostics/feedback/reloadUI {}`，configure 仅 confirmExitWhileRecording，rendererFault 仅 kind=react/script/promise；[60](60-PB1-PB2-SUPPORT.md) |
+| 应用/诊断 | `app.info/quit/diagnostics/copyDiagnostics/exportDiagnostics/feedback/reloadUI {}`，configure 仅 confirmExitWhileRecording，rendererFault 仅 kind=react/script/promise；[60](archive/iterations/60-PB1-PB2-SUPPORT.md) |
 | 隔离测试 | `support.testFault {kind}`（renderer/main/worker）、`test.window {mode}`（show/hide/minimize/restore）只在隔离测试入口启用，不作为生产能力 |
 
 通用命令不接收任意路径。磁盘 File[] 通过 `TraceAPI.importFiles()` 由 preload 的 webUtils 转换，经专用 `trace:import-files` 通道发送；主窗口/mainFrame、文件数量≤4 和磁盘来源同时校验。最多等待 8 批，先校验再入队。这是授权文件导入通道，不是通用文件系统 API。
@@ -122,16 +124,16 @@ Meter v5 的电平与完整响度记录均为 10 ms 实际索引；曲线呈现�
 
 音频块仅在工作线程内部传递，含帧位置、设备/QPC 时钟、标志及自有 PCM 区域。ReleaseBuffer 前复制到预分配池；消费者归还块后才复用。采集不等待 UI/磁盘/编码，不用可覆盖显示队列作为录音源。停止时等待受控排空与引用释放。
 
-`record.start` 的 UI armed 时间不是采集起点；NativeRecordSnapshot 后续确认 startFrame，stop 排空后公开 endFrameExclusive/writtenFrames/segments，转换/哈希仍可能 processing。多区域 currentRecord 表示用户录音意图，重连期间持续存在，实际区域各有格式/帧时钟；见 [23](23-M2-CONTINUATION.md)、[24](24-M2-WAV-PRECISION.md)。
+`record.start` 的 UI armed 时间不是采集起点；NativeRecordSnapshot 后续确认 startFrame，stop 排空后公开 endFrameExclusive/writtenFrames/segments，转换/哈希仍可能 processing。多区域 currentRecord 表示用户录音意图，重连期间持续存在，实际区域各有格式/帧时钟；见 [23](archive/iterations/23-M2-CONTINUATION.md)、[24](archive/iterations/24-M2-WAV-PRECISION.md)。
 
-ReplayFreeze v3 的 quality v1 为 `{version:1,estimatedFrames,gapFrames,unknown}`，两项计数是十进制帧字符串，覆盖当前不可变冻结范围。replaySave 的可选 quality 只覆盖 startFrame/endFrame 选区，由原生对象计算；旧字段缺失兼容保存但标记 unknown。导出保留来源 continuity（complete/estimated-silence/gaps/unknown），旧导出只追溯元数据，不要求原 PCM 仍存在；媒体哈希通过不等于原采集完整。见 [73](73-CLOUD-CODE-REVIEW.md)。
+ReplayFreeze v3 的 quality v1 为 `{version:1,estimatedFrames,gapFrames,unknown}`，两项计数是十进制帧字符串，覆盖当前不可变冻结范围。replaySave 的可选 quality 只覆盖 startFrame/endFrame 选区，由原生对象计算；旧字段缺失兼容保存但标记 unknown。导出保留来源 continuity（complete/estimated-silence/gaps/unknown），旧导出只追溯元数据，不要求原 PCM 仍存在；媒体哈希通过不等于原采集完整。见 [73](archive/iterations/73-CLOUD-CODE-REVIEW.md)。
 
 报告 jump 与普通 seek 均释放输出、恢复原监听意图、不自动发声。录音/缓存准备失败统一恢复后台服务，退出/文件库维护/活动录音时保持暂停。正常关闭等待录音收尾和文件任务，后台状态不能由 renderer 自行猜测；Windows 故障/退出专项仍按 [当前交接](13-HANDOFF.md) 跟踪。
 
 ## 2026-10-11 增量接口（preview.32）
 
-见 [84](84-P0-P1-CLOUD-ITERATION.md)。InstrumentSettings v2 严格迁移 v1（新增频率平滑与倾斜，保持 trace-spectrum-v1 分析身份）。Request v1 新增 reference.match(enabled)、markers.list/save/remove/jump、chart.prepare/save、report.markerJump；仍只有主进程解析内部来源/路径。marker v1 以 PCM/媒体/解码范围内容身份绑定。ReportResult v1 可携带 marker/distribution v1 增量数据；历史报告保留原字段，summary.csv 增加两个 JSON 列。spectral overview v1 使用独立有校验的文件，原始 tile v1 不变。性能诊断 v1 为增量诊断，原生分位数为微秒 log2 桶上界、TS 分位数为最近 2048 次窗口；不改变计量或录音数据协议。
+见 [84](archive/iterations/84-P0-P1-CLOUD-ITERATION.md)。InstrumentSettings v2 严格迁移 v1（新增频率平滑与倾斜，保持 trace-spectrum-v1 分析身份）。Request v1 新增 reference.match(enabled)、markers.list/save/remove/jump、chart.prepare/save、report.markerJump；仍只有主进程解析内部来源/路径。marker v1 以 PCM/媒体/解码范围内容身份绑定。ReportResult v1 可携带 marker/distribution v1 增量数据；历史报告保留原字段，summary.csv 增加两个 JSON 列。spectral overview v1 使用独立有校验的文件，原始 tile v1 不变。性能诊断 v1 为增量诊断，原生分位数为微秒 log2 桶上界、TS 分位数为最近 2048 次窗口；不改变计量或录音数据协议。
 
-2026-10-15：标记跳转、报告标记跳转和导图释放输出后恢复请求中的监测；选区同步 A/B 范围。复核暂停采用持有计数，录音准备/录音/库维护/退出时禁止恢复 retention。PNG 在解码前校验 IHDR 的固定 1000×620 尺寸。修复与证据见 [85](85-CODE-DOCUMENT-REVIEW.md)。
+2026-10-15：标记跳转、报告标记跳转和导图释放输出后恢复请求中的监测；选区同步 A/B 范围。复核暂停采用持有计数，录音准备/录音/库维护/退出时禁止恢复 retention。PNG 在解码前校验 IHDR 的固定 1000×620 尺寸。修复与证据见 [85](archive/iterations/85-CODE-DOCUMENT-REVIEW.md)。
 
 file/report worker 的任务消息仅在进程所有权建立后发送；正常结果在所有权释放后返回。Windows 主进程持有 Job Object，硬退出时可终止阻塞原生文件 worker；异步 worker 同时监听 IPC disconnect。旧 WAV 后处理不再绕过媒体 supervisor。见 85。
