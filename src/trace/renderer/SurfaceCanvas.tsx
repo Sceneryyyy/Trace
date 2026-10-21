@@ -3,6 +3,7 @@ import {buildSurface,cameraMatrix,transform,pickSurface,type SurfaceOptions} fro
 import {SurfaceRenderer,type SurfaceScene} from './surfaceRenderer'
 import {surfaceCursor,drawSurfaceCursor} from './surfaceCursor'
 import type {SpectrogramView} from '../spectrogramView'
+import {frequencyAt} from '../spectrogramScale'
 import type {SpectrogramStops} from '../instrumentThemes'
 import './surface.css'
 type Props={view?:SpectrogramView;context:string;dataStart?:string;dataEnd?:string;start:string;end:string;cursor:string;selection?:{startFrame:string;endFrame:string}|null;rate:number;timeOffset:number;options:SurfaceOptions;palette:'trace'|'heat';stops:SpectrogramStops;themeTokens:Readonly<Record<string,string>>;minDb:number;maxDb:number;minFrequency:number;maxFrequency:number;hidden:boolean;isVisible:()=>boolean;change:(options:SurfaceOptions)=>void;hover:(frame:string,frequency:number)=>void;failure:(message:string|null)=>void}
@@ -46,7 +47,7 @@ export function SurfaceCanvas(props:Props){
   for(const i of [0,steps,...Array.from({length:steps-1},(_,n)=>n+1)]){
    const ratio=i/steps,seconds=(Number(a)+Number(span)*ratio)/p.rate+p.timeOffset
    label([-1+2*ratio,-.05,1.06],seconds.toFixed(seconds<100?2:1)+'s',labelColour,0,10)
-   const hz=p.minFrequency*Math.pow(p.maxFrequency/p.minFrequency,ratio);label([-1.08,0,1-2*ratio],hz>=1000?(hz/1000).toFixed(1)+'k':Math.round(hz)+' Hz',labelColour,-8,0,'right')
+   const hz=frequencyAt(ratio,p.minFrequency,p.maxFrequency);label([-1.08,0,1-2*ratio],hz>=1000?(hz/1000).toFixed(1)+'k':Math.round(hz)+' Hz',labelColour,-8,0,'right')
   }
   label([-1.08,cameraRef.current.height*.5,1],((p.minDb+p.maxDb)/2).toFixed(0)+' dBFS',labelColour,-8,0,'right')
 
@@ -68,7 +69,7 @@ export function SurfaceCanvas(props:Props){
   const rect=e.currentTarget.getBoundingClientRect(),m=meshRef.current;if(!m)return
   const picked=pickSurface(m,cameraMatrix(cameraRef.current,rect.width/rect.height),(e.clientX-rect.left)/rect.width*2-1,1-(e.clientY-rect.top)/rect.height*2)
   if(!picked)return
-  const frame=BigInt(props.start)+BigInt(Math.round(Number(BigInt(props.end)-BigInt(props.start))*picked.time)),frequency=props.minFrequency*Math.pow(props.maxFrequency/props.minFrequency,picked.frequency)
+  const frame=BigInt(props.start)+BigInt(Math.round(Number(BigInt(props.end)-BigInt(props.start))*picked.time)),frequency=frequencyAt(picked.frequency,props.minFrequency,props.maxFrequency)
   props.hover(String(frame),frequency)
  }
  return <div className="spectral-surface" data-hidden={props.hidden}>

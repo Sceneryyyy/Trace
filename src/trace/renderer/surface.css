@@ -10,4 +10,4 @@
 .surface-controls label {display:flex;align-items:center;gap:4px}
 .surface-controls input[type=range] {width:70px}
 .surface-controls .surface-failure {color:var(--attention)}
-.spectrogram-instrument>.timeline.surface-ruler {flex:0 0 26px;min-height:26px}
+.spectrogram-plots>.timeline.surface-ruler {flex:0 0 26px;min-height:26px}

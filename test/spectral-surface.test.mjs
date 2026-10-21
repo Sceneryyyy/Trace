@@ -26,6 +26,29 @@ test('picking selects the projected surface location and reports gaps as floor f
  for(const point of [[-.5,.5,.5],[0,.5,0],[.5,.5,-.5]]){const screen=transform(matrix,point),picked=pickSurface(mesh,matrix,screen[0],screen[1]);assert(picked?.surface);assert(Math.abs(picked.time-(point[0]+1)/2)<1e-6);assert(Math.abs(picked.frequency-(1-point[2])/2)<1e-6)}
  v.status.fill(1);v.coverage.fill(0);const empty=buildSurface(v,defaultSurface,-100,0),screen=transform(matrix,[0,0,0]),pick=pickSurface(empty,matrix,screen[0],screen[1]);assert(pick&&!pick.surface)
 })
+
+test('default camera fits the complete plot across tall, square and very wide layouts and all presets',()=>{
+ for(const aspect of [.4,1,1.7,3,6])for(const pose of Object.values(surfacePresets))for(const height of [.25,1,2.5]){
+  const matrix=cameraMatrix({...defaultSurface,...pose,height},aspect),points=[]
+  for(const x of [-1,1])for(const y of [0,height])for(const z of [-1,1])points.push(transform(matrix,[x,y,z]))
+  const xs=points.map(p=>p[0]),ys=points.map(p=>p[1])
+  assert(Math.abs(Math.min(...xs)+.82)<1e-10);assert(Math.abs(Math.max(...xs)-.82)<1e-10)
+  assert(Math.abs(Math.min(...ys)+.78)<1e-10);assert(Math.abs(Math.max(...ys)-.78)<1e-10)
+  assert(points.every(p=>p[2]>-1&&p[2]<1))
+ }
+})
+
+test('zoom scales the fitted frame and picking stays aligned after a layout aspect change',()=>{
+ for(const aspect of [.5,1.7,5]){
+  const base=cameraMatrix(defaultSurface,aspect),zoomed=cameraMatrix({...defaultSurface,zoom:1.5},aspect),mesh=buildSurface(view(16,16),defaultSurface,-100,0)
+  for(const point of [[-.5,.5,.5],[0,.5,0],[.5,.5,-.5]]){
+   const a=transform(base,point),b=transform(zoomed,point)
+   assert(Math.abs(b[0]-a[0]*1.5)<1e-10);assert(Math.abs(b[1]-a[1]*1.5)<1e-10)
+   const picked=pickSurface(mesh,zoomed,b[0],b[1]);assert(picked?.surface)
+   assert(Math.abs(picked.time-(point[0]+1)/2)<1e-6);assert(Math.abs(picked.frequency-(1-point[2])/2)<1e-6)
+  }
+ }
+})
 test('maximum detail has bounded vertex/index storage and acceptable independent geometry timing',async()=>{
  const v=view(1024,512),at=performance.now(),mesh=buildSurface(v,{...defaultSurface,detail:256},-100,0),buildMs=performance.now()-at
  assert.equal(mesh.width*mesh.height,32768);assert(mesh.bytes<2*1024*1024);assert(Math.max(...mesh.valid)===1)

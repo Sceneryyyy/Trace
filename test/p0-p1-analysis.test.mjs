@@ -20,6 +20,29 @@ test('display smoothing uses linear power and per-pixel maxima keep narrow peaks
  const old={...m.defaultInstrumentSettings,version:1};delete old.smoothing;delete old.tilt;assert.deepEqual(m.restoreInstrumentSettings(old),m.defaultInstrumentSettings);assert.equal(m.instrumentConfigKey({...m.defaultInstrumentSettings,smoothing:3,tilt:3}),m.instrumentConfigKey(m.defaultInstrumentSettings))
  assert.throws(()=>m.smoothSpectrum(new Float64Array([NaN]),6));assert.throws(()=>m.validateInstrumentSettings({...m.defaultInstrumentSettings,tilt:7}))
 })
+test('flat FFT power stays continuous on log-frequency pixels across rates, FFT sizes and viewport widths',()=>{
+ for(const rate of [44100,48000,96000])for(const fft of [512,2048,16384])for(const width of [80,744,1600]){
+  const power=new Float64Array(fft/2+1).fill(.001),before=power.slice(),binHz=rate/fft
+  const pixels=m.spectrumPixels(power,binHz,Math.max(20,binHz),Math.min(20000,rate/2),width,{smoothing:0,tilt:0})
+  assert.equal(pixels.length,width);assert(pixels.every(p=>Math.abs(p.decibels+30)<1e-10));assert.deepEqual(power,before)
+ }
+})
+test('sparse display interpolates power while measured zero bins, silence and dense narrow peaks remain intact',()=>{
+ const p=new Float64Array(8193).fill(.001),binHz=48000/16384;p[20]=0;p[4000]=1;const before=p.slice()
+ const pixels=m.spectrumPixels(p,binHz,20,20000,744,{smoothing:0,tilt:0})
+ const zeroPixel=Math.floor(Math.log(20*binHz/20)/Math.log(20000/20)*744)
+ assert.equal(pixels[zeroPixel].decibels,-Infinity);assert.equal(Math.max(...pixels.map(p=>p.decibels)),0)
+ assert(pixels.filter(p=>p.frequency<300).every(p=>p.decibels===-Infinity||p.decibels<=-30+1e-10))
+ assert(m.spectrumPixels(new Float64Array(8193),binHz,20,20000,744,{smoothing:0,tilt:0}).every(p=>p.decibels===-Infinity))
+ assert.deepEqual(p,before)
+})
+test('a sub-bin viewport remains drawable without extrapolating beyond supported positive bins',()=>{
+ const powers=new Float64Array(257).fill(.01)
+ const narrow=m.spectrumPixels(powers,100,120,121,100,{smoothing:0,tilt:0});assert(narrow.every(p=>Math.abs(p.decibels+20)<1e-10))
+ for(const [lo,hi] of [[1,10],[26000,27000]])assert(m.spectrumPixels(powers,100,lo,hi,100,{smoothing:0,tilt:0}).every(p=>p.decibels===-Infinity))
+ const tilted=m.spectrumPixels(powers,100,120,121,100,{smoothing:0,tilt:3});assert(tilted.every(p=>Math.abs(p.decibels-(-20+3*Math.log2(p.frequency/1000)))<1e-10))
+})
+
 test('matching attenuates both sources conservatively and refuses silence, gaps and incompatible engines',()=>{
  const a={integratedToCursor:metric(-14),maxTruePeak:metric(2,'dBTP')},b={integratedToCursor:metric(-20),maxTruePeak:metric(-2,'dBTP')},r=m.loudnessMatch(true,true,a,b)
  assert.equal(r.targetLufs,-20);assert.equal(r.aDb,-6);assert.equal(r.bDb,0);assert(a.maxTruePeak.value+r.aDb<=-1&&b.maxTruePeak.value+r.bDb<=-1)

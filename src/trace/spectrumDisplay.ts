@@ -9,10 +9,22 @@ export function smoothSpectrum(powers:Float64Array,fraction:number):Float64Array
  for(let i=1;i<powers.length;i++){const a=Math.max(0,i/factor+.5),b=Math.min(powers.length,i*factor+.5);result[i]=Math.max(0,(integral(b)-integral(a))/(b-a))}
  return result
 }
-/** Display peak per pixel. Never mutates or substitutes for measurement arrays. */
+/** Keep per-pixel peaks in dense regions; interpolate linear power only where
+ * no FFT bin lands on a pixel. Empty screen columns are not audio silence.
+ * This display projection never mutates or substitutes for measurement arrays. */
 export function spectrumPixels(powers:Float64Array,binHz:number,lo:number,hi:number,width:number,options:SpectrumDisplayOptions):Array<{frequency:number;decibels:number}>{
  if(![binHz,lo,hi,width,options.tilt].every(Number.isFinite)||binHz<=0||lo<=0||hi<=lo||width<1||Math.abs(options.tilt)>6)throw Error('INVALID_SPECTRUM_DISPLAY')
- const n=Math.min(4096,Math.ceil(width)),values=smoothSpectrum(powers,options.smoothing),peaks=new Float64Array(n).fill(-Infinity)
- for(let bin=1;bin<values.length;bin++){const f=bin*binHz;if(f<lo||f>hi)continue;const x=Math.min(n-1,Math.floor(Math.log(f/lo)/Math.log(hi/lo)*n)),db=values[bin]>0?10*Math.log10(values[bin])+options.tilt*Math.log2(f/1000):-Infinity;peaks[x]=Math.max(peaks[x],db)}
- return Array.from(peaks,(decibels,x)=>({frequency:lo*(hi/lo)**((x+.5)/n),decibels}))
+ const n=Math.min(4096,Math.ceil(width)),values=smoothSpectrum(powers,options.smoothing),peaks=new Float64Array(n).fill(-Infinity),occupied=new Uint8Array(n)
+ for(let bin=1;bin<values.length;bin++){const f=bin*binHz;if(f<lo||f>hi)continue;const x=Math.min(n-1,Math.floor(Math.log(f/lo)/Math.log(hi/lo)*n)),db=values[bin]>0?10*Math.log10(values[bin])+options.tilt*Math.log2(f/1000):-Infinity;peaks[x]=Math.max(peaks[x],db);occupied[x]=1}
+ return Array.from(peaks,(decibels,x)=>{
+  const frequency=lo*(hi/lo)**((x+.5)/n)
+  if(!occupied[x]){
+   const bin=frequency/binHz,a=Math.floor(bin),b=Math.ceil(bin)
+   if(a>=1&&b<values.length){
+    const power=values[a]+(values[b]-values[a])*(bin-a)
+    decibels=power>0?10*Math.log10(power)+options.tilt*Math.log2(frequency/1000):-Infinity
+   }
+  }
+  return {frequency,decibels}
+ })
 }

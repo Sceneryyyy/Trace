@@ -1,5 +1,6 @@
 import type {SpectralOverview} from './spectrogramOverview'
 import type {SpectrogramTile} from './spectrogramTile'
+import {frequencyAt} from './spectrogramScale'
 import {SpectrogramProjectionCache,spectralRows,spectralMaximum,type SpectralRows} from './spectrogramProjection'
 
 export type SpectrogramRange = {
@@ -46,11 +47,11 @@ export class SpectrogramRaster {
     this.ready=new Float64Array(width);this.touched=new Float64Array(width)
     const first=new Uint32Array(range.height),last=new Uint32Array(range.height),binHz=rate/fftSize
     for(let y=0;y<range.height;y++) {
-      const lo=range.minFrequency*Math.pow(range.maxFrequency/range.minFrequency,y/range.height)
-      const hi=range.minFrequency*Math.pow(range.maxFrequency/range.minFrequency,(y+1)/range.height)
+      const lo=frequencyAt(y/range.height,range.minFrequency,range.maxFrequency)
+      const hi=frequencyAt((y+1)/range.height,range.minFrequency,range.maxFrequency)
       let a=Math.ceil(lo/binHz),b=Math.min(fftSize/2,Math.ceil(hi/binHz)-1)
       if(y===range.height-1&&hi>=rate/2)b=fftSize/2
-      if(b<a)a=b=Math.min(fftSize/2,Math.round(Math.sqrt(lo*hi)/binHz))
+      if(b<a)a=b=Math.min(fftSize/2,Math.round(frequencyAt((y+.5)/range.height,range.minFrequency,range.maxFrequency)/binHz))
       first[y]=a;last[y]=b
     }
     this.rows=spectralRows(first,last);this.peaks=new Float32Array(this.rows.first.length)

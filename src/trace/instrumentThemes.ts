@@ -98,7 +98,7 @@ export const instrumentThemes:Record<ThemeId,InstrumentTheme>={
 export const heatStops:SpectrogramStops=[[14,20,33],[51,62,132],[170,63,101],[244,141,60],[253,233,156]]
 
 export function instrumentTheme(id:ThemeId):InstrumentTheme{return instrumentThemes[id]}
-export function spectralGradient(stops:SpectrogramStops):string{return 'linear-gradient(90deg,'+stops.map(toHex).join(',')+')'}
+export function spectralGradient(stops:SpectrogramStops,direction='90deg'):string{return 'linear-gradient('+direction+','+stops.map(toHex).join(',')+')'}
 /** Every CSS custom property for a theme, without the leading "--". */
 export function cssTokens(id:ThemeId):Record<string,string>{
  const theme=instrumentTheme(id)

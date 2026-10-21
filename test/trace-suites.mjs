@@ -61,6 +61,7 @@ export const portable = [
   'spectrogram-presentation.test.mjs',
   'spectrogram-presenter.test.mjs',
   'spectrogram-projection.test.mjs',
+  'spectrogram-scale.test.mjs',
   'spectrogram-service.test.mjs',
   'spectrogram-store.test.mjs',
   'suite-coverage.test.mjs',

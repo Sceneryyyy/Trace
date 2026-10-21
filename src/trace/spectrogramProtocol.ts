@@ -1,5 +1,6 @@
 import {defaultSurface,validateSurface,type SurfaceOptions} from './surfaceOptions'
 import {spectralFrame,type SpectrogramView} from './spectrogramView'
+import {spectrogramScaleId} from './spectrogramScale'
 export type SpectrogramSettings={version:2;surface:SurfaceOptions;fftSize:number;channel:'stereo'|'left'|'right'|'mid'|'side';minFrequency:number;maxFrequency:number;minDecibels:number;maxDecibels:number;palette:'trace'|'heat'}
 export const defaultSpectrogramSettings:SpectrogramSettings={version:2,surface:{...defaultSurface},fftSize:2048,channel:'stereo',minFrequency:20,maxFrequency:20000,minDecibels:-100,maxDecibels:0,palette:'trace'}
 const plain=(v:unknown):v is Record<string,unknown>=>Boolean(v)&&typeof v==='object'&&!Array.isArray(v)
@@ -14,7 +15,7 @@ export function restoreSpectrogramSettings(v:unknown):SpectrogramSettings {
  try{if(plain(v)&&(v.version===1||v.version===2)){let surface={...defaultSurface};if(v.version===2)try{surface=validateSurface(v.surface)}catch{};v={...v,version:2,surface}}return validateSpectrogramSettings(v)}
  catch{return structuredClone(defaultSpectrogramSettings)}
 }
-export function spectrogramConfigKey(s:SpectrogramSettings):string{return JSON.stringify([s.fftSize,s.channel,s.minFrequency,s.maxFrequency])}
+export function spectrogramConfigKey(s:SpectrogramSettings):string{return JSON.stringify([spectrogramScaleId,s.fftSize,s.channel,s.minFrequency,s.maxFrequency])}
 export type SpectrogramSourceRef={analysisId?:string;kind:'live'|'take'|'file';sourceId:string;epochId:string;measurementEpoch:string}
 export type SpectrogramQuery={source:SpectrogramSourceRef;range:{startFrame:string;endFrame:string;width:number;height:number}}
 export type SpectrogramPacket={configKey:string;requestId:string;phase:'partial'|'ready'|'error'|'cancelled';source:SpectrogramSourceRef;axisStartFrame?:string;axisEndFrame?:string;view?:SpectrogramView;error?:string}

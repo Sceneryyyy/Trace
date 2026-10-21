@@ -15,6 +15,13 @@ function lookup(stops:SpectrogramStops):Uint8Array {
  return lut
 }
 export function spectrogramLutCount():number{return luts.size}
+/** Always show exact range endpoints; choose readable interior dB labels. */
+export function decibelTicks(min:number,max:number,height:number):number[] {
+ const span=max-min,step=[5,10,20,40,80].find(n=>height*n/span>=24)||100
+ const values=[max,min]
+ for(let db=Math.ceil(min/step)*step;db<max;db+=step)if(db>min&&(db-min)*height/span>=18&&(max-db)*height/span>=18)values.push(db)
+ return values.sort((a,b)=>b-a)
+}
 export function spectrogramPacketMatches(packet:SpectrogramPacket|null,source:SpectrogramSourceRef|undefined,settings:SpectrogramSettings):boolean {
  const p=packet?.source
  return Boolean(p&&source&&p.kind===source.kind&&p.sourceId===source.sourceId&&p.epochId===source.epochId&&p.measurementEpoch===source.measurementEpoch&&

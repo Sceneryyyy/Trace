@@ -41,11 +41,22 @@ export function multiply(a:Float64Array,b:Float64Array):Float64Array {
 }
 export function cameraMatrix(s:SurfaceOptions,aspect:number):Float64Array {
  validateSurface(s);if(!Number.isFinite(aspect)||aspect<=0)throw Error('INVALID_CAMERA_ASPECT')
- const yaw=s.yaw*Math.PI/180,pitch=s.pitch*Math.PI/180,d=3.8/s.zoom,target:Vec3=[0,s.height*.4,0],eye:Vec3=[d*Math.cos(pitch)*Math.sin(yaw),target[1]+d*Math.sin(pitch),d*Math.cos(pitch)*Math.cos(yaw)]
+ // Keep perspective independent of user zoom, then fit the full plotting box.
+ // Time/frequency/amplitude axes can expand with each viewport dimension.
+ const yaw=s.yaw*Math.PI/180,pitch=s.pitch*Math.PI/180,d=6,target:Vec3=[0,s.height*.5,0],eye:Vec3=[d*Math.cos(pitch)*Math.sin(yaw),target[1]+d*Math.sin(pitch),d*Math.cos(pitch)*Math.cos(yaw)]
  const z=norm(sub(eye,target)),x=norm(cross([0,1,0],z)),y=cross(z,x)
  const view=new Float64Array([x[0],y[0],z[0],0,x[1],y[1],z[1],0,x[2],y[2],z[2],0,-dot(x,eye),-dot(y,eye),-dot(z,eye),1])
- const f=1/Math.tan(Math.PI/8),near=.05,far=30,plotAspect=Math.max(.6,Math.min(2.25,aspect)),p=new Float64Array([f/plotAspect,0,0,0,0,f,0,0,0,0,(far+near)/(near-far),-1,0,0,2*far*near/(near-far),0])
- return multiply(p,view)
+ const f=1/Math.tan(Math.PI/8),near=.05,far=30,p=new Float64Array([f/aspect,0,0,0,0,f,0,0,0,0,(far+near)/(near-far),-1,0,0,2*far*near/(near-far),0]),base=multiply(p,view)
+ let left=Infinity,right=-Infinity,bottom=Infinity,top=-Infinity
+ for(const x of [-1,1])for(const y of [0,s.height])for(const z of [-1,1]){
+  const q=transform(base,[x,y,z]);left=Math.min(left,q[0]);right=Math.max(right,q[0]);bottom=Math.min(bottom,q[1]);top=Math.max(top,q[1])
+ }
+ // Screen-space fit: 82% width, 78% height at zoom=1, including peaks.
+ // Fixed envelope prevents pumping when the audio level changes. Zoom stays
+ // relative to this fit, so rotating/resizing never changes saved preferences.
+ const sx=1.64/(right-left)*s.zoom,sy=1.56/(top-bottom)*s.zoom
+ const fit=new Float64Array([sx,0,0,0,0,sy,0,0,0,0,1,0,-(left+right)*sx/2,-(bottom+top)*sy/2,0,1])
+ return multiply(fit,base)
 }
 export function inverse(matrix:Float64Array):Float64Array {
  const rows=Array.from({length:4},(_,r)=>[...Array.from({length:4},(_,c)=>matrix[c*4+r]),...Array.from({length:4},(_,c)=>r===c?1:0)])

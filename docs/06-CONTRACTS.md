@@ -8,6 +8,8 @@ preview.34：`TakeSummary.continuity` 新增可选值 `complete/gaps/estimated-s
 
 ## 版本与基本类型
 
+2026-10-19 本地显示增量：声谱呈现 `configKey` 加入投影标识 `mel-700-v2`，用于拒绝旧投影结果；原始 FFT 瓦片、概览存储、分析缓存、计量配置、Request/Reply 与声谱设置版本不变。概览 raster 复用新行频点范围，精确点查仍返回原始 bin。详见 [91](91-SPECTROGRAM-PORT-PREVIEW35.md)。
+
 | 协议/格式 | 当前版本与定义 |
 | --- | --- |
 | Request / Reply / native meter 的 protocolVersion | 1 |
