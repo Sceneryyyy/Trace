@@ -1,5 +1,12 @@
 const fs=require('fs'),path=require('path'),{spawnSync}=require('child_process'),crypto=require('crypto')
 const root=path.resolve(__dirname,'..'),env={...process.env};delete env.ELECTRON_RUN_AS_NODE;env.CSC_IDENTITY_AUTO_DISCOVERY='false';env.ELECTRON_BUILDER_CACHE=path.join(root,'.tools/electron-builder-cache')
+const inheritedPath=env.PATH||env.Path||'';delete env.Path
+const localNpm=path.join(root,'.tools/npm/package/bin/npm-cli.js'),packageBin=path.join(root,'.tools/trace-package-bin')
+if(fs.existsSync(localNpm)){
+ fs.mkdirSync(packageBin,{recursive:true})
+ fs.writeFileSync(path.join(packageBin,'npm.cmd'),'@echo off\r\n"'+process.execPath+'" "'+localNpm+'" %*\r\n')
+}
+env.PATH=[path.dirname(process.execPath),packageBin,inheritedPath].join(path.delimiter)
 if(process.platform!=='win32'||process.arch!=='x64')throw Error('Trace packaging requires Windows x64')
 if(require('electron/package.json').version!=='42.11.10'||require('electron-builder/package.json').version!=='26.15.3')throw Error('Packaging toolchain changed')
 const codec=JSON.parse(fs.readFileSync(path.join(root,'ffmpeg.lock.json'),'utf8')),codecRoot=path.dirname(codec.correspondingSourceManifest)

@@ -1,11 +1,14 @@
+const version=require('./package.json').version
+const buildTag=process.env.TRACE_BUILD_TAG||''
+if(buildTag&&!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(buildTag))throw Error('Invalid TRACE_BUILD_TAG')
 module.exports={
  extends:null,
  appId:'local.trace.audio',
  productName:'Trace',
  electronVersion:'42.11.10',
  electronDist:'node_modules/electron/dist',
- directories:{output:'dist-trace/preview.31',app:'.tools/trace-package-app'},
- extraMetadata:{name:'trace',version:'0.1.0-preview.31',description:'Trace 声迹 · Audio Recorder & Analyzer',main:'out-trace/main/index.js',author:'Trace contributors',dependencies:{},devDependencies:{}},
+ directories:{output:'dist-trace/'+version.replace('0.1.0-','')+(buildTag?'-'+buildTag:''),app:'.tools/trace-package-app'},
+ extraMetadata:{name:'trace',version,description:'Trace 声迹 · Audio Recorder & Analyzer',main:'out-trace/main/index.js',author:'Trace contributors',dependencies:{},devDependencies:{}},
  npmRebuild:false,nodeGypRebuild:false,buildDependenciesFromSource:false,asar:true,
  files:['out-trace/**/*','package.json','!node_modules/**'],
  extraFiles:[{from:'docs/28-USER-GUIDE.md',to:'README-Trace.md'}],
