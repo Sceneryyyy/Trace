@@ -93,5 +93,7 @@ export class StoredSession {
  async settled():Promise<void>{await this.writes}
 }
 export async function readSession(directory:string):Promise<StoredSession>{
- return new StoredSession(directory,normalizeSession(JSON.parse(await readMetadata(join(directory,'session.json'),16*1024*1024,'INVALID_SESSION_FILE'))))
+ const document=JSON.parse(await readMetadata(join(directory,'session.json'),16*1024*1024,'INVALID_SESSION_FILE'))
+ if(document?.product!=='Trace')throw Error('NOT_TRACE_SESSION')
+ return new StoredSession(directory,normalizeSession(document))
 }

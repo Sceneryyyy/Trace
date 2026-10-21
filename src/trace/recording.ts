@@ -100,17 +100,19 @@ export class RecordingService {
   this.directory=directory;this.takes.clear();this.unreadable.clear()
   for(const entry of await readdir(directory,{withFileTypes:true})){
    if(!entry.isDirectory()||entry.isSymbolicLink())continue
-   // A manifest we cannot parse must stay visible: the audio is still on disk,
-   // and silently dropping the entry would look identical to the take never
-   // having existed.
-   try{const take=await readSession(join(directory,entry.name));take.document.preset=validateRecordSettings(take.document.preset)
+   // A normal folder is not a recording. Only a regular session manifest is a
+   // candidate; damaged manifests stay visible without touching their audio.
+   try{
+    const manifest=await lstat(join(directory,entry.name,'session.json')).catch(error=>{if(error.code!=='ENOENT')throw error;return undefined})
+    if(!manifest?.isFile()||manifest.isSymbolicLink())continue
+    const take=await readSession(join(directory,entry.name));take.document.preset=validateRecordSettings(take.document.preset)
     if(restoreInterruptedRetention(take.document)){
      // A prior process may have stopped after persisting 'removing' but before
      // confirming every unlink. Make the surviving source visible for review.
      try{await take.save()}catch{take.document.retention={phase:'error',error:'RETENTION_RECOVERY_SAVE_FAILED'}}
     }
     this.takes.set(take.document.sessionId,take)}
-   catch(error){this.unreadable.set(join(directory,entry.name),{name:entry.name,error:errorCode(error)})}
+   catch(error){if(error instanceof Error&&error.message==='NOT_TRACE_SESSION')continue;this.unreadable.set(join(directory,entry.name),{name:entry.name,error:errorCode(error)})}
   }
   this.changed()
  }

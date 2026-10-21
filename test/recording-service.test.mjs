@@ -58,6 +58,27 @@ test('corrupt sessions cannot stop a valid directory from loading',async()=>{
  }
 })
 
+test('recording discovery ignores ordinary WAV folders and foreign manifests while retaining damaged Trace records',async()=>{
+ const root=await mkdtemp(resolve('artifacts/m2/discovery-'))
+ const documents={foreign:JSON.stringify({product:'Other recorder',schemaVersion:1}),unowned:JSON.stringify({files:['song.wav']}),torn:'{"product":"Trace",',future:JSON.stringify({product:'Trace',schemaVersion:999})}
+ for(const name of ['empty','music','.Temp','nested','manifest-directory',...Object.keys(documents)])await mkdir(join(root,name))
+ await writeFile(join(root,'music','song.wav'),'external audio')
+ await mkdir(join(root,'nested','audio'));await writeFile(join(root,'nested','audio','Trace-1.wav'),'external audio')
+ await mkdir(join(root,'manifest-directory','session.json'))
+ for(const [name,text] of Object.entries(documents))await writeFile(join(root,name,'session.json'),text)
+ const native={recordStart(){throw Error('not used')},recordStop(){throw Error('not used')},recordStatus(){throw Error('not used')}}
+ const service=new RecordingService(native,'unused','unused','unused',()=>{})
+ for(let scan=0;scan<2;scan++){
+  await service.setDirectory(root)
+  assert.deepEqual(service.summaries().map(s=>s.name).sort(),['future','torn'])
+  assert(service.summaries().every(s=>s.status==='unreadable'&&s.error))
+  assert.deepEqual(service.unreadableDirectories().map(s=>s.name).sort(),['future','torn'])
+ }
+ assert.equal(await readFile(join(root,'music','song.wav'),'utf8'),'external audio')
+ assert.equal(await readFile(join(root,'nested','audio','Trace-1.wav'),'utf8'),'external audio')
+ for(const [name,text] of Object.entries(documents))assert.equal(await readFile(join(root,name,'session.json'),'utf8'),text)
+})
+
 test('a restarted library exposes a surviving source left in removing',async()=>{
  const root=await mkdtemp(resolve('artifacts/m2/retention-restart-')),folder=join(root,'take')
  await mkdir(join(folder,'audio'),{recursive:true});await writeFile(join(folder,'audio','source.wav'),'PCM')
