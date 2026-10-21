@@ -7,13 +7,14 @@ import {ThemePicker} from './ThemePicker'
 import {applyTheme} from './themeRuntime'
 import type {ThemeId} from '../instrumentThemes'
 import type {Command} from '../shared'
-export function DisplaySettingsForm({value,busy,apply,request,support,confirmExit=true,theme}:{value:DisplaySettings;busy:boolean;apply:(value:DisplaySettings,confirmExit:boolean,theme:ThemeId)=>void;confirmExit?:boolean;theme:ThemeId;support?:import('../supportJournal').SupportStatus;request:(command:Command,payload?:Record<string,unknown>)=>Promise<unknown>}):React.JSX.Element{
+export function DisplaySettingsForm({value,busy,apply,request,support,confirmExit=true,theme,recording,initialSection='display'}:{value:DisplaySettings;busy:boolean;apply:(value:DisplaySettings,confirmExit:boolean,theme:ThemeId)=>void;confirmExit?:boolean;theme:ThemeId;recording?:React.ReactNode;initialSection?:'display'|'recording';support?:import('../supportJournal').SupportStatus;request:(command:Command,payload?:Record<string,unknown>)=>Promise<unknown>}):React.JSX.Element{
  const [draft]=useState(value),[exitGuard,setExitGuard]=useState(confirmExit),[themeDraft,setThemeDraft]=useState(theme)
  // Preview immediately across the window; App restores the saved theme if the dialog closes unapplied.
- const [section,setSection]=useState<'display'|'behavior'|'help'|'about'>('display')
+ const [section,setSection]=useState<'display'|'recording'|'behavior'|'help'|'about'>(initialSection)
  const previewTheme=(id:ThemeId)=>{setThemeDraft(id);applyTheme(id)}
  return <div className="settings-content categorized-settings">
-  <SectionTabs prefix="settings-section-" label="设置分类" value={section} change={setSection} tabs={[{id:'display',label:'显示'},{id:'behavior',label:'行为'},{id:'help',label:'帮助与诊断'},{id:'about',label:'关于'}]}/>
+  <SectionTabs prefix="settings-section-" label="设置分类" value={section} change={setSection} tabs={[{id:'display',label:'显示'},...(recording?[{id:'recording' as const,label:'录音与保存'}]:[]),{id:'behavior',label:'行为'},{id:'help',label:'帮助与诊断'},{id:'about',label:'关于'}]}/>
+  <div id="settings-section-recording" role="tabpanel" aria-labelledby="settings-section-tab-recording" hidden={section!=='recording'}>{recording}</div>
   <div id="settings-section-display" role="tabpanel" aria-labelledby="settings-section-tab-display" hidden={section!=='display'}>
   <div className="settings-theme"><span id="theme-heading">仪表主题</span><ThemePicker value={themeDraft} change={previewTheme}/><small>选择后立即预览，点“应用设置”保存。只改变显示颜色，不影响测量数值。</small></div>
   <p className="settings-hint">波形倍率与时间窗位于工作台的时间轴工具中。</p></div>

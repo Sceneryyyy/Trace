@@ -63,7 +63,7 @@ export default function App(): React.JSX.Element {
   const [modal,setModal]=useState<'device'|'settings'|'export'|'display'|'targets'|'reports'|null>(null)
   // The display dialog previews themes locally; closing it without applying falls back to the saved theme.
   // Until the first state arrives the startup theme from the URL stays in effect (no default-theme flash).
-  useEffect(()=>{if(modal!=='display'&&state.instrumentTheme)applyTheme(state.instrumentTheme)},[state.instrumentTheme,modal])
+  useEffect(()=>{if(modal!=='display'&&modal!=='settings'&&state.instrumentTheme)applyTheme(state.instrumentTheme)},[state.instrumentTheme,modal])
   useEffect(()=>{if(libraryOpen&&libraryNarrow&&!modal&&!libraryPanel.current?.contains(document.activeElement))libraryPanel.current?.querySelector<HTMLInputElement>('input')?.focus()},[libraryOpen,libraryNarrow,modal])
   const [exportSource,setExportSource]=useState<ExportSource|null>(null)
   const [exportDescription,setExportDescription]=useState<ExportDescription|null>(null),[exportInfoError,setExportInfoError]=useState('')
@@ -109,7 +109,7 @@ export default function App(): React.JSX.Element {
   if(!libraryPlayback.current)libraryPlayback.current=new LibraryPlayback(()=>current.current,command,setLibraryPending,error=>{setLibraryError(userError(error));setMessage(userError(error))})
   useEffect(()=>()=>libraryPlayback.current?.cancel(),[])
   const openLibrarySource=useCallback((source:ExportSource,play:boolean)=>{setLibraryError('');latest.current.delete('window');latest.current.delete('inspect');latest.current.delete('seek');setWindowDraft(null);presentation.cancel();void libraryPlayback.current!.activate(source,play)},[presentation])
-  useEffect(()=>{if(modal==='settings')void command('record.capacity').catch(()=>{})},[modal,state.recordDirectory,state.deviceId,command])
+  useEffect(()=>{if(modal==='settings'||modal==='display')void command('record.capacity').catch(()=>{})},[modal,state.recordDirectory,state.deviceId,command])
   useEffect(()=>{
     if(modal!=='export'||!exportSource)return
     let active=true;setExportDescription(null);setExportInfoError('')
@@ -226,6 +226,11 @@ export default function App(): React.JSX.Element {
   const isRecording=Boolean(state.currentRecord)||chrome.recordBusy
   const finalizing=chrome.finalizing
   const format=chrome.format
+  const deviceParts=selected?.label.match(/^(.*)\s+\((.*)\)$/)
+  const deviceDetails=[deviceParts?.[2],format?`${format.channelCount} 声道 · ${format.encoding==='ieee-float'?'Float':'PCM'} ${format.containerBits}-bit`:null].filter(Boolean).join(' · ')
+  const deviceSummary=[selected?.label,deviceDetails].filter(Boolean).join(' · ')
+  const recordRate=state.recordSettings?.sampleRate??'source'
+  const rateSummary=format?`${format.sampleRate/1000} kHz`+(recordRate!=='source'&&recordRate!==format.sampleRate?` 采集 → ${recordRate/1000} kHz 录音`:''):recordRate==='source'?'采样率跟随来源':`${recordRate/1000} kHz · 来源未就绪`
   const sourceError=chrome.error||null
   const captureError=state.error||(!file?sourceError:null)
   const fileError=file?.error||(file&&!state.error?sourceError:null)
@@ -253,7 +258,7 @@ export default function App(): React.JSX.Element {
   const instrumentSettings=state.instrumentSettings||defaultInstrumentSettings
   const configureInstruments=useCallback((settings:InstrumentSettings)=>queueLatest('instrumentSettings','instrument.configure',{settings}),[queueLatest])
   const openTargets=useCallback(()=>setModal('targets'),[])
-  const openDisplay=useCallback(()=>setModal('display'),[])
+  const openDisplay=useCallback(()=>{setDraft(current.current.recordSettings||{encoding:'pcm24',sampleRate:'source',namePrefix:'Trace'});setModal('display')},[])
   const openFiles=useCallback(()=>showLibrary(),[showLibrary])
   const timelineJob=file?state.analysisJobs?.find(j=>j.id===file.analysisId):undefined
   const contents=useMemo(()=>({
@@ -278,7 +283,7 @@ export default function App(): React.JSX.Element {
       <div className="top-status"><span className={'live-badge '+(isRecording?'is-rec':state.active?'is-live':'')}><i />{isRecording?'REC':state.active?'采集中':'待机'}</span><span className="preview-badge">开发预览</span><button className="header-settings" aria-label="测量目标" aria-pressed={targets.enabled} onClick={openTargets}>目标</button><button className="header-settings" aria-label="设置与帮助" onClick={openDisplay}>设置与帮助</button></div>
     </header>
     {state.support?.previousInterrupted&&!dismissedRecovery&&<div className="error-banner" role="status"><strong>上次未正常退出</strong><span>请检查录音与恢复状态；可在帮助中导出诊断。</span><button onClick={()=>{showLibrary(true);setDismissedRecovery(true)}}>查看音频文件</button><button onClick={()=>setDismissedRecovery(true)}>关闭提示</button></div>}
-    <div className="workbench-heading"><WorkbenchSourceBar inputs={viewInputs} file={file} busy={busy} run={run} inspectAt={inspectAt} changeWindow={changeWindow} changeDisplay={changeDisplay} setRecordWindow={setRecordWindow} isRecording={isRecording}/><div className="context-settings"><button className="device-summary" aria-label="采集设备设置" title={(selected?.label||'未选择设备')+(format?` · ${format.sampleRate/1000} kHz · ${format.channelCount===1?'单声道':'双声道'}`:'')} onClick={()=>setModal('device')}><span>{state.active?'采集中':state.monitoringRequested?'监测待恢复':'监测已停止'}</span><small>{format?format.sampleRate/1000+' kHz':'选择设备'}</small></button><button className="save-settings" aria-label="录音保存设置" disabled={busy||isRecording} onClick={()=>{setDraft(state.recordSettings||draft);setModal('settings')}}>{recordingLabel(state.recordSettings)}</button></div><WorkspaceToolbar value={workspace.value} change={workspace.change} error={workspace.error} retry={workspace.retry}/></div>
+    <div className="workbench-heading"><WorkbenchSourceBar inputs={viewInputs} file={file} busy={busy} run={run} inspectAt={inspectAt} changeWindow={changeWindow} changeDisplay={changeDisplay} setRecordWindow={setRecordWindow} isRecording={isRecording}/><div className="context-settings"><button className="device-summary" aria-label="采集设备设置" title={deviceSummary} onClick={()=>setModal('device')}><span>{deviceParts?.[1]||selected?.label||'未选择采集设备'}</span><small>{deviceDetails||'点击选择系统播放设备'}</small></button><div className="recording-format-info" aria-label="录音格式与采样率" title={'录音预设：'+recordingLabel(state.recordSettings)+'；'+rateSummary}><span>{recordingLabel(state.recordSettings)}</span><small>{rateSummary}</small></div></div><WorkspaceToolbar value={workspace.value} change={workspace.change} error={workspace.error} retry={workspace.retry}/></div>
     {!workspace.value.locked&&<div className="layout-edit-hint" role="status"><span>拖动标题移动仪器 · 拖动分隔线调整大小</span><span>也可在仪器设置中选择“移动仪器”</span></div>}
     <TargetStripContainer inputs={viewInputs} settings={targets} wholeSummary={wholeSummary} file={file} isRecording={isRecording} multiRegion={multiRegion} configure={openTargets}/>
     {feedbackFile&&!feedbackFile.temporary&&(feedbackFile.analysisPhase!=='ready'||feedbackFile.error?.startsWith('FILE_SNAPSHOT_FAILED:'))&&<section className="current-file-feedback" aria-label="当前文件分析任务" data-feedback-source={feedbackFile.id}><span title={feedbackFile.label}>{feedbackFile.label}</span><AnalysisFeedback file={feedbackFile} job={timelineJob} busy={busy||isRecording} retry={()=>run('playback.retryAnalysis',{playbackId:feedbackFile.id})}/></section>}
@@ -299,6 +304,7 @@ export default function App(): React.JSX.Element {
         <button className={'transport-icon record-button '+(isRecording?'is-recording':'')} aria-label={finalizing?'正在完成录音':isRecording?'结束录音':'录音'} aria-pressed={isRecording} aria-busy={finalizing} title={finalizing?'正在完成录音':isRecording?'结束录音（Escape）':'录音（R）'} disabled={busy||(!isRecording&&!state.deviceId)||finalizing} onClick={()=>run(isRecording?'record.stop':'record.start')}><TransportIcon kind={isRecording?'stop':'record'}/></button>
       </div>
       <button className="return-live live-follow" aria-pressed={!file} disabled={busy||!state.deviceId} onClick={()=>run('view.live')} title="实时：回到最新采集位置">实时</button>
+      <button className="reset-button" disabled={busy||!state.active||isRecording||Boolean(file)} onClick={()=>run('live.reset')} title="重新开始本轮响度统计"><Icon name="reset"/></button>
       <button className="monitor-button" disabled={busy||!state.deviceId||isRecording||Boolean(file?.outputReady)} onClick={()=>state.monitoringRequested?run('live.stop'):run('live.start',{deviceId:state.deviceId})}>{state.monitoringRequested?'停止监测':'开始监测'}</button>
       <div className="transport-divider"/>
       <TransportElapsed inputs={viewInputs} isRecording={isRecording} file={file}/>
@@ -307,7 +313,6 @@ export default function App(): React.JSX.Element {
       <button className="file-export-button" disabled={busy||isRecording||(!file&&!chrome.replayAvailable)} title={file&&!file.temporary?'导出当前文件或选区':'将'+(file?.selection?'选区':'最近缓存')+'按录音设置保存为独立文件'} onClick={()=>file&&!file.temporary?openExport({takeId:file.takeId,role:file.role,regionId:file.regionId,exportId:file.exportId,...(file.selection?{range:file.selection}:{})}):void saveCache()}>{file&&!file.temporary?'导出':'保存缓存'}</button>
       <button className="report-button" title="测量报告与超限事件" onClick={()=>setModal('reports')}>报告</button>
       <button data-open-files className="files-button" aria-expanded={libraryOpen} aria-controls="recording-library-panel" onClick={()=>{setLibraryOpen(value=>!value)}}>音频文件 {(state.recordings?.length||0)+(state.imports?.length||0)}</button>
-      <button className="reset-button" disabled={busy||!state.active||isRecording||Boolean(file)} onClick={()=>run('live.reset')} title="重新开始本轮响度统计"><Icon name="reset"/></button>
     </footer>
 
     <ContinuityBar inputs={viewInputs}/>
@@ -334,7 +339,7 @@ export default function App(): React.JSX.Element {
         if(e.key==='Escape'&&!busy)setModal(null)
         if(e.key==='Tab'){const nodes=Array.from(e.currentTarget.querySelectorAll<HTMLElement>('button:not(:disabled),input:not(:disabled),select:not(:disabled),summary,[tabindex="0"]')).filter(node=>node.tabIndex>=0&&node.checkVisibility());const first=nodes[0],last=nodes[nodes.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus()}}
       }}>
-        <header><h2 id="modal-title">{modal==='device'?'采集设备':modal==='settings'?'录音保存设置':modal==='export'?'导出音频':modal==='display'?'设置与帮助':modal==='targets'?'测量目标':modal==='reports'?'测量报告':'音频文件'}</h2><button aria-label="关闭对话框" onClick={()=>setModal(null)}>×</button></header>
+        <header><h2 id="modal-title">{modal==='device'?'采集设备':modal==='settings'?'设置与帮助':modal==='export'?'导出音频':modal==='display'?'设置与帮助':modal==='targets'?'测量目标':modal==='reports'?'测量报告':'音频文件'}</h2><button aria-label="关闭对话框" onClick={()=>setModal(null)}>×</button></header>
         {modal==='device'?    <div className="settings-content device-settings">
       <label className="source-select">系统播放设备<select aria-label="系统播放设备" title={selected?.label} value={state.deviceId} disabled={busy||isRecording||Boolean(file?.outputReady)} onChange={e => run('devices.select', { deviceId: e.target.value })}>
         {!state.deviceId && <option value="">选择播放设备</option>}
@@ -344,7 +349,7 @@ export default function App(): React.JSX.Element {
       <div className="device-format">{format ? <><b>{format.sampleRate / 1000} <span>kHz</span></b><span>{format.channelCount === 1 ? '单声道' : '双声道'}</span><span>{format.encoding === 'ieee-float' ? 'Float ' : 'PCM '}{format.containerBits}</span></> : <span>等待设备格式</span>}</div>
     </div>
 
-:modal==='reports'?<ReportPanel file={file} targets={targets} jobs={state.reportJobs||[]} recording={isRecording} request={command} onNavigate={()=>{presentation.cancel();setModal(null)}}/>:modal==='targets'?<TargetSettingsForm value={targets} apply={settings=>command('targets.configure',{settings}).then(()=>setModal(null))}/>:modal==='display'?<DisplaySettingsForm support={state.support} confirmExit={state.confirmExitWhileRecording!==false} theme={state.instrumentTheme||defaultThemeId} request={command} value={{...displaySettings,waveGain:gain}} busy={busy} apply={(value,confirmExitWhileRecording,theme)=>command('view.settings',value).then(()=>command('view.theme',{theme})).then(()=>command('app.configure',{confirmExitWhileRecording})).then(()=>setModal(null)).catch(()=>{})}/>:modal==='settings'?<RecordSettingsForm value={draft} change={setDraft} busy={busy||isRecording} directoryBusy={Boolean(state.exportJobs?.some(j=>!['ready','failed','cancelled'].includes(j.phase)))} sourceRate={format?.sampleRate} sourceChannels={format?.channelCount} capacity={state.recordingCapacity?.directory===state.recordDirectory?state.recordingCapacity:undefined} directory={state.recordDirectory} chooseDirectory={()=>run('record.chooseDirectory')} apply={()=>command('record.configure',draft).then(()=>setModal(null)).catch(()=>{})}/>:modal==='export'&&exportSource?exportDescription?<ExportDialog source={exportSource} description={exportDescription} saved={state.lastExportPreset} saveCopyDefault={state.lastExportSaveCopy===true} remember={preset=>queueLatest('exportPrefs','export.configure',{...preset})} busy={busy} submit={(preset,selection,saveCopy)=>command('export.start',{...exportSource,range:selection?exportSource.range:undefined,preset,saveCopy}).then(data=>{const result=data as {jobId?:string}|null;if(result?.jobId){trackExport(result.jobId);setModal(null)}}).catch(()=>{})}/>:<div className="settings-content" role="status">{exportInfoError||'正在读取文件信息…'}{exportInfoError&&<button onClick={()=>setExportSource({...exportSource})}>重试</button>}</div>:null}
+:modal==='reports'?<ReportPanel file={file} targets={targets} jobs={state.reportJobs||[]} recording={isRecording} request={command} onNavigate={()=>{presentation.cancel();setModal(null)}}/>:modal==='targets'?<TargetSettingsForm value={targets} apply={settings=>command('targets.configure',{settings}).then(()=>setModal(null))}/>:modal==='display'||modal==='settings'?<DisplaySettingsForm initialSection={modal==='settings'?'recording':'display'} recording={<fieldset className="recording-settings-group" disabled={busy||isRecording}><RecordSettingsForm embedded value={draft} change={setDraft} busy={busy||isRecording} directoryBusy={Boolean(state.exportJobs?.some(j=>!['ready','failed','cancelled'].includes(j.phase)))} sourceRate={format?.sampleRate} sourceChannels={format?.channelCount} capacity={state.recordingCapacity?.directory===state.recordDirectory?state.recordingCapacity:undefined} directory={state.recordDirectory} chooseDirectory={()=>run('record.chooseDirectory')} apply={()=>{}}/></fieldset>} support={state.support} confirmExit={state.confirmExitWhileRecording!==false} theme={state.instrumentTheme||defaultThemeId} request={command} value={{...displaySettings,waveGain:gain}} busy={busy} apply={(value,confirmExitWhileRecording,theme)=>(!isRecording&&JSON.stringify(draft)!==JSON.stringify(state.recordSettings)?command('record.configure',draft):Promise.resolve()).then(()=>command('view.settings',value)).then(()=>command('view.theme',{theme})).then(()=>command('app.configure',{confirmExitWhileRecording})).then(()=>setModal(null)).catch(()=>{})}/>:modal==='export'&&exportSource?exportDescription?<ExportDialog source={exportSource} description={exportDescription} saved={state.lastExportPreset} saveCopyDefault={state.lastExportSaveCopy===true} remember={preset=>queueLatest('exportPrefs','export.configure',{...preset})} busy={busy} submit={(preset,selection,saveCopy)=>command('export.start',{...exportSource,range:selection?exportSource.range:undefined,preset,saveCopy}).then(data=>{const result=data as {jobId?:string}|null;if(result?.jobId){trackExport(result.jobId);setModal(null)}}).catch(()=>{})}/>:<div className="settings-content" role="status">{exportInfoError||'正在读取文件信息…'}{exportInfoError&&<button onClick={()=>setExportSource({...exportSource})}>重试</button>}</div>:null}
 
       </section>
     </div>}

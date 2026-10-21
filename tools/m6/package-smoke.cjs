@@ -19,7 +19,7 @@ async function main(){
  const wave=await wait(async()=>(await cdp.state()).recordings.find(t=>t.status==='ready'),'WAV ready')
  report.checks.push('R/Escape record and finalize actual WAV audio in the package')
  await cdp.request('record.configure',{format:'mp3',sampleRate:48000,bitrate:192,namePrefix:'Packaged',keepOriginal:false})
- await cdp.click('.save-settings');await wait(()=>cdp.evaluate('!!document.querySelector("[aria-label=录音格式]")'),'record settings')
+ await cdp.click('[aria-label="设置与帮助"]');await cdp.click('[data-section="recording"]');await wait(()=>cdp.evaluate('!!document.querySelector("[aria-label=录音格式]")'),'record settings')
  for(const format of ['aac','wav','mp3']){
   await cdp.evaluate("(()=>{const e=document.querySelector('[aria-label=录音格式]');e.value="+JSON.stringify(format)+";e.dispatchEvent(new Event('change',{bubbles:true}))})()")
   await wait(()=>cdp.evaluate("document.querySelector('[aria-label=录音格式]').value==="+JSON.stringify(format)),'format '+format)

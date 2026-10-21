@@ -8,14 +8,18 @@
 .trace-app.library-layout .file-title>b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .context-settings{display:flex;align-items:center;gap:5px;flex-shrink:0}
 .context-settings button{height:30px;min-height:30px;padding:0 8px;font-size:11px;max-width:165px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.context-settings .device-summary{display:flex;flex-direction:column;gap:0;align-items:flex-start;min-width:75px}
-.context-settings .device-summary small{font-size:10px;color:var(--secondary)}
+.context-settings .device-summary{display:flex;flex-direction:column;gap:0;align-items:flex-start;min-width:130px;max-width:285px}
+.context-settings .device-summary>span,.context-settings .device-summary>small{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.context-settings small{font-size:10px;color:var(--secondary)}
+.recording-format-info{display:flex;flex-direction:column;justify-content:center;min-height:30px;padding:0 8px;border-left:1px solid var(--border);font-size:11px;white-space:nowrap}
+.recording-settings-group{border:0;padding:0;margin:0;min-width:0}
+.recording-settings-group>.settings-content{padding:0}
 .trace-app.library-layout .workspace-toolbar{padding:0 0 0 3px;gap:4px}
 .trace-app.library-layout .workspace-toolbar>select{width:118px}
 .settings-content .device-format{display:flex;flex-wrap:wrap;gap:12px;color:var(--secondary)}
 .settings-content .device-format p{margin:0;line-height:1.7}
 .instrument-heading .action-menu-trigger{font-size:19px}
-@media(max-width:1120px){.trace-app.library-layout .workspace-toolbar>select{width:104px}.trace-app.library-layout .workbench-heading{gap:3px}.context-settings button{max-width:108px}.context-settings .device-summary{min-width:66px}.trace-app.library-layout .workspace-toolbar>button{padding:0 6px}}
+@media(max-width:1120px){.trace-app.library-layout .workspace-toolbar>select{width:104px}.trace-app.library-layout .workbench-heading{gap:3px}.context-settings .device-summary{min-width:110px;max-width:165px}.recording-format-info{padding:0 5px}.trace-app.library-layout .workspace-toolbar>button{padding:0 6px}}
 
 .version-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:7px 0}
 .file-versions>label,.export-items>label{display:flex;flex-direction:column;gap:6px;color:var(--secondary);font-size:11px}

@@ -42,7 +42,7 @@ async function main(){
  assert(BigInt(after)>BigInt(before));report.rendererRecordFrames={before,after}
  await c.request('record.stop');await wait(async()=>!(await c.state()).currentRecord,'stop')
  pass('Script fallback reload and actual renderer crash/reload preserve the ongoing WASAPI take')
- await c.click('.topbar button:last-child');await wait(()=>c.evaluate('!!document.querySelector(".support-panel")'),'help')
+ await c.click('[aria-label="设置与帮助"]');await c.click('[data-section="help"]');await wait(()=>c.evaluate('!!document.querySelector(".support-panel")'),'help')
  for(const scale of [1,1.5,2]){
   await c.send('Emulation.setDeviceMetricsOverride',{width:1024,height:700,deviceScaleFactor:scale,mobile:false});await delay(100)
   assert(await c.evaluate('document.documentElement.scrollWidth<=innerWidth'))

@@ -2,8 +2,8 @@ import {recordingCapacity} from '../capacityModel'
 import type {RecordingCapacity} from '../capacityModel'
 import type {RecordSettings,WavRecordSettings} from '../shared'
 import {recordingLabel} from '../recordSettings'
-type Props={value:RecordSettings;change:(value:RecordSettings)=>void;busy:boolean;directoryBusy?:boolean;sourceRate?:number;sourceChannels?:number;capacity?:RecordingCapacity;directory?:string;chooseDirectory:()=>void;apply:()=>void}
-export function RecordSettingsForm({value,change,busy,directoryBusy,sourceRate,sourceChannels,capacity,directory,chooseDirectory,apply}:Props):React.JSX.Element{
+type Props={value:RecordSettings;change:(value:RecordSettings)=>void;busy:boolean;directoryBusy?:boolean;sourceRate?:number;sourceChannels?:number;capacity?:RecordingCapacity;directory?:string;chooseDirectory:()=>void;apply:()=>void;embedded?:boolean}
+export function RecordSettingsForm({value,change,busy,directoryBusy,sourceRate,sourceChannels,capacity,directory,chooseDirectory,apply,embedded=false}:Props):React.JSX.Element{
  const wav=!value.format?value as WavRecordSettings:null
   const estimate=recordingCapacity(capacity?.freeBytes?BigInt(capacity.freeBytes):null,value,sourceRate||48000,sourceChannels||2)
   const duration=estimate.estimatedSeconds===null?'—':estimate.estimatedSeconds<60?'不足 1 分钟':Math.floor(estimate.estimatedSeconds/3600)+' 小时 '+Math.floor(estimate.estimatedSeconds%3600/60)+' 分钟'
@@ -29,6 +29,6 @@ export function RecordSettingsForm({value,change,busy,directoryBusy,sourceRate,s
   <p className="settings-summary">采集 {sourceRate?sourceRate/1000:'—'} kHz → {recordingLabel(value)} · {value.sampleRate==='source'?'跟随来源':value.sampleRate/1000+' kHz'}</p>
   <p className="settings-hint">{wav?'需要重采样时，停止后后台生成成品。原始 WAV 按上方设置保留或整理。':'停止后后台生成压缩成品，原始 WAV 按上方设置处理；成品可以独立回听和分析。'}</p>
   {value.format==='aac'&&value.container==='adts'&&<p className="settings-hint">ADTS 在其他播放器中可能包含首尾填充；文件回听建议选择 M4A。</p>}
-  <button className="primary-button" disabled={busy} onClick={apply}>应用设置</button>
+  {!embedded&&<button className="primary-button" disabled={busy} onClick={apply}>应用设置</button>}
  </div>
 }
