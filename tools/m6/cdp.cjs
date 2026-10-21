@@ -31,4 +31,4 @@ async function launch(executable,folder,{scale=1,userData,recordDirectory,bounds
   if(!rendererReady){cdp.close();child.kill();throw Error('Packaged renderer did not finish initialization')}
   return {child,cdp,folder,async close(){try{await cdp.request('app.quit')}catch{}for(const begin=Date.now();child.exitCode===null&&Date.now()-begin<30000;)await delay(50);if(child.exitCode===null){child.kill();throw Error('Trace did not finish closing')}cdp.close();if(child.exitCode!==0)throw Error('Trace exit '+child.exitCode)}}
 }
-module.exports={launch,delay}
+module.exports={launch,delay,CDP}

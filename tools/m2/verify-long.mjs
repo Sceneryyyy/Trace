@@ -7,7 +7,7 @@ import { resolve, join } from 'node:path'
 const root=resolve('.')
 const reportPath=resolve(process.argv[2]||'artifacts/m2/long-latest.json')
 const report=JSON.parse(await readFile(reportPath,'utf8'))
-assert.equal(report.status,'pass');assert(report.durationSeconds>=1800)
+assert(['pass','paused'].includes(report.status),'Only completed or stopped recordings may be checked');assert(report.durationSeconds>=1800)
 const takes=join(report.folder,'takes')
 let directory,session
 for(const name of await readdir(takes)){
@@ -15,7 +15,8 @@ for(const name of await readdir(takes)){
  if(candidate.sessionId===report.take.id){directory=join(takes,name);session=candidate;break}
 }
 assert(session,'Long recording session must be reopened')
-const sources=session.assets.filter(a=>a.role==='source')
+const sources=session.assets.filter(a=>a.role===(report.verificationRole||'source'))
+assert(sources.length>0,'Persisted audio assets required')
 let total=0n,zeroFrames=0n,nonzeroFrames=0n
 const files=[]
 for(const asset of sources){
@@ -57,11 +58,11 @@ for(const asset of sources){
  total+=BigInt(asset.frameCount)
  files.push({relativePath:asset.relativePath,frames:asset.frameCount,codec:info.codec_name,sha256:asset.hash})
 }
-assert.equal(total.toString(),report.final.writtenFrames)
+assert.equal(total.toString(),report.final?.writtenFrames??report.recoveredFrames)
 assert.equal(total,zeroFrames+nonzeroFrames)
 assert(zeroFrames>0n&&nonzeroFrames>0n,'Actual recording retains both silence and rendered tone')
-const verified={status:'pass',checkedAt:new Date().toISOString(),recordingReport:reportPath,frames:total.toString(),
- durationSeconds:Number(total)/report.final.sourceFormat.sampleRate,zeroFrames:zeroFrames.toString(),nonzeroFrames:nonzeroFrames.toString(),files,
+const verified={status:'pass',recordingStatus:report.status,continuousLongTestComplete:report.status==='pass',checkedAt:new Date().toISOString(),recordingReport:reportPath,frames:total.toString(),
+ durationSeconds:Number(total)/(report.final?.sourceFormat.sampleRate??report.take.sampleRate),zeroFrames:zeroFrames.toString(),nonzeroFrames:nonzeroFrames.toString(),files,
  checks:['reopened session','ffprobe format and frame count','RIFF size and complete PCM frames','SHA256 unchanged','both recorded silence and tone']}
 await writeFile(join(report.folder,'reopen-verification.json'),JSON.stringify(verified,null,2)+'\n')
 console.log(JSON.stringify(verified,null,2))
