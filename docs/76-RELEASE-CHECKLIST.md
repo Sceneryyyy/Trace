@@ -1,5 +1,7 @@
 # 76 · Trace Windows 发布验收清单
 
+2026-10-28 当前交付：preview.35 / IT1 小范围内测包已从 `3cbb4ce` 独立重建并核验，见 [95](95-INTERNAL-TEST-1.md)。它不是完整发布候选放行；下文 10 月 18 日关于 preview.31 候选与旧 PDF 的说明保留其历史身份。
+
 2026-10-18 更新。本清单维护当前发布门禁；已生成的私有工程候选仍为 preview.31（`2aee519`），当前源码 preview.35 尚未生成新候选；历史 preview.30 / InternalTest-r3 保持原交付身份。支持范围先限定 Windows x64、单/双声道。macOS 单列 [70](70-MACOS-PORT-PLAN.md)。候选附件内清单为生成时的阶段快照，最终提交/CI/门禁状态见 [13](13-HANDOFF.md) 与 [81](81-SELF-BUILT-FFMPEG.md)；独立化证据见 [79](79-TRACE-INDEPENDENT-PROJECT.md)，先前云端记录见 [75](archive/iterations/75-CLOUD-RELEASE-PREPARATION.md)。
 
 ## 当前源码与下一候选的证据边界
@@ -39,6 +41,8 @@ CTest 19/19 与 Linux sanitizer 8 + 1、三格式、实际故障反例与新候�
 前述 f33d74d 候选保留为上一轮自建证据，不能视作包含本轮修复。
 
 ## 必须关闭的发布门禁
+
+2026-10-28：用户确认功能冻结并进入小范围正式内测 IT1，程序固定在 `3cbb4ce`，详见 [95](95-INTERNAL-TEST-1.md)。新包 AppBuild、334 项 portable、类型检查、包审计 5 项、加载/重启 3 项、真实短流程 8 项及 ZIP 110 文件校验完成，附带匹配源码与内测材料；不冒用旧两小时为新包长测。此为邀请内测准入，不关闭下表全部门禁；干净 Windows、更多硬件/物理故障、默认后台长测、资源、签名与分发复核仍开放，用户矩阵未反馈保持待验。
 
 2026-10-21 用户验收处置：用户确认人工听感通过；其余未验项目交由用户后续验证，保持待验，不据此关闭整组 FLOW 或全部发布门禁。本轮收尾，heartbeat `trace` 保持 PAUSED，收到用户反馈后再修改；既有估算静音、资源变化和失败证据保留。当前状态见 [94](94-WINDOWS-FIRST-RETEST.md)，下方较早的听感待验表述为当时记录。
 

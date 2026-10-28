@@ -23,6 +23,7 @@
 | 本地声谱图移植 / 频谱低频修复 | [91 · 声谱图移植](91-SPECTROGRAM-PORT-PREVIEW35.md)、[92 · 频谱连续性](92-SPECTRUM-CONTINUITY-FIX.md)；最新本地包以 13 为准 |
 | 录音库误收普通 WAV 文件夹 | [93 · 目录识别修复](93-RECORDING-DISCOVERY-FIX.md) |
 | Windows 首轮实机 / 两小时长测 | [94 · 实机与稳定性记录](94-WINDOWS-FIRST-RETEST.md)，运行/完成状态以 13 为准 |
+| 功能冻结 / IT1 小范围正式内测 | [95 · 内测安排与包身份](95-INTERNAL-TEST-1.md)、[测试者开始说明](internal-test/START-HERE.md)、[测试矩阵](internal-test/TEST-MATRIX.md)、[反馈模板](internal-test/FEEDBACK.md) |
 | 示例、第三方许可 | [examples](../examples/README.md)、[第三方声明](../THIRD_PARTY_NOTICES.md) |
 
 ## 证据与历史：按需检索

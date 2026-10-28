@@ -1,6 +1,16 @@
 # 13 · 当前交接
 
-更新：2026-10-21。后续 agent 先读本页和 [07](07-BACKLOG.md)，其余按任务读取 [文档索引](README.md)；不要遍历归档或整份验证 JSON。源码根为本 checkout，规则见 [AGENTS.md](../AGENTS.md)。
+更新：2026-10-28。后续 agent 先读本页和 [07](07-BACKLOG.md)，其余按任务读取 [文档索引](README.md)；不要遍历归档或整份验证 JSON。源码根为本 checkout，规则见 [AGENTS.md](../AGENTS.md)。
+
+## 功能冻结，进入小范围正式内测 IT1（2026-10-28）
+
+用户确认冻结本轮功能并推进已知问题处置、验证分工和可追溯测试包。程序基线固定 `3cbb4ce1be74922e3ed0deb45f20091bc10092a2`，preview.35 / Internal Test 1。只按反馈处理缺陷，不自动启动新功能或长测。heartbeat 保持暂停。
+
+交付目录 `dist-trace/internal-test-1-20261028/`；程序 ZIP SHA256 `23559f67dbf4d464918b50984d393fbf504797a95e80ebe0bb80cc0c44defa0c`。独立构建目录 `dist-trace/preview.35-internal-test-1/win-unpacked/Trace.exe`。重新 AppBuild/打包，portable 334/334、两套类型检查、包审计 5/5、加载/重启 3/3、实际短录/回听/导出/重开 8/8、ZIP 110 文件逐项核验通过；原生引擎沿用此前哈希，源码未变，没有重编原生引擎或重复两小时。匹配项目源码/FFmpeg/LAME 源码、清单/校验值与脱敏摘要随包。
+
+详见 [95](95-INTERNAL-TEST-1.md)，测试者从 [开始说明](internal-test/START-HERE.md) 进入；已知质量限制、用户设备矩阵、反馈模板均已落地。历史估算静音、资源变化及首次 CDP 失败继续保留；其他硬件验收交用户，未知不计通过。干净 Windows 首轮通过前不扩大邀请；未签名，不代表公开测试或正式发布。未发送邀请/公开发布，下一步由用户安排测试者并回收反馈。
+
+完整交付包 `dist-trace/Trace-preview.35-IT1-Test-Kit.zip`，SHA256 `2e2548e16ae2cc41ce9bfa0ad204ce0e60184c4ec607bf3e9e85aac5d756bb11`，174241738 字节；23 个条目逐项校验通过。源码仅提交内测安排与材料，程序/源码归档及测试录音均不提交 Git。本文档提交与程序基线分开记录，不能因后续 HEAD 改变重写已交付的包身份。
 
 ## 本地增量提交交付（2026-10-21）
 
