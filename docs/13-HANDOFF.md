@@ -4,6 +4,8 @@
 
 ## IT1 GitHub 预发布已发布（2026-11-04）
 
+首页预览图按用户要求换为其提供的两张 PNG：`docs/assets/readme/workbench-green.png` 为主图，蓝色图放在可展开预览中。原图不修改，来源说明见同目录 README；移除首页对旧模拟图的说明，历史图片保留供其他文档使用。此变更仅涉及文档与截图，不改变 IT1 发布附件或验收结论。
+
 同日按用户要求重写根 README 为产品首页：突出用途、主要能力、音频格式与下载上手，接入 IT1 Release；历史版本、合并/CI 统计及验证过程通过文档入口查阅。保留 LeoMoon/TRACE 品牌、示例图的模拟信号标识及 Prism 许可/来源；同步使用说明开头的适用版本和下载入口，避免引导到历史包。此轮仅文档调整，未改产品或已发布附件。README/使用说明的 30 个本地链接与图片路径、文中 npm 命令及差异空白检查通过；默认分支已核对为 recorder/dev。未重复产品构建或音频测试，下一步继续回收 IT1 用户反馈。
 
 用户授权将测试包发布到 GitHub。已发布 [Trace preview.35 · Internal Test 1](https://github.com/Sceneryyyy/Trace/releases/tag/v0.1.0-preview.35-it1)，Release ID `433497209`，tag `v0.1.0-preview.35-it1` 指向原程序基线 `3cbb4ce1be74922e3ed0deb45f20091bc10092a2`，`prerelease=true`、`draft=false`，未设为最新正式版。

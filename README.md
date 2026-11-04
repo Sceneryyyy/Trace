@@ -18,9 +18,16 @@ Trace 是 LeoMoon 系列面向 **Windows 桌面**的音频录音与分析工具�
 
 录音与分析在本机完成，支持离线使用。波形、响度历史与频谱视图围绕同一段声音协同工作，帮助你将听感与具体时刻的测量结果对应起来。
 
-![Trace 工作台：波形、响度历史、频谱与声谱图](docs/assets/frontend-preview35/workbench.png)
+![Trace 绿色主题工作台：波形、响度历史、频谱与声谱图](docs/assets/readme/workbench-green.png)
 
-*界面示例使用模拟信号，布局与控件以下载版本为准。[截图说明](docs/assets/frontend-preview35/README.md)*
+*用户提供的 Trace 工作台截图，展示自定义布局与绿色主题。布局与控件以下载版本为准。*
+
+<details>
+<summary>查看蓝色主题工作台</summary>
+
+![Trace 蓝色主题工作台](docs/assets/readme/workbench-blue.png)
+
+</details>
 
 ## 适合用来做什么
 
