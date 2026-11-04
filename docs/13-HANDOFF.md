@@ -4,6 +4,8 @@
 
 ## IT1 GitHub 预发布已发布（2026-11-04）
 
+同日按用户要求重写根 README 为产品首页：突出用途、主要能力、音频格式与下载上手，接入 IT1 Release；历史版本、合并/CI 统计及验证过程通过文档入口查阅。保留 LeoMoon/TRACE 品牌、示例图的模拟信号标识及 Prism 许可/来源；同步使用说明开头的适用版本和下载入口，避免引导到历史包。此轮仅文档调整，未改产品或已发布附件。README/使用说明的 30 个本地链接与图片路径、文中 npm 命令及差异空白检查通过；默认分支已核对为 recorder/dev。未重复产品构建或音频测试，下一步继续回收 IT1 用户反馈。
+
 用户授权将测试包发布到 GitHub。已发布 [Trace preview.35 · Internal Test 1](https://github.com/Sceneryyyy/Trace/releases/tag/v0.1.0-preview.35-it1)，Release ID `433497209`，tag `v0.1.0-preview.35-it1` 指向原程序基线 `3cbb4ce1be74922e3ed0deb45f20091bc10092a2`，`prerelease=true`、`draft=false`，未设为最新正式版。
 
 附件为原 IT1 完整测试包及其 `.sha256.txt`；174241738 字节，SHA256 `2e2548e16ae2cc41ce9bfa0ad204ce0e60184c4ec607bf3e9e85aac5d756bb11`，GitHub 返回的附件大小/摘要与本地一致。没有重新打包或改写 10 月 28 日的交付身份。Release 包含使用步骤、变更、验证边界、已知限制和反馈入口；公开仓库的附件可公开下载，但仍只标记为预发布测试构建，不代表正式发布门禁关闭。未发送邀请，下一步由用户安排测试者并回收反馈。此前“未公开发布”表述保留为当时历史状态。
