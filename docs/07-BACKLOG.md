@@ -1,12 +1,12 @@
 # 07 · 当前任务单
 
-更新：2026-10-28。本页仅保留待办与最近结项摘要；当前源码/分支/验证身份见 [13](13-HANDOFF.md)。原任务 ID、M0–M13 和阶段过程已保存为[归档快照](archive/snapshots/07-BACKLOG-before-archive-20261018.md)。
+更新：2026-11-04。本页仅保留待办与最近结项摘要；当前源码/分支/验证身份见 [13](13-HANDOFF.md)。原任务 ID、M0–M13 和阶段过程已保存为[归档快照](archive/snapshots/07-BACKLOG-before-archive-20261018.md)。
 
 ## 尚待推进
 
 | 范围 | 下一动作与边界 |
 | --- | --- |
-| IT1 功能冻结 / 小范围内测 | 基线 3cbb4ce 已生成固定测试包与匹配源码；新包短流程、校验及已知问题/矩阵/反馈材料完成，见 [95](95-INTERNAL-TEST-1.md)。下一步由用户安排少量测试者，先完成短流程与干净 Windows，再按设备分工；收到反馈才改，P0/P1 暂停受影响范围，不自动追加功能/长测 |
+| IT1 功能冻结 / 小范围内测 | 基线 3cbb4ce 的原测试包已于 2026-11-04 发布为 [GitHub Pre-release](https://github.com/Sceneryyyy/Trace/releases/tag/v0.1.0-preview.35-it1)，附校验文件；验证边界见 [95](95-INTERNAL-TEST-1.md)。下一步由用户安排少量测试者，先完成短流程与干净 Windows，再按设备分工；收到反馈才改，P0/P1 暂停受影响范围，不自动追加功能/长测 |
 | Windows / 用户复验 | 2026-10-21 用户确认人工听感通过，其余待验交由用户验证，收到反馈再改；本轮收尾，heartbeat 保持暂停。2026-10-19 首轮短流程与 Realtek 48 kHz 连续两小时录音/帧数/重开/文件校验完成，345601871 帧，固定 0.259 秒估算静音保留；RME 真实 96 kHz 短采集通过，见 [94](94-WINDOWS-FIRST-RETEST.md)。[76](76-RELEASE-CHECKLIST.md) 的其余采样率/长测、物理故障、working set/GPU/DPI 等保持待验，旧中断/失败证据保留 |
 | 下一工程候选/发布 | IT1 内测包/源码/Markdown 说明/审计/加载/manifest/校验已完成；匹配正式手册/PDF、签名、首次下载、升级/回退及其余发布门禁仍待验。旧 preview.31 候选或旧 PDF 不能代替 IT1/下一发布包 |
 | 组件安全与分发条款 | FFmpeg/LAME、Microsoft 组件安全/系统库例外及 GPL 分发条款复核；npm 零公告不代替这些项 |

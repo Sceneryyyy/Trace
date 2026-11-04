@@ -1,6 +1,12 @@
 # 13 · 当前交接
 
-更新：2026-10-28。后续 agent 先读本页和 [07](07-BACKLOG.md)，其余按任务读取 [文档索引](README.md)；不要遍历归档或整份验证 JSON。源码根为本 checkout，规则见 [AGENTS.md](../AGENTS.md)。
+更新：2026-11-04。后续 agent 先读本页和 [07](07-BACKLOG.md)，其余按任务读取 [文档索引](README.md)；不要遍历归档或整份验证 JSON。源码根为本 checkout，规则见 [AGENTS.md](../AGENTS.md)。
+
+## IT1 GitHub 预发布已发布（2026-11-04）
+
+用户授权将测试包发布到 GitHub。已发布 [Trace preview.35 · Internal Test 1](https://github.com/Sceneryyyy/Trace/releases/tag/v0.1.0-preview.35-it1)，Release ID `433497209`，tag `v0.1.0-preview.35-it1` 指向原程序基线 `3cbb4ce1be74922e3ed0deb45f20091bc10092a2`，`prerelease=true`、`draft=false`，未设为最新正式版。
+
+附件为原 IT1 完整测试包及其 `.sha256.txt`；174241738 字节，SHA256 `2e2548e16ae2cc41ce9bfa0ad204ce0e60184c4ec607bf3e9e85aac5d756bb11`，GitHub 返回的附件大小/摘要与本地一致。没有重新打包或改写 10 月 28 日的交付身份。Release 包含使用步骤、变更、验证边界、已知限制和反馈入口；公开仓库的附件可公开下载，但仍只标记为预发布测试构建，不代表正式发布门禁关闭。未发送邀请，下一步由用户安排测试者并回收反馈。此前“未公开发布”表述保留为当时历史状态。
 
 ## 功能冻结，进入小范围正式内测 IT1（2026-10-28）
 
